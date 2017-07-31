@@ -15,7 +15,8 @@
         "issues": "http://github.com/Innmind/AMQP/issues"
     },
     "require": {
-        "php": "~7.1"
+        "php": "~7.1",
+        "innmind/immutable": "^2.3"
     },
     "autoload": {
         "psr-4": {
