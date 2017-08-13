@@ -1,0 +1,44 @@
+<?php
+declare(strict_types = 1);
+
+namespace Tests\Innmind\AMQP\Transport;
+
+use Innmind\AMQP\Transport\{
+    Frame,
+    Frame\Type,
+    Frame\Channel,
+    Frame\Method,
+    Frame\Value,
+    Frame\Value\Bits,
+    Frame\Value\Text
+};
+use Innmind\Immutable\{
+    Str,
+    StreamInterface
+};
+use PHPUnit\Framework\TestCase;
+
+class FrameTest extends TestCase
+{
+    public function testInterface()
+    {
+        $frame = new Frame(
+            $type = Type::method(),
+            $channel = new Channel(42),
+            $method = new Method(10, 10),
+            $bit = new Bits(true),
+            $text = new Text(new Str('foobar'))
+        );
+
+        $this->assertSame($type, $frame->type());
+        $this->assertSame($channel, $frame->channel());
+        $this->assertSame($method, $frame->method());
+        $this->assertInstanceOf(StreamInterface::class, $frame->values());
+        $this->assertSame(Value::class, (string) $frame->values()->type());
+        $this->assertSame([$bit, $text], $frame->values()->toPrimitive());
+        $this->assertSame(
+            chr(1).pack('n', 42).pack('N', 11).pack('n', 10).pack('n', 10).$bit.$text.chr(0xCE),
+            (string) $frame
+        );
+    }
+}
