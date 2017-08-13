@@ -25,7 +25,7 @@ class TypeTest extends TestCase
             [1, 'method'],
             [2, 'header'],
             [3, 'body'],
-            [4, 'heartbeat'],
+            [8, 'heartbeat'],
         ];
     }
 }

@@ -29,7 +29,7 @@ final class Type
 
     public static function heartbeat(): self
     {
-        return new self(4);
+        return new self(8);
     }
 
     public function toInt(): int
