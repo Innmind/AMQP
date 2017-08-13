@@ -13,11 +13,25 @@ class TypeTest extends TestCase
      */
     public function testInterface($expected, $type)
     {
-        $type = Type::$type();
+        $instance = Type::$type();
 
-        $this->assertInstanceOf(Type::class, $type);
-        $this->assertSame($expected, $type->toInt());
+        $this->assertInstanceOf(Type::class, $instance);
+        $this->assertSame($instance, Type::$type());
+        $this->assertSame($expected, $instance->toInt());
     }
+
+    /**
+     * @dataProvider cases
+     */
+    public function testFromInt($type, $expected)
+    {
+        $this->assertSame(Type::$expected(), Type::fromInt($type));
+    }
+
+    /**
+     * @expectedException Innminq\AMQP\Exception\UnknownFrameType
+     * @expectedExceptionMessage 4
+     */
 
     public function cases(): array
     {
