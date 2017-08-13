@@ -21,6 +21,8 @@ use Innmind\Immutable\{
 final class Frame
 {
     private $type;
+    private $channel;
+    private $method;
     private $values;
     private $string;
 
