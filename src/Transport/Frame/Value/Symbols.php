@@ -48,7 +48,7 @@ final class Symbols
             ->put('l', UnsignedLongLongInteger::class)
             ->put('D', Decimal::class)
             ->put('T', Timestamp::class)
-            ->put('V', Void::class)
+            ->put('V', VoidValue::class)
             ->put('t', Bits::class)
             ->put('s', ShortString::class)
             ->put('S', LongString::class)
