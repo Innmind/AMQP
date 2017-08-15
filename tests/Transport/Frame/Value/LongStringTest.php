@@ -22,10 +22,42 @@ class LongStringTest extends TestCase
      */
     public function testStringCast($string, $expected)
     {
-        $this->assertSame(
-            $expected,
-            (string) new LongString(new Str($string))
-        );
+        $value = new LongString($str = new Str($string));
+        $this->assertSame($expected, (string) $value);
+        $this->assertSame($str, $value->original());
+    }
+
+    /**
+     * @dataProvider cases
+     */
+    public function testFromString($expected, $string)
+    {
+        $value = LongString::fromString(new Str($string));
+
+        $this->assertInstanceOf(LongString::class, $value);
+        $this->assertInstanceOf(Str::class, $value->original());
+        $this->assertSame($expected, (string) $value->original());
+        $this->assertSame($string, (string) $value);
+    }
+
+    /**
+     * @dataProvider cases
+     */
+    public function testCut($_, $string)
+    {
+        $str = LongString::cut(new Str($string.'foo'));
+
+        $this->assertInstanceOf(Str::class, $str);
+        $this->assertSame($string, (string) $str);
+    }
+
+    /**
+     * @expectedException Innmind\AMQP\Exception\StringNotOfExpectedLength
+     * @expectedExceptionMessage String "foo" is expected of being 0 characters, got 3
+     */
+    public function testThrowWhenLengthDoesntMatchString()
+    {
+        LongString::fromString(new Str(pack('N', 0).'foo'));
     }
 
     public function cases(): array

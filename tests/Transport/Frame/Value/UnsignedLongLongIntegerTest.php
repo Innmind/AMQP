@@ -7,22 +7,27 @@ use Innmind\AMQP\Transport\Frame\{
     Value\UnsignedLongLongInteger,
     Value
 };
+use Innmind\Math\Algebra\Integer;
+use Innmind\Immutable\Str;
 use PHPUnit\Framework\TestCase;
 
 class UnsignedLongLongIntegerTest extends TestCase
 {
     public function testInterface()
     {
-        $this->assertInstanceOf(Value::class, new UnsignedLongLongInteger(0));
+        $this->assertInstanceOf(
+            Value::class,
+            new UnsignedLongLongInteger(new Integer(0))
+        );
     }
 
     /**
      * @expectedException Innmind\AMQP\Exception\OutOfRangeValue
-     * @expectedExceptionMessage Expected value between 0 and 9223372036854775807, got -1
+     * @expectedExceptionMessage -1 ∉ [0;+∞]∩ℤ
      */
     public function testThrowWhenIntegerTooLow()
     {
-        new UnsignedLongLongInteger(-1);
+        new UnsignedLongLongInteger(new Integer(-1));
     }
 
     /**
@@ -30,10 +35,42 @@ class UnsignedLongLongIntegerTest extends TestCase
      */
     public function testStringCast($int, $expected)
     {
-        $this->assertSame(
-            $expected,
-            (string) new UnsignedLongLongInteger($int)
-        );
+        $value = new UnsignedLongLongInteger($int = new Integer($int));
+        $this->assertSame($expected, (string) $value);
+        $this->assertSame($int, $value->original());
+    }
+
+    /**
+     * @dataProvider cases
+     */
+    public function testFromString($expected, $string)
+    {
+        $value = UnsignedLongLongInteger::fromString(new Str($string));
+
+        $this->assertInstanceOf(UnsignedLongLongInteger::class, $value);
+        $this->assertInstanceOf(Integer::class, $value->original());
+        $this->assertSame($expected, $value->original()->value());
+        $this->assertSame($string, (string) $value);
+    }
+
+    /**
+     * @dataProvider cases
+     */
+    public function testCut($_, $string)
+    {
+        $str = UnsignedLongLongInteger::cut(new Str($string.'foo'));
+
+        $this->assertInstanceOf(Str::class, $str);
+        $this->assertSame($string, (string) $str);
+    }
+
+    /**
+     * @expectedException Innmind\AMQP\Exception\StringNotOfExpectedLength
+     * @expectedExceptionMessage String "foo" is expected of being 8 characters, got 3
+     */
+    public function testThrowWhenStringNotOfExpectedLength()
+    {
+        UnsignedLongLongInteger::fromString(new Str('foo'));
     }
 
     public function cases(): array

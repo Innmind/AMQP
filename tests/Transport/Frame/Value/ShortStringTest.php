@@ -22,15 +22,37 @@ class ShortStringTest extends TestCase
      */
     public function testStringCast($string, $expected)
     {
-        $this->assertSame(
-            $expected,
-            (string) new ShortString(new Str($string))
-        );
+        $value = new ShortString($str = new Str($string));
+        $this->assertSame($expected, (string) $value);
+        $this->assertSame($str, $value->original());
+    }
+
+    /**
+     * @dataProvider cases
+     */
+    public function testFromString($expected, $string)
+    {
+        $value = ShortString::fromString(new Str($string));
+
+        $this->assertInstanceOf(ShortString::class, $value);
+        $this->assertSame($expected, (string) $value->original());
+        $this->assertSame($string, (string) $value);
+    }
+
+    /**
+     * @dataProvider cases
+     */
+    public function testCut($_, $string)
+    {
+        $str = ShortString::cut(new Str($string.'foo'));
+
+        $this->assertInstanceOf(Str::class, $str);
+        $this->assertSame($string, (string) $str);
     }
 
     /**
      * @expectedException Innmind\AMQP\Exception\OutOfRangeValue
-     * @expectedExceptionMessage Expected value between 0 and 255, got 256
+     * @expectedExceptionMessage 256 ∉ [0;255]∩ℤ
      */
     public function testThrowWhenStringTooLong()
     {

@@ -9,6 +9,7 @@ use Innmind\AMQP\Transport\Frame\{
     Value\LongString,
     Value
 };
+use Innmind\Math\Algebra\Integer;
 use Innmind\Immutable\{
     Map,
     Str
@@ -39,24 +40,58 @@ class TableTest extends TestCase
      */
     public function testStringCast($expected, $map)
     {
-        $this->assertSame(
-            $expected,
-            (string) new Table($map)
-        );
+        $value = new Table($map);
+        $this->assertSame($expected, (string) $value);
+        $this->assertSame($map, $value->original());
+    }
+
+    /**
+     * @dataProvider cases
+     */
+    public function testFromString($string, $expected)
+    {
+        $value = Table::fromString(new Str($string));
+
+        $this->assertInstanceOf(Table::class, $value);
+        $this->assertCount($expected->size(), $value->original());
+
+        foreach ($expected as $i => $v) {
+            $this->assertInstanceOf(
+                get_class($v),
+                $value->original()->get($i)
+            );
+            $this->assertSame(
+                (string) $v,
+                (string) $value->original()->get($i)
+            );
+        }
+
+        $this->assertSame($string, (string) $value);
+    }
+
+    /**
+     * @dataProvider cases
+     */
+    public function testCut($string)
+    {
+        $str = Table::cut(new Str($string.'foo'));
+
+        $this->assertInstanceOf(Str::class, $str);
+        $this->assertSame($string, (string) $str);
     }
 
     public function cases(): array
     {
         $map = (new Map('string', Value::class))
-            ->put('foo', new SignedOctet(1));
+            ->put('foo', new SignedOctet(new Integer(1)));
 
         return [
             [
-                pack('N', 5).chr(3).'foo'.chr(1),
+                pack('N', 6).chr(3).'foob'.chr(1),
                 $map,
             ],
             [
-                pack('N', 26).chr(3).'foo'.chr(1).chr(6).'foobar'.pack('N', 10).'foo🙏bar',
+                pack('N', 28).chr(3).'foob'.chr(1).chr(6).'foobarS'.pack('N', 10).'foo🙏bar',
                 $map->put('foobar', new LongString(new Str('foo🙏bar'))),
             ],
         ];

@@ -4,15 +4,18 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
+use Innmind\Math\Algebra\Integer;
 use Innmind\Immutable\{
     Str,
     Sequence as Seq,
-    MapInterface
+    MapInterface,
+    Map
 };
 
 final class Table implements Value
 {
     private $value;
+    private $original;
 
     /**
      * @param MapInterface<string, Value> $map
@@ -35,15 +38,64 @@ final class Table implements Value
                 static function(Seq $sequence, string $key, Value $value): Seq {
                     return $sequence
                         ->add(new ShortString(new Str($key)))
+                        ->add(Symbols::symbol(get_class($value)))
                         ->add($value);
                 }
             )
-            ->join('');
+            ->join('')
+            ->toEncoding('ASCII');
 
         $this->value = (string) new UnsignedLongInteger(
-            $data->toEncoding('ASCII')->length()
+            new Integer($data->length())
         );
         $this->value .= $data;
+        $this->original = $map;
+    }
+
+    public static function fromString(Str $string): Value
+    {
+        $string = $string->toEncoding('ASCII');
+        $length = UnsignedLongInteger::fromString($string->substring(0, 4))->original();
+        $string = $string->substring(4);
+
+        if ($string->length() !== $length->value()) {
+            throw new StringNotOfExpectedLength($string, $length->value());
+        }
+
+        $map = new Map('string', Value::class);
+
+        while ($string->length() !== 0) {
+            $key = ShortString::cut($string);
+            $string = $string->toEncoding('ASCII')->substring($key->length());
+            $key = ShortString::fromString($key)->original();
+
+            $class = Symbols::class((string) $string->substring(0, 1));
+            $element = [$class, 'cut']($string->substring(1))->toEncoding('ASCII');
+
+            $map = $map->put((string) $key, [$class, 'fromString']($element));
+
+            $string = $string->substring($element->length() + 1);
+        }
+
+        return new self($map);
+    }
+
+    public static function cut(Str $string): Str
+    {
+        $string = $string->toEncoding('ASCII');
+        $length = UnsignedLongInteger::fromString(
+            UnsignedLongInteger::cut($string)
+        )->original();
+
+        return $string->substring(0, $length->value() + 4);
+    }
+
+    /**
+     * @return MapInterface<string, Value>
+     */
+    public function original(): MapInterface
+    {
+        return $this->original;
     }
 
     public function __toString(): string

@@ -22,10 +22,31 @@ class TextTest extends TestCase
      */
     public function testStringCast($string, $expected)
     {
-        $this->assertSame(
-            $expected,
-            (string) new Text(new Str($string))
-        );
+        $value = new Text($str = new Str($string));
+        $this->assertSame($expected, (string) $value);
+        $this->assertSame($str, $value->original());
+    }
+
+    /**
+     * @dataProvider cases
+     */
+    public function testFromString($expected, $string)
+    {
+        $value = Text::fromString($str = new Str($string));
+
+        $this->assertInstanceOf(Text::class, $value);
+        $this->assertSame($str, $value->original());
+        $this->assertSame($expected, (string) $value);
+    }
+
+    /**
+     * @dataProvider cases
+     */
+    public function testCut($_, $string)
+    {
+        $value = Text::cut($str = new Str($string));
+
+        $this->assertSame($str, $value);
     }
 
     public function cases(): array

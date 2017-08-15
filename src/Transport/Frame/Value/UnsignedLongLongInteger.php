@@ -5,24 +5,68 @@ namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\{
     Transport\Frame\Value,
-    Exception\OutOfRangeValue
+    Exception\OutOfRangeValue,
+    Exception\StringNotOfExpectedLength
 };
+use Innmind\Math\{
+    Algebra\Integer,
+    Algebra\Number\Infinite,
+    DefinitionSet\Set,
+    DefinitionSet\Range,
+    DefinitionSet\Integers
+};
+use Innmind\Immutable\Str;
 
 final class UnsignedLongLongInteger implements Value
 {
-    private $value;
+    private static $definitionSet;
 
-    public function __construct(int $value)
+    private $value;
+    private $original;
+
+    public function __construct(Integer $value)
     {
-        if ($value < 0) {
-            throw new OutOfRangeValue($value, 0, PHP_INT_MAX);
+        if (!self::definitionSet()->contains($value)) {
+            throw new OutOfRangeValue($value, self::definitionSet());
         }
 
-        $this->value = pack('J', $value);
+        $this->value = pack('J', $value->value());
+        $this->original = $value;
+    }
+
+    public static function fromString(Str $string): Value
+    {
+        $string = $string->toEncoding('ASCII');
+
+        if ($string->length() !== 8) {
+            throw new StringNotOfExpectedLength($string, 8);
+        }
+
+        [, $value] = unpack('J', (string) $string);
+
+        return new self(new Integer($value));
+    }
+
+    public static function cut(Str $string): Str
+    {
+        return $string->toEncoding('ASCII')->substring(0, 8);
+    }
+
+    public function original(): Integer
+    {
+        return $this->original;
     }
 
     public function __toString(): string
     {
         return $this->value;
+    }
+
+    public static function definitionSet(): Set
+    {
+        return self::$definitionSet ?? self::$definitionSet = Range::inclusive(
+            new Integer(0),
+            Infinite::positive()
+        )->intersect(new Integers);
     }
 }

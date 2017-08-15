@@ -8,7 +8,10 @@ use Innmind\AMQP\Transport\Frame\{
     Value\LongString,
     Value
 };
-use Innmind\Immutable\Str;
+use Innmind\Immutable\{
+    Str,
+    StreamInterface
+};
 use PHPUnit\Framework\TestCase;
 
 class SequenceTest extends TestCase
@@ -23,21 +26,57 @@ class SequenceTest extends TestCase
      */
     public function testStringCast($expected, $values)
     {
-        $this->assertSame(
-            $expected,
-            (string) new Sequence(...$values)
-        );
+        $value = new Sequence(...$values);
+        $this->assertSame($expected, (string) $value);
+        $this->assertInstanceOf(StreamInterface::class, $value->original());
+        $this->assertSame(Value::class, (string) $value->original()->type());
+        $this->assertSame($values, $value->original()->toPrimitive());
+    }
+
+    /**
+     * @dataProvider cases
+     */
+    public function testFromString($string, $expected)
+    {
+        $value = Sequence::fromString(new Str($string));
+
+        $this->assertInstanceOf(Sequence::class, $value);
+        $this->assertCount(count($expected), $value->original());
+
+        foreach ($expected as $i => $v) {
+            $this->assertInstanceOf(
+                get_class($v),
+                $value->original()->get($i)
+            );
+            $this->assertSame(
+                (string) $v,
+                (string) $value->original()->get($i)
+            );
+        }
+
+        $this->assertSame($string, (string) $value);
+    }
+
+    /**
+     * @dataProvider cases
+     */
+    public function testCut($string)
+    {
+        $str = Sequence::cut(new Str($string.'foo'));
+
+        $this->assertInstanceOf(Str::class, $str);
+        $this->assertSame($string, (string) $str);
     }
 
     public function cases(): array
     {
         return [
             [
-                pack('N', 7).pack('N', 3).'foo',
+                pack('N', 8).'S'.pack('N', 3).'foo',
                 [new LongString(new Str('foo'))]
             ],
             [
-                pack('N', 18).pack('N', 3).'foo'.pack('N', 7).'🙏bar',
+                pack('N', 20).'S'.pack('N', 3).'fooS'.pack('N', 7).'🙏bar',
                 [
                     new LongString(new Str('foo')),
                     new LongString(new Str('🙏bar')),

@@ -3,15 +3,15 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Exception;
 
+use Innmind\Math\{
+    Algebra\Integer,
+    DefinitionSet\Set
+};
+
 final class OutOfRangeValue extends DomainException
 {
-    public function __construct(int $value, int $lowerBound, int $upperBound)
+    public function __construct(Integer $value, Set $set)
     {
-        parent::__construct(sprintf(
-            'Expected value between %s and %s, got %s',
-            $lowerBound,
-            $upperBound,
-            $value
-        ));
+        parent::__construct(sprintf('%s ∉ %s', $value, $set));
     }
 }

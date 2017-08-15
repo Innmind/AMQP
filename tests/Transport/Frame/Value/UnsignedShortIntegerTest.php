@@ -7,13 +7,18 @@ use Innmind\AMQP\Transport\Frame\{
     Value\UnsignedShortInteger,
     Value
 };
+use Innmind\Math\Algebra\Integer;
+use Innmind\Immutable\Str;
 use PHPUnit\Framework\TestCase;
 
 class UnsignedShortIntegerTest extends TestCase
 {
     public function testInterface()
     {
-        $this->assertInstanceOf(Value::class, new UnsignedShortInteger(0));
+        $this->assertInstanceOf(
+            Value::class,
+            new UnsignedShortInteger(new Integer(0))
+        );
     }
 
     /**
@@ -21,28 +26,60 @@ class UnsignedShortIntegerTest extends TestCase
      */
     public function testStringCast($int, $expected)
     {
-        $this->assertSame(
-            $expected,
-            (string) new UnsignedShortInteger($int)
-        );
+        $value = new UnsignedShortInteger($int = new Integer($int));
+        $this->assertSame($expected, (string) $value);
+        $this->assertSame($int, $value->original());
+    }
+
+    /**
+     * @dataProvider cases
+     */
+    public function testFromString($expected, $string)
+    {
+        $value = UnsignedShortInteger::fromString(new Str($string));
+
+        $this->assertInstanceOf(UnsignedShortInteger::class, $value);
+        $this->assertInstanceOf(Integer::class, $value->original());
+        $this->assertSame($expected, $value->original()->value());
+        $this->assertSame($string, (string) $value);
+    }
+
+    /**
+     * @dataProvider cases
+     */
+    public function testCut($_, $string)
+    {
+        $str = UnsignedShortInteger::cut(new Str($string.'foo'));
+
+        $this->assertInstanceOf(Str::class, $str);
+        $this->assertSame($string, (string) $str);
     }
 
     /**
      * @expectedException Innmind\AMQP\Exception\OutOfRangeValue
-     * @expectedExceptionMessage Expected value between 0 and 65535, got 65536
+     * @expectedExceptionMessage 65536 ∉ [0;65535]∩ℤ
      */
     public function testThrowWhenIntegerTooHigh()
     {
-        new UnsignedShortInteger(65536);
+        new UnsignedShortInteger(new Integer(65536));
     }
 
     /**
      * @expectedException Innmind\AMQP\Exception\OutOfRangeValue
-     * @expectedExceptionMessage Expected value between 0 and 65535, got -1
+     * @expectedExceptionMessage -1 ∉ [0;65535]∩ℤ
      */
     public function testThrowWhenIntegerTooLow()
     {
-        new UnsignedShortInteger(-1);
+        new UnsignedShortInteger(new Integer(-1));
+    }
+
+    /**
+     * @expectedException Innmind\AMQP\Exception\StringNotOfExpectedLength
+     * @expectedExceptionMessage String "foo" is expected of being 2 characters, got 3
+     */
+    public function testThrowWhenStringNotOfExpectedLength()
+    {
+        UnsignedShortInteger::fromString(new Str('foo'));
     }
 
     public function cases(): array
