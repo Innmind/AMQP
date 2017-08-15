@@ -3,10 +3,7 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport\Frame\Visitor;
 
-use Innmind\AMQP\{
-    Transport\Frame\Value,
-    Exception\ArgumentsRemainUnparsed
-};
+use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\Immutable\{
     Str,
     StreamInterface,
@@ -34,10 +31,6 @@ final class Arguments
             $argument = [$type, 'cut']($arguments);
             $stream = $stream->add([$type, 'fromString']($argument));
             $arguments = $arguments->substring($argument->length());
-        }
-
-        if ($arguments->length() !== 0) {
-            throw new ArgumentsRemainUnparsed((string) $arguments);
         }
 
         return $stream;
