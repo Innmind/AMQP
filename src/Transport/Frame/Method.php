@@ -29,4 +29,9 @@ final class Method
     {
         return $this->method;
     }
+
+    public function equals(self $method): bool
+    {
+        return $this->class === $method->class && $this->method === $method->method;
+    }
 }
