@@ -12,6 +12,7 @@ use Innmind\AMQP\Transport\Frame\{
     Value\UnsignedShortInteger,
     Value\UnsignedLongInteger
 };
+use Innmind\Math\Algebra\Integer;
 use Innmind\Immutable\{
     Sequence,
     Stream,
@@ -38,15 +39,15 @@ final class Frame
         $values = new Sequence(...$values);
         $payload = $values->join('')->toEncoding('ASCII');
         $frame = new Sequence(
-            new UnsignedOctet($type->toInt()),
-            new UnsignedShortInteger($channel->toInt()),
+            new UnsignedOctet(new Integer($type->toInt())),
+            new UnsignedShortInteger(new Integer($channel->toInt())),
             new UnsignedLongInteger(
-                $payload->length() + 4 // 4 is the size for the method
+                new Integer($payload->length() + 4) // 4 is the size for the method
             ),
-            new UnsignedShortInteger($method->class()),
-            new UnsignedShortInteger($method->method()),
+            new UnsignedShortInteger(new Integer($method->class())),
+            new UnsignedShortInteger(new Integer($method->method())),
             $payload,
-            new UnsignedOctet(0xCE)
+            new UnsignedOctet(new Integer(0xCE))
         );
         $this->values = $values->reduce(
             new Stream(Value::class),
