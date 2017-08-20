@@ -5,7 +5,7 @@ namespace Innmind\AMQP\Transport\Protocol\v091\Reader;
 
 use Innmind\AMQP\{
     Transport\Frame\Method,
-    Transport\Frame\Visitor\Arguments,
+    Transport\Frame\Visitor\ChunkArguments,
     Transport\Frame\Value\LongString,
     Transport\Frame\Value\ShortString,
     Transport\Frame\Value\Table,
@@ -29,39 +29,39 @@ final class Connection
     {
         switch (true) {
             case Methods::get('connection.start')->equals($method):
-                $visit = $this->start();
+                $chunk = $this->start();
                 break;
 
             case Methods::get('connection.secure')->equals($method):
-                $visit = $this->secure();
+                $chunk = $this->secure();
                 break;
 
             case Methods::get('connection.tune')->equals($method):
-                $visit = $this->tune();
+                $chunk = $this->tune();
                 break;
 
             case Methods::get('connection.open-ok')->equals($method):
-                $visit = $this->openOk();
+                $chunk = $this->openOk();
                 break;
 
             case Methods::get('connection.close')->equals($method):
-                $visit = $this->close();
+                $chunk = $this->close();
                 break;
 
             case Methods::get('connection.close-ok')->equals($method):
-                $visit = $this->closeOk();
+                $chunk = $this->closeOk();
                 break;
 
             default:
                 throw new UnknownMethod($method);
         }
 
-        return $visit($arguments);
+        return $chunk($arguments);
     }
 
-    private function start(): Arguments
+    private function start(): ChunkArguments
     {
-        return new Arguments(
+        return new ChunkArguments(
             UnsignedOctet::class, //major version
             UnsignedOctet::class, //minor version
             Table::class, //server properties
@@ -70,32 +70,32 @@ final class Connection
         );
     }
 
-    private function secure(): Arguments
+    private function secure(): ChunkArguments
     {
-        return new Arguments(
+        return new ChunkArguments(
             LongString::class //challenge
         );
     }
 
-    private function tune(): Arguments
+    private function tune(): ChunkArguments
     {
-        return new Arguments(
+        return new ChunkArguments(
             UnsignedShortInteger::class, //max channels
             UnsignedLongInteger::class, //max frame size
             UnsignedShortInteger::class //heartbeat delay
         );
     }
 
-    private function openOk(): Arguments
+    private function openOk(): ChunkArguments
     {
-        return new Arguments(
+        return new ChunkArguments(
             ShortString::class //known hosts
         );
     }
 
-    private function close(): Arguments
+    private function close(): ChunkArguments
     {
-        return new Arguments(
+        return new ChunkArguments(
             UnsignedShortInteger::class, //reply code
             ShortString::class, //reply text
             UnsignedShortInteger::class, //failing class id
@@ -103,8 +103,8 @@ final class Connection
         );
     }
 
-    private function closeOk(): Arguments
+    private function closeOk(): ChunkArguments
     {
-        return new Arguments; // no arguments
+        return new ChunkArguments; // no arguments
     }
 }

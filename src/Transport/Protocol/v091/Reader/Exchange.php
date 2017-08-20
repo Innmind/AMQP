@@ -5,7 +5,7 @@ namespace Innmind\AMQP\Transport\Protocol\v091\Reader;
 
 use Innmind\AMQP\{
     Transport\Frame\Method,
-    Transport\Frame\Visitor\Arguments,
+    Transport\Frame\Visitor\ChunkArguments,
     Transport\Protocol\v091\Methods,
     Exception\UnknownMethod
 };
@@ -23,27 +23,27 @@ final class Exchange
     {
         switch (true) {
             case Methods::get('exchange.declare-ok')->equals($method):
-                $visit = $this->declareOk();
+                $chunk = $this->declareOk();
                 break;
 
             case Methods::get('exchange.delete-ok')->equals($method):
-                $visit = $this->deleteOk();
+                $chunk = $this->deleteOk();
                 break;
 
             default:
                 throw new UnknownMethod($method);
         }
 
-        return $visit($arguments);
+        return $chunk($arguments);
     }
 
-    private function declareOk(): Arguments
+    private function declareOk(): ChunkArguments
     {
-        return new Arguments; //no arguments
+        return new ChunkArguments; //no arguments
     }
 
-    private function deleteOk(): Arguments
+    private function deleteOk(): ChunkArguments
     {
-        return new Arguments; //no arguments
+        return new ChunkArguments; //no arguments
     }
 }

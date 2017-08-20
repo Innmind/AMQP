@@ -5,7 +5,7 @@ namespace Innmind\AMQP\Transport\Protocol\v091\Reader;
 
 use Innmind\AMQP\{
     Transport\Frame\Method,
-    Transport\Frame\Visitor\Arguments,
+    Transport\Frame\Visitor\ChunkArguments,
     Transport\Protocol\v091\Methods,
     Exception\UnknownMethod
 };
@@ -23,36 +23,36 @@ final class Transaction
     {
         switch (true) {
             case Methods::get('tx.select-ok')->equals($method):
-                $visit = $this->selectOk();
+                $chunk = $this->selectOk();
                 break;
 
             case Methods::get('tx.commit-ok')->equals($method):
-                $visit = $this->commitOk();
+                $chunk = $this->commitOk();
                 break;
 
             case Methods::get('tx.rollback-ok')->equals($method):
-                $visit = $this->rollbackOk();
+                $chunk = $this->rollbackOk();
                 break;
 
             default:
                 throw new UnknownMethod($method);
         }
 
-        return $visit($arguments);
+        return $chunk($arguments);
     }
 
-    private function selectOk(): Arguments
+    private function selectOk(): ChunkArguments
     {
-        return new Arguments; //no arguments
+        return new ChunkArguments; //no arguments
     }
 
-    private function commitOk(): Arguments
+    private function commitOk(): ChunkArguments
     {
-        return new Arguments; //no arguments
+        return new ChunkArguments; //no arguments
     }
 
-    private function rollbackOk(): Arguments
+    private function rollbackOk(): ChunkArguments
     {
-        return new Arguments; //no arguments
+        return new ChunkArguments; //no arguments
     }
 }

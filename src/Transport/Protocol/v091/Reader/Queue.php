@@ -5,7 +5,7 @@ namespace Innmind\AMQP\Transport\Protocol\v091\Reader;
 
 use Innmind\AMQP\{
     Transport\Frame\Method,
-    Transport\Frame\Visitor\Arguments,
+    Transport\Frame\Visitor\ChunkArguments,
     Transport\Frame\Value\ShortString,
     Transport\Frame\Value\UnsignedLongInteger,
     Transport\Protocol\v091\Methods,
@@ -25,61 +25,61 @@ final class Queue
     {
         switch (true) {
             case Methods::get('queue.declare-ok')->equals($method):
-                $visit = $this->declareOk();
+                $chunk = $this->declareOk();
                 break;
 
             case Methods::get('queue.bind-ok')->equals($method):
-                $visit = $this->bindOk();
+                $chunk = $this->bindOk();
                 break;
 
             case Methods::get('queue.unbind-ok')->equals($method):
-                $visit = $this->unbindOk();
+                $chunk = $this->unbindOk();
                 break;
 
             case Methods::get('queue.purge-ok')->equals($method):
-                $visit = $this->purgeOk();
+                $chunk = $this->purgeOk();
                 break;
 
             case Methods::get('queue.delete-ok')->equals($method):
-                $visit = $this->deleteOk();
+                $chunk = $this->deleteOk();
                 break;
 
             default:
                 throw new UnknownMethod($method);
         }
 
-        return $visit($arguments);
+        return $chunk($arguments);
     }
 
-    private function declareOk(): Arguments
+    private function declareOk(): ChunkArguments
     {
-        return new Arguments(
+        return new ChunkArguments(
             ShortString::class, //queue
             UnsignedLongInteger::class, //message count
             UnsignedLongInteger::class //consumer count
         );
     }
 
-    private function bindOk(): Arguments
+    private function bindOk(): ChunkArguments
     {
-        return new Arguments; //no arguments
+        return new ChunkArguments; //no arguments
     }
 
-    private function unbindOk(): Arguments
+    private function unbindOk(): ChunkArguments
     {
-        return new Arguments; //no arguments
+        return new ChunkArguments; //no arguments
     }
 
-    private function purgeOk(): Arguments
+    private function purgeOk(): ChunkArguments
     {
-        return new Arguments(
+        return new ChunkArguments(
             UnsignedLongInteger::class //message count
         );
     }
 
-    private function deleteOk(): Arguments
+    private function deleteOk(): ChunkArguments
     {
-        return new Arguments(
+        return new ChunkArguments(
             UnsignedLongInteger::class //message count
         );
     }

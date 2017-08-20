@@ -4,7 +4,7 @@ declare(strict_types = 1);
 namespace Tests\Innmind\AMQP\Transport\Frame\Visitor;
 
 use Innmind\AMQP\Transport\Frame\{
-    Visitor\Arguments,
+    Visitor\ChunkArguments,
     Value,
     Value\Bits,
     Value\LongString
@@ -15,11 +15,11 @@ use Innmind\Immutable\{
 };
 use PHPUnit\Framework\TestCase;
 
-class ArgumentsTest extends TestCase
+class ChunkArgumentsTest extends TestCase
 {
     public function testInvokation()
     {
-        $visit = new Arguments(
+        $visit = new ChunkArguments(
             Bits::class,
             LongString::class
         );

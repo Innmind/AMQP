@@ -10,7 +10,7 @@ use Innmind\Immutable\{
     Stream
 };
 
-final class Arguments
+final class ChunkArguments
 {
     private $types;
 

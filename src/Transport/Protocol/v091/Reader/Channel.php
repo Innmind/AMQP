@@ -5,7 +5,7 @@ namespace Innmind\AMQP\Transport\Protocol\v091\Reader;
 
 use Innmind\AMQP\{
     Transport\Frame\Method,
-    Transport\Frame\Visitor\Arguments,
+    Transport\Frame\Visitor\ChunkArguments,
     Transport\Frame\Value\Bits,
     Transport\Frame\Value\ShortString,
     Transport\Frame\Value\UnsignedShortInteger,
@@ -26,55 +26,55 @@ final class Channel
     {
         switch (true) {
             case Methods::get('channel.open-ok')->equals($method):
-                $visit = $this->openOk();
+                $chunk = $this->openOk();
                 break;
 
             case Methods::get('channel.flow')->equals($method):
-                $visit = $this->flow();
+                $chunk = $this->flow();
                 break;
 
             case Methods::get('channel.flow-ok')->equals($method):
-                $visit = $this->flowOk();
+                $chunk = $this->flowOk();
                 break;
 
 
             case Methods::get('channel.close')->equals($method):
-                $visit = $this->close();
+                $chunk = $this->close();
                 break;
 
             case Methods::get('channel.close-ok')->equals($method):
-                $visit = $this->closeOk();
+                $chunk = $this->closeOk();
                 break;
 
             default:
                 throw new UnknownMethod($method);
         }
 
-        return $visit($arguments);
+        return $chunk($arguments);
     }
 
-    private function openOk(): Arguments
+    private function openOk(): ChunkArguments
     {
-        return new Arguments; //no arguments
+        return new ChunkArguments; //no arguments
     }
 
-    private function flow(): Arguments
+    private function flow(): ChunkArguments
     {
-        return new Arguments(
+        return new ChunkArguments(
             Bits::class //active
         );
     }
 
-    private function flowOk(): Arguments
+    private function flowOk(): ChunkArguments
     {
-        return new Arguments(
+        return new ChunkArguments(
             Bits::class //active
         );
     }
 
-    private function close(): Arguments
+    private function close(): ChunkArguments
     {
-        return new Arguments(
+        return new ChunkArguments(
             UnsignedShortInteger::class, //reply code
             ShortString::class, //reply text
             UnsignedShortInteger::class, //failing class id
@@ -82,8 +82,8 @@ final class Channel
         );
     }
 
-    private function closeOk(): Arguments
+    private function closeOk(): ChunkArguments
     {
-        return new Arguments; // no arguments
+        return new ChunkArguments; // no arguments
     }
 }

@@ -5,7 +5,7 @@ namespace Innmind\AMQP\Transport\Protocol\v091\Reader;
 
 use Innmind\AMQP\{
     Transport\Frame\Method,
-    Transport\Frame\Visitor\Arguments,
+    Transport\Frame\Visitor\ChunkArguments,
     Transport\Frame\Value\Bits,
     Transport\Frame\Value\ShortString,
     Transport\Frame\Value\UnsignedLongInteger,
@@ -28,66 +28,66 @@ final class Basic
     {
         switch (true) {
             case Methods::get('basic.qos-ok')->equals($method):
-                $visit = $this->qosOk();
+                $chunk = $this->qosOk();
                 break;
 
             case Methods::get('basic.consume-ok')->equals($method):
-                $visit = $this->consumeOk();
+                $chunk = $this->consumeOk();
                 break;
 
             case Methods::get('basic.cancel-ok')->equals($method):
-                $visit = $this->cancelOk();
+                $chunk = $this->cancelOk();
                 break;
 
             case Methods::get('basic.return')->equals($method):
-                $visit = $this->return();
+                $chunk = $this->return();
                 break;
 
             case Methods::get('basic.deliver')->equals($method):
-                $visit = $this->deliver();
+                $chunk = $this->deliver();
                 break;
 
             case Methods::get('basic.get-ok')->equals($method):
-                $visit = $this->getOk();
+                $chunk = $this->getOk();
                 break;
 
             case Methods::get('basic.get-empty')->equals($method):
-                $visit = $this->getEmpty();
+                $chunk = $this->getEmpty();
                 break;
 
             case Methods::get('basic.recover-ok')->equals($method):
-                $visit = $this->recoverOk();
+                $chunk = $this->recoverOk();
                 break;
 
             default:
                 throw new UnknownMethod($method);
         }
 
-        return $visit($arguments);
+        return $chunk($arguments);
     }
 
-    private function qosOk(): Arguments
+    private function qosOk(): ChunkArguments
     {
-        return new Arguments; //no arguments
+        return new ChunkArguments; //no arguments
     }
 
-    private function consumeOk(): Arguments
+    private function consumeOk(): ChunkArguments
     {
-        return new Arguments(
+        return new ChunkArguments(
             ShortString::class //consumer tag
         );
     }
 
-    private function cancelOk(): Arguments
+    private function cancelOk(): ChunkArguments
     {
-        return new Arguments(
+        return new ChunkArguments(
             ShortString::class //consumer tag
         );
     }
 
-    private function return(): Arguments
+    private function return(): ChunkArguments
     {
-        return new Arguments(
+        return new ChunkArguments(
             UnsignedShortInteger::class, //reply code
             ShortString::class, //reply text
             ShortString::class, //exchange
@@ -95,9 +95,9 @@ final class Basic
         );
     }
 
-    private function deliver(): Arguments
+    private function deliver(): ChunkArguments
     {
-        return new Arguments(
+        return new ChunkArguments(
             ShortString::class, //consumer tag
             UnsignedLongLongInteger::class, //delivery tag
             Bits::class, //redelivered
@@ -106,9 +106,9 @@ final class Basic
         );
     }
 
-    private function getOk(): Arguments
+    private function getOk(): ChunkArguments
     {
-        return new Arguments(
+        return new ChunkArguments(
             UnsignedLongLongInteger::class, //delivery tag
             Bits::class, //redelivered
             ShortString::class, //exchange
@@ -117,13 +117,13 @@ final class Basic
         );
     }
 
-    private function getEmpty(): Arguments
+    private function getEmpty(): ChunkArguments
     {
-        return new Arguments; //no arguments
+        return new ChunkArguments; //no arguments
     }
 
-    private function recoverOk(): Arguments
+    private function recoverOk(): ChunkArguments
     {
-        return new Arguments; //no arguments
+        return new ChunkArguments; //no arguments
     }
 }
