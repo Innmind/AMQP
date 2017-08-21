@@ -7,6 +7,7 @@ use Innmind\AMQP\Transport\{
     Protocol as ProtocolInterface,
     Protocol\Version,
     Protocol\Connection as ConnectionInterface,
+    Protocol\Channel as ChannelInterface,
     Protocol\Exchange as ExchangeInterface,
     Protocol\Queue as QueueInterface,
     Protocol\Basic as BasicInterface,
@@ -23,6 +24,7 @@ final class Protocol implements ProtocolInterface
     private $version;
     private $read;
     private $connection;
+    private $channel;
     private $exchange;
     private $queue;
     private $basic;
@@ -33,6 +35,7 @@ final class Protocol implements ProtocolInterface
         $this->version = new Version(0, 9, 1);
         $this->read = new Reader;
         $this->connection = new Connection;
+        $this->channel = new Channel;
         $this->exchange = new Exchange;
         $this->queue = new Queue;
         $this->basic = new Basic;
@@ -55,6 +58,11 @@ final class Protocol implements ProtocolInterface
     public function connection(): ConnectionInterface
     {
         return $this->connection;
+    }
+
+    public function channel(): ChannelInterface
+    {
+        return $this->channel;
     }
 
     public function exchange(): ExchangeInterface
