@@ -29,9 +29,13 @@ class TypeTest extends TestCase
     }
 
     /**
-     * @expectedException Innminq\AMQP\Exception\UnknownFrameType
+     * @expectedException Innmind\AMQP\Exception\UnknownFrameType
      * @expectedExceptionMessage 4
      */
+    public function testThrowWhenUnknownType()
+    {
+        Type::fromInt(4);
+    }
 
     public function cases(): array
     {
