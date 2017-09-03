@@ -5,7 +5,8 @@ namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\{
     Transport\Frame\Value,
-    Exception\OutOfRangeValue
+    Exception\OutOfRangeValue,
+    Exception\StringNotOfExpectedLength
 };
 use Innmind\Math\{
     Algebra\Integer,

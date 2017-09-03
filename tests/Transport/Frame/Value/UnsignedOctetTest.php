@@ -72,6 +72,14 @@ class UnsignedOctetTest extends TestCase
         new UnsignedOctet(new Integer(-1));
     }
 
+    /**
+     * @expectedException Innmind\AMQP\Exception\StringNotOfExpectedLength
+     */
+    public function testThrowWhenStringNotOfExpectedLength()
+    {
+        UnsignedOctet::fromString(new Str('foo'));
+    }
+
     public function cases(): array
     {
         return [
