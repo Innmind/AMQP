@@ -19,7 +19,9 @@ use Innmind\AMQP\{
     Model\Connection\SecureOk,
     Model\Connection\TuneOk,
     Model\Connection\Open,
-    Model\Connection\Close
+    Model\Connection\Close,
+    Model\Connection\MaxChannels,
+    Model\Connection\MaxFrameSize
 };
 use Innmind\TimeContinuum\ElapsedPeriod;
 use Innmind\Url\{
@@ -167,8 +169,8 @@ class ConnectionTest extends TestCase
     {
         $frame = (new Connection)->tuneOk(
             new TuneOk(
-                1,
-                2,
+                new MaxChannels(1),
+                new MaxFrameSize(2),
                 new ElapsedPeriod(3000)
             )
         );
