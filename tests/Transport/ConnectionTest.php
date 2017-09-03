@@ -51,6 +51,20 @@ class ConnectionTest extends TestCase
         unset($connection); //test it closes without exception
     }
 
+    public function testClose()
+    {
+        $connection = new Connection(
+            Transport::tcp(),
+            Url::fromString('//guest:guest@localhost:5672/'),
+            $protocol = new Protocol,
+            new ElapsedPeriod(1000)
+        );
+
+        $this->assertTrue($connection->opened());
+        $this->assertNull($connection->close());
+        $this->assertFalse($connection->opened());
+    }
+
     /**
      * @expectedException Innmind\AMQP\Exception\UnexpectedFrame
      */

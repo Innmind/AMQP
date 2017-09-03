@@ -111,6 +111,24 @@ final class Connection
         throw new UnexpectedFrame($frame->method(), ...$names);
     }
 
+    public function close(): void
+    {
+        if (!$this->opened()) {
+            return;
+        }
+
+        $this
+            ->send($this->protocol->connection()->close(new Close))
+            ->wait('connection.close-ok');
+        $this->socket->close();
+        $this->opened = false;
+    }
+
+    public function opened(): bool
+    {
+        return $this->opened && !$this->socket->closed();
+    }
+
     public function __destruct()
     {
         $this->close();
@@ -136,24 +154,6 @@ final class Connection
         $this->openVHost();
 
         $this->opened = true;
-    }
-
-    private function close(): void
-    {
-        if (!$this->opened()) {
-            return;
-        }
-
-        $this
-            ->send($this->protocol->connection()->close(new Close))
-            ->wait('connection.close-ok');
-        $this->socket->close();
-        $this->opened = false;
-    }
-
-    private function opened(): bool
-    {
-        return $this->opened && !$this->socket->closed();
     }
 
     private function start(): void
