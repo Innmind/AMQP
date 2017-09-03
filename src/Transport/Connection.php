@@ -6,6 +6,7 @@ namespace Innmind\AMQP\Transport;
 use Innmind\AMQP\{
     Transport\Connection\FrameReader,
     Transport\Protocol\Version,
+    Transport\Frame\Value\UnsignedOctet,
     Model\Connection\StartOk,
     Model\Connection\SecureOk,
     Model\Connection\TuneOk,
@@ -15,7 +16,8 @@ use Innmind\AMQP\{
     Model\Connection\MaxFrameSize,
     Exception\FrameChannelExceedAllowedChannelNumber,
     Exception\FrameExceedAllowedSize,
-    Exception\UnexpectedFrame
+    Exception\UnexpectedFrame,
+    Exception\NoFrameDetected
 };
 use Innmind\Socket\{
     Internet\Transport,
@@ -36,6 +38,7 @@ final class Connection
     private $vhost;
     private $protocol;
     private $socket;
+    private $timeout;
     private $select;
     private $read;
     private $opened = false;
@@ -53,11 +56,8 @@ final class Connection
         $this->authority = $server->authority();
         $this->vhost = $server->path();
         $this->protocol = $protocol;
-        $this->socket = new Socket(
-            $transport,
-            $this->authority->withUserInformation(new NullUserInformation)
-        );
-        $this->select = (new Select($timeout))->forRead($this->socket);
+        $this->timeout = $timeout;
+        $this->buildSocket();
         $this->read = new FrameReader;
         $this->maxChannels = new MaxChannels(0);
         $this->maxFrameSize = new MaxFrameSize(0);
@@ -116,6 +116,15 @@ final class Connection
         $this->close();
     }
 
+    private function buildSocket(): void
+    {
+        $this->socket = new Socket(
+            $this->transport,
+            $this->authority->withUserInformation(new NullUserInformation)
+        );
+        $this->select = (new Select($this->timeout))->forRead($this->socket);
+    }
+
     private function open(): void
     {
         if ($this->opened()) {
@@ -153,14 +162,35 @@ final class Connection
             new Str((string) $this->protocol->version())
         );
 
-        $frame = $this->wait('connection.start');
-        $this->protocol->use(
-            new Version(
-                $frame->values()->get(0)->original()->value(),
-                $frame->values()->get(1)->original()->value(),
-                0 //server doesn't provide bugfix version
-            )
-        );
+        try {
+            $frame = $this->wait('connection.start');
+        } catch (NoFrameDetected $e) {
+            $content = $e->content()->toEncoding('ASCII');
+
+            if (
+                $content->length() !== 8 ||
+                !$content->matches('/^AMQP/')
+            ) {
+                throw $e;
+            }
+
+            $version = $content
+                ->substring(5, 8)
+                ->chunk();
+            $this->protocol->use(
+                new Version(
+                    UnsignedOctet::fromString($version->get(0))->original()->value(),
+                    UnsignedOctet::fromString($version->get(1))->original()->value(),
+                    UnsignedOctet::fromString($version->get(2))->original()->value()
+                )
+            );
+            //socket rebuilt as the server close the connection on version mismatch
+            $this->buildSocket();
+            $this->start();
+
+            return;
+        }
+
         $this->send($this->protocol->connection()->startOk(
             new StartOk(
                 $this->authority->userInformation()->user(),
