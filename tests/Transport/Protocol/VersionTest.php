@@ -43,4 +43,18 @@ class VersionTest extends TestCase
         $this->assertFalse((new Version(0, 9, 1))->higherThan(new Version(0, 9, 1)));
         $this->assertFalse((new Version(0, 9, 1))->higherThan(new Version(1, 0, 0)));
     }
+
+    public function testCompatbleWith()
+    {
+        $this->assertTrue((new Version(0, 9, 0))->compatibleWith(new Version(0, 9, 0)));
+        $this->assertTrue((new Version(0, 9, 1))->compatibleWith(new Version(0, 9, 0)));
+        $this->assertTrue((new Version(0, 9, 1))->compatibleWith(new Version(0, 9, 1)));
+        $this->assertTrue((new Version(0, 9, 1))->compatibleWith(new Version(0, 9, 2)));
+        $this->assertTrue((new Version(1, 0, 0))->compatibleWith(new Version(1, 0, 0)));
+        $this->assertTrue((new Version(1, 1, 0))->compatibleWith(new Version(1, 0, 0)));
+        $this->assertFalse((new Version(0, 8, 0))->compatibleWith(new Version(0, 9, 0)));
+        $this->assertFalse((new Version(0, 8, 0))->compatibleWith(new Version(1, 0, 0)));
+        $this->assertFalse((new Version(1, 0, 0))->compatibleWith(new Version(1, 1, 0)));
+        $this->assertFalse((new Version(1, 0, 0))->compatibleWith(new Version(2, 0, 0)));
+    }
 }

@@ -35,6 +35,19 @@ final class Version
         return $this->fix > $version->fix;
     }
 
+    public function compatibleWith(self $version): bool
+    {
+        if ($this->major === 0 && $version->major === 0) {
+            return $this->minor === $version->minor;
+        }
+
+        if ($this->major !== $version->major) {
+            return false;
+        }
+
+        return $this->minor >= $version->minor;
+    }
+
     public function __toString(): string
     {
         return sprintf(
