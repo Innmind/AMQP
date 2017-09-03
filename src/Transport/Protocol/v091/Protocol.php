@@ -55,6 +55,11 @@ final class Protocol implements ProtocolInterface
         return ($this->read)($method, $arguments);
     }
 
+    public function method(string $name): Method
+    {
+        return Methods::get($name);
+    }
+
     public function connection(): ConnectionInterface
     {
         return $this->connection;

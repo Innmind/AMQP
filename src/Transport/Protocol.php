@@ -26,6 +26,7 @@ interface Protocol
      * @return StreamInterface<Value>
      */
     public function read(Method $method, Str $arguments): StreamInterface;
+    public function method(string $name): Method;
     public function connection(): Connection;
     public function channel(): Channel;
     public function exchange(): Exchange;
