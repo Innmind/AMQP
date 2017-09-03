@@ -3,17 +3,18 @@ declare(strict_types = 1);
 
 namespace Tests\Innmind\AMQP\Transport\Connection;
 
-use Innmind\AMQP\Transport\{
-    Connection\FrameReader,
-    Frame,
-    Frame\Type,
-    Frame\Channel,
-    Frame\Method,
-    Frame\Value,
-    Frame\Value\UnsignedOctet,
-    Frame\Value\Table,
-    Frame\Value\LongString,
-    Protocol\v091\Protocol
+use Innmind\AMQP\{
+    Transport\Connection\FrameReader,
+    Transport\Frame,
+    Transport\Frame\Type,
+    Transport\Frame\Channel,
+    Transport\Frame\Method,
+    Transport\Frame\Value,
+    Transport\Frame\Value\UnsignedOctet,
+    Transport\Frame\Value\Table,
+    Transport\Frame\Value\LongString,
+    Transport\Protocol\v091\Protocol,
+    Exception\NoFrameDetected
 };
 use Innmind\Stream\Readable\Stream;
 use Innmind\Math\Algebra\Integer;
@@ -123,5 +124,21 @@ class FrameReaderTest extends TestCase
         $stream = new Stream($file);
 
         $read($stream, new Protocol);
+    }
+
+    public function testThrowWhenNoFrameDeteted()
+    {
+        $file = tmpfile();
+        fwrite($file, $content = "AMQP\x00\x00\x09\x01");
+        fseek($file, 0);
+        $stream = new Stream($file);
+
+        try {
+            (new FrameReader)($stream, new Protocol);
+            $this->fail('it should throw an exception');
+        } catch (NoFrameDetected $e) {
+            $this->assertInstanceOf(Str::class, $e->content());
+            $this->assertSame($content, (string) $e->content());
+        }
     }
 }

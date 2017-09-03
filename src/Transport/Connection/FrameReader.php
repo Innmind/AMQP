@@ -13,7 +13,9 @@ use Innmind\AMQP\{
     Transport\Frame\Value\UnsignedShortInteger,
     Transport\Frame\Value\UnsignedLongInteger,
     Exception\ReceivedFrameNotDelimitedCorrectly,
-    Exception\PayloadTooShort
+    Exception\PayloadTooShort,
+    Exception\UnknownFrameType,
+    Exception\NoFrameDetected
 };
 use Innmind\Stream\Readable;
 
@@ -21,9 +23,16 @@ final class FrameReader
 {
     public function __invoke(Readable $stream, Protocol $protocol): Frame
     {
-        $type = Type::fromInt(
-            UnsignedOctet::fromString($stream->read(1))->original()->value()
-        );
+        $octet = $stream->read(1);
+
+        try {
+            $type = Type::fromInt(
+                UnsignedOctet::fromString($octet)->original()->value()
+            );
+        } catch (UnknownFrameType $e) {
+            throw new NoFrameDetected($octet->append((string) $stream->read()));
+        }
+
         $channel = new Channel(
             UnsignedShortInteger::fromString($stream->read(2))->original()->value()
         );
