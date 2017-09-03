@@ -45,6 +45,32 @@ class ProtocolTest extends TestCase
         $this->assertTrue($protocol->method($name)->equals(new Method($class, $method)));
     }
 
+    public function testUse()
+    {
+        $protocol = new Protocol;
+
+        $this->assertSame($protocol, $protocol->use(new Version(0, 9, 0)));
+        $this->assertSame($protocol, $protocol->use(new Version(0, 9, 1)));
+    }
+
+    /**
+     * @expectedException Innmind\AMQP\Exception\VersionNotUsable
+     * @expectedExceptionMessage 1.0.0
+     */
+    public function testThrowWhenUsingHigherVersion()
+    {
+        (new Protocol)->use(new Version(1, 0, 0));
+    }
+
+    /**
+     * @expectedException Innmind\AMQP\Exception\VersionNotUsable
+     * @expectedExceptionMessage 0.8.0
+     */
+    public function testThrowWhenUsingLowerVersion()
+    {
+        (new Protocol)->use(new Version(0, 8, 0));
+    }
+
     public function methods(): array
     {
         return [

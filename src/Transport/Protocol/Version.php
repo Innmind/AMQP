@@ -22,6 +22,21 @@ final class Version
         $this->fix = $fix;
     }
 
+    public function major(): int
+    {
+        return $this->major;
+    }
+
+    public function minor(): int
+    {
+        return $this->minor;
+    }
+
+    public function fix(): int
+    {
+        return $this->fix;
+    }
+
     public function higherThan(self $version): bool
     {
         if ($this->major !== $version->major) {

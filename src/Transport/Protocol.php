@@ -21,6 +21,7 @@ use Innmind\Immutable\{
 interface Protocol
 {
     public function version(): Version;
+    public function use(Version $version): self;
 
     /**
      * @return StreamInterface<Value>

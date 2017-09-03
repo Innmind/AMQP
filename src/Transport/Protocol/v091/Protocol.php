@@ -3,16 +3,17 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport\Protocol\v091;
 
-use Innmind\AMQP\Transport\{
-    Protocol as ProtocolInterface,
-    Protocol\Version,
-    Protocol\Connection as ConnectionInterface,
-    Protocol\Channel as ChannelInterface,
-    Protocol\Exchange as ExchangeInterface,
-    Protocol\Queue as QueueInterface,
-    Protocol\Basic as BasicInterface,
-    Protocol\Transaction as TransactionInterface,
-    Frame\Method
+use Innmind\AMQP\{
+    Transport\Protocol as ProtocolInterface,
+    Transport\Protocol\Version,
+    Transport\Protocol\Connection as ConnectionInterface,
+    Transport\Protocol\Channel as ChannelInterface,
+    Transport\Protocol\Exchange as ExchangeInterface,
+    Transport\Protocol\Queue as QueueInterface,
+    Transport\Protocol\Basic as BasicInterface,
+    Transport\Protocol\Transaction as TransactionInterface,
+    Transport\Frame\Method,
+    Exception\VersionNotUsable
 };
 use Innmind\Immutable\{
     Str,
@@ -45,6 +46,15 @@ final class Protocol implements ProtocolInterface
     public function version(): Version
     {
         return $this->version;
+    }
+
+    public function use(Version $version): ProtocolInterface
+    {
+        if (!$version->compatibleWith($this->version)) {
+            throw new VersionNotUsable($version);
+        }
+
+        return $this;
     }
 
     /**
