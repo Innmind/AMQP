@@ -41,11 +41,13 @@ final class Queue implements QueueInterface
             Methods::get('queue.declare'),
             new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
             new ShortString(new Str($name)),
-            new Bits($command->isPassive()),
-            new Bits($command->isDurable()),
-            new Bits($command->isExclusive()),
-            new Bits($command->isAutoDeleted()),
-            new Bits(!$command->shouldWait()),
+            new Bits(
+                $command->isPassive(),
+                $command->isDurable(),
+                $command->isExclusive(),
+                $command->isAutoDeleted(),
+                !$command->shouldWait()
+            ),
             new Table(new Map('string', Value::class)) //todo: use $command->arguments()
         );
     }
@@ -58,9 +60,11 @@ final class Queue implements QueueInterface
             Methods::get('queue.delete'),
             new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
             new ShortString(new Str($command->name())),
-            new Bits($command->onlyIfUnused()),
-            new Bits($command->onlyIfEmpty()),
-            new Bits(!$command->shouldWait())
+            new Bits(
+                $command->onlyIfUnused(),
+                $command->onlyIfEmpty(),
+                !$command->shouldWait()
+            )
         );
     }
 

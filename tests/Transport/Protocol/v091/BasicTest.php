@@ -98,7 +98,7 @@ class BasicTest extends TestCase
         $this->assertSame(Type::method(), $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertTrue($frame->method()->equals(new Method(60, 20)));
-        $this->assertCount(8, $frame->values());
+        $this->assertCount(5, $frame->values());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
             $frame->values()->get(0)
@@ -109,14 +109,11 @@ class BasicTest extends TestCase
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(2));
         $this->assertSame('', (string) $frame->values()->get(2)->original());
         $this->assertInstanceOf(Bits::class, $frame->values()->get(3));
-        $this->assertFalse($frame->values()->get(3)->original()->first());
-        $this->assertInstanceOf(Bits::class, $frame->values()->get(4));
-        $this->assertFalse($frame->values()->get(4)->original()->first());
-        $this->assertInstanceOf(Bits::class, $frame->values()->get(5));
-        $this->assertFalse($frame->values()->get(5)->original()->first());
-        $this->assertInstanceOf(Bits::class, $frame->values()->get(6));
-        $this->assertFalse($frame->values()->get(6)->original()->first());
-        $this->assertInstanceOf(Table::class, $frame->values()->get(7));
+        $this->assertSame(
+            [false, false, false, false],
+            $frame->values()->get(3)->original()->toPrimitive()
+        );
+        $this->assertInstanceOf(Table::class, $frame->values()->get(4));
 
         $frame = (new Basic)->consume(
             $channel = new Channel(1),
@@ -130,28 +127,40 @@ class BasicTest extends TestCase
             (new Consume('queue'))->noLocal()
         );
 
-        $this->assertTrue($frame->values()->get(3)->original()->first());
+        $this->assertSame(
+            [true, false, false, false],
+            $frame->values()->get(3)->original()->toPrimitive()
+        );
 
         $frame = (new Basic)->consume(
             $channel = new Channel(1),
             (new Consume('queue'))->autoAcknowledge()
         );
 
-        $this->assertTrue($frame->values()->get(4)->original()->first());
+        $this->assertSame(
+            [false, true, false, false],
+            $frame->values()->get(3)->original()->toPrimitive()
+        );
 
         $frame = (new Basic)->consume(
             $channel = new Channel(1),
             (new Consume('queue'))->exclusive()
         );
 
-        $this->assertTrue($frame->values()->get(5)->original()->first());
+        $this->assertSame(
+            [false, false, true, false],
+            $frame->values()->get(3)->original()->toPrimitive()
+        );
 
         $frame = (new Basic)->consume(
             $channel = new Channel(1),
             (new Consume('queue'))->dontWait()
         );
 
-        $this->assertTrue($frame->values()->get(6)->original()->first());
+        $this->assertSame(
+            [false, false, false, true],
+            $frame->values()->get(3)->original()->toPrimitive()
+        );
     }
 
     public function testGet()
@@ -195,7 +204,7 @@ class BasicTest extends TestCase
         $this->assertSame(Type::method(), $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertTrue($frame->method()->equals(new Method(60, 40)));
-        $this->assertCount(5, $frame->values());
+        $this->assertCount(4, $frame->values());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
             $frame->values()->get(0)
@@ -206,9 +215,10 @@ class BasicTest extends TestCase
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(2));
         $this->assertSame('', (string) $frame->values()->get(2)->original());
         $this->assertInstanceOf(Bits::class, $frame->values()->get(3));
-        $this->assertFalse($frame->values()->get(3)->original()->first());
-        $this->assertInstanceOf(Bits::class, $frame->values()->get(4));
-        $this->assertFalse($frame->values()->get(4)->original()->first());
+        $this->assertSame(
+            [false, false],
+            $frame->values()->get(3)->original()->toPrimitive()
+        );
 
         $frame = (new Basic)->publish(
             $channel = new Channel(1),
@@ -229,14 +239,20 @@ class BasicTest extends TestCase
             (new Publish)->flagAsMandatory()
         );
 
-        $this->assertTrue($frame->values()->get(3)->original()->first());
+        $this->assertSame(
+            [true, false],
+            $frame->values()->get(3)->original()->toPrimitive()
+        );
 
         $frame = (new Basic)->publish(
             $channel = new Channel(1),
             (new Publish)->flagAsImmediate()
         );
 
-        $this->assertTrue($frame->values()->get(4)->original()->first());
+        $this->assertSame(
+            [false, true],
+            $frame->values()->get(3)->original()->toPrimitive()
+        );
     }
 
     public function testQos()

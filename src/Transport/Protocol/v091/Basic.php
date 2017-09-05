@@ -69,10 +69,12 @@ final class Basic implements BasicInterface
             new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
             new ShortString(new Str($command->queue())),
             new ShortString(new Str($consumerTag)),
-            new Bits(!$command->isLocal()),
-            new Bits($command->shouldAutoAcknowledge()),
-            new Bits($command->isExclusive()),
-            new Bits(!$command->shouldWait()),
+            new Bits(
+                !$command->isLocal(),
+                $command->shouldAutoAcknowledge(),
+                $command->isExclusive(),
+                !$command->shouldWait()
+            ),
             new Table(new Map('string', Value::class)) //todo: use $command->arguments()
         );
     }
@@ -98,8 +100,10 @@ final class Basic implements BasicInterface
             new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
             new ShortString(new Str($command->exchange())),
             new ShortString(new Str($command->routingKey())),
-            new Bits($command->mandatory()),
-            new Bits($command->immediate())
+            new Bits(
+                $command->mandatory(),
+                $command->immediate()
+            )
         );
     }
 

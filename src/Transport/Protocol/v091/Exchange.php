@@ -33,11 +33,13 @@ final class Exchange implements ExchangeInterface
             new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
             new ShortString(new Str($command->name())),
             new ShortString(new Str((string) $command->type())),
-            new Bits($command->isPassive()),
-            new Bits($command->isDurable()),
-            new Bits($command->isAutoDeleted()), //reserved
-            new Bits(false), //internal (reserved)
-            new Bits(!$command->shouldWait()),
+            new Bits(
+                $command->isPassive(),
+                $command->isDurable(),
+                $command->isAutoDeleted(), //reserved
+                false, //internal (reserved)
+                !$command->shouldWait()
+            ),
             new Table(new Map('string', Value::class)) //todo: use $command->arguments()
         );
     }
@@ -50,8 +52,10 @@ final class Exchange implements ExchangeInterface
             Methods::get('exchange.delete'),
             new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
             new ShortString(new Str($command->name())),
-            new Bits($command->onlyIfUnused()),
-            new Bits(!$command->shouldWait())
+            new Bits(
+                $command->onlyIfUnused(),
+                !$command->shouldWait()
+            )
         );
     }
 }

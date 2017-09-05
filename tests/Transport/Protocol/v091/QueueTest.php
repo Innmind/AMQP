@@ -40,7 +40,7 @@ class QueueTest extends TestCase
         $this->assertSame(Type::method(), $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertTrue($frame->method()->equals(new Method(50, 10)));
-        $this->assertCount(8, $frame->values());
+        $this->assertCount(4, $frame->values());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
             $frame->values()->get(0)
@@ -49,16 +49,11 @@ class QueueTest extends TestCase
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(1));
         $this->assertSame('foo', (string) $frame->values()->get(1)->original());
         $this->assertInstanceOf(Bits::class, $frame->values()->get(2));
-        $this->assertTrue($frame->values()->get(2)->original()->first());
-        $this->assertInstanceOf(Bits::class, $frame->values()->get(3));
-        $this->assertFalse($frame->values()->get(3)->original()->first());
-        $this->assertInstanceOf(Bits::class, $frame->values()->get(4));
-        $this->assertFalse($frame->values()->get(4)->original()->first());
-        $this->assertInstanceOf(Bits::class, $frame->values()->get(5));
-        $this->assertFalse($frame->values()->get(5)->original()->first());
-        $this->assertInstanceOf(Bits::class, $frame->values()->get(6));
-        $this->assertFalse($frame->values()->get(6)->original()->first());
-        $this->assertInstanceOf(Table::class, $frame->values()->get(7));
+        $this->assertSame(
+            [true, false, false, false, false],
+            $frame->values()->get(2)->original()->toPrimitive()
+        );
+        $this->assertInstanceOf(Table::class, $frame->values()->get(3));
 
         $frame = (new Queue)->declare(
             $channel = new Channel(1),
@@ -66,8 +61,10 @@ class QueueTest extends TestCase
         );
 
         $this->assertSame('', (string) $frame->values()->get(1)->original());
-        $this->assertFalse($frame->values()->get(2)->original()->first());
-        $this->assertTrue($frame->values()->get(3)->original()->first());
+        $this->assertSame(
+            [false, true, false, false, false],
+            $frame->values()->get(2)->original()->toPrimitive()
+        );
 
         $frame = (new Queue)->declare(
             $channel = new Channel(1),
@@ -75,7 +72,10 @@ class QueueTest extends TestCase
         );
 
         $this->assertSame('', (string) $frame->values()->get(1)->original());
-        $this->assertFalse($frame->values()->get(2)->original()->first());
+        $this->assertSame(
+            [false, false, false, false, false],
+            $frame->values()->get(2)->original()->toPrimitive()
+        );
 
         $frame = (new Queue)->declare(
             $channel = new Channel(1),
@@ -83,7 +83,10 @@ class QueueTest extends TestCase
         );
 
         $this->assertSame('', (string) $frame->values()->get(1)->original());
-        $this->assertTrue($frame->values()->get(5)->original()->first());
+        $this->assertSame(
+            [false, false, false, true, false],
+            $frame->values()->get(2)->original()->toPrimitive()
+        );
 
         $frame = (new Queue)->declare(
             $channel = new Channel(1),
@@ -91,7 +94,10 @@ class QueueTest extends TestCase
         );
 
         $this->assertSame('', (string) $frame->values()->get(1)->original());
-        $this->assertTrue($frame->values()->get(4)->original()->first());
+        $this->assertSame(
+            [false, false, true, true, false],
+            $frame->values()->get(2)->original()->toPrimitive()
+        );
 
         $frame = (new Queue)->declare(
             $channel = new Channel(1),
@@ -99,7 +105,10 @@ class QueueTest extends TestCase
         );
 
         $this->assertSame('', (string) $frame->values()->get(1)->original());
-        $this->assertTrue($frame->values()->get(6)->original()->first());
+        $this->assertSame(
+            [false, false, false, true, true],
+            $frame->values()->get(2)->original()->toPrimitive()
+        );
 
         $frame = (new Queue)->declare(
             $channel = new Channel(1),
@@ -120,7 +129,7 @@ class QueueTest extends TestCase
         $this->assertSame(Type::method(), $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertTrue($frame->method()->equals(new Method(50, 40)));
-        $this->assertCount(5, $frame->values());
+        $this->assertCount(3, $frame->values());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
             $frame->values()->get(0)
@@ -129,32 +138,40 @@ class QueueTest extends TestCase
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(1));
         $this->assertSame('foo', (string) $frame->values()->get(1)->original());
         $this->assertInstanceOf(Bits::class, $frame->values()->get(2));
-        $this->assertFalse($frame->values()->get(2)->original()->first());
-        $this->assertInstanceOf(Bits::class, $frame->values()->get(3));
-        $this->assertFalse($frame->values()->get(3)->original()->first());
-        $this->assertInstanceOf(Bits::class, $frame->values()->get(4));
-        $this->assertFalse($frame->values()->get(4)->original()->first());
+        $this->assertSame(
+            [false, false, false],
+            $frame->values()->get(2)->original()->toPrimitive()
+        );
 
         $frame = (new Queue)->delete(
             $channel = new Channel(1),
             (new Deletion('foo'))->ifUnused()
         );
 
-        $this->assertTrue($frame->values()->get(2)->original()->first());
+        $this->assertSame(
+            [true, false, false],
+            $frame->values()->get(2)->original()->toPrimitive()
+        );
 
         $frame = (new Queue)->delete(
             $channel = new Channel(1),
             (new Deletion('foo'))->ifEmpty()
         );
 
-        $this->assertTrue($frame->values()->get(3)->original()->first());
+        $this->assertSame(
+            [false, true, false],
+            $frame->values()->get(2)->original()->toPrimitive()
+        );
 
         $frame = (new Queue)->delete(
             $channel = new Channel(1),
             (new Deletion('foo'))->dontWait()
         );
 
-        $this->assertTrue($frame->values()->get(4)->original()->first());
+        $this->assertSame(
+            [false, false, true],
+            $frame->values()->get(2)->original()->toPrimitive()
+        );
     }
 
     public function testBind()
