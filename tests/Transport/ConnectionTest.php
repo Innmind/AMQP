@@ -18,6 +18,7 @@ use Innmind\AMQP\{
     Transport\Frame,
     Transport\Frame\Channel,
     Transport\Frame\Method,
+    Model\Connection\MaxFrameSize,
     Exception\VersionNotUsable
 };
 use Innmind\Socket\Internet\Transport;
@@ -41,6 +42,8 @@ class ConnectionTest extends TestCase
         );
 
         $this->assertSame($protocol, $connection->protocol());
+        $this->assertInstanceOf(MaxFrameSize::class, $connection->maxFrameSize());
+        $this->assertSame(131072, $connection->maxFrameSize()->toInt());
         $this->assertSame(
             $connection,
             $connection->send(

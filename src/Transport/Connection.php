@@ -111,6 +111,11 @@ final class Connection
         throw new UnexpectedFrame($frame->method(), ...$names);
     }
 
+    public function maxFrameSize(): MaxFrameSize
+    {
+        return $this->maxFrameSize;
+    }
+
     public function close(): void
     {
         if (!$this->opened()) {
