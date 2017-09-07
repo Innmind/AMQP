@@ -3,15 +3,21 @@ declare(strict_types = 1);
 
 namespace Tests\Innmind\AMQP\Model\Basic;
 
-use Innmind\AMQP\Model\Basic\Publish;
+use Innmind\AMQP\Model\Basic\{
+    Publish,
+    Message
+};
 use PHPUnit\Framework\TestCase;
 
 class PublishTest extends TestCase
 {
     public function testInterface()
     {
-        $command = new Publish;
+        $command = new Publish(
+            $message = $this->createMock(Message::class)
+        );
 
+        $this->assertSame($message, $command->message());
         $this->assertSame('', $command->exchange());
         $this->assertSame('', $command->routingKey());
         $this->assertFalse($command->mandatory());
@@ -20,7 +26,7 @@ class PublishTest extends TestCase
 
     public function testTo()
     {
-        $command = new Publish;
+        $command = new Publish($this->createMock(Message::class));
         $command2 = $command->to('foo');
 
         $this->assertInstanceOf(Publish::class, $command2);
@@ -38,7 +44,7 @@ class PublishTest extends TestCase
 
     public function testWithRoutingKey()
     {
-        $command = new Publish;
+        $command = new Publish($this->createMock(Message::class));
         $command2 = $command->withRoutingKey('bar');
 
         $this->assertInstanceOf(Publish::class, $command2);
@@ -49,7 +55,7 @@ class PublishTest extends TestCase
 
     public function testFlagAsMandatory()
     {
-        $command = new Publish;
+        $command = new Publish($this->createMock(Message::class));
         $command2 = $command->flagAsMandatory();
 
          $this->assertInstanceOf(Publish::class, $command2);
@@ -67,7 +73,7 @@ class PublishTest extends TestCase
 
     public function testFlagAsImmediate()
     {
-        $command = new Publish;
+        $command = new Publish($this->createMock(Message::class));
         $command2 = $command->flagAsImmediate();
 
          $this->assertInstanceOf(Publish::class, $command2);

@@ -23,7 +23,8 @@ use Innmind\AMQP\{
     Model\Basic\Publish,
     Model\Basic\Qos,
     Model\Basic\Recover,
-    Model\Basic\Reject
+    Model\Basic\Reject,
+    Model\Basic\Message
 };
 use PHPUnit\Framework\TestCase;
 
@@ -197,7 +198,7 @@ class BasicTest extends TestCase
     {
         $frame = (new Basic)->publish(
             $channel = new Channel(1),
-            new Publish
+            new Publish($this->createMock(Message::class))
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -222,21 +223,21 @@ class BasicTest extends TestCase
 
         $frame = (new Basic)->publish(
             $channel = new Channel(1),
-            (new Publish)->to('foo')
+            (new Publish($this->createMock(Message::class)))->to('foo')
         );
 
         $this->assertSame('foo', (string) $frame->values()->get(1)->original());
 
         $frame = (new Basic)->publish(
             $channel = new Channel(1),
-            (new Publish)->withRoutingKey('foo')
+            (new Publish($this->createMock(Message::class)))->withRoutingKey('foo')
         );
 
         $this->assertSame('foo', (string) $frame->values()->get(2)->original());
 
         $frame = (new Basic)->publish(
             $channel = new Channel(1),
-            (new Publish)->flagAsMandatory()
+            (new Publish($this->createMock(Message::class)))->flagAsMandatory()
         );
 
         $this->assertSame(
@@ -246,7 +247,7 @@ class BasicTest extends TestCase
 
         $frame = (new Basic)->publish(
             $channel = new Channel(1),
-            (new Publish)->flagAsImmediate()
+            (new Publish($this->createMock(Message::class)))->flagAsImmediate()
         );
 
         $this->assertSame(

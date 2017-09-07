@@ -5,10 +5,16 @@ namespace Innmind\AMQP\Model\Basic;
 
 final class Publish
 {
+    private $message;
     private $exchange = '';
     private $routingKey = '';
     private $mandatory = false;
     private $immediate = false;
+
+    public function __construct(Message $message)
+    {
+        $this->message = $message;
+    }
 
     public function to(string $exchange): self
     {
@@ -76,6 +82,11 @@ final class Publish
         $self->immediate = false;
 
         return $self;
+    }
+
+    public function message(): Message
+    {
+        return $this->message;
     }
 
     public function exchange(): string
