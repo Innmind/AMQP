@@ -13,6 +13,7 @@ use Innmind\AMQP\Transport\{
     Protocol\v091\Transaction,
     Protocol as ProtocolInterface,
     Protocol\Version,
+    Protocol\ArgumentTranslator,
     Frame\Method
 };
 use PHPUnit\Framework\TestCase;
@@ -21,7 +22,7 @@ class ProtocolTest extends TestCase
 {
     public function testInterface()
     {
-        $protocol = new Protocol;
+        $protocol = new Protocol($this->createMock(ArgumentTranslator::class));
 
         $this->assertInstanceOf(ProtocolInterface::class, $protocol);
         $this->assertInstanceOf(Version::class, $protocol->version());
@@ -39,7 +40,7 @@ class ProtocolTest extends TestCase
      */
     public function testMethod($name, $class, $method)
     {
-        $protocol = new Protocol;
+        $protocol = new Protocol($this->createMock(ArgumentTranslator::class));
 
         $this->assertInstanceOf(Method::class, $protocol->method($name));
         $this->assertTrue($protocol->method($name)->equals(new Method($class, $method)));
@@ -47,7 +48,7 @@ class ProtocolTest extends TestCase
 
     public function testUse()
     {
-        $protocol = new Protocol;
+        $protocol = new Protocol($this->createMock(ArgumentTranslator::class));
 
         $this->assertSame($protocol, $protocol->use(new Version(0, 9, 0)));
         $this->assertSame($protocol, $protocol->use(new Version(0, 9, 1)));
@@ -59,7 +60,7 @@ class ProtocolTest extends TestCase
      */
     public function testThrowWhenUsingHigherVersion()
     {
-        (new Protocol)->use(new Version(1, 0, 0));
+        (new Protocol($this->createMock(ArgumentTranslator::class)))->use(new Version(1, 0, 0));
     }
 
     /**
@@ -68,7 +69,7 @@ class ProtocolTest extends TestCase
      */
     public function testThrowWhenUsingLowerVersion()
     {
-        (new Protocol)->use(new Version(0, 8, 0));
+        (new Protocol($this->createMock(ArgumentTranslator::class)))->use(new Version(0, 8, 0));
     }
 
     public function methods(): array

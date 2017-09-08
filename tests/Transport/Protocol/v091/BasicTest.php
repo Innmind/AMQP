@@ -6,6 +6,7 @@ namespace Tests\Innmind\AMQP\Transport\Protocol\v091;
 use Innmind\AMQP\{
     Transport\Protocol\v091\Basic,
     Transport\Protocol\Basic as BasicInterface,
+    Transport\Protocol\ArgumentTranslator,
     Transport\Frame,
     Transport\Frame\Channel,
     Transport\Frame\Method,
@@ -26,18 +27,29 @@ use Innmind\AMQP\{
     Model\Basic\Reject,
     Model\Basic\Message
 };
+use Innmind\Math\Algebra\Integer;
 use PHPUnit\Framework\TestCase;
 
 class BasicTest extends TestCase
 {
+    private $basic;
+    private $translator;
+
+    public function setUp()
+    {
+        $this->basic = new Basic(
+            $this->translator = $this->createMock(ArgumentTranslator::class)
+        );
+    }
+
     public function testInterface()
     {
-        $this->assertInstanceOf(BasicInterface::class, new Basic);
+        $this->assertInstanceOf(BasicInterface::class, $this->basic);
     }
 
     public function testAck()
     {
-        $frame = (new Basic)->ack(
+        $frame = $this->basic->ack(
             $channel = new Channel(1),
             new Ack(42)
         );
@@ -55,7 +67,7 @@ class BasicTest extends TestCase
         $this->assertInstanceOf(Bits::class, $frame->values()->get(1));
         $this->assertFalse($frame->values()->get(1)->original()->first());
 
-        $frame = (new Basic)->ack(
+        $frame = $this->basic->ack(
             $channel = new Channel(1),
             Ack::multiple(42)
         );
@@ -65,7 +77,7 @@ class BasicTest extends TestCase
 
     public function testCancel()
     {
-        $frame = (new Basic)->cancel(
+        $frame = $this->basic->cancel(
             $channel = new Channel(1),
             new Cancel('consumer')
         );
@@ -80,7 +92,7 @@ class BasicTest extends TestCase
         $this->assertInstanceOf(Bits::class, $frame->values()->get(1));
         $this->assertFalse($frame->values()->get(1)->original()->first());
 
-        $frame = (new Basic)->cancel(
+        $frame = $this->basic->cancel(
             $channel = new Channel(1),
             (new Cancel('consumer'))->dontWait()
         );
@@ -90,9 +102,27 @@ class BasicTest extends TestCase
 
     public function testConsume()
     {
-        $frame = (new Basic)->consume(
+        $this
+            ->translator
+            ->expects($this->at(0))
+            ->method('__invoke')
+            ->with(24)
+            ->willReturn($firstArgument = new UnsignedShortInteger(
+                new Integer(24)
+            ));
+        $this
+            ->translator
+            ->expects($this->at(1))
+            ->method('__invoke')
+            ->with(42)
+            ->willReturn($secondArgument = new UnsignedShortInteger(
+                new Integer(42)
+            ));
+        $frame = $this->basic->consume(
             $channel = new Channel(1),
-            new Consume('queue')
+            (new Consume('queue'))
+                ->withArgument('foo', 24)
+                ->withArgument('bar', 42)
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -115,15 +145,18 @@ class BasicTest extends TestCase
             $frame->values()->get(3)->original()->toPrimitive()
         );
         $this->assertInstanceOf(Table::class, $frame->values()->get(4));
+        $this->assertCount(2, $frame->values()->get(4)->original());
+        $this->assertSame($firstArgument, $frame->values()->get(4)->original()->get('foo'));
+        $this->assertSame($secondArgument, $frame->values()->get(4)->original()->get('bar'));
 
-        $frame = (new Basic)->consume(
+        $frame = $this->basic->consume(
             $channel = new Channel(1),
             (new Consume('queue'))->withConsumerTag('tag')
         );
 
         $this->assertSame('tag', (string) $frame->values()->get(2)->original());
 
-        $frame = (new Basic)->consume(
+        $frame = $this->basic->consume(
             $channel = new Channel(1),
             (new Consume('queue'))->noLocal()
         );
@@ -133,7 +166,7 @@ class BasicTest extends TestCase
             $frame->values()->get(3)->original()->toPrimitive()
         );
 
-        $frame = (new Basic)->consume(
+        $frame = $this->basic->consume(
             $channel = new Channel(1),
             (new Consume('queue'))->autoAcknowledge()
         );
@@ -143,7 +176,7 @@ class BasicTest extends TestCase
             $frame->values()->get(3)->original()->toPrimitive()
         );
 
-        $frame = (new Basic)->consume(
+        $frame = $this->basic->consume(
             $channel = new Channel(1),
             (new Consume('queue'))->exclusive()
         );
@@ -153,7 +186,7 @@ class BasicTest extends TestCase
             $frame->values()->get(3)->original()->toPrimitive()
         );
 
-        $frame = (new Basic)->consume(
+        $frame = $this->basic->consume(
             $channel = new Channel(1),
             (new Consume('queue'))->dontWait()
         );
@@ -166,7 +199,7 @@ class BasicTest extends TestCase
 
     public function testGet()
     {
-        $frame = (new Basic)->get(
+        $frame = $this->basic->get(
             $channel = new Channel(1),
             new Get('queue')
         );
@@ -186,7 +219,7 @@ class BasicTest extends TestCase
         $this->assertInstanceOf(Bits::class, $frame->values()->get(2));
         $this->assertFalse($frame->values()->get(2)->original()->first());
 
-        $frame = (new Basic)->get(
+        $frame = $this->basic->get(
             $channel = new Channel(1),
             (new Get('queue'))->autoAcknowledge()
         );
@@ -196,7 +229,7 @@ class BasicTest extends TestCase
 
     public function testPublish()
     {
-        $frame = (new Basic)->publish(
+        $frame = $this->basic->publish(
             $channel = new Channel(1),
             new Publish($this->createMock(Message::class))
         );
@@ -221,21 +254,21 @@ class BasicTest extends TestCase
             $frame->values()->get(3)->original()->toPrimitive()
         );
 
-        $frame = (new Basic)->publish(
+        $frame = $this->basic->publish(
             $channel = new Channel(1),
             (new Publish($this->createMock(Message::class)))->to('foo')
         );
 
         $this->assertSame('foo', (string) $frame->values()->get(1)->original());
 
-        $frame = (new Basic)->publish(
+        $frame = $this->basic->publish(
             $channel = new Channel(1),
             (new Publish($this->createMock(Message::class)))->withRoutingKey('foo')
         );
 
         $this->assertSame('foo', (string) $frame->values()->get(2)->original());
 
-        $frame = (new Basic)->publish(
+        $frame = $this->basic->publish(
             $channel = new Channel(1),
             (new Publish($this->createMock(Message::class)))->flagAsMandatory()
         );
@@ -245,7 +278,7 @@ class BasicTest extends TestCase
             $frame->values()->get(3)->original()->toPrimitive()
         );
 
-        $frame = (new Basic)->publish(
+        $frame = $this->basic->publish(
             $channel = new Channel(1),
             (new Publish($this->createMock(Message::class)))->flagAsImmediate()
         );
@@ -258,7 +291,7 @@ class BasicTest extends TestCase
 
     public function testQos()
     {
-        $frame = (new Basic)->qos(
+        $frame = $this->basic->qos(
             $channel = new Channel(1),
             new Qos(1, 2)
         );
@@ -281,7 +314,7 @@ class BasicTest extends TestCase
         $this->assertInstanceOf(Bits::class, $frame->values()->get(2));
         $this->assertFalse($frame->values()->get(2)->original()->first());
 
-        $frame = (new Basic)->qos(
+        $frame = $this->basic->qos(
             $channel = new Channel(1),
             Qos::global(1, 2)
         );
@@ -291,7 +324,7 @@ class BasicTest extends TestCase
 
     public function testRecover()
     {
-        $frame = (new Basic)->recover(
+        $frame = $this->basic->recover(
             $channel = new Channel(1),
             new Recover
         );
@@ -304,7 +337,7 @@ class BasicTest extends TestCase
         $this->assertInstanceOf(Bits::class, $frame->values()->get(0));
         $this->assertFalse($frame->values()->get(0)->original()->first());
 
-        $frame = (new Basic)->recover(
+        $frame = $this->basic->recover(
             $channel = new Channel(1),
             Recover::requeue()
         );
@@ -314,7 +347,7 @@ class BasicTest extends TestCase
 
     public function testReject()
     {
-        $frame = (new Basic)->reject(
+        $frame = $this->basic->reject(
             $channel = new Channel(1),
             new Reject(42)
         );
@@ -332,7 +365,7 @@ class BasicTest extends TestCase
         $this->assertInstanceOf(Bits::class, $frame->values()->get(1));
         $this->assertFalse($frame->values()->get(1)->original()->first());
 
-        $frame = (new Basic)->reject(
+        $frame = $this->basic->reject(
             $channel = new Channel(1),
             Reject::requeue(42)
         );

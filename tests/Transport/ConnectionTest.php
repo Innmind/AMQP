@@ -15,6 +15,7 @@ use Innmind\AMQP\{
     Transport\Protocol\Basic,
     Transport\Protocol\Transaction,
     Transport\Protocol\Delegate,
+    Transport\Protocol\ArgumentTranslator,
     Transport\Frame,
     Transport\Frame\Channel,
     Transport\Frame\Method,
@@ -37,7 +38,7 @@ class ConnectionTest extends TestCase
         $connection = new Connection(
             Transport::tcp(),
             Url::fromString('//guest:guest@localhost:5672/'),
-            $protocol = new Protocol,
+            $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
             new ElapsedPeriod(1000)
         );
 
@@ -59,7 +60,7 @@ class ConnectionTest extends TestCase
         $connection = new Connection(
             Transport::tcp(),
             Url::fromString('//guest:guest@localhost:5672/'),
-            $protocol = new Protocol,
+            $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
             new ElapsedPeriod(1000)
         );
 
@@ -76,7 +77,7 @@ class ConnectionTest extends TestCase
         $connection = new Connection(
             Transport::tcp(),
             Url::fromString('//guest:guest@localhost:5672/'),
-            $protocol = new Protocol,
+            $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
             new ElapsedPeriod(1000)
         );
         $connection
@@ -122,7 +123,7 @@ class ConnectionTest extends TestCase
         $connection = new Connection(
             Transport::tcp(),
             Url::fromString('//guest:guest@localhost:5672/'),
-            $protocol = new Delegate($top, new Protocol),
+            $protocol = new Delegate($top, new Protocol($this->createMock(ArgumentTranslator::class))),
             new ElapsedPeriod(1000)
         );
 

@@ -22,7 +22,8 @@ use Innmind\AMQP\{
     Transport\Frame\Value\ShortString,
     Transport\Frame\Value\UnsignedShortInteger,
     Transport\Frame\Value\Table,
-    Transport\Protocol\Basic as BasicInterface
+    Transport\Protocol\Basic as BasicInterface,
+    Transport\Protocol\ArgumentTranslator
 };
 use Innmind\Math\Algebra\Integer;
 use Innmind\Immutable\{
@@ -32,6 +33,13 @@ use Innmind\Immutable\{
 
 final class Basic implements BasicInterface
 {
+    private $translate;
+
+    public function __construct(ArgumentTranslator $translator)
+    {
+        $this->translate = $translator;
+    }
+
     public function ack(FrameChannel $channel, Ack $command): Frame
     {
         return new Frame(
@@ -75,7 +83,19 @@ final class Basic implements BasicInterface
                 $command->isExclusive(),
                 !$command->shouldWait()
             ),
-            new Table(new Map('string', Value::class)) //todo: use $command->arguments()
+            new Table(
+                $command
+                    ->arguments()
+                    ->reduce(
+                        new Map('string', Value::class),
+                        function(Map $carry, string $key, $value): Map {
+                            return $carry->put(
+                                $key,
+                                ($this->translate)($value)
+                            );
+                        }
+                    )
+            )
         );
     }
 

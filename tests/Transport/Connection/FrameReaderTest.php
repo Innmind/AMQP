@@ -14,6 +14,7 @@ use Innmind\AMQP\{
     Transport\Frame\Value\Table,
     Transport\Frame\Value\LongString,
     Transport\Protocol\v091\Protocol,
+    Transport\Protocol\ArgumentTranslator,
     Exception\NoFrameDetected
 };
 use Innmind\Stream\Readable\Stream;
@@ -26,6 +27,13 @@ use PHPUnit\Framework\TestCase;
 
 class FrameReaderTest extends TestCase
 {
+    private $protocol;
+
+    public function setUp()
+    {
+        $this->protocol = new Protocol($this->createMock(ArgumentTranslator::class));
+    }
+
     public function testInvokation()
     {
         $read = new FrameReader;
@@ -47,7 +55,7 @@ class FrameReaderTest extends TestCase
         fseek($file, 0);
         $stream = new Stream($file);
 
-        $frame = $read($stream, new Protocol);
+        $frame = $read($stream, $this->protocol);
 
         $this->assertInstanceOf(Frame::class, $frame);
     }
@@ -75,7 +83,7 @@ class FrameReaderTest extends TestCase
         fseek($file, 0);
         $stream = new Stream($file);
 
-        $read($stream, new Protocol);
+        $read($stream, $this->protocol);
     }
 
     /**
@@ -102,7 +110,7 @@ class FrameReaderTest extends TestCase
         fseek($file, 0);
         $stream = new Stream($file);
 
-        $read($stream, new Protocol);
+        $read($stream, $this->protocol);
     }
 
     /**
@@ -123,7 +131,7 @@ class FrameReaderTest extends TestCase
         fseek($file, 0);
         $stream = new Stream($file);
 
-        $read($stream, new Protocol);
+        $read($stream, $this->protocol);
     }
 
     public function testThrowWhenNoFrameDeteted()
@@ -134,7 +142,7 @@ class FrameReaderTest extends TestCase
         $stream = new Stream($file);
 
         try {
-            (new FrameReader)($stream, new Protocol);
+            (new FrameReader)($stream, $this->protocol);
             $this->fail('it should throw an exception');
         } catch (NoFrameDetected $e) {
             $this->assertInstanceOf(Str::class, $e->content());

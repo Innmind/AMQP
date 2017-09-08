@@ -17,16 +17,25 @@ use Innmind\AMQP\{
     Transport\Frame\Value\ShortString,
     Transport\Frame\Value\Bits,
     Transport\Frame\Value\Table,
-    Transport\Protocol\Queue as QueueInterface
+    Transport\Protocol\Queue as QueueInterface,
+    Transport\Protocol\ArgumentTranslator
 };
 use Innmind\Math\Algebra\Integer;
 use Innmind\Immutable\{
     Str,
-    Map
+    Map,
+    MapInterface
 };
 
 final class Queue implements QueueInterface
 {
+    private $translate;
+
+    public function __construct(ArgumentTranslator $translator)
+    {
+        $this->translate = $translator;
+    }
+
     public function declare(FrameChannel $channel, Declaration $command): Frame
     {
         $name = '';
@@ -48,7 +57,7 @@ final class Queue implements QueueInterface
                 $command->isAutoDeleted(),
                 !$command->shouldWait()
             ),
-            new Table(new Map('string', Value::class)) //todo: use $command->arguments()
+            $this->translate($command->arguments())
         );
     }
 
@@ -79,7 +88,7 @@ final class Queue implements QueueInterface
             new ShortString(new Str($command->exchange())),
             new ShortString(new Str($command->routingKey())),
             new Bits(!$command->shouldWait()),
-            new Table(new Map('string', Value::class)) //todo: use $command->arguments()
+            $this->translate($command->arguments())
         );
     }
 
@@ -93,7 +102,7 @@ final class Queue implements QueueInterface
             new ShortString(new Str($command->queue())),
             new ShortString(new Str($command->exchange())),
             new ShortString(new Str($command->routingKey())),
-            new Table(new Map('string', Value::class)) //todo: use $command->arguments()
+            $this->translate($command->arguments())
         );
     }
 
@@ -106,6 +115,24 @@ final class Queue implements QueueInterface
             new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
             new ShortString(new Str($command->name())),
             new Bits(!$command->shouldWait())
+        );
+    }
+
+    /**
+     * @param MapInterface<string, mixed> $arguments
+     */
+    private function translate(MapInterface $arguments): Table
+    {
+        return new Table(
+            $arguments->reduce(
+                new Map('string', Value::class),
+                function(Map $carry, string $key, $value): Map {
+                    return $carry->put(
+                        $key,
+                        ($this->translate)($value)
+                    );
+                }
+            )
         );
     }
 }

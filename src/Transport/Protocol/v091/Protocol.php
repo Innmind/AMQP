@@ -12,6 +12,7 @@ use Innmind\AMQP\{
     Transport\Protocol\Queue as QueueInterface,
     Transport\Protocol\Basic as BasicInterface,
     Transport\Protocol\Transaction as TransactionInterface,
+    Transport\Protocol\ArgumentTranslator,
     Transport\Frame\Method,
     Exception\VersionNotUsable
 };
@@ -31,15 +32,15 @@ final class Protocol implements ProtocolInterface
     private $basic;
     private $transaction;
 
-    public function __construct()
+    public function __construct(ArgumentTranslator $translator)
     {
         $this->version = new Version(0, 9, 1);
         $this->read = new Reader;
         $this->connection = new Connection;
         $this->channel = new Channel;
-        $this->exchange = new Exchange;
-        $this->queue = new Queue;
-        $this->basic = new Basic;
+        $this->exchange = new Exchange($translator);
+        $this->queue = new Queue($translator);
+        $this->basic = new Basic($translator);
         $this->transaction = new Transaction;
     }
 

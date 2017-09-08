@@ -6,6 +6,7 @@ namespace Tests\Innmind\AMQP\Transport\Protocol\v091;
 use Innmind\AMQP\{
     Transport\Protocol\v091\Exchange,
     Transport\Protocol\Exchange as ExchangeInterface,
+    Transport\Protocol\ArgumentTranslator,
     Transport\Frame,
     Transport\Frame\Channel,
     Transport\Frame\Method,
@@ -17,20 +18,49 @@ use Innmind\AMQP\{
     Model\Exchange\Deletion,
     Model\Exchange\Type
 };
+use Innmind\Math\Algebra\Integer;
 use PHPUnit\Framework\TestCase;
 
 class ExchangeTest extends TestCase
 {
+    private $exchange;
+    private $translator;
+
+    public function setUp()
+    {
+        $this->exchange = new Exchange(
+            $this->translator = $this->createMock(ArgumentTranslator::class)
+        );
+    }
+
     public function testInterface()
     {
-        $this->assertInstanceOf(ExchangeInterface::class, new Exchange);
+        $this->assertInstanceOf(ExchangeInterface::class, $this->exchange);
     }
 
     public function testDeclare()
     {
-        $frame = (new Exchange)->declare(
+        $this
+            ->translator
+            ->expects($this->at(0))
+            ->method('__invoke')
+            ->with(24)
+            ->willReturn($firstArgument = new UnsignedShortInteger(
+                new Integer(24)
+            ));
+        $this
+            ->translator
+            ->expects($this->at(1))
+            ->method('__invoke')
+            ->with(42)
+            ->willReturn($secondArgument = new UnsignedShortInteger(
+                new Integer(42)
+            ));
+        $frame = $this->exchange->declare(
             $channel = new Channel(1),
             Declaration::passive('foo', Type::direct())
+                ->withArgument('foo', 24)
+                ->withArgument('bar', 42)
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -53,8 +83,11 @@ class ExchangeTest extends TestCase
             $frame->values()->get(3)->original()->toPrimitive()
         );
         $this->assertInstanceOf(Table::class, $frame->values()->get(4));
+        $this->assertCount(2, $frame->values()->get(4)->original());
+        $this->assertSame($firstArgument, $frame->values()->get(4)->original()->get('foo'));
+        $this->assertSame($secondArgument, $frame->values()->get(4)->original()->get('bar'));
 
-        $frame = (new Exchange)->declare(
+        $frame = $this->exchange->declare(
             $channel = new Channel(1),
             Declaration::durable('foo', Type::direct())
         );
@@ -64,7 +97,7 @@ class ExchangeTest extends TestCase
             $frame->values()->get(3)->original()->toPrimitive()
         );
 
-        $frame = (new Exchange)->declare(
+        $frame = $this->exchange->declare(
             $channel = new Channel(1),
             Declaration::temporary('foo', Type::direct())
         );
@@ -74,7 +107,7 @@ class ExchangeTest extends TestCase
             $frame->values()->get(3)->original()->toPrimitive()
         );
 
-        $frame = (new Exchange)->declare(
+        $frame = $this->exchange->declare(
             $channel = new Channel(1),
             Declaration::autoDelete('foo', Type::direct())
         );
@@ -84,7 +117,7 @@ class ExchangeTest extends TestCase
             $frame->values()->get(3)->original()->toPrimitive()
         );
 
-        $frame = (new Exchange)->declare(
+        $frame = $this->exchange->declare(
             $channel = new Channel(1),
             Declaration::autoDelete('foo', Type::direct())->dontWait()
         );
@@ -97,7 +130,7 @@ class ExchangeTest extends TestCase
 
     public function testDeletion()
     {
-        $frame = (new Exchange)->delete(
+        $frame = $this->exchange->delete(
             $channel = new Channel(1),
             new Deletion('foo')
         );
@@ -120,7 +153,7 @@ class ExchangeTest extends TestCase
             $frame->values()->get(2)->original()->toPrimitive()
         );
 
-        $frame = (new Exchange)->delete(
+        $frame = $this->exchange->delete(
             $channel = new Channel(1),
             (new Deletion('foo'))->ifUnused()
         );
@@ -130,7 +163,7 @@ class ExchangeTest extends TestCase
             $frame->values()->get(2)->original()->toPrimitive()
         );
 
-        $frame = (new Exchange)->delete(
+        $frame = $this->exchange->delete(
             $channel = new Channel(1),
             (new Deletion('foo'))->dontWait()
         );

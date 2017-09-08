@@ -8,6 +8,7 @@ use Innmind\AMQP\{
     Client\Channel\Exchange as ExchangeInterface,
     Transport\Connection,
     Transport\Protocol\v091\Protocol,
+    Transport\Protocol\ArgumentTranslator,
     Transport\Frame\Channel,
     Model\Exchange\Declaration,
     Model\Exchange\Deletion,
@@ -29,7 +30,7 @@ class ExchangeTest extends TestCase
             $this->connection = new Connection(
                 Transport::tcp(),
                 Url::fromString('//guest:guest@localhost:5672/'),
-                new Protocol,
+                new Protocol($this->createMock(ArgumentTranslator::class)),
                 new ElapsedPeriod(1000)
             ),
             new Channel(1)

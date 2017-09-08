@@ -14,7 +14,8 @@ use Innmind\AMQP\{
     Transport\Frame\Value\ShortString,
     Transport\Frame\Value\Bits,
     Transport\Frame\Value\Table,
-    Transport\Protocol\Exchange as ExchangeInterface
+    Transport\Protocol\Exchange as ExchangeInterface,
+    Transport\Protocol\ArgumentTranslator
 };
 use Innmind\Math\Algebra\Integer;
 use Innmind\Immutable\{
@@ -24,6 +25,13 @@ use Innmind\Immutable\{
 
 final class Exchange implements ExchangeInterface
 {
+    private $translate;
+
+    public function __construct(ArgumentTranslator $translator)
+    {
+        $this->translate = $translator;
+    }
+
     public function declare(FrameChannel $channel, Declaration $command): Frame
     {
         return new Frame(
@@ -40,7 +48,19 @@ final class Exchange implements ExchangeInterface
                 false, //internal (reserved)
                 !$command->shouldWait()
             ),
-            new Table(new Map('string', Value::class)) //todo: use $command->arguments()
+            new Table(
+                $command
+                    ->arguments()
+                    ->reduce(
+                        new Map('string', Value::class),
+                        function(Map $carry, string $key, $value): Map {
+                            return $carry->put(
+                                $key,
+                                ($this->translate)($value)
+                            );
+                        }
+                    )
+            )
         );
     }
 
