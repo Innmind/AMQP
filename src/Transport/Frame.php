@@ -10,7 +10,8 @@ use Innmind\AMQP\Transport\Frame\{
     Value,
     Value\UnsignedOctet,
     Value\UnsignedShortInteger,
-    Value\UnsignedLongInteger
+    Value\UnsignedLongInteger,
+    Value\Text
 };
 use Innmind\Math\Algebra\Integer;
 use Innmind\Immutable\{
@@ -27,35 +28,49 @@ final class Frame
     private $values;
     private $string;
 
-    public function __construct(
+    private function __construct(
         Type $type,
         Channel $channel,
-        Method $method,
         Value ...$values
     ) {
         $this->type = $type;
         $this->channel = $channel;
-        $this->method = $method;
+
         $values = new Sequence(...$values);
         $payload = $values->join('')->toEncoding('ASCII');
+
         $frame = new Sequence(
             new UnsignedOctet(new Integer($type->toInt())),
             new UnsignedShortInteger(new Integer($channel->toInt())),
-            new UnsignedLongInteger(
-                new Integer($payload->length() + 4) // 4 is the size for the method
-            ),
+            new UnsignedLongInteger(new Integer($payload->length())),
+            ...$values
+        );
+        $this->string = (string) $frame
+            ->add(new UnsignedOctet(new Integer(0xCE)))
+            ->join('');
+    }
+
+    public static function command(
+        Channel $channel,
+        Method $method,
+        Value ...$values
+    ): self {
+        $self = new self(
+            Type::method(),
+            $channel,
             new UnsignedShortInteger(new Integer($method->class())),
             new UnsignedShortInteger(new Integer($method->method())),
-            $payload,
-            new UnsignedOctet(new Integer(0xCE))
+            ...$values
         );
-        $this->values = $values->reduce(
+        $self->method = $method;
+        $self->values = (new Sequence(...$values))->reduce(
             new Stream(Value::class),
             static function(Stream $stream, Value $value): Stream {
                 return $stream->add($value);
             }
         );
-        $this->string = (string) $frame->join('');
+
+        return $self;
     }
 
     public function type(): Type

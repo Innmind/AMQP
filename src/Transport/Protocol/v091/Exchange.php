@@ -34,8 +34,7 @@ final class Exchange implements ExchangeInterface
 
     public function declare(FrameChannel $channel, Declaration $command): Frame
     {
-        return new Frame(
-            Type::method(),
+        return Frame::command(
             $channel,
             Methods::get('exchange.declare'),
             new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
@@ -66,8 +65,7 @@ final class Exchange implements ExchangeInterface
 
     public function delete(FrameChannel $channel, Deletion $command): Frame
     {
-        return new Frame(
-            Type::method(),
+        return Frame::command(
             $channel,
             Methods::get('exchange.delete'),
             new UnsignedShortInteger(new Integer(0)), //ticket (reserved)

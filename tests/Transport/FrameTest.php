@@ -20,17 +20,16 @@ use PHPUnit\Framework\TestCase;
 
 class FrameTest extends TestCase
 {
-    public function testInterface()
+    public function testCommand()
     {
-        $frame = new Frame(
-            $type = Type::method(),
+        $frame = Frame::command(
             $channel = new Channel(42),
             $method = new Method(10, 10),
             $bit = new Bits(true),
             $text = new Text(new Str('foobar'))
         );
 
-        $this->assertSame($type, $frame->type());
+        $this->assertSame(Type::method(), $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertSame($method, $frame->method());
         $this->assertInstanceOf(StreamInterface::class, $frame->values());

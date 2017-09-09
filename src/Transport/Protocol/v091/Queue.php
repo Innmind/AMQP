@@ -44,8 +44,7 @@ final class Queue implements QueueInterface
             $name = $command->name();
         }
 
-        return new Frame(
-            Type::method(),
+        return Frame::command(
             $channel,
             Methods::get('queue.declare'),
             new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
@@ -63,8 +62,7 @@ final class Queue implements QueueInterface
 
     public function delete(FrameChannel $channel, Deletion $command): Frame
     {
-        return new Frame(
-            Type::method(),
+        return Frame::command(
             $channel,
             Methods::get('queue.delete'),
             new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
@@ -79,8 +77,7 @@ final class Queue implements QueueInterface
 
     public function bind(FrameChannel $channel, Binding $command): Frame
     {
-        return new Frame(
-            Type::method(),
+        return Frame::command(
             $channel,
             Methods::get('queue.bind'),
             new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
@@ -94,8 +91,7 @@ final class Queue implements QueueInterface
 
     public function unbind(FrameChannel $channel, Unbinding $command): Frame
     {
-        return new Frame(
-            Type::method(),
+        return Frame::command(
             $channel,
             Methods::get('queue.unbind'),
             new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
@@ -108,8 +104,7 @@ final class Queue implements QueueInterface
 
     public function purge(FrameChannel $channel, Purge $command): Frame
     {
-        return new Frame(
-            Type::method(),
+        return Frame::command(
             $channel,
             Methods::get('queue.purge'),
             new UnsignedShortInteger(new Integer(0)), //ticket (reserved)

@@ -23,8 +23,7 @@ final class Channel implements ChannelInterface
 {
     public function open(FrameChannel $channel): Frame
     {
-        return new Frame(
-            Type::method(),
+        return Frame::command(
             $channel,
             Methods::get('channel.open'),
             new ShortString(new Str('')) //out of band (reserved)
@@ -33,8 +32,7 @@ final class Channel implements ChannelInterface
 
     public function flow(FrameChannel $channel, Flow $command): Frame
     {
-        return new Frame(
-            Type::method(),
+        return Frame::command(
             $channel,
             Methods::get('channel.flow'),
             new Bits($command->active())
@@ -43,8 +41,7 @@ final class Channel implements ChannelInterface
 
     public function flowOk(FrameChannel $channel, FlowOk $command): Frame
     {
-        return new Frame(
-            Type::method(),
+        return Frame::command(
             $channel,
             Methods::get('channel.flow-ok'),
             new Bits($command->active())
@@ -66,8 +63,7 @@ final class Channel implements ChannelInterface
             $method = Methods::get($command->cause());
         }
 
-        return new Frame(
-            Type::method(),
+        return Frame::command(
             $channel,
             Methods::get('channel.close'),
             new UnsignedShortInteger(new Integer($replyCode)),
@@ -79,8 +75,7 @@ final class Channel implements ChannelInterface
 
     public function closeOk(FrameChannel $channel): Frame
     {
-        return new Frame(
-            Type::method(),
+        return Frame::command(
             $channel,
             Methods::get('channel.close-ok')
         );

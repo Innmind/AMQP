@@ -42,8 +42,7 @@ final class Basic implements BasicInterface
 
     public function ack(FrameChannel $channel, Ack $command): Frame
     {
-        return new Frame(
-            Type::method(),
+        return Frame::command(
             $channel,
             Methods::get('basic.ack'),
             new UnsignedLongLongInteger(new Integer($command->deliveryTag())),
@@ -53,8 +52,7 @@ final class Basic implements BasicInterface
 
     public function cancel(FrameChannel $channel, Cancel $command): Frame
     {
-        return new Frame(
-            Type::method(),
+        return Frame::command(
             $channel,
             Methods::get('basic.cancel'),
             new ShortString(new Str($command->consumerTag())),
@@ -70,8 +68,7 @@ final class Basic implements BasicInterface
             $consumerTag = $command->consumerTag();
         }
 
-        return new Frame(
-            Type::method(),
+        return Frame::command(
             $channel,
             Methods::get('basic.consume'),
             new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
@@ -101,8 +98,7 @@ final class Basic implements BasicInterface
 
     public function get(FrameChannel $channel, Get $command): Frame
     {
-        return new Frame(
-            Type::method(),
+        return Frame::command(
             $channel,
             Methods::get('basic.get'),
             new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
@@ -129,8 +125,7 @@ final class Basic implements BasicInterface
 
     public function qos(FrameChannel $channel, Qos $command): Frame
     {
-        return new Frame(
-            Type::method(),
+        return Frame::command(
             $channel,
             Methods::get('basic.qos'),
             new UnsignedLongInteger(new Integer($command->prefetchSize())),
@@ -141,8 +136,7 @@ final class Basic implements BasicInterface
 
     public function recover(FrameChannel $channel, Recover $command): Frame
     {
-        return new Frame(
-            Type::method(),
+        return Frame::command(
             $channel,
             Methods::get('basic.recover'),
             new Bits($command->shouldRequeue())
@@ -151,8 +145,7 @@ final class Basic implements BasicInterface
 
     public function reject(FrameChannel $channel, Reject $command): Frame
     {
-        return new Frame(
-            Type::method(),
+        return Frame::command(
             $channel,
             Methods::get('basic.reject'),
             new UnsignedLongLongInteger(new Integer($command->deliveryTag())),
