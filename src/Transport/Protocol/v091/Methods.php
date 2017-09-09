@@ -24,6 +24,15 @@ final class Methods
         return self::classes()->get($method->class());
     }
 
+    public static function classId(string $class): int
+    {
+        return self::classes()
+            ->filter(static function(int $id, string $name) use ($class): bool {
+                return $name === $class;
+            })
+            ->key();
+    }
+
     /**
      * @return MapInterface<string, Method>
      */

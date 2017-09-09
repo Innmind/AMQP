@@ -12,9 +12,12 @@ use Innmind\AMQP\{
     Model\Basic\Qos,
     Model\Basic\Recover,
     Model\Basic\Reject,
+    Model\Basic\Message,
+    Model\Connection\MaxFrameSize,
     Transport\Frame,
     Transport\Frame\Type,
     Transport\Frame\Channel as FrameChannel,
+    Transport\Frame\Method,
     Transport\Frame\Value,
     Transport\Frame\Value\UnsignedLongLongInteger,
     Transport\Frame\Value\UnsignedLongInteger,
@@ -22,13 +25,18 @@ use Innmind\AMQP\{
     Transport\Frame\Value\ShortString,
     Transport\Frame\Value\UnsignedShortInteger,
     Transport\Frame\Value\Table,
+    Transport\Frame\Value\UnsignedOctet,
+    Transport\Frame\Value\Timestamp,
     Transport\Protocol\Basic as BasicInterface,
     Transport\Protocol\ArgumentTranslator
 };
 use Innmind\Math\Algebra\Integer;
 use Innmind\Immutable\{
     Str,
-    Map
+    Map,
+    MapInterface,
+    StreamInterface,
+    Stream
 };
 
 final class Basic implements BasicInterface
@@ -80,19 +88,7 @@ final class Basic implements BasicInterface
                 $command->isExclusive(),
                 !$command->shouldWait()
             ),
-            new Table(
-                $command
-                    ->arguments()
-                    ->reduce(
-                        new Map('string', Value::class),
-                        function(Map $carry, string $key, $value): Map {
-                            return $carry->put(
-                                $key,
-                                ($this->translate)($value)
-                            );
-                        }
-                    )
-            )
+            $this->arguments($command->arguments())
         );
     }
 
@@ -107,20 +103,48 @@ final class Basic implements BasicInterface
         );
     }
 
-    public function publish(FrameChannel $channel, Publish $command): Frame
-    {
-        return new Frame(
-            Type::method(),
-            $channel,
-            Methods::get('basic.publish'),
-            new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
-            new ShortString(new Str($command->exchange())),
-            new ShortString(new Str($command->routingKey())),
-            new Bits(
-                $command->mandatory(),
-                $command->immediate()
-            )
-        );
+    /**
+     * {@inheritdoc}
+     */
+    public function publish(
+        FrameChannel $channel,
+        Publish $command,
+        MaxFrameSize $maxFrameSize
+    ): StreamInterface {
+        $frames = (new Stream(Frame::class))
+            ->add(Frame::command(
+                $channel,
+                Methods::get('basic.publish'),
+                new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
+                new ShortString(new Str($command->exchange())),
+                new ShortString(new Str($command->routingKey())),
+                new Bits(
+                    $command->mandatory(),
+                    $command->immediate()
+                )
+            ))
+            ->add(Frame::header(
+                $channel,
+                Methods::classId('basic'),
+                new UnsignedLongLongInteger(new Integer(
+                    $command->message()->body()->length()
+                )),
+                ...$this->serializeProperties($command->message())
+            ));
+
+        //the "-8" is due to the content frame extra informations (type, channel and end flag)
+        $chunk = $maxFrameSize->isLimited() ? ($maxFrameSize->toInt() - 8) : $command->message()->body()->length();
+
+        return $command
+            ->message()
+            ->body()
+            ->chunk($chunk)
+            ->reduce(
+                $frames,
+                static function(Stream $frames, Str $chunk) use ($channel): Stream {
+                    return $frames->add(Frame::body($channel, $chunk));
+                }
+            );
     }
 
     public function qos(FrameChannel $channel, Qos $command): Frame
@@ -151,5 +175,120 @@ final class Basic implements BasicInterface
             new UnsignedLongLongInteger(new Integer($command->deliveryTag())),
             new Bits($command->shouldRequeue())
         );
+    }
+
+    private function arguments(MapInterface $arguments): Table
+    {
+        return new Table(
+            $arguments->reduce(
+                new Map('string', Value::class),
+                function(Map $carry, string $key, $value): Map {
+                    return $carry->put(
+                        $key,
+                        ($this->translate)($value)
+                    );
+                }
+            )
+        );
+    }
+
+    private function serializeProperties(Message $message): array
+    {
+        $properties = [];
+        $flagBits = 0;
+
+        if ($message->hasContentType()) {
+            $properties[] = new ShortString(
+                new Str((string) $message->contentType())
+            );
+            $flagBits |= (1 << 15);
+        }
+
+        if ($message->hasContentEncoding()) {
+            $properties[] = new ShortString(
+                new Str((string) $message->contentEncoding())
+            );
+            $flagBits |= (1 << 14);
+        }
+
+        if ($message->hasHeaders()) {
+            $properties[] = $this->arguments($message->headers());
+            $flagBits |= (1 << 13);
+        }
+
+        if ($message->hasDeliveryMode()) {
+            $properties[] = new UnsignedOctet(
+                new Integer($message->deliveryMode()->toInt())
+            );
+            $flagBits |= (1 << 12);
+        }
+
+        if ($message->hasPriority()) {
+            $properties[] = new UnsignedOctet(
+                new Integer($message->priority()->toInt())
+            );
+            $flagBits |= (1 << 11);
+        }
+
+        if ($message->hasCorrelationId()) {
+            $properties[] = new ShortString(
+                new Str((string) $message->correlationId())
+            );
+            $flagBits |= (1 << 10);
+        }
+
+        if ($message->hasReplyTo()) {
+            $properties[] = new ShortString(
+                new Str((string) $message->replyTo())
+            );
+            $flagBits |= (1 << 9);
+        }
+
+        if ($message->hasExpiration()) {
+            $properties[] = new ShortString(
+                new Str((string) $message->expiration()->milliseconds())
+            );
+            $flagBits |= (1 << 8);
+        }
+
+        if ($message->hasId()) {
+            $properties[] = new ShortString(
+                new Str((string) $message->id())
+            );
+            $flagBits |= (1 << 7);
+        }
+
+        if ($message->hasTimestamp()) {
+            $properties[] = new Timestamp($message->timestamp());
+            $flagBits |= (1 << 6);
+        }
+
+        if ($message->hasType()) {
+            $properties[] = new ShortString(
+                new Str((string) $message->type())
+            );
+            $flagBits |= (1 << 5);
+        }
+
+        if ($message->hasUserId()) {
+            $properties[] = new ShortString(
+                new Str((string) $message->userId())
+            );
+            $flagBits |= (1 << 4);
+        }
+
+        if ($message->hasAppId()) {
+            $properties[] = new ShortString(
+                new Str((string) $message->appId())
+            );
+            $flagBits |= (1 << 3);
+        }
+
+        array_unshift(
+            $properties,
+            new UnsignedShortInteger(new Integer($flagBits))
+        );
+
+        return $properties;
     }
 }
