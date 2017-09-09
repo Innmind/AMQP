@@ -29,4 +29,29 @@ class MaxFrameSizeTest extends TestCase
     {
         new MaxFrameSize(-1);
     }
+
+    /**
+     * @expectedException Innmind\AMQP\Exception\DomainException
+     * @dataProvider invalid
+     */
+    public function testThrowWhenValueLowerThanFrameFlags($int)
+    {
+        //meaning that channel id + payload size int + frame end flag
+        //already make a size of 8 leaving no place for the payload
+        new MaxFrameSize($int);
+    }
+
+    public function invalid(): array
+    {
+        return [
+            [1],
+            [2],
+            [3],
+            [4],
+            [5],
+            [6],
+            [7],
+            [8],
+        ];
+    }
 }
