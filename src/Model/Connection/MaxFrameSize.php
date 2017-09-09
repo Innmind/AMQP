@@ -18,9 +18,14 @@ final class MaxFrameSize
         $this->value = $value;
     }
 
+    public function isLimited(): bool
+    {
+        return $this->value > 0;
+    }
+
     public function allows(int $size): bool
     {
-        if ($this->value === 0) {
+        if (!$this->isLimited()) {
             return true;
         }
 

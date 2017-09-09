@@ -16,8 +16,10 @@ class MaxFrameSizeTest extends TestCase
         $this->assertTrue($max->allows(0));
         $this->assertTrue($max->allows(42));
         $this->assertFalse($max->allows(43));
+        $this->assertTrue($max->isLimited());
 
         $this->assertTrue((new MaxFrameSize(0))->allows(1));
+        $this->assertFalse((new MaxFrameSize(0))->isLimited());
     }
 
     /**
