@@ -40,4 +40,23 @@ class FrameTest extends TestCase
             (string) $frame
         );
     }
+
+    public function testHeader()
+    {
+        $frame = Frame::header(
+            $channel = new Channel(42),
+            60,
+            $value = new Text(new Str('foobar'))
+        );
+
+        $this->assertSame(Type::header(), $frame->type());
+        $this->assertSame($channel, $frame->channel());
+        $this->assertInstanceOf(StreamInterface::class, $frame->values());
+        $this->assertSame(Value::class, (string) $frame->values()->type());
+        $this->assertSame([$value], $frame->values()->toPrimitive());
+        $this->assertSame(
+            chr(2).pack('n', 42).pack('N', 10).pack('n', 60).pack('n', 0).'foobar'.chr(0xCE),
+            (string) $frame
+        );
+    }
 }

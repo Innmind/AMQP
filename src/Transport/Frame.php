@@ -73,6 +73,28 @@ final class Frame
         return $self;
     }
 
+    public static function header(
+        Channel $channel,
+        int $class,
+        Value ...$values
+    ): self {
+        $self = new self(
+            Type::header(),
+            $channel,
+            new UnsignedShortInteger(new Integer($class)),
+            new UnsignedShortInteger(new Integer(0)), //weight
+            ...$values
+        );
+        $self->values = (new Sequence(...$values))->reduce(
+            new Stream(Value::class),
+            static function(Stream $stream, Value $value): Stream {
+                return $stream->add($value);
+            }
+        );
+
+        return $self;
+    }
+
     public function type(): Type
     {
         return $this->type;
