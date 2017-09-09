@@ -66,7 +66,7 @@ final class Frame
         );
         $self->method = $method;
         $self->values = (new Sequence(...$values))->reduce(
-            new Stream(Value::class),
+            $self->values,
             static function(Stream $stream, Value $value): Stream {
                 return $stream->add($value);
             }
@@ -88,7 +88,7 @@ final class Frame
             ...$values
         );
         $self->values = (new Sequence(...$values))->reduce(
-            new Stream(Value::class),
+            $self->values,
             static function(Stream $stream, Value $value): Stream {
                 return $stream->add($value);
             }
@@ -104,7 +104,7 @@ final class Frame
             $channel,
             $value = new Text($payload)
         );
-        $self->values = (new Stream(Value::class))->add($value);
+        $self->values = $self->values->add($value);
 
         return $self;
     }
