@@ -29,6 +29,7 @@ class FrameTest extends TestCase
             $text = new Text(new Str('foobar'))
         );
 
+        $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame(Type::method(), $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertSame($method, $frame->method());
@@ -49,6 +50,7 @@ class FrameTest extends TestCase
             $value = new Text(new Str('foobar'))
         );
 
+        $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame(Type::header(), $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertInstanceOf(StreamInterface::class, $frame->values());
