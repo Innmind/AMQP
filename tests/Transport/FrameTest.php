@@ -81,4 +81,20 @@ class FrameTest extends TestCase
             (string) $frame
         );
     }
+
+    public function testHeartbeat()
+    {
+        $frame = Frame::heartbeat();
+
+        $this->assertInstanceOf(Frame::class, $frame);
+        $this->assertInstanceOf(Channel::class, $frame->channel());
+        $this->assertSame(0, $frame->channel()->toInt());
+        $this->assertInstanceOf(StreamInterface::class, $frame->values());
+        $this->assertSame(Value::class, (string) $frame->values()->type());
+        $this->assertCount(0, $frame->values());
+        $this->assertSame(
+            chr(8).pack('n', 0).pack('N', 0).chr(0xCE),
+            (string) $frame
+        );
+    }
 }

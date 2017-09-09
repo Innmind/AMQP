@@ -36,6 +36,7 @@ final class Frame
     ) {
         $this->type = $type;
         $this->channel = $channel;
+        $this->values = new Stream(Value::class);
 
         $values = new Sequence(...$values);
         $payload = $values->join('')->toEncoding('ASCII');
@@ -106,6 +107,14 @@ final class Frame
         $self->values = (new Stream(Value::class))->add($value);
 
         return $self;
+    }
+
+    public static function heartbeat(): self
+    {
+        return new self(
+            Type::heartbeat(),
+            new Channel(0)
+        );
     }
 
     public function type(): Type
