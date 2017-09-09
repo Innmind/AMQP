@@ -31,9 +31,7 @@ class GenericTest extends TestCase
 {
     public function testInterface()
     {
-        $message = new Generic(
-            $body = new Str('')
-        );
+        $message = new Generic(new Str('foo'));
 
         $this->assertInstanceOf(Message::class, $message);
         $this->assertFalse($message->hasContentType());
@@ -49,7 +47,9 @@ class GenericTest extends TestCase
         $this->assertFalse($message->hasType());
         $this->assertFalse($message->hasUserId());
         $this->assertFalse($message->hasAppId());
-        $this->assertSame($body, $message->body());
+        $this->assertInstanceOf(Str::class, $message->body());
+        $this->assertSame('foo', (string) $message->body());
+        $this->assertSame('ASCII', (string) $message->body()->encoding());
     }
 
     public function testContentType()

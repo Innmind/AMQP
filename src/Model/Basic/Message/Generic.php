@@ -32,7 +32,7 @@ final class Generic implements Message
 
     public function __construct(Str $body)
     {
-        $this->body = $body;
+        $this->body = $body->toEncoding('ASCII');
     }
 
     public function hasContentType(): bool
