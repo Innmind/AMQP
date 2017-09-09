@@ -28,7 +28,10 @@ use Innmind\Url\{
     UrlInterface,
     Authority\NullUserInformation
 };
-use Innmind\TimeContinuum\ElapsedPeriod;
+use Innmind\TimeContinuum\{
+    ElapsedPeriod,
+    TimeContinuumInterface
+};
 use Innmind\Immutable\Str;
 
 final class Connection
@@ -45,12 +48,15 @@ final class Connection
     private $maxChannels;
     private $maxFrameSize;
     private $heartbeat;
+    private $clock;
+    private $lastReceivedData;
 
     public function __construct(
         Transport $transport,
         UrlInterface $server,
         Protocol $protocol,
-        ElapsedPeriod $timeout
+        ElapsedPeriod $timeout,
+        TimeContinuumInterface $clock
     ) {
         $this->transport = $transport;
         $this->authority = $server->authority();
@@ -62,6 +68,8 @@ final class Connection
         $this->maxChannels = new MaxChannels(0);
         $this->maxFrameSize = new MaxFrameSize(0);
         $this->heartbeat = $timeout;
+        $this->clock = $clock;
+        $this->lastReceivedData = $clock->now();
 
         $this->open();
     }
@@ -97,10 +105,18 @@ final class Connection
     public function wait(string ...$names): Frame
     {
         do {
+            $now = $this->clock->now();
+            $elapsedPeriod = $now->elapsedSince($this->lastReceivedData);
+
+            if ($elapsedPeriod->longerThan($this->heartbeat)) {
+                $this->send(Frame::heartbeat());
+            }
+
             $streams = ($this->select)();
         } while (!$streams->get('read')->contains($this->socket));
 
         $frame = ($this->read)($this->socket, $this->protocol);
+        $this->lastReceivedData = $this->clock->now();
 
         foreach ($names as $name) {
             if ($this->protocol->method($name)->equals($frame->method())) {

@@ -15,7 +15,10 @@ use Innmind\AMQP\{
     Model\Exchange\Type
 };
 use Innmind\Socket\Internet\Transport;
-use Innmind\TimeContinuum\ElapsedPeriod;
+use Innmind\TimeContinuum\{
+    ElapsedPeriod,
+    TimeContinuum\Earth
+};
 use Innmind\Url\Url;
 use PHPUnit\Framework\TestCase;
 
@@ -31,7 +34,8 @@ class ExchangeTest extends TestCase
                 Transport::tcp(),
                 Url::fromString('//guest:guest@localhost:5672/'),
                 new Protocol($this->createMock(ArgumentTranslator::class)),
-                new ElapsedPeriod(1000)
+                new ElapsedPeriod(1000),
+                new Earth
             ),
             new Channel(1)
         );

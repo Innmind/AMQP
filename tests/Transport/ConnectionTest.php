@@ -24,7 +24,10 @@ use Innmind\AMQP\{
 };
 use Innmind\Socket\Internet\Transport;
 use Innmind\Url\Url;
-use Innmind\TimeContinuum\ElapsedPeriod;
+use Innmind\TimeContinuum\{
+    ElapsedPeriod,
+    TimeContinuum\Earth
+};
 use Innmind\Immutable\{
     Str,
     StreamInterface
@@ -39,7 +42,8 @@ class ConnectionTest extends TestCase
             Transport::tcp(),
             Url::fromString('//guest:guest@localhost:5672/'),
             $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
-            new ElapsedPeriod(1000)
+            new ElapsedPeriod(1000),
+            new Earth
         );
 
         $this->assertSame($protocol, $connection->protocol());
@@ -61,7 +65,8 @@ class ConnectionTest extends TestCase
             Transport::tcp(),
             Url::fromString('//guest:guest@localhost:5672/'),
             $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
-            new ElapsedPeriod(1000)
+            new ElapsedPeriod(1000),
+            new Earth
         );
 
         $this->assertTrue($connection->opened());
@@ -78,7 +83,8 @@ class ConnectionTest extends TestCase
             Transport::tcp(),
             Url::fromString('//guest:guest@localhost:5672/'),
             $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
-            new ElapsedPeriod(1000)
+            new ElapsedPeriod(1000),
+            new Earth
         );
         $connection
             ->send(
@@ -124,7 +130,8 @@ class ConnectionTest extends TestCase
             Transport::tcp(),
             Url::fromString('//guest:guest@localhost:5672/'),
             $protocol = new Delegate($top, new Protocol($this->createMock(ArgumentTranslator::class))),
-            new ElapsedPeriod(1000)
+            new ElapsedPeriod(1000),
+            new Earth
         );
 
         $this->assertSame(
