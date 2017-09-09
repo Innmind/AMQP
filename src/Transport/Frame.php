@@ -17,7 +17,8 @@ use Innmind\Math\Algebra\Integer;
 use Innmind\Immutable\{
     Sequence,
     Stream,
-    StreamInterface
+    StreamInterface,
+    Str
 };
 
 final class Frame
@@ -91,6 +92,18 @@ final class Frame
                 return $stream->add($value);
             }
         );
+
+        return $self;
+    }
+
+    public static function body(Channel $channel, Str $payload): self
+    {
+        $self = new self(
+            Type::body(),
+            $channel,
+            $value = new Text($payload)
+        );
+        $self->values = (new Stream(Value::class))->add($value);
 
         return $self;
     }
