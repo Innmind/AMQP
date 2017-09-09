@@ -17,12 +17,12 @@ class TuneOkTest extends TestCase
     {
         $command = new TuneOk(
             new MaxChannels(1),
-            new MaxFrameSize(2),
+            new MaxFrameSize(10),
             $heartbeat = new ElapsedPeriod(1000)
         );
 
         $this->assertSame(1, $command->maxChannels());
-        $this->assertSame(2, $command->maxFrameSize());
+        $this->assertSame(10, $command->maxFrameSize());
         $this->assertSame($heartbeat, $command->heartbeat());
     }
 }

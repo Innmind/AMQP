@@ -170,7 +170,7 @@ class ConnectionTest extends TestCase
         $frame = (new Connection)->tuneOk(
             new TuneOk(
                 new MaxChannels(1),
-                new MaxFrameSize(2),
+                new MaxFrameSize(10),
                 new ElapsedPeriod(3000)
             )
         );
@@ -189,7 +189,7 @@ class ConnectionTest extends TestCase
             UnsignedLongInteger::class,
             $frame->values()->get(1)
         );
-        $this->assertSame(2, $frame->values()->get(1)->original()->value());
+        $this->assertSame(10, $frame->values()->get(1)->original()->value());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
             $frame->values()->get(2)
