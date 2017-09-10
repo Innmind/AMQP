@@ -9,7 +9,8 @@ use Innmind\AMQP\{
     Transport\Connection,
     Transport\Frame\Channel,
     Transport\Protocol\v091\Protocol,
-    Transport\Protocol\ArgumentTranslator
+    Transport\Protocol\ArgumentTranslator,
+    Model\Channel\Close
 };
 use Innmind\Socket\Internet\Transport;
 use Innmind\TimeContinuum\{
@@ -45,6 +46,14 @@ class TransactionTest extends TestCase
 
     public function tearDown()
     {
+        $this->connection
+            ->send(
+                $this->connection->protocol()->channel()->close(
+                    new Channel(1),
+                    new Close
+                )
+            )
+            ->wait('channel.close-ok');
         $this->connection->close();
     }
 

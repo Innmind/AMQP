@@ -12,7 +12,8 @@ use Innmind\AMQP\{
     Transport\Frame\Channel,
     Model\Exchange\Declaration,
     Model\Exchange\Deletion,
-    Model\Exchange\Type
+    Model\Exchange\Type,
+    Model\Channel\Close
 };
 use Innmind\Socket\Internet\Transport;
 use Innmind\TimeContinuum\{
@@ -49,6 +50,14 @@ class ExchangeTest extends TestCase
 
     public function tearDown()
     {
+        $this->connection
+            ->send(
+                $this->connection->protocol()->channel()->close(
+                    new Channel(1),
+                    new Close
+                )
+            )
+            ->wait('channel.close-ok');
         $this->connection->close();
     }
 

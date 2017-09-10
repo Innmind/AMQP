@@ -17,7 +17,8 @@ use Innmind\AMQP\{
     Model\Queue\Deletion,
     Model\Queue\DeleteOk,
     Model\Queue\Binding,
-    Model\Queue\Unbinding
+    Model\Queue\Unbinding,
+    Model\Channel\Close
 };
 use Innmind\Socket\Internet\Transport;
 use Innmind\TimeContinuum\{
@@ -54,6 +55,14 @@ class QueueTest extends TestCase
 
     public function tearDown()
     {
+        $this->connection
+            ->send(
+                $this->connection->protocol()->channel()->close(
+                    new Channel(1),
+                    new Close
+                )
+            )
+            ->wait('channel.close-ok');
         $this->connection->close();
     }
 
