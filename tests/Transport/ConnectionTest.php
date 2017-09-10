@@ -118,6 +118,7 @@ class ConnectionTest extends TestCase
             }
 
             public function read(Method $method, Str $arguments): StreamInterface {}
+            public function readHeader(Str $arguments): StreamInterface {}
             public function method(string $name): Method {}
             public function connection(): PConnection {}
             public function channel(): PChannel {}
