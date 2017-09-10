@@ -6,6 +6,7 @@ namespace Innmind\AMQP\Transport;
 use Innmind\AMQP\{
     Transport\Connection\FrameReader,
     Transport\Protocol\Version,
+    Transport\Frame\Type,
     Transport\Frame\Value\UnsignedOctet,
     Model\Connection\StartOk,
     Model\Connection\SecureOk,
@@ -117,6 +118,10 @@ final class Connection
 
         $frame = ($this->read)($this->socket, $this->protocol);
         $this->lastReceivedData = $this->clock->now();
+
+        if ($frame->type() === Type::heartbeat()) {
+            return $this->wait(...$names);
+        }
 
         if (count($names) === 0) {
             return $frame;
