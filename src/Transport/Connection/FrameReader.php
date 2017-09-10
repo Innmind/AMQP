@@ -15,7 +15,8 @@ use Innmind\AMQP\{
     Exception\ReceivedFrameNotDelimitedCorrectly,
     Exception\PayloadTooShort,
     Exception\UnknownFrameType,
-    Exception\NoFrameDetected
+    Exception\NoFrameDetected,
+    Exception\LogicException
 };
 use Innmind\Stream\Readable;
 
@@ -40,7 +41,13 @@ final class FrameReader
             ->read(UnsignedLongInteger::fromString($stream->read(4))->original()->value())
             ->toEncoding('ASCII');
 
-        if ($payload->length() < 4) {
+        if (
+            (
+                $type === Type::method() ||
+                $type === Type::header()
+            ) &&
+            $payload->length() < 4
+        ) {
             throw new PayloadTooShort;
         }
 
@@ -56,17 +63,45 @@ final class FrameReader
             throw new ReceivedFrameNotDelimitedCorrectly;
         }
 
-        $method = $payload->substring(0, 4);
-        $method = new Method(
-            UnsignedShortInteger::fromString($method->substring(0, 2))->original()->value(),
-            UnsignedShortInteger::fromString($method->substring(2, 4))->original()->value()
-        );
-        $arguments = $payload->substring(4);
+        switch ($type) {
+            case Type::method():
+                $method = $payload->substring(0, 4);
+                $method = new Method(
+                    UnsignedShortInteger::fromString($method->substring(0, 2))
+                        ->original()
+                        ->value(),
+                    UnsignedShortInteger::fromString($method->substring(2, 4))
+                        ->original()
+                        ->value()
+                );
+                $arguments = $payload->substring(4);
 
-        return Frame::command(
-            $channel,
-            $method,
-            ...$protocol->read($method, $arguments)
-        );
+                return Frame::command(
+                    $channel,
+                    $method,
+                    ...$protocol->read($method, $arguments)
+                );
+
+            case Type::header():
+                $header = $payload->substring(0, 4); //3 and 4 are the weight
+                $class = UnsignedShortInteger::fromString($header->substring(0, 2))
+                    ->original()
+                    ->value();
+
+                return Frame::header(
+                    $channel,
+                    $class,
+                    ...$protocol->readHeader($payload->substring(4))
+                );
+
+            case Type::body():
+                return Frame::body($channel, $payload);
+
+            case Type::heartbeat():
+                return Frame::heartbeat();
+
+            default:
+                throw new LogicException; //if reached then there's an implementation error
+        }
     }
 }
