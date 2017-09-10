@@ -7,6 +7,7 @@ use Innmind\AMQP\{
     Transport\Connection\FrameReader,
     Transport\Protocol\Version,
     Transport\Frame\Type,
+    Transport\Frame\Method,
     Transport\Frame\Value\UnsignedOctet,
     Model\Connection\StartOk,
     Model\Connection\SecureOk,
@@ -18,7 +19,8 @@ use Innmind\AMQP\{
     Exception\FrameChannelExceedAllowedChannelNumber,
     Exception\FrameExceedAllowedSize,
     Exception\UnexpectedFrame,
-    Exception\NoFrameDetected
+    Exception\NoFrameDetected,
+    Exception\ConnectionClosed
 };
 use Innmind\Socket\{
     Internet\Transport,
@@ -136,6 +138,20 @@ final class Connection
             if ($this->protocol->method($name)->equals($frame->method())) {
                 return $frame;
             }
+        }
+
+        if ($this->protocol->method('connection.close')->equals($frame->method())) {
+            $this->send($this->protocol->connection()->closeOk());
+            $this->opened = false;
+
+            throw new ConnectionClosed(
+                (string) $frame->values()->get(1)->original(),
+                $frame->values()->get(0)->original()->value(),
+                new Method(
+                    $frame->values()->get(2)->original()->value(),
+                    $frame->values()->get(3)->original()->value()
+                )
+            );
         }
 
         throw new UnexpectedFrame($frame->method(), ...$names);

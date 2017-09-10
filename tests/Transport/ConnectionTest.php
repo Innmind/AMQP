@@ -20,7 +20,8 @@ use Innmind\AMQP\{
     Transport\Frame\Channel,
     Transport\Frame\Method,
     Model\Connection\MaxFrameSize,
-    Exception\VersionNotUsable
+    Exception\VersionNotUsable,
+    Exception\ConnectionClosed
 };
 use Innmind\Socket\Internet\Transport;
 use Innmind\Url\Url;
@@ -147,5 +148,31 @@ class ConnectionTest extends TestCase
         );
         $this->assertInstanceOf(Frame::class, $connection->wait('channel.open-ok'));
         unset($connection); //test it closes without exception
+    }
+
+    public function testThrowWhenConnectionClosedByServer()
+    {
+        $connection = new Connection(
+            Transport::tcp(),
+            Url::fromString('//guest:guest@localhost:5672/'),
+            $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
+            new ElapsedPeriod(1000),
+            new Earth
+        );
+
+        try {
+            $connection
+                ->send(Frame::command(
+                    new Channel(0),
+                    new Method(20, 10)
+                    //missing arguments
+                ))
+                ->wait('channel.open-ok');
+        } catch (ConnectionClosed $e) {
+            $this->assertFalse($connection->opened());
+            $this->assertSame('INTERNAL_ERROR', $e->getMessage());
+            $this->assertSame(541, $e->getCode());
+            $this->assertTrue($e->cause()->equals(new Method(0, 0)));
+        }
     }
 }
