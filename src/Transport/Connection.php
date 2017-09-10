@@ -127,6 +127,11 @@ final class Connection
             return $frame;
         }
 
+        if ($frame->type() !== Type::method()) {
+            //someone must have forgot a wait() call
+            throw new ExpectedMethodFrame($frame->type());
+        }
+
         foreach ($names as $name) {
             if ($this->protocol->method($name)->equals($frame->method())) {
                 return $frame;
