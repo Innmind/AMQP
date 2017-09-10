@@ -78,6 +78,7 @@ class DelegateTest extends TestCase
             }
 
             public function read(Method $method, Str $arguments): StreamInterface {}
+            public function readHeader(Str $arguments): StreamInterface {}
             public function method(string $name): Method {}
             public function connection(): Connection {}
             public function channel(): Channel {}

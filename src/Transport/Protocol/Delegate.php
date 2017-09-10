@@ -64,6 +64,14 @@ final class Delegate implements Protocol
         return $this->inUse->read($method, $arguments);
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function readHeader(Str $arguments): StreamInterface
+    {
+        return $this->inUse->readHeader($arguments);
+    }
+
     public function method(string $name): Method
     {
         return $this->inUse->method($name);

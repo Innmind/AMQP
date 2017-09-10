@@ -3,18 +3,44 @@ declare(strict_types = 1);
 
 namespace Tests\Innmind\AMQP\Transport\Protocol\v091;
 
-use Innmind\AMQP\Transport\{
-    Protocol\v091\Protocol,
-    Protocol\v091\Connection,
-    Protocol\v091\Channel,
-    Protocol\v091\Exchange,
-    Protocol\v091\Queue,
-    Protocol\v091\Basic,
-    Protocol\v091\Transaction,
-    Protocol as ProtocolInterface,
-    Protocol\Version,
-    Protocol\ArgumentTranslator,
-    Frame\Method
+use Innmind\AMQP\{
+    Transport\Protocol\v091\Protocol,
+    Transport\Protocol\v091\Connection,
+    Transport\Protocol\v091\Channel,
+    Transport\Protocol\v091\Exchange,
+    Transport\Protocol\v091\Queue,
+    Transport\Protocol\v091\Basic,
+    Transport\Protocol\v091\Transaction,
+    Transport\Protocol as ProtocolInterface,
+    Transport\Protocol\Version,
+    Transport\Protocol\ArgumentTranslator,
+    Transport\Protocol\ArgumentTranslator\ValueTranslator,
+    Transport\Frame\Method,
+    Transport\Frame\Channel as FrameChannel,
+    Transport\Frame\Value,
+    Transport\Frame\Value\ShortString,
+    Model\Basic\Publish,
+    Model\Basic\Message\Generic,
+    Model\Basic\Message\AppId,
+    Model\Basic\Message\ContentEncoding,
+    Model\Basic\Message\ContentType,
+    Model\Basic\Message\CorrelationId,
+    Model\Basic\Message\DeliveryMode,
+    Model\Basic\Message\Id,
+    Model\Basic\Message\Priority,
+    Model\Basic\Message\ReplyTo,
+    Model\Basic\Message\Type,
+    Model\Basic\Message\UserId,
+    Model\Connection\MaxFrameSize
+};
+use Innmind\TimeContinuum\{
+    ElapsedPeriod,
+    PointInTime\Earth\Now
+};
+use Innmind\Immutable\{
+    Str,
+    Map,
+    StreamInterface
 };
 use PHPUnit\Framework\TestCase;
 
@@ -52,6 +78,48 @@ class ProtocolTest extends TestCase
 
         $this->assertSame($protocol, $protocol->use(new Version(0, 9, 0)));
         $this->assertSame($protocol, $protocol->use(new Version(0, 9, 1)));
+    }
+
+    public function testReadHeader()
+    {
+        $protocol = new Protocol(new ValueTranslator);
+
+        $header = $protocol
+            ->basic()
+            ->publish(
+                new FrameChannel(1),
+                new Publish(
+                    (new Generic(new Str('foobar')))
+                        ->withContentType(new ContentType('application', 'json'))
+                        ->withContentEncoding(new ContentEncoding('gzip'))
+                        ->withHeaders(
+                            (new Map('string', 'mixed'))
+                                ->put('foo', new ShortString(new Str('bar')))
+                        )
+                        ->withDeliveryMode(DeliveryMode::persistent())
+                        ->withPriority(new Priority(5))
+                        ->withCorrelationId(new CorrelationId('correlation'))
+                        ->withReplyTo(new ReplyTo('reply'))
+                        ->withExpiration(new ElapsedPeriod(1000))
+                        ->withId(new Id('id'))
+                        ->withTimestamp($now = new Now)
+                        ->withType(new Type('type'))
+                        ->withUserId(new UserId('guest'))
+                        ->withAppId(new AppId('webcrawler'))
+                ),
+                new MaxFrameSize(10)
+            )
+            ->get(1);
+
+        $values = $protocol->readHeader(new Str((string) $header->values()->join('')));
+
+        $this->assertInstanceOf(StreamInterface::class, $values);
+        $this->assertSame(Value::class, (string) $values->type());
+        $this->assertCount(15, $values); // body size + flag bits + 13 properties
+        $this->assertSame(
+            (string) $values->join(''),
+            (string) $header->values()->join('')
+        );
     }
 
     /**

@@ -14,6 +14,13 @@ use Innmind\AMQP\{
     Transport\Protocol\Transaction as TransactionInterface,
     Transport\Protocol\ArgumentTranslator,
     Transport\Frame\Method,
+    Transport\Frame\Visitor\ChunkArguments,
+    Transport\Frame\Value\UnsignedOctet,
+    Transport\Frame\Value\UnsignedShortInteger,
+    Transport\Frame\Value\UnsignedLongLongInteger,
+    Transport\Frame\Value\Timestamp,
+    Transport\Frame\Value\Table,
+    Transport\Frame\Value\ShortString,
     Exception\VersionNotUsable
 };
 use Innmind\Immutable\{
@@ -64,6 +71,78 @@ final class Protocol implements ProtocolInterface
     public function read(Method $method, Str $arguments): StreamInterface
     {
         return ($this->read)($method, $arguments);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function readHeader(Str $payload): StreamInterface
+    {
+        $chunk = new ChunkArguments(
+            UnsignedLongLongInteger::class,
+            UnsignedShortInteger::class
+        );
+        [$bodySize, $flagBits] = $chunk($payload);
+
+        $flagBits = $flagBits->original()->value();
+        $toChunk = [
+            UnsignedLongLongInteger::class, //body size
+            UnsignedShortInteger::class, // flag bits
+        ];
+
+        if ($flagBits & (1 << 15)) {
+            $toChunk[] = ShortString::class; //content type
+        }
+
+        if ($flagBits & (1 << 14)) {
+            $toChunk[] = ShortString::class; //content encoding
+        }
+
+        if ($flagBits & (1 << 13)) {
+            $toChunk[] = Table::class; //headers
+        }
+
+        if ($flagBits & (1 << 12)) {
+            $toChunk[] = UnsignedOctet::class; //delivery mode
+        }
+
+        if ($flagBits & (1 << 11)) {
+            $toChunk[] = UnsignedOctet::class; //priority
+        }
+
+        if ($flagBits & (1 << 10)) {
+            $toChunk[] = ShortString::class; //correlation id
+        }
+
+        if ($flagBits & (1 << 9)) {
+            $toChunk[] = ShortString::class; //reply to
+        }
+
+        if ($flagBits & (1 << 8)) {
+            $toChunk[] = ShortString::class; //expiration
+        }
+
+        if ($flagBits & (1 << 7)) {
+            $toChunk[] = ShortString::class; //id
+        }
+
+        if ($flagBits & (1 << 6)) {
+            $toChunk[] = Timestamp::class; //timestamp
+        }
+
+        if ($flagBits & (1 << 5)) {
+            $toChunk[] = ShortString::class; //type
+        }
+
+        if ($flagBits & (1 << 4)) {
+            $toChunk[] = ShortString::class; //user id
+        }
+
+        if ($flagBits & (1 << 3)) {
+            $toChunk[] = ShortString::class; //app id
+        }
+
+        return (new ChunkArguments(...$toChunk))($payload);
     }
 
     public function method(string $name): Method
