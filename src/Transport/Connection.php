@@ -118,6 +118,10 @@ final class Connection
         $frame = ($this->read)($this->socket, $this->protocol);
         $this->lastReceivedData = $this->clock->now();
 
+        if (count($names) === 0) {
+            return $frame;
+        }
+
         foreach ($names as $name) {
             if ($this->protocol->method($name)->equals($frame->method())) {
                 return $frame;
