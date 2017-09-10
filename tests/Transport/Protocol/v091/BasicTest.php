@@ -211,7 +211,9 @@ class BasicTest extends TestCase
 
         $frame = $this->basic->consume(
             $channel = new Channel(1),
-            (new Consume('queue'))->dontWait()
+            (new Consume('queue'))
+                ->withConsumerTag('foo')
+                ->dontWait()
         );
 
         $this->assertSame(
