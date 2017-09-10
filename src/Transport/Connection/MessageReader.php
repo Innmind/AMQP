@@ -152,14 +152,14 @@ final class MessageReader
         }
 
         if ($flagBits & (1 << 4)) {
-            $message = $message->withType(new UserId(
+            $message = $message->withUserId(new UserId(
                 (string) $properties->first()->original()
             ));
             $properties = $properties->drop(1);
         }
 
         if ($flagBits & (1 << 3)) {
-            $message = $message->withType(new AppId(
+            $message = $message->withAppId(new AppId(
                 (string) $properties->first()->original()
             ));
             $properties = $properties->drop(1);
