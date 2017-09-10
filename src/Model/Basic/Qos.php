@@ -7,6 +7,9 @@ use Innmind\AMQP\Exception\DomainException;
 
 /**
  * Quality of service
+ *
+ * Prefetch size : pre-send messages with a payload equal or lower that the specified octets size
+ * Prefetch count : the number of messages to pre-send when consuming a queue
  */
 final class Qos
 {
@@ -24,6 +27,9 @@ final class Qos
         $this->prefetchCount = $prefetchCount;
     }
 
+    /**
+     * Will apply the definition for the whole connection
+     */
     public static function global(int $prefetchSize, int $prefetchCount): self
     {
         $self = new self($prefetchSize, $prefetchCount);
