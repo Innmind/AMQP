@@ -8,7 +8,20 @@ use Innmind\AMQP\{
     Client\Channel\Basic as BasicInterface,
     Transport\Connection,
     Transport\Frame\Channel,
+    Transport\Frame\Value,
+    Transport\Frame\Value\Bits,
+    Transport\Frame\Value\Decimal,
     Transport\Frame\Value\LongString,
+    Transport\Frame\Value\Sequence,
+    Transport\Frame\Value\SignedLongInteger,
+    Transport\Frame\Value\SignedOctet,
+    Transport\Frame\Value\Table,
+    Transport\Frame\Value\Timestamp,
+    Transport\Frame\Value\UnsignedLongInteger,
+    Transport\Frame\Value\UnsignedLongLongInteger,
+    Transport\Frame\Value\UnsignedOctet,
+    Transport\Frame\Value\UnsignedShortInteger,
+    Transport\Frame\Value\VoidValue,
     Transport\Protocol\v091\Protocol,
     Transport\Protocol\ArgumentTranslator\ValueTranslator,
     Model\Channel\Close,
@@ -46,6 +59,7 @@ use Innmind\TimeContinuum\{
     PointInTime\Earth\Now
 };
 use Innmind\Url\Url;
+use Innmind\Math\Algebra\Integer;
 use Innmind\Immutable\{
     Str,
     Map
@@ -717,7 +731,22 @@ class BasicTest extends TestCase
             ->withContentEncoding(new ContentEncoding('gzip'))
             ->withHeaders(
                 (new Map('string', 'mixed'))
-                    ->put('foo', new LongString(new Str('bar')))
+                    ->put('bits', new Bits(true))
+                    ->put('decimal', new Decimal(new Integer(1), new Integer(1)))
+                    ->put('longstr', new LongString(new Str('bar')))
+                    ->put('array', new Sequence(new Bits(true)))
+                    ->put('long', new SignedLongInteger(new Integer(2)))
+                    ->put('octet', new SignedOctet(new Integer(4)))
+                    ->put('table', new Table((new Map('string', Value::class))->put(
+                        'inner',
+                        new Bits(true)
+                    )))
+                    ->put('timestamp', new Timestamp($ts = new Now))
+                    ->put('ulong', new UnsignedLongInteger(new Integer(6)))
+                    ->put('ulonglong', new UnsignedLongLongInteger(new Integer(7)))
+                    ->put('uoctet', new UnsignedOctet(new Integer(8)))
+                    ->put('ushort', new UnsignedShortInteger(new Integer(9)))
+                    ->put('void', new VoidValue)
             )
             ->withDeliveryMode(DeliveryMode::persistent())
             ->withPriority(new Priority(5))
@@ -749,12 +778,30 @@ class BasicTest extends TestCase
                     int $messageCount
                 ) use (
                     &$called,
-                    $now
+                    $now,
+                    $ts
                 ): void {
                     $called = true;
                     $this->assertSame('text/plain', (string) $message->contentType());
                     $this->assertSame('gzip', (string) $message->contentEncoding());
-                    $this->assertSame('bar', (string) $message->headers()->get('foo'));
+
+                    $this->assertSame(true, $message->headers()->get('bits')->first());
+                    $this->assertSame(0.1, $message->headers()->get('decimal')->value());
+                    $this->assertSame('bar', (string) $message->headers()->get('longstr'));
+                    $this->assertSame(true, $message->headers()->get('array')->first()->original()->first());
+                    $this->assertSame(2, $message->headers()->get('long')->value());
+                    $this->assertSame(4, $message->headers()->get('octet')->value());
+                    $this->assertSame(true, $message->headers()->get('table')->get('inner')->original()->first());
+                    $this->assertSame(
+                        (int) ($ts->milliseconds() / 1000), //timestamp expressed in seconds and not milliseconds
+                        (int) ($message->headers()->get('timestamp')->milliseconds() / 1000)
+                    );
+                    $this->assertSame(6, $message->headers()->get('ulong')->value());
+                    $this->assertSame(7, $message->headers()->get('ulonglong')->value());
+                    $this->assertSame(8, $message->headers()->get('uoctet')->value());
+                    $this->assertSame(9, $message->headers()->get('ushort')->value());
+                    $this->assertNull($message->headers()->get('void'));
+
                     $this->assertSame(2, $message->deliveryMode()->toInt());
                     $this->assertSame(5, $message->priority()->toInt());
                     $this->assertSame('correlation', (string) $message->correlationId());
