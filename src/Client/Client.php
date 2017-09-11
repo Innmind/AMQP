@@ -15,7 +15,6 @@ final class Client implements ClientInterface
     private $connection;
     private $channels;
     private $channel = 1;
-    private $closed;
 
     public function __construct(Connection $connection)
     {
