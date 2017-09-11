@@ -7,6 +7,7 @@ use Innmind\AMQP\Transport\Frame\{
     Value\Table,
     Value\SignedOctet,
     Value\LongString,
+    Value\Text,
     Value
 };
 use Innmind\Math\Algebra\Integer;
@@ -78,6 +79,19 @@ class TableTest extends TestCase
 
         $this->assertInstanceOf(Str::class, $str);
         $this->assertSame($string, (string) $str);
+    }
+
+    /**
+     * @expectedException Innmind\AMQP\Exception\UnboundedTextCannotBeWrapped
+     */
+    public function testThrowWhenUsingUnboundedText()
+    {
+        new Table(
+            (new Map('string', Value::class))->put(
+                'foo',
+                new Text(new Str(''))
+            )
+        );
     }
 
     public function cases(): array

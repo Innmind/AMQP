@@ -5,7 +5,8 @@ namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\{
     Transport\Frame\Value,
-    Exception\StringNotOfExpectedLength
+    Exception\StringNotOfExpectedLength,
+    Exception\UnboundedTextCannotBeWrapped
 };
 use Innmind\Math\Algebra\Integer;
 use Innmind\Immutable\{
@@ -26,6 +27,15 @@ final class Sequence implements Value
     public function __construct(Value ...$values)
     {
         $sequence = new Seq(...$values);
+
+        $texts = $sequence->filter(static function(Value $value): bool {
+            return $value instanceof Text;
+        });
+
+        if ($texts->size() > 0) {
+            throw new UnboundedTextCannotBeWrapped;
+        }
+
         $data = $sequence
             ->reduce(
                 new Seq,

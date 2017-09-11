@@ -3,7 +3,11 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport\Frame\Value;
 
-use Innmind\AMQP\Transport\Frame\Value;
+use Innmind\AMQP\{
+    Transport\Frame\Value,
+    Exception\StringNotOfExpectedLength,
+    Exception\UnboundedTextCannotBeWrapped
+};
 use Innmind\Math\Algebra\Integer;
 use Innmind\Immutable\{
     Str,
@@ -30,6 +34,14 @@ final class Table implements Value
                 'Argument 1 must be of type MapInterface<string, %s>',
                 Value::class
             ));
+        }
+
+        $texts = $map->filter(static function(string $key, Value $value): bool {
+            return $value instanceof Text;
+        });
+
+        if ($texts->size() > 0) {
+            throw new UnboundedTextCannotBeWrapped;
         }
 
         $data = $map

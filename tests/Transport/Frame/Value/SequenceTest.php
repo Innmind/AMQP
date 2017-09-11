@@ -6,6 +6,7 @@ namespace Tests\Innmind\AMQP\Transport\Frame\Value;
 use Innmind\AMQP\Transport\Frame\{
     Value\Sequence,
     Value\LongString,
+    Value\Text,
     Value
 };
 use Innmind\Immutable\{
@@ -66,6 +67,14 @@ class SequenceTest extends TestCase
 
         $this->assertInstanceOf(Str::class, $str);
         $this->assertSame($string, (string) $str);
+    }
+
+    /**
+     * @expectedException Innmind\AMQP\Exception\UnboundedTextCannotBeWrapped
+     */
+    public function testThrowWhenUsingUnboundedText()
+    {
+        new Sequence(new Text(new Str('')));
     }
 
     public function cases(): array
