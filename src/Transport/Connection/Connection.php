@@ -49,7 +49,7 @@ final class Connection implements ConnectionInterface
     private $timeout;
     private $select;
     private $read;
-    private $opened = false;
+    private $closed = true;
     private $maxChannels;
     private $maxFrameSize;
     private $heartbeat;
@@ -147,7 +147,7 @@ final class Connection implements ConnectionInterface
 
         if ($this->protocol->method('connection.close')->equals($frame->method())) {
             $this->send($this->protocol->connection()->closeOk());
-            $this->opened = false;
+            $this->closed = true;
 
             throw new ConnectionClosed(
                 (string) $frame->values()->get(1)->original(),
@@ -169,7 +169,7 @@ final class Connection implements ConnectionInterface
 
     public function close(): void
     {
-        if (!$this->opened()) {
+        if ($this->closed()) {
             return;
         }
 
@@ -177,12 +177,12 @@ final class Connection implements ConnectionInterface
             ->send($this->protocol->connection()->close(new Close))
             ->wait('connection.close-ok');
         $this->socket->close();
-        $this->opened = false;
+        $this->closed = true;
     }
 
-    public function opened(): bool
+    public function closed(): bool
     {
-        return $this->opened && !$this->socket->closed();
+        return $this->closed || $this->socket->closed();
     }
 
     public function __destruct()
@@ -201,7 +201,7 @@ final class Connection implements ConnectionInterface
 
     private function open(): void
     {
-        if ($this->opened()) {
+        if (!$this->closed()) {
             return;
         }
 
@@ -209,7 +209,7 @@ final class Connection implements ConnectionInterface
         $this->handshake();
         $this->openVHost();
 
-        $this->opened = true;
+        $this->closed = false;
     }
 
     private function start(): void

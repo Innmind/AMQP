@@ -72,9 +72,9 @@ class ConnectionTest extends TestCase
             new Earth
         );
 
-        $this->assertTrue($connection->opened());
+        $this->assertFalse($connection->closed());
         $this->assertNull($connection->close());
-        $this->assertFalse($connection->opened());
+        $this->assertTrue($connection->closed());
     }
 
     /**
@@ -171,7 +171,7 @@ class ConnectionTest extends TestCase
                 ))
                 ->wait('channel.open-ok');
         } catch (ConnectionClosed $e) {
-            $this->assertFalse($connection->opened());
+            $this->assertTrue($connection->closed());
             $this->assertSame('INTERNAL_ERROR', $e->getMessage());
             $this->assertSame(541, $e->getCode());
             $this->assertTrue($e->cause()->equals(new Method(0, 0)));

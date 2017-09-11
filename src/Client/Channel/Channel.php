@@ -57,7 +57,7 @@ final class Channel implements ChannelInterfce
 
     public function closed(): bool
     {
-        return $this->closed || !$this->connection->opened();
+        return $this->closed || $this->connection->closed();
     }
 
     public function close(): void

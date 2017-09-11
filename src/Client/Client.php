@@ -41,7 +41,7 @@ final class Client implements ClientInterface
 
     public function closed(): bool
     {
-        return !$this->connection->opened();
+        return $this->connection->closed();
     }
 
     public function close(): void

@@ -23,5 +23,5 @@ interface Connection
     public function wait(string ...$names): Frame;
     public function maxFrameSize(): MaxFrameSize;
     public function close(): void;
-    public function opened(): bool;
+    public function closed(): bool;
 }

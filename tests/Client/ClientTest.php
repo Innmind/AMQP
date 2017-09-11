@@ -56,7 +56,7 @@ class ClientTest extends TestCase
         $this->assertFalse($this->client->closed());
         $this->assertNull($this->client->close());
         $this->assertTrue($this->client->closed());
-        $this->assertFalse($this->connection->opened());
+        $this->assertTrue($this->connection->closed());
         $this->assertNull($this->client->close()); //ensure nothing happens
     }
 }

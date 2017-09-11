@@ -193,7 +193,7 @@ final class Consumer implements ConsumerInterface
             return true;
         }
 
-        return !$this->connection->opened();
+        return $this->connection->closed();
     }
 
     private function cancel(): void
