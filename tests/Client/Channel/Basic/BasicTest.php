@@ -8,6 +8,7 @@ use Innmind\AMQP\{
     Client\Channel\Basic as BasicInterface,
     Transport\Connection,
     Transport\Frame\Channel,
+    Transport\Frame\Value\LongString,
     Transport\Protocol\v091\Protocol,
     Transport\Protocol\ArgumentTranslator\ValueTranslator,
     Model\Channel\Close,
@@ -23,6 +24,17 @@ use Innmind\AMQP\{
     Model\Basic\Recover,
     Model\Basic\Message,
     Model\Basic\Message\Generic,
+    Model\Basic\Message\AppId,
+    Model\Basic\Message\ContentEncoding,
+    Model\Basic\Message\ContentType,
+    Model\Basic\Message\CorrelationId,
+    Model\Basic\Message\DeliveryMode,
+    Model\Basic\Message\Id,
+    Model\Basic\Message\Priority,
+    Model\Basic\Message\ReplyTo,
+    Model\Basic\Message\Type,
+    Model\Basic\Message\UserId,
+    TimeContinuum\Format\Timestamp as TimestampFormat,
     Exception\Reject,
     Exception\Requeue,
     Exception\Cancel
@@ -30,10 +42,14 @@ use Innmind\AMQP\{
 use Innmind\Socket\Internet\Transport;
 use Innmind\TimeContinuum\{
     ElapsedPeriod,
-    TimeContinuum\Earth
+    TimeContinuum\Earth,
+    PointInTime\Earth\Now
 };
 use Innmind\Url\Url;
-use Innmind\Immutable\Str;
+use Innmind\Immutable\{
+    Str,
+    Map
+};
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -673,6 +689,90 @@ class BasicTest extends TestCase
                     $this->assertSame('amq.direct', $exchange);
                     $this->assertSame('', $routingKey);
                     $this->assertSame(1, $messageCount); //1 left in the queue
+                })
+        );
+        $this->assertTrue($called);
+    }
+
+    public function testGetMessageWithAllProperties()
+    {
+        $this
+            ->connection
+            ->send($this->connection->protocol()->queue()->declare(
+                new Channel(1),
+                Declaration::temporary()
+                    ->exclusive()
+                    ->withName('test_get')
+            ))
+            ->wait('queue.declare-ok');
+        $this
+            ->connection
+            ->send($this->connection->protocol()->queue()->bind(
+                new Channel(1),
+                new Binding('amq.direct', 'test_get')
+            ))
+            ->wait('queue.bind-ok');
+        $message = (new Generic(new Str('foobar')))
+            ->withContentType(new ContentType('text', 'plain'))
+            ->withContentEncoding(new ContentEncoding('gzip'))
+            ->withHeaders(
+                (new Map('string', 'mixed'))
+                    ->put('foo', new LongString(new Str('bar')))
+            )
+            ->withDeliveryMode(DeliveryMode::persistent())
+            ->withPriority(new Priority(5))
+            ->withCorrelationId(new CorrelationId('correlation'))
+            ->withReplyTo(new ReplyTo('reply'))
+            ->withExpiration(new ElapsedPeriod(10000))
+            ->withId(new Id('id'))
+            ->withTimestamp($now = new Now)
+            ->withType(new Type('type'))
+            ->withUserId(new UserId('guest'))
+            ->withAppId(new AppId('webcrawler'));
+
+        $this->assertSame(
+            $this->basic,
+            $this->basic->publish((new Publish($message))->to('amq.direct'))
+        );
+        $called = false;
+
+        $this->assertNull(
+            $this
+                ->basic
+                ->get(
+                    new Get('test_get')
+                )(function(
+                    Message $message,
+                    bool $redelivered,
+                    string $exchange,
+                    string $routingKey,
+                    int $messageCount
+                ) use (
+                    &$called,
+                    $now
+                ): void {
+                    $called = true;
+                    $this->assertSame('text/plain', (string) $message->contentType());
+                    $this->assertSame('gzip', (string) $message->contentEncoding());
+                    $this->assertSame('bar', (string) $message->headers()->get('foo'));
+                    $this->assertSame(2, $message->deliveryMode()->toInt());
+                    $this->assertSame(5, $message->priority()->toInt());
+                    $this->assertSame('correlation', (string) $message->correlationId());
+                    $this->assertSame('reply', (string) $message->replyTo());
+                    $this->assertSame(10000, $message->expiration()->milliseconds());
+                    $this->assertSame('id', (string) $message->id());
+                    $this->assertSame(
+                        $now->format(new TimestampFormat),
+                        $message->timestamp()->format(new TimestampFormat)
+                    );
+                    $this->assertSame('type', (string) $message->type());
+                    $this->assertSame('guest', (string) $message->userId());
+                    $this->assertSame('webcrawler', (string) $message->appId());
+                    $this->assertSame('foobar', (string) $message->body());
+                    $this->assertFalse($redelivered);
+                    $this->assertSame('amq.direct', $exchange);
+                    $this->assertSame('', $routingKey);
+                    $this->assertSame(0, $messageCount); //1 left in the queue
                 })
         );
         $this->assertTrue($called);
