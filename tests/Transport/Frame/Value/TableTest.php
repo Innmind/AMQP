@@ -82,6 +82,14 @@ class TableTest extends TestCase
     }
 
     /**
+     * @expectedException Innmind\AMQP\Exception\StringNotOfExpectedLength
+     */
+    public function testThrowWhenInvalidString()
+    {
+        Table::fromString(new Str(pack('N', 5).chr(3).'foob'.chr(1)));
+    }
+
+    /**
      * @expectedException Innmind\AMQP\Exception\UnboundedTextCannotBeWrapped
      */
     public function testThrowWhenUsingUnboundedText()
