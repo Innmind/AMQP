@@ -14,6 +14,10 @@ final class Channel implements ChannelInterfce
 {
     private $connection;
     private $number;
+    private $exchange;
+    private $queue;
+    private $basic;
+    private $transaction;
     private $closed = false;
 
     public function __construct(Connection $connection, Number $number)
