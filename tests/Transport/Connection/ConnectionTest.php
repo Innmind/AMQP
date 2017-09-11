@@ -4,7 +4,8 @@ declare(strict_types = 1);
 namespace Tests\Innmind\AMQP\Transport;
 
 use Innmind\AMQP\{
-    Transport\Connection,
+    Transport\Connection\Connection,
+    Transport\Connection as ConnectionInterface,
     Transport\Protocol\v091\Protocol,
     Transport\Protocol as ProtocolInterface,
     Transport\Protocol\Version,
@@ -47,6 +48,7 @@ class ConnectionTest extends TestCase
             new Earth
         );
 
+        $this->assertInstanceOf(ConnectionInterface::class, $connection);
         $this->assertSame($protocol, $connection->protocol());
         $this->assertInstanceOf(MaxFrameSize::class, $connection->maxFrameSize());
         $this->assertSame(131072, $connection->maxFrameSize()->toInt());

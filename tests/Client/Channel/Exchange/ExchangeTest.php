@@ -6,7 +6,7 @@ namespace Tests\Innmind\AMQP\Client\Channel\Exchange;
 use Innmind\AMQP\{
     Client\Channel\Exchange\Exchange,
     Client\Channel\Exchange as ExchangeInterface,
-    Transport\Connection,
+    Transport\Connection\Connection,
     Transport\Protocol\v091\Protocol,
     Transport\Protocol\ArgumentTranslator,
     Transport\Frame\Channel,
