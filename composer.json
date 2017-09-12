@@ -1,0 +1,43 @@
+{
+    "name": "innmind/amqp",
+    "type": "library",
+    "description": "AMQP client",
+    "keywords": ["amqp"],
+    "homepage": "http://github.com/Innmind/AMQP",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Baptiste Langlade",
+            "email": "langlade.baptiste@gmail.com"
+        }
+    ],
+    "support": {
+        "issues": "http://github.com/Innmind/AMQP/issues"
+    },
+    "require": {
+        "php": "~7.1",
+        "innmind/immutable": "^2.4",
+        "innmind/time-continuum": "^1.0",
+        "innmind/math": "^4.1",
+        "innmind/url": "^2.0",
+        "innmind/socket": "^1.0",
+        "innmind/filesystem": "^2.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "Innmind\\AMQP\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\Innmind\\AMQP\\": "tests/"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~6.0",
+        "psr/log": "^1.0"
+    },
+    "suggest": {
+        "psr/log": "To log what's happening through the connection"
+    }
+}
