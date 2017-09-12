@@ -101,19 +101,14 @@ final class Consumer implements ConsumerInterface
                     $routingKey
                 );
 
-                if (!$this->command->shouldAutoAcknowledge()) {
-                    $this->connection->send(
-                        $this->connection->protocol()->basic()->ack(
-                            $this->channel,
-                            new Ack($deliveryTag)
-                        )
-                    );
-                }
+                $this->ack($deliveryTag);
             } catch (Reject $e) {
                 $this->reject($deliveryTag);
             } catch (Requeue $e) {
                 $this->requeue($deliveryTag);
             } catch (Cancel $e) {
+                $this->ack($deliveryTag);
+
                 break;
             } catch (\Throwable $e) {
                 $this->cancel();
@@ -165,6 +160,20 @@ final class Consumer implements ConsumerInterface
         }
 
         --$this->take;
+    }
+
+    private function ack(int $deliveryTag): void
+    {
+        if ($this->command->shouldAutoAcknowledge()) {
+            return;
+        }
+
+        $this->connection->send(
+            $this->connection->protocol()->basic()->ack(
+                $this->channel,
+                new Ack($deliveryTag)
+            )
+        );
     }
 
     private function reject(int $deliveryTag): void
