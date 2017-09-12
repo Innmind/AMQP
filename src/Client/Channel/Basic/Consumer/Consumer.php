@@ -111,6 +111,7 @@ final class Consumer implements ConsumerInterface
 
                 break;
             } catch (\Throwable $e) {
+                $this->requeue($deliveryTag);
                 $this->cancel();
 
                 throw $e;
