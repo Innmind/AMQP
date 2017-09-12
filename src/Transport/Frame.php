@@ -48,7 +48,7 @@ final class Frame
             ...$values
         );
         $this->string = (string) $frame
-            ->add(new UnsignedOctet(new Integer(0xCE)))
+            ->add(new UnsignedOctet(new Integer(self::end())))
             ->join('');
     }
 
@@ -143,5 +143,10 @@ final class Frame
     public function __toString(): string
     {
         return $this->string;
+    }
+
+    public static function end(): int
+    {
+        return 0xCE;
     }
 }

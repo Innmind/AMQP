@@ -59,7 +59,7 @@ final class FrameReader
 
         $end = UnsignedOctet::fromString($end)->original()->value();
 
-        if ($end !== 0xCE) {
+        if ($end !== Frame::end()) {
             throw new ReceivedFrameNotDelimitedCorrectly;
         }
 
