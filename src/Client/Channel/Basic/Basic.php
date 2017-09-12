@@ -96,7 +96,7 @@ final class Basic implements BasicInterface
             ))
             ->wait('basic.get-ok', 'basic.get-empty');
 
-        if ($frame->method()->equals($this->connection->protocol()->method('basic.get-empty'))) {
+        if ($frame->is($this->connection->protocol()->method('basic.get-empty'))) {
             return new Get\GetEmpty;
         }
 

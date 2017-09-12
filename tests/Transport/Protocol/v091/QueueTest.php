@@ -70,7 +70,7 @@ class QueueTest extends TestCase
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame(Type::method(), $frame->type());
         $this->assertSame($channel, $frame->channel());
-        $this->assertTrue($frame->method()->equals(new Method(50, 10)));
+        $this->assertTrue($frame->is(new Method(50, 10)));
         $this->assertCount(4, $frame->values());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
@@ -162,7 +162,7 @@ class QueueTest extends TestCase
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame(Type::method(), $frame->type());
         $this->assertSame($channel, $frame->channel());
-        $this->assertTrue($frame->method()->equals(new Method(50, 40)));
+        $this->assertTrue($frame->is(new Method(50, 40)));
         $this->assertCount(3, $frame->values());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
@@ -236,7 +236,7 @@ class QueueTest extends TestCase
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame(Type::method(), $frame->type());
         $this->assertSame($channel, $frame->channel());
-        $this->assertTrue($frame->method()->equals(new Method(50, 20)));
+        $this->assertTrue($frame->is(new Method(50, 20)));
         $this->assertCount(6, $frame->values());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
@@ -292,7 +292,7 @@ class QueueTest extends TestCase
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame(Type::method(), $frame->type());
         $this->assertSame($channel, $frame->channel());
-        $this->assertTrue($frame->method()->equals(new Method(50, 50)));
+        $this->assertTrue($frame->is(new Method(50, 50)));
         $this->assertCount(5, $frame->values());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
@@ -321,7 +321,7 @@ class QueueTest extends TestCase
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame(Type::method(), $frame->type());
         $this->assertSame($channel, $frame->channel());
-        $this->assertTrue($frame->method()->equals(new Method(50, 30)));
+        $this->assertTrue($frame->is(new Method(50, 30)));
         $this->assertCount(3, $frame->values());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,

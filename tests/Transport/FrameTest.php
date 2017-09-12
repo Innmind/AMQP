@@ -32,7 +32,7 @@ class FrameTest extends TestCase
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame(Type::method(), $frame->type());
         $this->assertSame($channel, $frame->channel());
-        $this->assertSame($method, $frame->method());
+        $this->assertTrue($frame->is($method));
         $this->assertInstanceOf(StreamInterface::class, $frame->values());
         $this->assertSame(Value::class, (string) $frame->values()->type());
         $this->assertSame([$bit, $text], $frame->values()->toPrimitive());
@@ -53,6 +53,7 @@ class FrameTest extends TestCase
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame(Type::header(), $frame->type());
         $this->assertSame($channel, $frame->channel());
+        $this->assertFalse($frame->is(new Method(0, 0)));
         $this->assertInstanceOf(StreamInterface::class, $frame->values());
         $this->assertSame(Value::class, (string) $frame->values()->type());
         $this->assertSame([$value], $frame->values()->toPrimitive());
@@ -71,6 +72,7 @@ class FrameTest extends TestCase
 
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame($channel, $frame->channel());
+        $this->assertFalse($frame->is(new Method(0, 0)));
         $this->assertInstanceOf(StreamInterface::class, $frame->values());
         $this->assertSame(Value::class, (string) $frame->values()->type());
         $this->assertCount(1, $frame->values());
@@ -89,6 +91,7 @@ class FrameTest extends TestCase
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertInstanceOf(Channel::class, $frame->channel());
         $this->assertSame(0, $frame->channel()->toInt());
+        $this->assertFalse($frame->is(new Method(0, 0)));
         $this->assertInstanceOf(StreamInterface::class, $frame->values());
         $this->assertSame(Value::class, (string) $frame->values()->type());
         $this->assertCount(0, $frame->values());

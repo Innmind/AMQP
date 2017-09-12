@@ -145,12 +145,12 @@ final class Connection implements ConnectionInterface
         }
 
         foreach ($names as $name) {
-            if ($this->protocol->method($name)->equals($frame->method())) {
+            if ($frame->is($this->protocol->method($name))) {
                 return $frame;
             }
         }
 
-        if ($this->protocol->method('connection.close')->equals($frame->method())) {
+        if ($frame->is($this->protocol->method('connection.close'))) {
             $this->send($this->protocol->connection()->closeOk());
             $this->closed = true;
 
@@ -164,7 +164,7 @@ final class Connection implements ConnectionInterface
             );
         }
 
-        throw new UnexpectedFrame($frame->method(), ...$names);
+        throw new UnexpectedFrame($frame, ...$names);
     }
 
     public function maxFrameSize(): MaxFrameSize
@@ -265,7 +265,7 @@ final class Connection implements ConnectionInterface
     {
         $frame = $this->wait('connection.secure', 'connection.tune');
 
-        if ($this->protocol->method('connection.secure')->equals($frame->method())) {
+        if ($frame->is($this->protocol->method('connection.secure'))) {
             $this->send($this->protocol->connection()->secureOk(
                 new SecureOk(
                     $this->authority->userInformation()->user(),

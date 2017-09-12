@@ -225,13 +225,13 @@ final class Consumer implements ConsumerInterface
 
             if (
                 $frame->type() === Type::method() &&
-                $frame->method()->equals($deliver)
+                $frame->is($deliver)
             ) {
                 //requeue all the messages sent right before the cancel method
                 $message = ($this->read)($this->connection);
                 $this->requeue($frame->values()->get(1)->original()->value());
             }
-        } while (!$frame->method()->equals($expected));
+        } while (!$frame->is($expected));
 
         $this->canceled = true;
     }

@@ -80,7 +80,7 @@ class BasicTest extends TestCase
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame(Type::method(), $frame->type());
         $this->assertSame($channel, $frame->channel());
-        $this->assertTrue($frame->method()->equals(new Method(60, 80)));
+        $this->assertTrue($frame->is(new Method(60, 80)));
         $this->assertCount(2, $frame->values());
         $this->assertInstanceOf(
             UnsignedLongLongInteger::class,
@@ -108,7 +108,7 @@ class BasicTest extends TestCase
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame(Type::method(), $frame->type());
         $this->assertSame($channel, $frame->channel());
-        $this->assertTrue($frame->method()->equals(new Method(60, 30)));
+        $this->assertTrue($frame->is(new Method(60, 30)));
         $this->assertCount(2, $frame->values());
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(0));
         $this->assertSame('consumer', (string) $frame->values()->get(0)->original());
@@ -151,7 +151,7 @@ class BasicTest extends TestCase
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame(Type::method(), $frame->type());
         $this->assertSame($channel, $frame->channel());
-        $this->assertTrue($frame->method()->equals(new Method(60, 20)));
+        $this->assertTrue($frame->is(new Method(60, 20)));
         $this->assertCount(5, $frame->values());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
@@ -232,7 +232,7 @@ class BasicTest extends TestCase
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame(Type::method(), $frame->type());
         $this->assertSame($channel, $frame->channel());
-        $this->assertTrue($frame->method()->equals(new Method(60, 70)));
+        $this->assertTrue($frame->is(new Method(60, 70)));
         $this->assertCount(3, $frame->values());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
@@ -267,7 +267,7 @@ class BasicTest extends TestCase
         $frame = $frames->first();
         $this->assertSame(Type::method(), $frame->type());
         $this->assertSame($channel, $frame->channel());
-        $this->assertTrue($frame->method()->equals(new Method(60, 40)));
+        $this->assertTrue($frame->is(new Method(60, 40)));
         $this->assertCount(4, $frame->values());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
@@ -562,7 +562,7 @@ class BasicTest extends TestCase
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame(Type::method(), $frame->type());
         $this->assertSame($channel, $frame->channel());
-        $this->assertTrue($frame->method()->equals(new Method(60, 10)));
+        $this->assertTrue($frame->is(new Method(60, 10)));
         $this->assertCount(3, $frame->values());
         $this->assertInstanceOf(
             UnsignedLongInteger::class,
@@ -595,7 +595,7 @@ class BasicTest extends TestCase
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame(Type::method(), $frame->type());
         $this->assertSame($channel, $frame->channel());
-        $this->assertTrue($frame->method()->equals(new Method(60, 110)));
+        $this->assertTrue($frame->is(new Method(60, 110)));
         $this->assertCount(1, $frame->values());
         $this->assertInstanceOf(Bits::class, $frame->values()->get(0));
         $this->assertFalse($frame->values()->get(0)->original()->first());
@@ -618,7 +618,7 @@ class BasicTest extends TestCase
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame(Type::method(), $frame->type());
         $this->assertSame($channel, $frame->channel());
-        $this->assertTrue($frame->method()->equals(new Method(60, 90)));
+        $this->assertTrue($frame->is(new Method(60, 90)));
         $this->assertCount(2, $frame->values());
         $this->assertInstanceOf(
             UnsignedLongLongInteger::class,

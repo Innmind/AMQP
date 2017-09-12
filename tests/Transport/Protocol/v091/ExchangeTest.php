@@ -66,7 +66,7 @@ class ExchangeTest extends TestCase
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame(Frame\Type::method(), $frame->type());
         $this->assertSame($channel, $frame->channel());
-        $this->assertTrue($frame->method()->equals(new Method(40, 10)));
+        $this->assertTrue($frame->is(new Method(40, 10)));
         $this->assertCount(5, $frame->values());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
@@ -138,7 +138,7 @@ class ExchangeTest extends TestCase
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame(Frame\Type::method(), $frame->type());
         $this->assertSame($channel, $frame->channel());
-        $this->assertTrue($frame->method()->equals(new Method(40, 20)));
+        $this->assertTrue($frame->is(new Method(40, 20)));
         $this->assertCount(3, $frame->values());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,

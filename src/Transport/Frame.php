@@ -127,9 +127,13 @@ final class Frame
         return $this->channel;
     }
 
-    public function method(): Method
+    public function is(Method $method): bool
     {
-        return $this->method;
+        if ($this->type() !== Type::method()) {
+            return false;
+        }
+
+        return $this->method->equals($method);
     }
 
     /**
