@@ -22,6 +22,7 @@ use Innmind\TimeContinuum\{
     ElapsedPeriod
 };
 use Innmind\Immutable\{
+    MapInterface,
     Map,
     Str
 };
@@ -37,6 +38,9 @@ class GenericTest extends TestCase
         $this->assertFalse($message->hasContentType());
         $this->assertFalse($message->hasContentEncoding());
         $this->assertFalse($message->hasHeaders());
+        $this->assertInstanceOf(MapInterface::class, $message->headers());
+        $this->assertSame('string', (string) $message->headers()->keyType());
+        $this->assertSame('mixed', (string) $message->headers()->valueType());
         $this->assertFalse($message->hasDeliveryMode());
         $this->assertFalse($message->hasPriority());
         $this->assertFalse($message->hasCorrelationId());
@@ -84,7 +88,8 @@ class GenericTest extends TestCase
     {
         $message = new Generic(new Str(''));
         $message2 = $message->withHeaders(
-            $expected = new Map('string', 'mixed')
+            $expected = (new Map('string', 'mixed'))
+                ->put('foo', 'bar')
         );
 
         $this->assertInstanceOf(Message::class, $message2);

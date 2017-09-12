@@ -10,6 +10,7 @@ use Innmind\TimeContinuum\{
 };
 use Innmind\Immutable\{
     MapInterface,
+    Map,
     Str
 };
 
@@ -33,6 +34,7 @@ final class Generic implements Message
     public function __construct(Str $body)
     {
         $this->body = $body->toEncoding('ASCII');
+        $this->headers = new Map('string', 'mixed');
     }
 
     public function hasContentType(): bool
@@ -73,7 +75,7 @@ final class Generic implements Message
 
     public function hasHeaders(): bool
     {
-        return $this->headers instanceof MapInterface;
+        return $this->headers->size() > 0;
     }
 
     /**

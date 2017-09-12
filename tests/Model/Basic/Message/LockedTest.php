@@ -98,7 +98,8 @@ class LockedTest extends TestCase
     public function testHeaders()
     {
         $message = (new Generic(new Str('')))->withHeaders(
-            $expected = new Map('string', 'mixed')
+            $expected = (new Map('string', 'mixed'))
+                ->put('foo', 'bar')
         );
         $message = new Locked($message);
 
