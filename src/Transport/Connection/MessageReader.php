@@ -16,7 +16,7 @@ use Innmind\AMQP\{
     Model\Basic\Message\Type,
     Model\Basic\Message\UserId,
     Model\Basic\Message\AppId,
-    Transport\Connection,
+    Transport\Connection as ConnectionInterface,
     Transport\Frame\Value
 };
 use Innmind\TimeContinuum\ElapsedPeriod;
@@ -27,7 +27,7 @@ use Innmind\Immutable\{
 
 final class MessageReader
 {
-    public function __invoke(Connection $connection): Message
+    public function __invoke(ConnectionInterface $connection): Message
     {
         $header = $connection->wait();
         $bodySize = $header
