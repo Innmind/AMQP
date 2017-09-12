@@ -64,7 +64,7 @@ class FrameReaderTest extends TestCase
         $file = tmpfile();
         fwrite(
             $file,
-            (string) Frame::command(
+            (string) Frame::method(
                 new Channel(0),
                 new Method(10, 10), // connection.start
                 new UnsignedOctet(new Integer(0)),
@@ -90,7 +90,7 @@ class FrameReaderTest extends TestCase
         $read = new FrameReader;
 
         $file = tmpfile();
-        $frame = (string) Frame::command(
+        $frame = (string) Frame::method(
             new Channel(0),
             new Method(10, 10), // connection.start
             new UnsignedOctet(new Integer(0)),
@@ -115,7 +115,7 @@ class FrameReaderTest extends TestCase
         $read = new FrameReader;
 
         $file = tmpfile();
-        $frame = (string) Frame::command(
+        $frame = (string) Frame::method(
             new Channel(0),
             new Method(10, 10), // connection.start
             new UnsignedOctet(new Integer(0)),
@@ -141,7 +141,7 @@ class FrameReaderTest extends TestCase
         $read = new FrameReader;
 
         $file = tmpfile();
-        $frame = (string) Frame::command(
+        $frame = (string) Frame::method(
             new Channel(0),
             new Method(10, 10) // connection.start
         );

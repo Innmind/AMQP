@@ -20,9 +20,9 @@ use PHPUnit\Framework\TestCase;
 
 class FrameTest extends TestCase
 {
-    public function testCommand()
+    public function testMethod()
     {
-        $frame = Frame::command(
+        $frame = Frame::method(
             $channel = new Channel(42),
             $method = new Method(10, 10),
             $bit = new Bits(true),

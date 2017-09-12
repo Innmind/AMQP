@@ -56,7 +56,7 @@ final class Connection implements ConnectionInterface
                 )
         );
 
-        return Frame::command(
+        return Frame::method(
             new Channel(0),
             Methods::get('connection.start-ok'),
             $clientProperties,
@@ -68,7 +68,7 @@ final class Connection implements ConnectionInterface
 
     public function secureOk(SecureOk $command): Frame
     {
-        return Frame::command(
+        return Frame::method(
             new Channel(0),
             Methods::get('connection.secure-ok'),
             $this->response($command->user(), $command->password())
@@ -77,7 +77,7 @@ final class Connection implements ConnectionInterface
 
     public function tuneOk(TuneOk $command): Frame
     {
-        return Frame::command(
+        return Frame::method(
             new Channel(0),
             Methods::get('connection.tune-ok'),
             new UnsignedShortInteger(new Integer($command->maxChannels())),
@@ -90,7 +90,7 @@ final class Connection implements ConnectionInterface
 
     public function open(Open $command): Frame
     {
-        return Frame::command(
+        return Frame::method(
             new Channel(0),
             Methods::get('connection.open'),
             new ShortString(new Str((string) $command->virtualHost())),
@@ -114,7 +114,7 @@ final class Connection implements ConnectionInterface
             $method = Methods::get($command->cause());
         }
 
-        return Frame::command(
+        return Frame::method(
             new Channel(0),
             Methods::get('connection.close'),
             new UnsignedShortInteger(new Integer($replyCode)),
@@ -126,7 +126,7 @@ final class Connection implements ConnectionInterface
 
     public function closeOk(): Frame
     {
-        return Frame::command(
+        return Frame::method(
             new Channel(0),
             Methods::get('connection.close-ok')
         );

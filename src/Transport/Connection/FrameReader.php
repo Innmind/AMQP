@@ -76,7 +76,7 @@ final class FrameReader
                 );
                 $arguments = $payload->substring(4);
 
-                return Frame::command(
+                return Frame::method(
                     $channel,
                     $method,
                     ...$protocol->read($method, $arguments)

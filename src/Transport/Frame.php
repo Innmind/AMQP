@@ -52,7 +52,7 @@ final class Frame
             ->join('');
     }
 
-    public static function command(
+    public static function method(
         Channel $channel,
         Method $method,
         Value ...$values

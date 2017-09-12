@@ -164,7 +164,7 @@ class ConnectionTest extends TestCase
 
         try {
             $connection
-                ->send(Frame::command(
+                ->send(Frame::method(
                     new Channel(0),
                     new Method(20, 10)
                     //missing arguments
