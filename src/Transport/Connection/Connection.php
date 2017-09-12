@@ -50,6 +50,7 @@ final class Connection implements ConnectionInterface
     private $select;
     private $read;
     private $closed = true;
+    private $opening = true;
     private $maxChannels;
     private $maxFrameSize;
     private $heartbeat;
@@ -113,6 +114,10 @@ final class Connection implements ConnectionInterface
     public function wait(string ...$names): Frame
     {
         do {
+            if (!$this->opening && $this->closed()) {
+                throw new ConnectionClosed;
+            }
+
             $now = $this->clock->now();
             $elapsedPeriod = $now->elapsedSince($this->lastReceivedData);
 
@@ -149,7 +154,7 @@ final class Connection implements ConnectionInterface
             $this->send($this->protocol->connection()->closeOk());
             $this->closed = true;
 
-            throw new ConnectionClosed(
+            throw ConnectionClosed::byServer(
                 (string) $frame->values()->get(1)->original(),
                 $frame->values()->get(0)->original()->value(),
                 new Method(
@@ -210,6 +215,7 @@ final class Connection implements ConnectionInterface
         $this->openVHost();
 
         $this->closed = false;
+        $this->opening = false;
     }
 
     private function start(): void

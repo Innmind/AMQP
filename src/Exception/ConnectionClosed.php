@@ -9,10 +9,17 @@ final class ConnectionClosed extends RuntimeException
 {
     private $cause;
 
-    public function __construct(string $message, int $code, Method $cause)
+    public static function byServer(string $message, int $code, Method $cause): self
     {
-        parent::__construct($message, $code);
-        $this->cause = $cause;
+        $self = new self($message, $code);
+        $self->cause = $cause;
+
+        return $self;
+    }
+
+    public function hasCause(): bool
+    {
+        return $this->cause instanceof Method && !$this->cause->equals(new Method(0, 0));
     }
 
     public function cause(): Method
