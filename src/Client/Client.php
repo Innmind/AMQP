@@ -50,7 +50,7 @@ final class Client implements ClientInterface
             return;
         }
 
-        $this->channels->foreach(static function(Channel $channel): void {
+        $this->channels->foreach(static function(int $pid, Channel $channel): void {
             $channel->close();
         });
         $this->connection->close();

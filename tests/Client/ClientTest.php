@@ -53,6 +53,7 @@ class ClientTest extends TestCase
 
     public function testClose()
     {
+        $this->client->channel();
         $this->assertFalse($this->client->closed());
         $this->assertNull($this->client->close());
         $this->assertTrue($this->client->closed());
