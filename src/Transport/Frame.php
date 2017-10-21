@@ -45,7 +45,7 @@ final class Frame
             new UnsignedOctet(new Integer($type->toInt())),
             new UnsignedShortInteger(new Integer($channel->toInt())),
             new UnsignedLongInteger(new Integer($payload->length())),
-            ...$values
+            $payload
         );
         $this->string = (string) $frame
             ->add(new UnsignedOctet(new Integer(self::end())))
