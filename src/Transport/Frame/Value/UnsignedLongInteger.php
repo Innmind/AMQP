@@ -28,7 +28,6 @@ final class UnsignedLongInteger implements Value
             throw new OutOfRangeValue($value, self::definitionSet());
         }
 
-        $this->value = pack('N', $value->value());
         $this->original = $value;
     }
 
@@ -57,7 +56,7 @@ final class UnsignedLongInteger implements Value
 
     public function __toString(): string
     {
-        return $this->value;
+        return $this->value ?? $this->value = pack('N', $this->original->value());
     }
 
     public static function definitionSet(): Set

@@ -28,7 +28,6 @@ final class SignedShortInteger implements Value
             throw new OutOfRangeValue($value, self::definitionSet());
         }
 
-        $this->value = pack('s', $value->value());
         $this->original = $value;
     }
 
@@ -57,7 +56,7 @@ final class SignedShortInteger implements Value
 
     public function __toString(): string
     {
-        return $this->value;
+        return $this->value ?? $this->value = pack('s', $this->original->value());
     }
 
     public static function definitionSet(): Set

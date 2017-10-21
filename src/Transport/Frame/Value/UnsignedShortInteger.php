@@ -28,7 +28,6 @@ final class UnsignedShortInteger implements Value
             throw new OutOfRangeValue($value, self::definitionSet());
         }
 
-        $this->value = pack('n', $value->value());
         $this->original = $value;
     }
 
@@ -57,7 +56,7 @@ final class UnsignedShortInteger implements Value
 
     public function __toString(): string
     {
-        return $this->value;
+        return $this->value ?? $this->value = pack('n', $this->original->value());
     }
 
     public static function definitionSet(): Set

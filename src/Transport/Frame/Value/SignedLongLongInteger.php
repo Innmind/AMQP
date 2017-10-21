@@ -17,7 +17,6 @@ final class SignedLongLongInteger implements Value
 
     public function __construct(Integer $value)
     {
-        $this->value = pack('q', $value->value());
         $this->original = $value;
     }
 
@@ -46,6 +45,6 @@ final class SignedLongLongInteger implements Value
 
     public function __toString(): string
     {
-        return $this->value;
+        return $this->value ?? $this->value = pack('q', $this->original->value());
     }
 }

@@ -31,7 +31,6 @@ final class UnsignedOctet implements Value
             throw new OutOfRangeValue($octet, self::definitionSet());
         }
 
-        $this->value = chr($octet->value());
         $this->original = $octet;
     }
 
@@ -60,7 +59,7 @@ final class UnsignedOctet implements Value
 
     public function __toString(): string
     {
-        return $this->value;
+        return $this->value ?? $this->value = chr($this->original->value());
     }
 
     public static function definitionSet(): Set
