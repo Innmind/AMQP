@@ -12,8 +12,7 @@ use Innmind\Math\{
     Algebra\Integer,
     Algebra\Number\Infinite,
     DefinitionSet\Set,
-    DefinitionSet\Range,
-    DefinitionSet\Integers
+    DefinitionSet\Range
 };
 use Innmind\Immutable\Str;
 
@@ -30,7 +29,6 @@ final class UnsignedLongLongInteger implements Value
             throw new OutOfRangeValue($value, self::definitionSet());
         }
 
-        $this->value = pack('J', $value->value());
         $this->original = $value;
     }
 
@@ -59,7 +57,7 @@ final class UnsignedLongLongInteger implements Value
 
     public function __toString(): string
     {
-        return $this->value;
+        return $this->value ?? $this->value = pack('J', $this->original->value());
     }
 
     public static function definitionSet(): Set
@@ -67,6 +65,6 @@ final class UnsignedLongLongInteger implements Value
         return self::$definitionSet ?? self::$definitionSet = Range::inclusive(
             new Integer(0),
             Infinite::positive()
-        )->intersect(new Integers);
+        );
     }
 }

@@ -11,8 +11,7 @@ use Innmind\AMQP\{
 use Innmind\Math\{
     Algebra\Integer,
     DefinitionSet\Set,
-    DefinitionSet\Range,
-    DefinitionSet\Integers
+    DefinitionSet\Range
 };
 use Innmind\Immutable\Str;
 
@@ -29,7 +28,6 @@ final class SignedLongInteger implements Value
             throw new OutOfRangeValue($value, self::definitionSet());
         }
 
-        $this->value = pack('l', $value->value());
         $this->original = $value;
     }
 
@@ -58,7 +56,7 @@ final class SignedLongInteger implements Value
 
     public function __toString(): string
     {
-        return $this->value;
+        return $this->value ?? $this->value = pack('l', $this->original->value());
     }
 
     public static function definitionSet(): Set
@@ -66,6 +64,6 @@ final class SignedLongInteger implements Value
         return self::$definitionSet ?? self::$definitionSet = Range::inclusive(
             new Integer(-2147483648),
             new Integer(2147483647)
-        )->intersect(new Integers);
+        );
     }
 }

@@ -57,7 +57,7 @@ class UnsignedShortIntegerTest extends TestCase
 
     /**
      * @expectedException Innmind\AMQP\Exception\OutOfRangeValue
-     * @expectedExceptionMessage 65536 ∉ [0;65535]∩ℤ
+     * @expectedExceptionMessage 65536 ∉ [0;65535]
      */
     public function testThrowWhenIntegerTooHigh()
     {
@@ -66,7 +66,7 @@ class UnsignedShortIntegerTest extends TestCase
 
     /**
      * @expectedException Innmind\AMQP\Exception\OutOfRangeValue
-     * @expectedExceptionMessage -1 ∉ [0;65535]∩ℤ
+     * @expectedExceptionMessage -1 ∉ [0;65535]
      */
     public function testThrowWhenIntegerTooLow()
     {

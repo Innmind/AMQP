@@ -56,7 +56,7 @@ class SignedShortIntegerTest extends TestCase
 
     /**
      * @expectedException Innmind\AMQP\Exception\OutOfRangeValue
-     * @expectedExceptionMessage 32768 ∉ [-32768;32767]∩ℤ
+     * @expectedExceptionMessage 32768 ∉ [-32768;32767]
      */
     public function testThrowWhenIntegerTooHigh()
     {
@@ -65,7 +65,7 @@ class SignedShortIntegerTest extends TestCase
 
     /**
      * @expectedException Innmind\AMQP\Exception\OutOfRangeValue
-     * @expectedExceptionMessage -32769 ∉ [-32768;32767]∩ℤ
+     * @expectedExceptionMessage -32769 ∉ [-32768;32767]
      */
     public function testThrowWhenIntegerTooLow()
     {

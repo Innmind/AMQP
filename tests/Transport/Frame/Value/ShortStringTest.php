@@ -52,7 +52,7 @@ class ShortStringTest extends TestCase
 
     /**
      * @expectedException Innmind\AMQP\Exception\OutOfRangeValue
-     * @expectedExceptionMessage 256 ∉ [0;255]∩ℤ
+     * @expectedExceptionMessage 256 ∉ [0;255]
      */
     public function testThrowWhenStringTooLong()
     {

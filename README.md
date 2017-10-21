@@ -157,3 +157,35 @@ $client = new LoggerClient($client);
 By decorating the connection it will log every sent and received frames, do this if you want to know what's sent through the wire. By decorating the client it will log every received messages and if they've been rejected or requeued; explicit cancel calls (via the exception) and errors thrown during message consumption will be as well.
 
 Of course you can use both at the same time if you want to be thorough.
+
+## Benchmarks
+
+`make benchmark` run on a MacBookPro11,2 (2GHz, 8Gb RAM) with a RabbitMQ running in a container (via docker for mac) produces this result:
+
+```
+Publishing 4000 msgs with 1KB of content:
+php benchmark/producer.php 4000
+0.6799578666687
+Consuming 4000:
+php benchmark/consumer.php
+Pid: 14477, Count: 4000, Time: 3.2876
+Stream produce 100:
+php benchmark/stream_tmp_produce.php 100
+0.20840692520142
+```
+
+By comparison, the `php-amqplib` produces this result:
+
+```
+Publishing 4000 msgs with 1KB of content:
+php benchmark/producer.php 4000
+0.13555884361267
+Consuming 4000:
+php benchmark/consumer.php
+Pid: 9227, Count: 4000, Time: 0.5299
+Stream produce 100:
+php benchmark/stream_tmp_produce.php 100
+0.29217886924744
+```
+
+So it appears _pure_ functions come at a cost!

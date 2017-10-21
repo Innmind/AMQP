@@ -53,7 +53,7 @@ class SignedOctetTest extends TestCase
 
     /**
      * @expectedException Innmind\AMQP\Exception\OutOfRangeValue
-     * @expectedExceptionMessage 128 ∉ [-128;127]∩ℤ
+     * @expectedExceptionMessage 128 ∉ [-128;127]
      */
     public function testThrowWhenStringTooHigh()
     {
@@ -62,7 +62,7 @@ class SignedOctetTest extends TestCase
 
     /**
      * @expectedException Innmind\AMQP\Exception\OutOfRangeValue
-     * @expectedExceptionMessage -129 ∉ [-128;127]∩ℤ
+     * @expectedExceptionMessage -129 ∉ [-128;127]
      */
     public function testThrowWhenStringTooLow()
     {
