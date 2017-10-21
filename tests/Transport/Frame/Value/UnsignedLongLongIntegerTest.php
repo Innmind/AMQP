@@ -23,7 +23,7 @@ class UnsignedLongLongIntegerTest extends TestCase
 
     /**
      * @expectedException Innmind\AMQP\Exception\OutOfRangeValue
-     * @expectedExceptionMessage -1 ∉ [0;+∞]∩ℤ
+     * @expectedExceptionMessage -1 ∉ [0;+∞]
      */
     public function testThrowWhenIntegerTooLow()
     {

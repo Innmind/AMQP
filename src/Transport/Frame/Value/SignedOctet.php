@@ -11,8 +11,7 @@ use Innmind\AMQP\{
 use Innmind\Math\{
     Algebra\Integer,
     DefinitionSet\Set,
-    DefinitionSet\Range,
-    DefinitionSet\Integers
+    DefinitionSet\Range
 };
 use Innmind\Immutable\Str;
 
@@ -69,6 +68,6 @@ final class SignedOctet implements Value
         return self::$definitionSet ?? self::$definitionSet = Range::inclusive(
             new Integer(-128),
             new Integer(127)
-        )->intersect(new Integers);
+        );
     }
 }

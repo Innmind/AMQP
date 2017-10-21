@@ -56,7 +56,7 @@ class UnsignedOctetTest extends TestCase
 
     /**
      * @expectedException Innmind\AMQP\Exception\OutOfRangeValue
-     * @expectedExceptionMessage 256 ∉ [0;255]∩ℤ
+     * @expectedExceptionMessage 256 ∉ [0;255]
      */
     public function testThrowWhenStringTooHigh()
     {
@@ -65,7 +65,7 @@ class UnsignedOctetTest extends TestCase
 
     /**
      * @expectedException Innmind\AMQP\Exception\OutOfRangeValue
-     * @expectedExceptionMessage -1 ∉ [0;255]∩ℤ
+     * @expectedExceptionMessage -1 ∉ [0;255]
      */
     public function testThrowWhenStringTooLow()
     {

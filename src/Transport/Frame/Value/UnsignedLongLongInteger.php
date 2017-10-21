@@ -12,8 +12,7 @@ use Innmind\Math\{
     Algebra\Integer,
     Algebra\Number\Infinite,
     DefinitionSet\Set,
-    DefinitionSet\Range,
-    DefinitionSet\Integers
+    DefinitionSet\Range
 };
 use Innmind\Immutable\Str;
 
@@ -67,6 +66,6 @@ final class UnsignedLongLongInteger implements Value
         return self::$definitionSet ?? self::$definitionSet = Range::inclusive(
             new Integer(0),
             Infinite::positive()
-        )->intersect(new Integers);
+        );
     }
 }

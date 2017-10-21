@@ -11,8 +11,7 @@ use Innmind\AMQP\{
 use Innmind\Math\{
     Algebra\Integer,
     DefinitionSet\Set,
-    DefinitionSet\Range,
-    DefinitionSet\Integers
+    DefinitionSet\Range
 };
 use Innmind\Immutable\Str;
 
@@ -66,6 +65,6 @@ final class SignedLongInteger implements Value
         return self::$definitionSet ?? self::$definitionSet = Range::inclusive(
             new Integer(-2147483648),
             new Integer(2147483647)
-        )->intersect(new Integers);
+        );
     }
 }
