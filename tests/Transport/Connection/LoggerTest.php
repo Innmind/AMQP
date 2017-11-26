@@ -50,21 +50,30 @@ class LoggerTest extends TestCase
             ->expects($this->once())
             ->method('send')
             ->with($frame);
+        $uuid = null;
         $logger
             ->expects($this->at(0))
             ->method('debug')
             ->with(
                 'AMQP frame about to be sent',
-                [
-                    'type' => 8,
-                    'channel' => 0,
-                    'binary' => (string) $frame,
-                ]
+                $this->callback(function(array $context) use ($frame, &$uuid): bool {
+                    $uuid = $context['uuid'];
+
+                    return is_string($context['uuid']) &&
+                        $context['type'] === 8 &&
+                        $context['channel'] === 0 &&
+                        $context['binary'] === (string) $frame;
+                })
             );
         $logger
             ->expects($this->at(1))
             ->method('debug')
-            ->with('AMQP frame sent');
+            ->with(
+                'AMQP frame sent',
+                $this->callback(function(array $context) use (&$uuid): bool {
+                    return $context['uuid'] === $uuid;
+                })
+            );
 
         $this->assertSame($connection, $connection->send($frame));
     }
