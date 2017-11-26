@@ -40,7 +40,6 @@ final class Logger implements ConnectionInterface
             [
                 'type' => $frame->type()->toInt(),
                 'channel' => $frame->channel()->toInt(),
-                'binary' => (string) $frame,
                 'uuid' => $uuid = (string) Uuid::uuid4(),
             ]
         );
@@ -63,7 +62,6 @@ final class Logger implements ConnectionInterface
             [
                 'type' => $frame->type()->toInt(),
                 'channel' => $frame->channel()->toInt(),
-                'binary' => (string) $frame,
             ]
         );
 
