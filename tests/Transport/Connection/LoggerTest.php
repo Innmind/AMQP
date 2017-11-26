@@ -56,13 +56,12 @@ class LoggerTest extends TestCase
             ->method('debug')
             ->with(
                 'AMQP frame about to be sent',
-                $this->callback(function(array $context) use ($frame, &$uuid): bool {
+                $this->callback(function(array $context) use (&$uuid): bool {
                     $uuid = $context['uuid'];
 
                     return is_string($context['uuid']) &&
                         $context['type'] === 8 &&
-                        $context['channel'] === 0 &&
-                        $context['binary'] === (string) $frame;
+                        $context['channel'] === 0;
                 })
             );
         $logger
@@ -105,7 +104,6 @@ class LoggerTest extends TestCase
                 [
                     'type' => 8,
                     'channel' => 0,
-                    'binary' => (string) $frame,
                 ]
             );
 
