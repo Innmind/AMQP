@@ -9,6 +9,7 @@ use Innmind\AMQP\{
     Transport\Frame,
     Model\Connection\MaxFrameSize
 };
+use Ramsey\Uuid\Uuid;
 use Psr\Log\LoggerInterface;
 
 final class Logger implements ConnectionInterface
@@ -40,11 +41,12 @@ final class Logger implements ConnectionInterface
                 'type' => $frame->type()->toInt(),
                 'channel' => $frame->channel()->toInt(),
                 'binary' => (string) $frame,
+                'uuid' => $uuid = (string) Uuid::uuid4(),
             ]
         );
 
         $this->connection->send($frame);
-        $this->logger->debug('AMQP frame sent');
+        $this->logger->debug('AMQP frame sent', ['uuid' => $uuid]);
 
         return $this;
     }
