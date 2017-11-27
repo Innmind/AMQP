@@ -190,11 +190,6 @@ final class Connection implements ConnectionInterface
         return $this->closed || $this->socket->closed();
     }
 
-    public function __destruct()
-    {
-        $this->close();
-    }
-
     private function buildSocket(): void
     {
         $this->socket = new Socket(
