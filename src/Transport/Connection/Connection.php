@@ -22,7 +22,8 @@ use Innmind\AMQP\{
     Exception\FrameExceedAllowedSize,
     Exception\UnexpectedFrame,
     Exception\NoFrameDetected,
-    Exception\ConnectionClosed
+    Exception\ConnectionClosed,
+    Exception\ExpectedMethodFrame
 };
 use Innmind\Socket\{
     Internet\Transport,
