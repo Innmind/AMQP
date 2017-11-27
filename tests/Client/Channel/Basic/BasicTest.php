@@ -67,7 +67,7 @@ use Innmind\Immutable\{
 use PHPUnit\Framework\TestCase;
 
 /**
- * Qos and Recover are not tested as RabbitMQ (used for the tests) doesn't
+ * Recover are not tested as RabbitMQ (used for the tests) doesn't
  * implement them
  */
 class BasicTest extends TestCase
@@ -1128,6 +1128,20 @@ class BasicTest extends TestCase
         $this->assertSame(
             $this->basic,
             $this->basic->reject(RejectCommand::requeue($deliveryTag))
+        );
+    }
+
+    public function testQos()
+    {
+        //only prefectch count can be tested as prefetch size is not implemented
+        //by rabbitmq
+        $this->assertSame(
+            $this->basic,
+            $this->basic->qos(new Qos(0, 50))
+        );
+        $this->assertSame(
+            $this->basic,
+            $this->basic->qos(Qos::global(0, 50))
         );
     }
 }
