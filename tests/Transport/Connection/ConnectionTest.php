@@ -59,7 +59,7 @@ class ConnectionTest extends TestCase
             )
         );
         $this->assertInstanceOf(Frame::class, $connection->wait('channel.open-ok'));
-        unset($connection); //test it closes without exception
+        $connection->close(); //test it closes without exception
     }
 
     public function testClose()
