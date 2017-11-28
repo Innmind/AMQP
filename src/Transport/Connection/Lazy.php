@@ -81,7 +81,11 @@ final class Lazy implements ConnectionInterface
 
     public function closed(): bool
     {
-        return $this->closed || $this->connection()->closed();
+        if ($this->initialized()) {
+            return $this->connection()->closed();
+        }
+
+        return $this->closed;
     }
 
     private function initialized(): bool
