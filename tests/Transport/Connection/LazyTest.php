@@ -105,21 +105,17 @@ class LazyTest extends TestCase
         }
     }
 
-    public function testConnectWhenCheckingIfClosed()
+    public function testDoesntConnectWhenCheckingIfClosed()
     {
-        try {
-            $connection = new Lazy(
-                Transport::tcp(),
-                Url::fromString('//guest:guest@localhost:5673/'), //wrong port on purpose
-                $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
-                new ElapsedPeriod(1000),
-                new Earth
-            );
-            $connection->closed();
-            $this->fail('it should fail');
-        } catch (\Exception $e) {
-            $this->assertInstanceOf(FailedToOpenSocket::class, $e);
-        }
+        $connection = new Lazy(
+            Transport::tcp(),
+            Url::fromString('//guest:guest@localhost:5673/'), //wrong port on purpose
+            $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
+            new ElapsedPeriod(1000),
+            new Earth
+        );
+
+        $this->assertFalse($connection->closed());
     }
 
     public function testDoesntConnectOnClose()
