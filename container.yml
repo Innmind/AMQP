@@ -1,0 +1,58 @@
+arguments:
+    transport: Innmind\Socket\Internet\Transport
+    server: Innmind\Url\UrlInterface
+    timeout: Innmind\TimeContinuum\ElapsedPeriod
+    clock: Innmind\TimeContinuum\TimeContinuumInterface
+    logger: Psr\Log\LoggerInterface
+    protocols: set<Innmind\AMQP\Transport\Protocol> ?? $protocol.defaults
+    argumentTranslators: set<Innmind\AMQP\Transport\Protocol\ArgumentTranslator> ?? $protocol.argumentTranslator.defaults
+
+expose:
+    client: '$client.signalAware'
+    basic: '$client.default'
+
+services:
+    client:
+        default Innmind\AMQP\Client\Client:
+            - '$connection.logger'
+
+        fluent Innmind\AMQP\Client\Fluent:
+            - '$client.default'
+
+        logger Innmind\AMQP\Client\Logger:
+            - '$client.fluent'
+            - '$logger'
+
+        signalAware Innmind\AMQP\Client\SignalAware:
+            - '$client.logger'
+
+    connection:
+        lazy Innmind\AMQP\Transport\Connection\Lazy:
+            - '$transport'
+            - '$server'
+            - '$protocol.delegate'
+            - '$timeout'
+            - '$clock'
+
+        logger Innmind\AMQP\Transport\Connection\Logger:
+            - '$connection.lazy'
+            - '$logger'
+
+    protocol:
+        delegate Innmind\AMQP\Transport\Protocol\Delegate:
+            - '...$protocols'
+
+        v091 Innmind\AMQP\Transport\Protocol\v091\Protocol:
+            - '$protocol.argumentTranslator.delegate'
+
+        defaults set<Innmind\AMQP\Transport\Protocol>:
+            - '$protocol.v091'
+
+        argumentTranslator:
+            delegate Innmind\AMQP\Transport\Protocol\ArgumentTranslator\Delegate:
+                - '...$argumentTranslators'
+
+            value Innmind\AMQP\Transport\Protocol\ArgumentTranslator\ValueTranslator: []
+
+            defaults set<Innmind\AMQP\Transport\Protocol\ArgumentTranslator>:
+                - '$protocol.argumentTranslator.value'
