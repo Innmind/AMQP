@@ -59,9 +59,12 @@ USAGE;
             )
         );
         $client
-            ->expects($this->once())
+            ->expects($this->at(0))
             ->method('channel')
             ->willReturn($channel = $this->createMock(Channel::class));
+        $client
+            ->expects($this->at(1))
+            ->method('close');
         $channel
             ->expects($this->once())
             ->method('basic')
@@ -90,6 +93,47 @@ USAGE;
             new Arguments((new Map('string', 'mixed'))->put('queue', 'foo')),
             new Options
         ));
+    }
+
+    public function testCloseEvenOnException()
+    {
+        $consume = new Consume(
+            $client = $this->createMock(Client::class),
+            new Consumers(
+                (new Map('string', 'callable'))
+                    ->put('foo', function(){})
+            )
+        );
+        $client
+            ->expects($this->at(0))
+            ->method('channel')
+            ->willReturn($channel = $this->createMock(Channel::class));
+        $client
+            ->expects($this->at(1))
+            ->method('close');
+        $channel
+            ->expects($this->once())
+            ->method('basic')
+            ->willReturn($basic = $this->createMock(Basic::class));
+        $basic
+            ->expects($this->once())
+            ->method('consume')
+            ->with($this->callback(function($consume): bool {
+                return $consume->queue() === 'foo';
+            }))
+            ->willReturn($consumer = $this->createMock(Basic\Consumer::class));
+        $consumer
+            ->expects($this->once())
+            ->method('foreach')
+            ->will($this->throwException(new \Exception));
+
+        $this->expectException(\Exception::class);
+
+        $consume(
+            $this->createMock(Environment::class),
+            new Arguments((new Map('string', 'mixed'))->put('queue', 'foo')),
+            new Options
+        );
     }
 
     public function testConsumeXMessages()

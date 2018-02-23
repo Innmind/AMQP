@@ -45,7 +45,11 @@ final class Consume implements Command
             $consumer->take((int) $arguments->get('number'));
         }
 
-        $consumer->foreach($consume);
+        try {
+            $consumer->foreach($consume);
+        } finally {
+            $this->client->close();
+        }
     }
 
     public function __toString(): string

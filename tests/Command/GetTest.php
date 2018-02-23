@@ -59,9 +59,12 @@ USAGE;
             )
         );
         $client
-            ->expects($this->once())
+            ->expects($this->at(0))
             ->method('channel')
             ->willReturn($channel = $this->createMock(Channel::class));
+        $client
+            ->expects($this->at(1))
+            ->method('close');
         $channel
             ->expects($this->once())
             ->method('basic')
@@ -90,5 +93,46 @@ USAGE;
             new Arguments((new Map('string', 'mixed'))->put('queue', 'foo')),
             new Options
         ));
+    }
+
+    public function testCloseEvenOnException()
+    {
+        $command = new Get(
+            $client = $this->createMock(Client::class),
+            new Consumers(
+                (new Map('string', 'callable'))
+                    ->put('foo', function(){})
+            )
+        );
+        $client
+            ->expects($this->at(0))
+            ->method('channel')
+            ->willReturn($channel = $this->createMock(Channel::class));
+        $client
+            ->expects($this->at(1))
+            ->method('close');
+        $channel
+            ->expects($this->once())
+            ->method('basic')
+            ->willReturn($basic = $this->createMock(Basic::class));
+        $basic
+            ->expects($this->once())
+            ->method('get')
+            ->with($this->callback(function($get): bool {
+                return $get->queue() === 'foo';
+            }))
+            ->willReturn($get = $this->createMock(Basic\Get::class));
+        $get
+            ->expects($this->once())
+            ->method('__invoke')
+            ->will($this->throwException(new \Exception));
+
+        $this->expectException(\Exception::class);
+
+        $command(
+            $this->createMock(Environment::class),
+            new Arguments((new Map('string', 'mixed'))->put('queue', 'foo')),
+            new Options
+        );
     }
 }

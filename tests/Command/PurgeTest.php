@@ -46,9 +46,12 @@ USAGE;
     {
         $purge = new Purge($client = $this->createMock(Client::class));
         $client
-            ->expects($this->once())
+            ->expects($this->at(0))
             ->method('channel')
             ->willReturn($channel = $this->createMock(Channel::class));
+        $client
+            ->expects($this->at(1))
+            ->method('close');
         $channel
             ->expects($this->once())
             ->method('queue')
@@ -69,6 +72,26 @@ USAGE;
             new Arguments((new Map('string', 'mixed'))->put('queue', 'foo')),
             new Options
         ));
+    }
+
+    public function testCloseEvenOnException()
+    {
+        $purge = new Purge($client = $this->createMock(Client::class));
+        $client
+            ->expects($this->at(0))
+            ->method('channel')
+            ->will($this->throwException(new \Exception));
+        $client
+            ->expects($this->at(1))
+            ->method('close');
+
+        $this->expectException(\Exception::class);
+
+        $purge(
+            $this->createMock(Environment::class),
+            new Arguments((new Map('string', 'mixed'))->put('queue', 'foo')),
+            new Options
+        );
     }
 
     public function testFailsWhenUnexpectedFrame()

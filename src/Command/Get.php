@@ -30,11 +30,16 @@ final class Get implements Command
     {
         $queue = $arguments->get('queue');
         $consume = $this->consumers->get($queue);
-        $this
-            ->client
-            ->channel()
-            ->basic()
-            ->get(new Basic\Get($queue))($consume);
+
+        try {
+            $this
+                ->client
+                ->channel()
+                ->basic()
+                ->get(new Basic\Get($queue))($consume);
+        } finally {
+            $this->client->close();
+        }
     }
 
     public function __toString(): string

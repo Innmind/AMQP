@@ -38,6 +38,8 @@ final class Purge implements Command
         } catch (UnexpectedFrame $e) {
             $env->error()->write(Str::of("Purging \"$queue\" failed"));
             $env->exit(1);
+        } finally {
+            $this->client->close();
         }
     }
 
