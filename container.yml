@@ -11,6 +11,7 @@ arguments:
 expose:
     client: '$client.signalAware'
     basic: '$client.default'
+    purgeCommand: '$command.purge'
 
 services:
     client:
@@ -57,3 +58,7 @@ services:
 
             defaults set<Innmind\AMQP\Transport\Protocol\ArgumentTranslator>:
                 - '$protocol.argumentTranslator.value'
+
+    command:
+        purge Innmind\AMQP\Command\Purge:
+            - $client.signalAware
