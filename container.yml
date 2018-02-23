@@ -13,6 +13,7 @@ expose:
     basic: '$client.default'
     purgeCommand: '$command.purge'
     getCommand: '$command.get'
+    consumeCommand: '$command.consume'
 
 services:
     client:
@@ -68,5 +69,9 @@ services:
             - $client.signalAware
 
         get Innmind\AMQP\Command\Get:
+            - $client.signalAware
+            - $queueConsumers
+
+        consume Innmind\AMQP\Command\Consume:
             - $client.signalAware
             - $queueConsumers
