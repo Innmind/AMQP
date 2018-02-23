@@ -6,6 +6,7 @@ arguments:
     logger: Psr\Log\LoggerInterface
     protocols: set<Innmind\AMQP\Transport\Protocol> ?? $protocol.defaults
     argumentTranslators: set<Innmind\AMQP\Transport\Protocol\ArgumentTranslator> ?? $protocol.argumentTranslator.defaults
+    consumers: '?map<string, callable>'
 
 expose:
     client: '$client.signalAware'
