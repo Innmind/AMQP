@@ -7,10 +7,14 @@ arguments:
     protocols: set<Innmind\AMQP\Transport\Protocol> ?? $protocol.defaults
     argumentTranslators: set<Innmind\AMQP\Transport\Protocol\ArgumentTranslator> ?? $protocol.argumentTranslator.defaults
     consumers: '?map<string, callable>'
+    exchanges: '?set<Innmind\AMQP\Model\Exchange\Declaration>'
+    queues: '?set<Innmind\AMQP\Model\Queue\Declaration>'
+    bindings: '?set<Innmind\AMQP\Model\Queue\Binding>'
 
 expose:
     client: '$client.signalAware'
     basic: '$client.default'
+    autoDeclare: '$client.autoDeclare'
     purgeCommand: '$command.purge'
     getCommand: '$command.get'
     consumeCommand: '$command.consume'
@@ -29,6 +33,12 @@ services:
 
         signalAware Innmind\AMQP\Client\SignalAware:
             - '$client.logger'
+
+        autoDeclare Innmind\AMQP\Client\AutoDeclare:
+            - '$client.signalAware'
+            - '$exchanges'
+            - '$queues'
+            - '$bindings'
 
     connection:
         lazy Innmind\AMQP\Transport\Connection\Lazy:
