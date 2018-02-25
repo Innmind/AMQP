@@ -77,14 +77,14 @@ services:
 
     command:
         purge Innmind\AMQP\Command\Purge:
-            - $client.signalAware
+            - $client.autoDeclare
 
         get Innmind\AMQP\Command\Get:
-            - $client.signalAware
+            - $client.autoDeclare
             - $queueConsumers
 
         consume Innmind\AMQP\Command\Consume:
-            - $client.signalAware
+            - $client.autoDeclare
             - $queueConsumers
 
     producers Innmind\AMQP\Producers::fromDeclarations:
