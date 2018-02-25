@@ -6,10 +6,19 @@ arguments:
     logger: Psr\Log\LoggerInterface
     protocols: set<Innmind\AMQP\Transport\Protocol> ?? $protocol.defaults
     argumentTranslators: set<Innmind\AMQP\Transport\Protocol\ArgumentTranslator> ?? $protocol.argumentTranslator.defaults
+    consumers: '?map<string, callable>'
+    exchanges: '?set<Innmind\AMQP\Model\Exchange\Declaration>'
+    queues: '?set<Innmind\AMQP\Model\Queue\Declaration>'
+    bindings: '?set<Innmind\AMQP\Model\Queue\Binding>'
 
 expose:
     client: '$client.signalAware'
     basic: '$client.default'
+    autoDeclare: '$client.autoDeclare'
+    purgeCommand: '$command.purge'
+    getCommand: '$command.get'
+    consumeCommand: '$command.consume'
+    producers: '$producers'
 
 services:
     client:
@@ -25,6 +34,12 @@ services:
 
         signalAware Innmind\AMQP\Client\SignalAware:
             - '$client.logger'
+
+        autoDeclare Innmind\AMQP\Client\AutoDeclare:
+            - '$client.signalAware'
+            - '$exchanges'
+            - '$queues'
+            - '$bindings'
 
     connection:
         lazy Innmind\AMQP\Transport\Connection\Lazy:
@@ -56,3 +71,22 @@ services:
 
             defaults set<Innmind\AMQP\Transport\Protocol\ArgumentTranslator>:
                 - '$protocol.argumentTranslator.value'
+
+    queueConsumers Innmind\AMQP\Consumers:
+        - $consumers
+
+    command:
+        purge Innmind\AMQP\Command\Purge:
+            - $client.signalAware
+
+        get Innmind\AMQP\Command\Get:
+            - $client.signalAware
+            - $queueConsumers
+
+        consume Innmind\AMQP\Command\Consume:
+            - $client.signalAware
+            - $queueConsumers
+
+    producers Innmind\AMQP\Producers::fromDeclarations:
+        - '$client.autoDeclare'
+        - '...$exchanges'
