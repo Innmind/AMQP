@@ -9,6 +9,7 @@ use Innmind\AMQP\{
     Command\Get,
     Command\Purge,
     Command\Consume,
+    Producers,
 };
 use Innmind\Compose\{
     ContainerBuilder\ContainerBuilder,
@@ -46,5 +47,6 @@ class ContainerTest extends TestCase
         $this->assertInstanceOf(Get::class, $container->get('getCommand'));
         $this->assertInstanceOf(Purge::class, $container->get('purgeCommand'));
         $this->assertInstanceOf(Consume::class, $container->get('consumeCommand'));
+        $this->assertInstanceOf(Producers::class, $container->get('producers'));
     }
 }

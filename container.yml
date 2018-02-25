@@ -18,6 +18,7 @@ expose:
     purgeCommand: '$command.purge'
     getCommand: '$command.get'
     consumeCommand: '$command.consume'
+    producers: '$producers'
 
 services:
     client:
@@ -85,3 +86,7 @@ services:
         consume Innmind\AMQP\Command\Consume:
             - $client.signalAware
             - $queueConsumers
+
+    producers Innmind\AMQP\Producers::fromDeclarations:
+        - '$client.autoDeclare'
+        - '...$exchanges'
