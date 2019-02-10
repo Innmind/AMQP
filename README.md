@@ -23,11 +23,8 @@ composer require innmind/amqp
 ## Usage
 
 ```php
+use function Innmind\AMQP\bootstrap;
 use Innmind\AMQP\{
-    Client\Client,
-    Transport\Connection\Connection,
-    Transport\Protocol\ArgumentTranslator\ValueTranslator,
-    Transport\Protocol\v091\Protocol,
     Model\Exchange\Declaration as Exchange,
     Model\Exchange\Type,
     Model\Queue\Declaration as Queue,
@@ -43,15 +40,13 @@ use Innmind\TimeContinuum\{
 use Innmind\Url\Url;
 use Innmind\Immutable\Str;
 
-$client = new Client(
-    new Connection(
-        Transport::tcp(),
-        Url::fromString('//guest:guest@localhost:5672/'),
-        new Protocol(new ValueTranslator),
-        new ElapsedPeriod(1000), //timeout
-        new Earth
-    )
+$amqp = bootstrap(
+    Transport::tcp(),
+    Url::fromString('amqp://guest:guest@localhost:5672/'),
+    new ElapsedPeriod(1000), //timeout
+    new Earth
 );
+$client = $amqp['client']['basic'];
 $client
     ->channel()
     ->exchange()
@@ -131,9 +126,7 @@ By default if you send commands via the client but the connection is closed it w
 If you want the client to fail silenty you can simply decorate the client like so:
 
 ```php
-use Innmind\AMQP\Client\Fluent;
-
-$client = new Fluent($client);
+$client = $amqp['client']['fluent']($client);
 ```
 
 This will for example allow you to _consume_ a queue but in reality will do nothing if the connection is closed, of course if it's opened it will receive messages like before.
@@ -143,15 +136,16 @@ This will for example allow you to _consume_ a queue but in reality will do noth
 By default no activity is logged when using this library, but you have 2 strategies to log what's happening: at the transport layer or at the client level. This is done either by decorating the connection object or the client one:
 
 ```php
-use Innminq\AMQP\{
-    Client\Logger as LoggerClient,
-    Transport\Connection\Logger as LoggerTransport
-};
 use Psr\Log\LoggerInterface;
 
-$client = new Client(new LoggerTransport(new Connection(/*arguments*/)));
-//or
-$client = new LoggerClient($client);
+$amqp = bootstrap(
+    Transport::tcp(),
+    Url::fromString('amqp://guest:guest@localhost:5672/'),
+    new ElapsedPeriod(1000), //timeout
+    new Earth,
+    /* instance of LoggerInterface */
+);
+$client = $amqp['client']['logger'];
 ```
 
 By decorating the connection it will log every sent and received frames, do this if you want to know what's sent through the wire. By decorating the client it will log every received messages and if they've been rejected or requeued; explicit cancel calls (via the exception) and errors thrown during message consumption will be as well.
