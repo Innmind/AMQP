@@ -48,7 +48,10 @@ final class Decimal implements Value
 
     public static function fromStream(Readable $stream): Value
     {
-        return self::fromString($stream->read());
+        $scale = UnsignedOctet::fromStream($stream)->original();
+        $value = SignedLongInteger::fromStream($stream)->original();
+
+        return new self($value, $scale);
     }
 
     public static function cut(Str $string): Str
