@@ -85,15 +85,15 @@ final class Sequence implements Value
     public static function fromStream(Readable $stream): Value
     {
         $length = UnsignedLongInteger::fromStream($stream)->original();
-        $string = $stream->read($length->value());
+        $position = $stream->position()->toInt();
+        $boundary = $position + $length->value();
 
         $values = [];
 
-        while ($string->length() !== 0) {
-            $class = Symbols::class((string) $string->substring(0, 1));
-            $element = [$class, 'cut']($string->substring(1))->toEncoding('ASCII');
-            $values[] = [$class, 'fromString']($element);
-            $string = $string->substring($element->length() + 1);
+        while ($position < $boundary) {
+            $class = Symbols::class((string) $stream->read(1));
+            $values[] = [$class, 'fromStream']($stream);
+            $position = $stream->position()->toInt();
         }
 
         return new self(...$values);
