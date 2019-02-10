@@ -6,16 +6,14 @@ namespace Innmind\AMQP\Transport\Frame\Value;
 use Innmind\AMQP\{
     Transport\Frame\Value,
     Exception\OutOfRangeValue,
-    Exception\StringNotOfExpectedLength
 };
 use Innmind\Math\{
     Algebra\Integer,
     Algebra\Number\Infinite,
     DefinitionSet\Set,
-    DefinitionSet\Range
+    DefinitionSet\Range,
 };
 use Innmind\Stream\Readable;
-use Innmind\Immutable\Str;
 
 final class UnsignedLongLongInteger implements Value
 {
@@ -33,31 +31,11 @@ final class UnsignedLongLongInteger implements Value
         $this->original = $value;
     }
 
-    public static function fromString(Str $string): Value
-    {
-        $string = $string->toEncoding('ASCII');
-
-        if ($string->length() !== 8) {
-            throw new StringNotOfExpectedLength($string, 8);
-        }
-
-        [, $value] = unpack('J', (string) $string);
-
-        return new self(new Integer($value));
-    }
-
     public static function fromStream(Readable $stream): Value
     {
-        $string = $stream->read(8)->toEncoding('ASCII');
-
-        [, $value] = unpack('J', (string) $string);
+        [, $value] = unpack('J', (string) $stream->read(8));
 
         return new self(new Integer($value));
-    }
-
-    public static function cut(Str $string): Str
-    {
-        return $string->toEncoding('ASCII')->substring(0, 8);
     }
 
     public function original(): Integer

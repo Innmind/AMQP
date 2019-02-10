@@ -6,15 +6,13 @@ namespace Innmind\AMQP\Transport\Frame\Value;
 use Innmind\AMQP\{
     Transport\Frame\Value,
     Exception\OutOfRangeValue,
-    Exception\StringNotOfExpectedLength
 };
 use Innmind\Math\{
     Algebra\Integer,
     DefinitionSet\Set,
-    DefinitionSet\Range
+    DefinitionSet\Range,
 };
 use Innmind\Stream\Readable;
-use Innmind\Immutable\Str;
 
 /**
  * Same as unsigned shortshort
@@ -35,35 +33,11 @@ final class UnsignedOctet implements Value
         $this->original = $octet;
     }
 
-    public static function fromString(Str $string): Value
-    {
-        $string = $string->toEncoding('ASCII');
-
-        if ($string->length() !== 1) {
-            throw new StringNotOfExpectedLength($string, 1);
-        }
-
-        [, $octet] = unpack('C', (string) $string);
-
-        return new self(new Integer($octet));
-    }
-
     public static function fromStream(Readable $stream): Value
     {
-        $string = $stream->read(1)->toEncoding('ASCII');
-
-        if ($string->length() !== 1) {
-            throw new StringNotOfExpectedLength($string, 1);
-        }
-
-        [, $octet] = unpack('C', (string) $string);
+        [, $octet] = unpack('C', (string) $stream->read(1));
 
         return new self(new Integer($octet));
-    }
-
-    public static function cut(Str $string): Str
-    {
-        return $string->toEncoding('ASCII')->substring(0, 1);
     }
 
     public function original(): Integer

@@ -5,11 +5,10 @@ namespace Tests\Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\{
     Value\UnsignedOctet,
-    Value
+    Value,
 };
 use Innmind\Math\Algebra\Integer;
 use Innmind\Filesystem\Stream\StringStream;
-use Innmind\Immutable\Str;
 use PHPUnit\Framework\TestCase;
 
 class UnsignedOctetTest extends TestCase
@@ -35,18 +34,6 @@ class UnsignedOctetTest extends TestCase
     /**
      * @dataProvider cases
      */
-    public function testFromString($string, $expected)
-    {
-        $value = UnsignedOctet::fromString(new Str($string));
-
-        $this->assertInstanceOf(UnsignedOctet::class, $value);
-        $this->assertSame($expected, $value->original()->value());
-        $this->assertSame($string, (string) $value);
-    }
-
-    /**
-     * @dataProvider cases
-     */
     public function testFromStream($string, $expected)
     {
         $value = UnsignedOctet::fromStream(new StringStream($string));
@@ -54,17 +41,6 @@ class UnsignedOctetTest extends TestCase
         $this->assertInstanceOf(UnsignedOctet::class, $value);
         $this->assertSame($expected, $value->original()->value());
         $this->assertSame($string, (string) $value);
-    }
-
-    /**
-     * @dataProvider cases
-     */
-    public function testCut($string)
-    {
-        $str = UnsignedOctet::cut(new Str($string.'foo'));
-
-        $this->assertInstanceOf(Str::class, $str);
-        $this->assertSame($string, (string) $str);
     }
 
     /**
@@ -83,14 +59,6 @@ class UnsignedOctetTest extends TestCase
     public function testThrowWhenStringTooLow()
     {
         new UnsignedOctet(new Integer(-1));
-    }
-
-    /**
-     * @expectedException Innmind\AMQP\Exception\StringNotOfExpectedLength
-     */
-    public function testThrowWhenStringNotOfExpectedLength()
-    {
-        UnsignedOctet::fromString(new Str('foo'));
     }
 
     public function cases(): array

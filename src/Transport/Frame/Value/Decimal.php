@@ -5,16 +5,15 @@ namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\{
     Transport\Frame\Value,
-    Exception\OutOfRangeValue
+    Exception\OutOfRangeValue,
 };
 use Innmind\Math\{
     Algebra\Number,
     Algebra\Integer,
     DefinitionSet\Set,
-    DefinitionSet\NaturalNumbers
+    DefinitionSet\NaturalNumbers,
 };
 use Innmind\Stream\Readable;
-use Innmind\Immutable\Str;
 
 final class Decimal implements Value
 {
@@ -36,32 +35,12 @@ final class Decimal implements Value
         );
     }
 
-    public static function fromString(Str $string): Value
-    {
-        $string = $string->toEncoding('ASCII');
-
-        return new self(
-            SignedLongInteger::fromString($string->substring(1))->original(),
-            UnsignedOctet::fromString($string->substring(0, 1))->original()
-        );
-    }
-
     public static function fromStream(Readable $stream): Value
     {
         $scale = UnsignedOctet::fromStream($stream)->original();
         $value = SignedLongInteger::fromStream($stream)->original();
 
         return new self($value, $scale);
-    }
-
-    public static function cut(Str $string): Str
-    {
-        return $string
-            ->toEncoding('ASCII')
-            ->substring(0, 1)
-            ->append(
-                (string) SignedLongInteger::cut($string->substring(1))
-            );
     }
 
     public function original(): Number

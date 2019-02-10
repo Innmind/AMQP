@@ -5,11 +5,10 @@ namespace Tests\Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\{
     Value\UnsignedLongInteger,
-    Value
+    Value,
 };
 use Innmind\Math\Algebra\Integer;
 use Innmind\Filesystem\Stream\StringStream;
-use Innmind\Immutable\Str;
 use PHPUnit\Framework\TestCase;
 
 class UnsignedLongIntegerTest extends TestCase
@@ -52,28 +51,6 @@ class UnsignedLongIntegerTest extends TestCase
     }
 
     /**
-     * @expectedException Innmind\AMQP\Exception\StringNotOfExpectedLength
-     * @expectedExceptionMessage String "foo" is expected of being 4 characters, got 3
-     */
-    public function testThrowWhenStringNotOfAppropriateLength()
-    {
-        UnsignedLongInteger::fromString(new Str('foo'));
-    }
-
-    /**
-     * @dataProvider cases
-     */
-    public function testFromString($expected, $string)
-    {
-        $value = UnsignedLongInteger::fromString(new Str($string));
-
-        $this->assertInstanceOf(UnsignedLongInteger::class, $value);
-        $this->assertInstanceOf(Integer::class, $value->original());
-        $this->assertSame($expected, $value->original()->value());
-        $this->assertSame($string, (string) $value);
-    }
-
-    /**
      * @dataProvider cases
      */
     public function testFromStream($expected, $string)
@@ -84,17 +61,6 @@ class UnsignedLongIntegerTest extends TestCase
         $this->assertInstanceOf(Integer::class, $value->original());
         $this->assertSame($expected, $value->original()->value());
         $this->assertSame($string, (string) $value);
-    }
-
-    /**
-     * @dataProvider cases
-     */
-    public function testCut($expected, $string)
-    {
-        $str = UnsignedLongInteger::cut(new Str($string.'foo'));
-
-        $this->assertInstanceOf(Str::class, $str);
-        $this->assertSame($string, (string) $str);
     }
 
     public function cases(): array

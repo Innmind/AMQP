@@ -33,10 +33,11 @@ final class Bits implements Value
         $this->original = $stream;
     }
 
-    public static function fromString(Str $string): Value
+    public static function fromStream(Readable $stream): Value
     {
         return new self(
-            ...$string
+            ...$stream
+                ->read(1)
                 ->toEncoding('ASCII')
                 ->chunk()
                 ->reduce(
@@ -57,16 +58,6 @@ final class Bits implements Value
                 })
                 ->reverse()
         );
-    }
-
-    public static function fromStream(Readable $stream): Value
-    {
-        return self::fromString($stream->read(1));
-    }
-
-    public static function cut(Str $string): Str
-    {
-        return $string->toEncoding('ASCII')->substring(0, 1);
     }
 
     /**

@@ -223,23 +223,19 @@ final class Connection implements ConnectionInterface
         try {
             $frame = $this->wait('connection.start');
         } catch (NoFrameDetected $e) {
-            $content = $e->content()->toEncoding('ASCII');
+            $content = $e->content();
 
-            if (
-                $content->length() !== 8 ||
-                !$content->matches('/^AMQP/')
-            ) {
+            if ((string) $content->read(4) !== 'AMQP') {
                 throw $e;
             }
 
-            $version = $content
-                ->substring(5, 8)
-                ->chunk();
+            $content->read(1); // there is a zero between AMQP and version number
+
             $this->protocol->use(
                 new Version(
-                    UnsignedOctet::fromString($version->get(0))->original()->value(),
-                    UnsignedOctet::fromString($version->get(1))->original()->value(),
-                    UnsignedOctet::fromString($version->get(2))->original()->value()
+                    UnsignedOctet::fromStream($content)->original()->value(),
+                    UnsignedOctet::fromStream($content)->original()->value(),
+                    UnsignedOctet::fromStream($content)->original()->value()
                 )
             );
             //socket rebuilt as the server close the connection on version mismatch

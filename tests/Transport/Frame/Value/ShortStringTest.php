@@ -5,7 +5,7 @@ namespace Tests\Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\{
     Value\ShortString,
-    Value
+    Value,
 };
 use Innmind\Filesystem\Stream\StringStream;
 use Innmind\Immutable\Str;
@@ -31,18 +31,6 @@ class ShortStringTest extends TestCase
     /**
      * @dataProvider cases
      */
-    public function testFromString($expected, $string)
-    {
-        $value = ShortString::fromString(new Str($string));
-
-        $this->assertInstanceOf(ShortString::class, $value);
-        $this->assertSame($expected, (string) $value->original());
-        $this->assertSame($string, (string) $value);
-    }
-
-    /**
-     * @dataProvider cases
-     */
     public function testFromStream($expected, $string)
     {
         $value = ShortString::fromStream(new StringStream($string));
@@ -50,17 +38,6 @@ class ShortStringTest extends TestCase
         $this->assertInstanceOf(ShortString::class, $value);
         $this->assertSame($expected, (string) $value->original());
         $this->assertSame($string, (string) $value);
-    }
-
-    /**
-     * @dataProvider cases
-     */
-    public function testCut($_, $string)
-    {
-        $str = ShortString::cut(new Str($string.'foo'));
-
-        $this->assertInstanceOf(Str::class, $str);
-        $this->assertSame($string, (string) $str);
     }
 
     /**

@@ -25,14 +25,14 @@ final class FrameReader
 {
     public function __invoke(Readable $stream, Protocol $protocol): Frame
     {
-        $octet = $stream->read(1);
+        $octet = UnsignedOctet::fromStream($stream);
 
         try {
-            $type = Type::fromInt(
-                UnsignedOctet::fromString($octet)->original()->value()
-            );
+            $type = Type::fromInt($octet->original()->value());
         } catch (UnknownFrameType $e) {
-            throw new NoFrameDetected($octet->append((string) $stream->read()));
+            throw new NoFrameDetected(new StringStream(
+                (string) $stream->read()->prepend((string) $octet)
+            ));
         }
 
         $channel = new Channel(
@@ -52,13 +52,7 @@ final class FrameReader
             throw new PayloadTooShort;
         }
 
-        $end = $stream->read(1)->toEncoding('ASCII');
-
-        if ($end->length() !== 1) {
-            throw new ReceivedFrameNotDelimitedCorrectly;
-        }
-
-        $end = UnsignedOctet::fromString($end)->original()->value();
+        $end = UnsignedOctet::fromStream($stream)->original()->value();
 
         if ($end !== Frame::end()) {
             throw new ReceivedFrameNotDelimitedCorrectly;

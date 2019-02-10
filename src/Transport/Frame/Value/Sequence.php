@@ -5,8 +5,7 @@ namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\{
     Transport\Frame\Value,
-    Exception\StringNotOfExpectedLength,
-    Exception\UnboundedTextCannotBeWrapped
+    Exception\UnboundedTextCannotBeWrapped,
 };
 use Innmind\Math\Algebra\Integer;
 use Innmind\Stream\Readable;
@@ -14,7 +13,6 @@ use Innmind\Immutable\{
     Sequence as Seq,
     StreamInterface,
     Stream,
-    Str
 };
 
 /**
@@ -60,28 +58,6 @@ final class Sequence implements Value
         );
     }
 
-    public static function fromString(Str $string): Value
-    {
-        $string = $string->toEncoding('ASCII');
-        $length = UnsignedLongInteger::fromString($string->substring(0, 4))->original();
-        $string = $string->substring(4);
-
-        if ($string->length() !== $length->value()) {
-            throw new StringNotOfExpectedLength($string, $length->value());
-        }
-
-        $values = [];
-
-        while ($string->length() !== 0) {
-            $class = Symbols::class((string) $string->substring(0, 1));
-            $element = [$class, 'cut']($string->substring(1))->toEncoding('ASCII');
-            $values[] = [$class, 'fromString']($element);
-            $string = $string->substring($element->length() + 1);
-        }
-
-        return new self(...$values);
-    }
-
     public static function fromStream(Readable $stream): Value
     {
         $length = UnsignedLongInteger::fromStream($stream)->original();
@@ -97,16 +73,6 @@ final class Sequence implements Value
         }
 
         return new self(...$values);
-    }
-
-    public static function cut(Str $string): Str
-    {
-        $string = $string->toEncoding('ASCII');
-        $length = UnsignedLongInteger::fromString(
-            UnsignedLongInteger::cut($string)
-        )->original();
-
-        return $string->substring(0, $length->value() + 4);
     }
 
     /**

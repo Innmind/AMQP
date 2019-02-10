@@ -5,11 +5,10 @@ namespace Tests\Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\{
     Value\SignedShortInteger,
-    Value
+    Value,
 };
 use Innmind\Math\Algebra\Integer;
 use Innmind\Filesystem\Stream\StringStream;
-use Innmind\Immutable\Str;
 use PHPUnit\Framework\TestCase;
 
 class SignedShortIntegerTest extends TestCase
@@ -35,18 +34,6 @@ class SignedShortIntegerTest extends TestCase
     /**
      * @dataProvider cases
      */
-    public function testFromString($expected, $string)
-    {
-        $value = SignedShortInteger::fromString(new Str($string));
-
-        $this->assertInstanceOf(SignedShortInteger::class, $value);
-        $this->assertSame($expected, $value->original()->value());
-        $this->assertSame($string, (string) $value);
-    }
-
-    /**
-     * @dataProvider cases
-     */
     public function testFromStream($expected, $string)
     {
         $value = SignedShortInteger::fromStream(new StringStream($string));
@@ -54,17 +41,6 @@ class SignedShortIntegerTest extends TestCase
         $this->assertInstanceOf(SignedShortInteger::class, $value);
         $this->assertSame($expected, $value->original()->value());
         $this->assertSame($string, (string) $value);
-    }
-
-    /**
-     * @dataProvider cases
-     */
-    public function testCut($_, $string)
-    {
-        $str = SignedShortInteger::cut(new Str($string.'foo'));
-
-        $this->assertInstanceOf(Str::class, $str);
-        $this->assertSame($string, (string) $str);
     }
 
     /**
@@ -83,15 +59,6 @@ class SignedShortIntegerTest extends TestCase
     public function testThrowWhenIntegerTooLow()
     {
         new SignedShortInteger(new Integer(-32769));
-    }
-
-    /**
-     * @expectedException Innmind\AMQP\Exception\StringNotOfExpectedLength
-     * @expectedExceptionMessage String "foo" is expected of being 2 characters, got 3
-     */
-    public function testThrowWhenStringNotOfExpectedLength()
-    {
-        SignedShortInteger::fromString(new Str('foo'));
     }
 
     public function cases(): array

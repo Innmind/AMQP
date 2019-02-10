@@ -3,19 +3,19 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Exception;
 
-use Innmind\Immutable\Str;
+use Innmind\Stream\Readable;
 
 final class NoFrameDetected extends RuntimeException
 {
     private $content;
 
-    public function __construct(Str $content)
+    public function __construct(Readable $content)
     {
         parent::__construct();
         $this->content = $content;
     }
 
-    public function content(): Str
+    public function content(): Readable
     {
         return $this->content;
     }

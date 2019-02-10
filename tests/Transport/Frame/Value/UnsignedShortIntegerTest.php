@@ -5,11 +5,10 @@ namespace Tests\Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\{
     Value\UnsignedShortInteger,
-    Value
+    Value,
 };
 use Innmind\Math\Algebra\Integer;
 use Innmind\Filesystem\Stream\StringStream;
-use Innmind\Immutable\Str;
 use PHPUnit\Framework\TestCase;
 
 class UnsignedShortIntegerTest extends TestCase
@@ -35,19 +34,6 @@ class UnsignedShortIntegerTest extends TestCase
     /**
      * @dataProvider cases
      */
-    public function testFromString($expected, $string)
-    {
-        $value = UnsignedShortInteger::fromString(new Str($string));
-
-        $this->assertInstanceOf(UnsignedShortInteger::class, $value);
-        $this->assertInstanceOf(Integer::class, $value->original());
-        $this->assertSame($expected, $value->original()->value());
-        $this->assertSame($string, (string) $value);
-    }
-
-    /**
-     * @dataProvider cases
-     */
     public function testFromStream($expected, $string)
     {
         $value = UnsignedShortInteger::fromStream(new StringStream($string));
@@ -56,17 +42,6 @@ class UnsignedShortIntegerTest extends TestCase
         $this->assertInstanceOf(Integer::class, $value->original());
         $this->assertSame($expected, $value->original()->value());
         $this->assertSame($string, (string) $value);
-    }
-
-    /**
-     * @dataProvider cases
-     */
-    public function testCut($_, $string)
-    {
-        $str = UnsignedShortInteger::cut(new Str($string.'foo'));
-
-        $this->assertInstanceOf(Str::class, $str);
-        $this->assertSame($string, (string) $str);
     }
 
     /**
@@ -85,15 +60,6 @@ class UnsignedShortIntegerTest extends TestCase
     public function testThrowWhenIntegerTooLow()
     {
         new UnsignedShortInteger(new Integer(-1));
-    }
-
-    /**
-     * @expectedException Innmind\AMQP\Exception\StringNotOfExpectedLength
-     * @expectedExceptionMessage String "foo" is expected of being 2 characters, got 3
-     */
-    public function testThrowWhenStringNotOfExpectedLength()
-    {
-        UnsignedShortInteger::fromString(new Str('foo'));
     }
 
     public function cases(): array

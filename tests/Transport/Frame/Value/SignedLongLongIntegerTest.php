@@ -5,11 +5,10 @@ namespace Tests\Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\{
     Value\SignedLongLongInteger,
-    Value
+    Value,
 };
 use Innmind\Math\Algebra\Integer;
 use Innmind\Filesystem\Stream\StringStream;
-use Innmind\Immutable\Str;
 use PHPUnit\Framework\TestCase;
 
 class SignedLongLongIntegerTest extends TestCase
@@ -35,18 +34,6 @@ class SignedLongLongIntegerTest extends TestCase
     /**
      * @dataProvider cases
      */
-    public function testFromString($expected, $string)
-    {
-        $value = SignedLongLongInteger::fromString(new Str($string));
-
-        $this->assertInstanceOf(SignedLongLongInteger::class, $value);
-        $this->assertSame($expected, $value->original()->value());
-        $this->assertSame($string, (string) $value);
-    }
-
-    /**
-     * @dataProvider cases
-     */
     public function testFromStream($expected, $string)
     {
         $value = SignedLongLongInteger::fromStream(new StringStream($string));
@@ -54,26 +41,6 @@ class SignedLongLongIntegerTest extends TestCase
         $this->assertInstanceOf(SignedLongLongInteger::class, $value);
         $this->assertSame($expected, $value->original()->value());
         $this->assertSame($string, (string) $value);
-    }
-
-    /**
-     * @dataProvider cases
-     */
-    public function testCut($_, $string)
-    {
-        $str = SignedLongLongInteger::cut(new Str($string.'foo'));
-
-        $this->assertInstanceOf(Str::class, $str);
-        $this->assertSame($string, (string) $str);
-    }
-
-    /**
-     * @expectedException Innmind\AMQP\Exception\StringNotOfExpectedLength
-     * @expectedExceptionMessage String "foo" is expected of being 8 characters, got 3
-     */
-    public function testThrowWhenStringNotOfExpectedLength()
-    {
-        SignedLongLongInteger::fromString(new Str('foo'));
     }
 
     public function cases(): array

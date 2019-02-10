@@ -36,7 +36,10 @@ use Innmind\AMQP\{
     TimeContinuum\Format\Timestamp as TimestampFormat,
     Exception\NoFrameDetected
 };
-use Innmind\Stream\Readable\Stream;
+use Innmind\Stream\{
+    Readable\Stream,
+    Readable,
+};
 use Innmind\Math\Algebra\Integer;
 use Innmind\TimeContinuum\{
     ElapsedPeriod,
@@ -85,31 +88,6 @@ class FrameReaderTest extends TestCase
     /**
      * @expectedException Innmind\AMQP\Exception\ReceivedFrameNotDelimitedCorrectly
      */
-    public function testThrowWhenFrameMissingEndMarker()
-    {
-        $read = new FrameReader;
-
-        $file = tmpfile();
-        $frame = (string) Frame::method(
-            new Channel(0),
-            new Method(10, 10), // connection.start
-            new UnsignedOctet(new Integer(0)),
-            new UnsignedOctet(new Integer(9)),
-            new Table(new Map('string', Value::class)),
-            new LongString(new Str('AMQPLAIN')),
-            new LongString(new Str('en_US'))
-        );
-        $frame = mb_substr($frame, 0, -4, 'ASCII'); //remove end marker
-        fwrite($file, $frame);
-        fseek($file, 0);
-        $stream = new Stream($file);
-
-        $read($stream, $this->protocol);
-    }
-
-    /**
-     * @expectedException Innmind\AMQP\Exception\ReceivedFrameNotDelimitedCorrectly
-     */
     public function testThrowWhenFrameEndMarkerInvalid()
     {
         $read = new FrameReader;
@@ -124,7 +102,7 @@ class FrameReaderTest extends TestCase
             new LongString(new Str('AMQPLAIN')),
             new LongString(new Str('en_US'))
         );
-        $frame = mb_substr($frame, 0, -4, 'ASCII'); //remove end marker
+        $frame = mb_substr($frame, 0, -1, 'ASCII'); //remove end marker
         $frame .= new UnsignedOctet(new Integer(0xCD));
         fwrite($file, $frame);
         fseek($file, 0);
@@ -164,7 +142,7 @@ class FrameReaderTest extends TestCase
             (new FrameReader)($stream, $this->protocol);
             $this->fail('it should throw an exception');
         } catch (NoFrameDetected $e) {
-            $this->assertInstanceOf(Str::class, $e->content());
+            $this->assertInstanceOf(Readable::class, $e->content());
             $this->assertSame($content, (string) $e->content());
         }
     }

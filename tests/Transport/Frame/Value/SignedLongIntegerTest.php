@@ -5,11 +5,10 @@ namespace Tests\Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\{
     Value\SignedLongInteger,
-    Value
+    Value,
 };
 use Innmind\Math\Algebra\Integer;
 use Innmind\Filesystem\Stream\StringStream;
-use Innmind\Immutable\Str;
 use PHPUnit\Framework\TestCase;
 
 class SignedLongIntegerTest extends TestCase
@@ -35,18 +34,6 @@ class SignedLongIntegerTest extends TestCase
     /**
      * @dataProvider cases
      */
-    public function testFromString($expected, $string)
-    {
-        $value = SignedLongInteger::fromString(new Str($string));
-
-        $this->assertInstanceOf(SignedLongInteger::class, $value);
-        $this->assertSame($expected, $value->original()->value());
-        $this->assertSame($string, (string) $value);
-    }
-
-    /**
-     * @dataProvider cases
-     */
     public function testFromStream($expected, $string)
     {
         $value = SignedLongInteger::fromStream(new StringStream($string));
@@ -54,17 +41,6 @@ class SignedLongIntegerTest extends TestCase
         $this->assertInstanceOf(SignedLongInteger::class, $value);
         $this->assertSame($expected, $value->original()->value());
         $this->assertSame($string, (string) $value);
-    }
-
-    /**
-     * @dataProvider cases
-     */
-    public function testCut($_, $string)
-    {
-        $str = SignedLongInteger::cut(new Str($string.'foo'));
-
-        $this->assertInstanceOf(Str::class, $str);
-        $this->assertSame($string, (string) $str);
     }
 
     /**
@@ -83,15 +59,6 @@ class SignedLongIntegerTest extends TestCase
     public function testThrowWhenIntegerTooLow()
     {
         new SignedLongInteger(new Integer(-2147483649));
-    }
-
-    /**
-     * @expectedException Innmind\AMQP\Exception\StringNotOfExpectedLength
-     * @expectedExceptionMessage String "foo" is expected of being 4 characters, got 3
-     */
-    public function testThrowWhenStringNotOfExpectedLength()
-    {
-        SignedLongInteger::fromString(new Str('foo'));
     }
 
     public function cases(): array

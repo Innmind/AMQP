@@ -5,11 +5,10 @@ namespace Tests\Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\{
     Value\SignedOctet,
-    Value
+    Value,
 };
 use Innmind\Math\Algebra\Integer;
 use Innmind\Filesystem\Stream\StringStream;
-use Innmind\Immutable\Str;
 use PHPUnit\Framework\TestCase;
 
 class SignedOctetTest extends TestCase
@@ -32,18 +31,6 @@ class SignedOctetTest extends TestCase
     /**
      * @dataProvider cases
      */
-    public function testFromString($string, $expected)
-    {
-        $value = SignedOctet::fromString(new Str($string));
-
-        $this->assertInstanceOf(SignedOctet::class, $value);
-        $this->assertSame($expected, $value->original()->value());
-        $this->assertSame($string, (string) $value);
-    }
-
-    /**
-     * @dataProvider cases
-     */
     public function testFromStream($string, $expected)
     {
         $value = SignedOctet::fromStream(new StringStream($string));
@@ -51,17 +38,6 @@ class SignedOctetTest extends TestCase
         $this->assertInstanceOf(SignedOctet::class, $value);
         $this->assertSame($expected, $value->original()->value());
         $this->assertSame($string, (string) $value);
-    }
-
-    /**
-     * @dataProvider cases
-     */
-    public function testCut($string)
-    {
-        $str = SignedOctet::cut(new Str($string.'foo'));
-
-        $this->assertInstanceOf(Str::class, $str);
-        $this->assertSame($string, (string) $str);
     }
 
     /**
@@ -80,15 +56,6 @@ class SignedOctetTest extends TestCase
     public function testThrowWhenStringTooLow()
     {
         new SignedOctet(new Integer(-129));
-    }
-
-    /**
-     * @expectedException Innmind\AMQP\Exception\StringNotOfExpectedLength
-     * @expectedExceptionMessage String "foo" is expected of being 1 characters, got 3
-     */
-    public function testThrowWhenStringNotOfExpectedLength()
-    {
-        SignedOctet::fromString(new Str('foo'));
     }
 
     public function cases(): array
