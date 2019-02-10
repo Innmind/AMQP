@@ -13,6 +13,7 @@ use Innmind\Math\{
     DefinitionSet\Set,
     DefinitionSet\NaturalNumbers
 };
+use Innmind\Stream\Readable;
 use Innmind\Immutable\Str;
 
 final class Decimal implements Value
@@ -43,6 +44,11 @@ final class Decimal implements Value
             SignedLongInteger::fromString($string->substring(1))->original(),
             UnsignedOctet::fromString($string->substring(0, 1))->original()
         );
+    }
+
+    public static function fromStream(Readable $stream): Value
+    {
+        return self::fromString($stream->read());
     }
 
     public static function cut(Str $string): Str

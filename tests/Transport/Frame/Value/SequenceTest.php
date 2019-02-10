@@ -9,6 +9,7 @@ use Innmind\AMQP\Transport\Frame\{
     Value\Text,
     Value
 };
+use Innmind\Filesystem\Stream\StringStream;
 use Innmind\Immutable\{
     Str,
     StreamInterface
@@ -40,6 +41,30 @@ class SequenceTest extends TestCase
     public function testFromString($string, $expected)
     {
         $value = Sequence::fromString(new Str($string));
+
+        $this->assertInstanceOf(Sequence::class, $value);
+        $this->assertCount(count($expected), $value->original());
+
+        foreach ($expected as $i => $v) {
+            $this->assertInstanceOf(
+                get_class($v),
+                $value->original()->get($i)
+            );
+            $this->assertSame(
+                (string) $v,
+                (string) $value->original()->get($i)
+            );
+        }
+
+        $this->assertSame($string, (string) $value);
+    }
+
+    /**
+     * @dataProvider cases
+     */
+    public function testFromStream($string, $expected)
+    {
+        $value = Sequence::fromStream(new StringStream($string));
 
         $this->assertInstanceOf(Sequence::class, $value);
         $this->assertCount(count($expected), $value->original());

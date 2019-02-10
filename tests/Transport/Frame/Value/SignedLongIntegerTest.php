@@ -8,6 +8,7 @@ use Innmind\AMQP\Transport\Frame\{
     Value
 };
 use Innmind\Math\Algebra\Integer;
+use Innmind\Filesystem\Stream\StringStream;
 use Innmind\Immutable\Str;
 use PHPUnit\Framework\TestCase;
 
@@ -37,6 +38,18 @@ class SignedLongIntegerTest extends TestCase
     public function testFromString($expected, $string)
     {
         $value = SignedLongInteger::fromString(new Str($string));
+
+        $this->assertInstanceOf(SignedLongInteger::class, $value);
+        $this->assertSame($expected, $value->original()->value());
+        $this->assertSame($string, (string) $value);
+    }
+
+    /**
+     * @dataProvider cases
+     */
+    public function testFromStream($expected, $string)
+    {
+        $value = SignedLongInteger::fromStream(new StringStream($string));
 
         $this->assertInstanceOf(SignedLongInteger::class, $value);
         $this->assertSame($expected, $value->original()->value());

@@ -11,6 +11,7 @@ use Innmind\AMQP\Transport\Frame\{
     Value
 };
 use Innmind\Math\Algebra\Integer;
+use Innmind\Filesystem\Stream\StringStream;
 use Innmind\Immutable\{
     Map,
     Str
@@ -52,6 +53,30 @@ class TableTest extends TestCase
     public function testFromString($string, $expected)
     {
         $value = Table::fromString(new Str($string));
+
+        $this->assertInstanceOf(Table::class, $value);
+        $this->assertCount($expected->size(), $value->original());
+
+        foreach ($expected as $i => $v) {
+            $this->assertInstanceOf(
+                get_class($v),
+                $value->original()->get($i)
+            );
+            $this->assertSame(
+                (string) $v,
+                (string) $value->original()->get($i)
+            );
+        }
+
+        $this->assertSame($string, (string) $value);
+    }
+
+    /**
+     * @dataProvider cases
+     */
+    public function testFromStream($string, $expected)
+    {
+        $value = Table::fromStream(new StringStream($string));
 
         $this->assertInstanceOf(Table::class, $value);
         $this->assertCount($expected->size(), $value->original());

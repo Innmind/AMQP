@@ -4,6 +4,7 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
+use Innmind\Stream\Readable;
 use Innmind\Immutable\{
     StreamInterface,
     Stream,
@@ -56,6 +57,11 @@ final class Bits implements Value
                 })
                 ->reverse()
         );
+    }
+
+    public static function fromStream(Readable $stream): Value
+    {
+        return self::fromString($stream->read(1));
     }
 
     public static function cut(Str $string): Str

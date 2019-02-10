@@ -7,6 +7,7 @@ use Innmind\AMQP\Transport\Frame\{
     Value\Bits,
     Value
 };
+use Innmind\Filesystem\Stream\StringStream;
 use Innmind\Immutable\{
     StreamInterface,
     Str
@@ -35,9 +36,21 @@ class BitsTest extends TestCase
     /**
      * @dataProvider decode
      */
-    public function testFromSting($expected, $string)
+    public function testFromString($expected, $string)
     {
         $value = Bits::fromString(new Str($string));
+
+        $this->assertInstanceOf(Bits::class, $value);
+        $this->assertSame($expected, $value->original()->toPrimitive());
+        $this->assertSame($string, (string) $value);
+    }
+
+    /**
+     * @dataProvider decode
+     */
+    public function testFromStream($expected, $string)
+    {
+        $value = Bits::fromStream(new StringStream($string));
 
         $this->assertInstanceOf(Bits::class, $value);
         $this->assertSame($expected, $value->original()->toPrimitive());

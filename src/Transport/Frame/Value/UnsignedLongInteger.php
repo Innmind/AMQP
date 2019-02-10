@@ -13,6 +13,7 @@ use Innmind\Math\{
     DefinitionSet\Set,
     DefinitionSet\Range
 };
+use Innmind\Stream\Readable;
 use Innmind\Immutable\Str;
 
 final class UnsignedLongInteger implements Value
@@ -38,6 +39,15 @@ final class UnsignedLongInteger implements Value
         if ($string->length() !== 4) {
             throw new StringNotOfExpectedLength($string, 4);
         }
+
+        [, $value] = unpack('N', (string) $string);
+
+        return new self(new Integer($value));
+    }
+
+    public static function fromStream(Readable $stream): Value
+    {
+        $string = $stream->read(4)->toEncoding('ASCII');
 
         [, $value] = unpack('N', (string) $string);
 

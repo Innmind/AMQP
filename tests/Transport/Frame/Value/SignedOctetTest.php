@@ -8,6 +8,7 @@ use Innmind\AMQP\Transport\Frame\{
     Value
 };
 use Innmind\Math\Algebra\Integer;
+use Innmind\Filesystem\Stream\StringStream;
 use Innmind\Immutable\Str;
 use PHPUnit\Framework\TestCase;
 
@@ -34,6 +35,18 @@ class SignedOctetTest extends TestCase
     public function testFromString($string, $expected)
     {
         $value = SignedOctet::fromString(new Str($string));
+
+        $this->assertInstanceOf(SignedOctet::class, $value);
+        $this->assertSame($expected, $value->original()->value());
+        $this->assertSame($string, (string) $value);
+    }
+
+    /**
+     * @dataProvider cases
+     */
+    public function testFromStream($string, $expected)
+    {
+        $value = SignedOctet::fromStream(new StringStream($string));
 
         $this->assertInstanceOf(SignedOctet::class, $value);
         $this->assertSame($expected, $value->original()->value());

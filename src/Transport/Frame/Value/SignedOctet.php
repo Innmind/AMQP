@@ -13,6 +13,7 @@ use Innmind\Math\{
     DefinitionSet\Set,
     DefinitionSet\Range
 };
+use Innmind\Stream\Readable;
 use Innmind\Immutable\Str;
 
 /**
@@ -45,6 +46,11 @@ final class SignedOctet implements Value
         [, $value] = unpack('c', (string) $string);
 
         return new self(new Integer($value));
+    }
+
+    public static function fromStream(Readable $stream): Value
+    {
+        return self::fromString($stream->read(1));
     }
 
     public static function cut(Str $string): Str

@@ -9,6 +9,7 @@ use Innmind\AMQP\{
     Exception\UnboundedTextCannotBeWrapped
 };
 use Innmind\Math\Algebra\Integer;
+use Innmind\Stream\Readable;
 use Innmind\Immutable\{
     Sequence as Seq,
     StreamInterface,
@@ -68,6 +69,23 @@ final class Sequence implements Value
         if ($string->length() !== $length->value()) {
             throw new StringNotOfExpectedLength($string, $length->value());
         }
+
+        $values = [];
+
+        while ($string->length() !== 0) {
+            $class = Symbols::class((string) $string->substring(0, 1));
+            $element = [$class, 'cut']($string->substring(1))->toEncoding('ASCII');
+            $values[] = [$class, 'fromString']($element);
+            $string = $string->substring($element->length() + 1);
+        }
+
+        return new self(...$values);
+    }
+
+    public static function fromStream(Readable $stream): Value
+    {
+        $length = UnsignedLongInteger::fromStream($stream)->original();
+        $string = $stream->read($length->value());
 
         $values = [];
 

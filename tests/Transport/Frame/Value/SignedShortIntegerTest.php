@@ -8,6 +8,7 @@ use Innmind\AMQP\Transport\Frame\{
     Value
 };
 use Innmind\Math\Algebra\Integer;
+use Innmind\Filesystem\Stream\StringStream;
 use Innmind\Immutable\Str;
 use PHPUnit\Framework\TestCase;
 
@@ -37,6 +38,18 @@ class SignedShortIntegerTest extends TestCase
     public function testFromString($expected, $string)
     {
         $value = SignedShortInteger::fromString(new Str($string));
+
+        $this->assertInstanceOf(SignedShortInteger::class, $value);
+        $this->assertSame($expected, $value->original()->value());
+        $this->assertSame($string, (string) $value);
+    }
+
+    /**
+     * @dataProvider cases
+     */
+    public function testFromStream($expected, $string)
+    {
+        $value = SignedShortInteger::fromStream(new StringStream($string));
 
         $this->assertInstanceOf(SignedShortInteger::class, $value);
         $this->assertSame($expected, $value->original()->value());

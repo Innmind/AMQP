@@ -11,6 +11,7 @@ use Innmind\Math\Algebra\{
     Number,
     Integer
 };
+use Innmind\Filesystem\Stream\StringStream;
 use Innmind\Immutable\{
     StreamInterface,
     Str
@@ -42,9 +43,21 @@ class DecimalTest extends TestCase
     /**
      * @dataProvider cases
      */
-    public function testFromSting($number, $scale, $string)
+    public function testFromString($number, $scale, $string)
     {
         $value = Decimal::fromString(new Str($string));
+
+        $this->assertInstanceOf(Decimal::class, $value);
+        $this->assertSame(($number / (10**$scale)), $value->original()->value());
+        $this->assertSame($string, (string) $value);
+    }
+
+    /**
+     * @dataProvider cases
+     */
+    public function testFromStream($number, $scale, $string)
+    {
+        $value = Decimal::fromStream(new StringStream($string));
 
         $this->assertInstanceOf(Decimal::class, $value);
         $this->assertSame(($number / (10**$scale)), $value->original()->value());

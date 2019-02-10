@@ -8,6 +8,7 @@ use Innmind\AMQP\{
     Exception\StringNotOfExpectedLength
 };
 use Innmind\Math\Algebra\Integer;
+use Innmind\Stream\Readable;
 use Innmind\Immutable\Str;
 
 final class ShortString implements Value
@@ -36,6 +37,13 @@ final class ShortString implements Value
         }
 
         return new self($string);
+    }
+
+    public static function fromStream(Readable $stream): Value
+    {
+        $length = UnsignedOctet::fromStream($stream)->original();
+
+        return new self($stream->read($length->value()));
     }
 
     public static function cut(Str $string): Str

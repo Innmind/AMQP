@@ -13,6 +13,7 @@ use Innmind\TimeContinuum\{
     Format\ISO8601
 };
 use Innmind\Math\Algebra\Integer;
+use Innmind\Stream\Readable;
 use Innmind\Immutable\Str;
 
 final class Timestamp implements Value
@@ -36,6 +37,17 @@ final class Timestamp implements Value
 
         return new self(new PointInTime(
             date((string) new ISO8601, $time)
+        ));
+    }
+
+    public static function fromStream(Readable $stream): Value
+    {
+        $time = UnsignedLongLongInteger::fromStream($stream)
+            ->original()
+            ->value();
+
+        return new self(new PointInTime(
+            \date((string) new ISO8601, $time)
         ));
     }
 

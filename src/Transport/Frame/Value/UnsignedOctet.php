@@ -13,6 +13,7 @@ use Innmind\Math\{
     DefinitionSet\Set,
     DefinitionSet\Range
 };
+use Innmind\Stream\Readable;
 use Innmind\Immutable\Str;
 
 /**
@@ -37,6 +38,19 @@ final class UnsignedOctet implements Value
     public static function fromString(Str $string): Value
     {
         $string = $string->toEncoding('ASCII');
+
+        if ($string->length() !== 1) {
+            throw new StringNotOfExpectedLength($string, 1);
+        }
+
+        [, $octet] = unpack('C', (string) $string);
+
+        return new self(new Integer($octet));
+    }
+
+    public static function fromStream(Readable $stream): Value
+    {
+        $string = $stream->read(1)->toEncoding('ASCII');
 
         if ($string->length() !== 1) {
             throw new StringNotOfExpectedLength($string, 1);

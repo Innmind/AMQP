@@ -13,6 +13,7 @@ use Innmind\Math\{
     DefinitionSet\Set,
     DefinitionSet\Range
 };
+use Innmind\Stream\Readable;
 use Innmind\Immutable\Str;
 
 final class SignedShortInteger implements Value
@@ -42,6 +43,11 @@ final class SignedShortInteger implements Value
         [, $value] = unpack('s', (string) $string);
 
         return new self(new Integer($value));
+    }
+
+    public static function fromStream(Readable $stream): Value
+    {
+        return self::fromString($stream->read(2));
     }
 
     public static function cut(Str $string): Str

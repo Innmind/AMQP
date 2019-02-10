@@ -13,6 +13,7 @@ use Innmind\Math\{
     DefinitionSet\Set,
     DefinitionSet\Range
 };
+use Innmind\Stream\Readable;
 use Innmind\Immutable\Str;
 
 final class UnsignedShortInteger implements Value
@@ -38,6 +39,15 @@ final class UnsignedShortInteger implements Value
         if ($string->length() !== 2) {
             throw new StringNotOfExpectedLength($string, 2);
         }
+
+        [, $value] = unpack('n', (string) $string);
+
+        return new self(new Integer($value));
+    }
+
+    public static function fromStream(Readable $stream): Value
+    {
+        $string = $stream->read(2)->toEncoding('ASCII');
 
         [, $value] = unpack('n', (string) $string);
 

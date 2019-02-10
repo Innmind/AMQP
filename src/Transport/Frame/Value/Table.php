@@ -9,6 +9,7 @@ use Innmind\AMQP\{
     Exception\UnboundedTextCannotBeWrapped
 };
 use Innmind\Math\Algebra\Integer;
+use Innmind\Stream\Readable;
 use Innmind\Immutable\{
     Str,
     Sequence as Seq,
@@ -73,6 +74,29 @@ final class Table implements Value
         if ($string->length() !== $length->value()) {
             throw new StringNotOfExpectedLength($string, $length->value());
         }
+
+        $map = new Map('string', Value::class);
+
+        while ($string->length() !== 0) {
+            $key = ShortString::cut($string);
+            $string = $string->toEncoding('ASCII')->substring($key->length());
+            $key = ShortString::fromString($key)->original();
+
+            $class = Symbols::class((string) $string->substring(0, 1));
+            $element = [$class, 'cut']($string->substring(1))->toEncoding('ASCII');
+
+            $map = $map->put((string) $key, [$class, 'fromString']($element));
+
+            $string = $string->substring($element->length() + 1);
+        }
+
+        return new self($map);
+    }
+
+    public static function fromStream(Readable $stream): Value
+    {
+        $length = UnsignedLongInteger::fromStream($stream)->original();
+        $string = $stream->read($length->value());
 
         $map = new Map('string', Value::class);
 

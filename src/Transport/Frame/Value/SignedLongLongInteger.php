@@ -8,6 +8,7 @@ use Innmind\AMQP\{
     Exception\StringNotOfExpectedLength
 };
 use Innmind\Math\Algebra\Integer;
+use Innmind\Stream\Readable;
 use Innmind\Immutable\Str;
 
 final class SignedLongLongInteger implements Value
@@ -31,6 +32,11 @@ final class SignedLongLongInteger implements Value
         [, $value] = unpack('q', (string) $string);
 
         return new self(new Integer($value));
+    }
+
+    public static function fromStream(Readable $stream): Value
+    {
+        return self::fromString($stream->read(8));
     }
 
     public static function cut(Str $string): Str
