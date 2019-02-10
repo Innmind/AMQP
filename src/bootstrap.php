@@ -22,15 +22,13 @@ function bootstrap(
     UrlInterface $server,
     ElapsedPeriod $timeout,
     TimeContinuumInterface $clock,
-    LoggerInterface $logger = null,
-    SetInterface $protocols = null,
-    SetInterface $argumentTranslators = null
+    LoggerInterface $logger = null
 ): array {
-    $argumentTranslators = $argumentTranslators ?? Set::of(
+    $argumentTranslators = Set::of(
         Transport\Protocol\ArgumentTranslator::class,
         new Transport\Protocol\ArgumentTranslator\ValueTranslator
     );
-    $protocols = $protocols ?? Set::of(
+    $protocols = Set::of(
         Transport\Protocol::class,
         new Transport\Protocol\v091\Protocol(
             new Transport\Protocol\ArgumentTranslator\Delegate(...$argumentTranslators)
