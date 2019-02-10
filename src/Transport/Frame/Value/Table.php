@@ -96,21 +96,18 @@ final class Table implements Value
     public static function fromStream(Readable $stream): Value
     {
         $length = UnsignedLongInteger::fromStream($stream)->original();
-        $string = $stream->read($length->value());
+        $position = $stream->position()->toInt();
+        $boundary = $position + $length->value();
 
         $map = new Map('string', Value::class);
 
-        while ($string->length() !== 0) {
-            $key = ShortString::cut($string);
-            $string = $string->toEncoding('ASCII')->substring($key->length());
-            $key = ShortString::fromString($key)->original();
+        while ($position < $boundary) {
+            $key = ShortString::fromStream($stream)->original();
+            $class = Symbols::class((string) $stream->read(1));
 
-            $class = Symbols::class((string) $string->substring(0, 1));
-            $element = [$class, 'cut']($string->substring(1))->toEncoding('ASCII');
+            $map = $map->put((string) $key, [$class, 'fromStream']($stream));
 
-            $map = $map->put((string) $key, [$class, 'fromString']($element));
-
-            $string = $string->substring($element->length() + 1);
+            $position = $stream->position()->toInt();
         }
 
         return new self($map);
