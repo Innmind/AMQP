@@ -159,13 +159,13 @@ Of course you can use both at the same time if you want to be thorough.
 ```
 Publishing 4000 msgs with 1KB of content:
 php benchmark/producer.php 4000
-0.6799578666687
+0.71036601066589
 Consuming 4000:
 php benchmark/consumer.php
-Pid: 14477, Count: 4000, Time: 3.2876
+Pid: 8086, Count: 4000, Time: 2.7770
 Stream produce 100:
 php benchmark/stream_tmp_produce.php 100
-0.20840692520142
+0.2612419128418
 ```
 
 By comparison, the `php-amqplib` produces this result:
