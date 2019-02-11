@@ -5,7 +5,7 @@ namespace Innmind\AMQP\Client\Channel;
 
 use Innmind\AMQP\Model\Exchange\{
     Declaration,
-    Deletion
+    Deletion,
 };
 
 interface Exchange

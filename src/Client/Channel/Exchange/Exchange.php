@@ -8,7 +8,7 @@ use Innmind\AMQP\{
     Model\Exchange\Declaration,
     Model\Exchange\Deletion,
     Transport\Connection,
-    Transport\Frame\Channel
+    Transport\Frame\Channel,
 };
 
 final class Exchange implements ExchangeInterface

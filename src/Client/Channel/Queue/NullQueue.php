@@ -12,7 +12,7 @@ use Innmind\AMQP\{
     Model\Queue\Binding,
     Model\Queue\Unbinding,
     Model\Queue\Purge,
-    Model\Queue\PurgeOk
+    Model\Queue\PurgeOk,
 };
 
 final class NullQueue implements QueueInterface

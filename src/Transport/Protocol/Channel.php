@@ -8,7 +8,7 @@ use Innmind\AMQP\{
     Model\Channel\FlowOk,
     Model\Channel\Close,
     Transport\Frame,
-    Transport\Frame\Channel as FrameChannel
+    Transport\Frame\Channel as FrameChannel,
 };
 
 interface Channel

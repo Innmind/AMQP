@@ -10,7 +10,7 @@ use Innmind\AMQP\{
     Transport\Frame,
     Transport\Frame\Channel as FrameChannel,
     Transport\Frame\Type,
-    Transport\Protocol\Transaction as TransactionInterface
+    Transport\Protocol\Transaction as TransactionInterface,
 };
 
 final class Transaction implements TransactionInterface

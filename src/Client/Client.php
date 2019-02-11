@@ -6,7 +6,7 @@ namespace Innmind\AMQP\Client;
 use Innmind\AMQP\{
     Client as ClientInterface,
     Transport\Connection,
-    Transport\Frame\Channel as Number
+    Transport\Frame\Channel as Number,
 };
 use Innmind\Immutable\Map;
 
@@ -24,7 +24,7 @@ final class Client implements ClientInterface
 
     public function channel(): Channel
     {
-        $pid = getmypid();
+        $pid = \getmypid();
 
         if ($this->channels->contains($pid)) {
             return $this->channels->get($pid);

@@ -11,7 +11,7 @@ use Innmind\AMQP\Transport\{
     Protocol\Exchange,
     Protocol\Queue,
     Protocol\Basic,
-    Protocol\Transaction
+    Protocol\Transaction,
 };
 use Innmind\Stream\Readable;
 use Innmind\Immutable\StreamInterface;

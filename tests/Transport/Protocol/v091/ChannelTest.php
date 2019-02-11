@@ -15,7 +15,7 @@ use Innmind\AMQP\{
     Transport\Frame\Value\UnsignedShortInteger,
     Model\Channel\Flow,
     Model\Channel\FlowOk,
-    Model\Channel\Close
+    Model\Channel\Close,
 };
 use PHPUnit\Framework\TestCase;
 

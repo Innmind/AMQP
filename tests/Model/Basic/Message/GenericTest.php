@@ -15,16 +15,16 @@ use Innmind\AMQP\Model\Basic\{
     Message\Priority,
     Message\ReplyTo,
     Message\Type,
-    Message\UserId
+    Message\UserId,
 };
 use Innmind\TimeContinuum\{
     PointInTimeInterface,
-    ElapsedPeriod
+    ElapsedPeriod,
 };
 use Innmind\Immutable\{
     MapInterface,
     Map,
-    Str
+    Str,
 };
 use PHPUnit\Framework\TestCase;
 

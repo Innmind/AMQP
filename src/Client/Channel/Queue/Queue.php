@@ -15,7 +15,7 @@ use Innmind\AMQP\{
     Model\Queue\PurgeOk,
     Model\Count,
     Transport\Connection,
-    Transport\Frame\Channel
+    Transport\Frame\Channel,
 };
 
 final class Queue implements QueueInterface

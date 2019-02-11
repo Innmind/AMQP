@@ -7,7 +7,7 @@ use Innmind\AMQP\Transport\{
     Connection\Logger,
     Connection,
     Protocol,
-    Frame
+    Frame,
 };
 use Psr\Log\LoggerInterface;
 use PHPUnit\Framework\TestCase;

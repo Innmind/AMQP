@@ -7,7 +7,7 @@ use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\Math\{
     Algebra\Integer,
     DefinitionSet\Set,
-    DefinitionSet\Range
+    DefinitionSet\Range,
 };
 use Innmind\Stream\Readable;
 use Innmind\Immutable\Str;
@@ -26,7 +26,7 @@ final class SignedShortInteger implements Value
 
     public static function fromStream(Readable $stream): Value
     {
-        [, $value] = unpack('s', (string) $stream->read(2));
+        [, $value] = \unpack('s', (string) $stream->read(2));
 
         return new self(new Integer($value));
     }
@@ -38,7 +38,7 @@ final class SignedShortInteger implements Value
 
     public function __toString(): string
     {
-        return $this->value ?? $this->value = pack('s', $this->original->value());
+        return $this->value ?? $this->value = \pack('s', $this->original->value());
     }
 
     public static function definitionSet(): Set

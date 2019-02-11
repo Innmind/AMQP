@@ -8,7 +8,7 @@ use Innmind\AMQP\{
     Client\Channel\Exchange,
     Model\Exchange\Declaration,
     Model\Exchange\Deletion,
-    Model\Exchange\Type
+    Model\Exchange\Type,
 };
 use PHPUnit\Framework\TestCase;
 

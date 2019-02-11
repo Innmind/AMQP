@@ -23,20 +23,20 @@ use Innmind\AMQP\{
     Exception\UnexpectedFrame,
     Exception\NoFrameDetected,
     Exception\ConnectionClosed,
-    Exception\ExpectedMethodFrame
+    Exception\ExpectedMethodFrame,
 };
 use Innmind\Socket\{
     Internet\Transport,
-    Client\Internet as Socket
+    Client\Internet as Socket,
 };
 use Innmind\Stream\Select;
 use Innmind\Url\{
     UrlInterface,
-    Authority\NullUserInformation
+    Authority\NullUserInformation,
 };
 use Innmind\TimeContinuum\{
     ElapsedPeriod,
-    TimeContinuumInterface
+    TimeContinuumInterface,
 };
 use Innmind\Immutable\Str;
 
@@ -95,7 +95,7 @@ final class Connection implements ConnectionInterface
             );
         }
 
-        $frame = (new Str((string) $frame))->toEncoding('ASCII');
+        $frame = Str::of((string) $frame)->toEncoding('ASCII');
 
         if (!$this->maxFrameSize->allows($frame->length())) {
             throw new FrameExceedAllowedSize(
@@ -136,7 +136,7 @@ final class Connection implements ConnectionInterface
             return $this->wait(...$names);
         }
 
-        if (count($names) === 0) {
+        if (\count($names) === 0) {
             return $frame;
         }
 

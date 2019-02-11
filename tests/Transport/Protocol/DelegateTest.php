@@ -14,7 +14,7 @@ use Innmind\AMQP\{
     Transport\Protocol\Queue,
     Transport\Protocol\Basic,
     Transport\Protocol\Transaction,
-    Exception\VersionNotUsable
+    Exception\VersionNotUsable,
 };
 use Innmind\Stream\Readable;
 use Innmind\Immutable\StreamInterface;

@@ -7,7 +7,7 @@ use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\Math\{
     Algebra\Integer,
     DefinitionSet\Set,
-    DefinitionSet\Range
+    DefinitionSet\Range,
 };
 use Innmind\Stream\Readable;
 
@@ -28,7 +28,7 @@ final class SignedOctet implements Value
 
     public static function fromStream(Readable $stream): Value
     {
-        [, $value] = unpack('c', (string) $stream->read(1));
+        [, $value] = \unpack('c', (string) $stream->read(1));
 
         return new self(new Integer($value));
     }
@@ -40,7 +40,7 @@ final class SignedOctet implements Value
 
     public function __toString(): string
     {
-        return $this->value ?? $this->value = pack('c', $this->original->value());
+        return $this->value ?? $this->value = \pack('c', $this->original->value());
     }
 
     public static function definitionSet(): Set

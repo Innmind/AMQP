@@ -7,7 +7,7 @@ use Innmind\AMQP\{
     Transport\Frame\Method,
     Transport\Frame\Visitor\ChunkArguments,
     Transport\Protocol\v091\Methods,
-    Exception\UnknownMethod
+    Exception\UnknownMethod,
 };
 use Innmind\Stream\Readable;
 use Innmind\Immutable\StreamInterface;

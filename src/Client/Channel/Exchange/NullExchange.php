@@ -6,7 +6,7 @@ namespace Innmind\AMQP\Client\Channel\Exchange;
 use Innmind\AMQP\{
     Client\Channel\Exchange as ExchangeInterface,
     Model\Exchange\Declaration,
-    Model\Exchange\Deletion
+    Model\Exchange\Deletion,
 };
 
 final class NullExchange implements ExchangeInterface

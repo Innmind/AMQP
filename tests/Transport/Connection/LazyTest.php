@@ -9,16 +9,16 @@ use Innmind\AMQP\{
     Transport\Protocol\v091\Protocol,
     Transport\Protocol\ArgumentTranslator,
     Transport\Frame,
-    Exception\ConnectionClosed
+    Exception\ConnectionClosed,
 };
 use Innmind\Socket\{
     Internet\Transport,
-    Exception\FailedToOpenSocket
+    Exception\FailedToOpenSocket,
 };
 use Innmind\Url\Url;
 use Innmind\TimeContinuum\{
     TimeContinuum\Earth,
-    ElapsedPeriod
+    ElapsedPeriod,
 };
 use PHPUNit\Framework\TestCase;
 

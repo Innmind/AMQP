@@ -28,15 +28,15 @@ use Innmind\AMQP\{
     Transport\Frame\Value\UnsignedOctet,
     Transport\Frame\Value\Timestamp,
     Transport\Protocol\Basic as BasicInterface,
-    Transport\Protocol\ArgumentTranslator
+    Transport\Protocol\ArgumentTranslator,
 };
 use Innmind\Math\Algebra\Integer;
 use Innmind\Immutable\{
     Str,
-    Map,
     MapInterface,
+    Map,
     StreamInterface,
-    Stream
+    Stream,
 };
 
 final class Basic implements BasicInterface
@@ -111,8 +111,9 @@ final class Basic implements BasicInterface
         Publish $command,
         MaxFrameSize $maxFrameSize
     ): StreamInterface {
-        $frames = (new Stream(Frame::class))
-            ->add(Frame::method(
+        $frames = Stream::of(
+            Frame::class,
+            Frame::method(
                 $channel,
                 Methods::get('basic.publish'),
                 new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
@@ -122,15 +123,16 @@ final class Basic implements BasicInterface
                     $command->mandatory(),
                     $command->immediate()
                 )
-            ))
-            ->add(Frame::header(
+            ),
+            Frame::header(
                 $channel,
                 Methods::classId('basic'),
                 new UnsignedLongLongInteger(new Integer(
                     $command->message()->body()->length()
                 )),
                 ...$this->serializeProperties($command->message())
-            ));
+            )
+        );
 
         //the "-8" is due to the content frame extra informations (type, channel and end flag)
         $chunk = $maxFrameSize->isLimited() ? ($maxFrameSize->toInt() - 8) : $command->message()->body()->length();
@@ -284,7 +286,7 @@ final class Basic implements BasicInterface
             $flagBits |= (1 << 3);
         }
 
-        array_unshift(
+        \array_unshift(
             $properties,
             new UnsignedShortInteger(new Integer($flagBits))
         );

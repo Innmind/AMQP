@@ -5,7 +5,7 @@ namespace Tests\Innmind\AMQP\Model\Basic;
 
 use Innmind\AMQP\Model\Basic\{
     Publish,
-    Message
+    Message,
 };
 use PHPUnit\Framework\TestCase;
 

@@ -22,7 +22,7 @@ use Innmind\AMQP\{
     Transport\Frame\Value\Table,
     Transport\Frame\Value\ShortString,
     Transport\Frame\Value,
-    Exception\VersionNotUsable
+    Exception\VersionNotUsable,
 };
 use Innmind\Stream\Readable;
 use Innmind\Immutable\{

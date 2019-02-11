@@ -21,11 +21,11 @@ use Innmind\AMQP\{
 };
 use Innmind\TimeContinuum\{
     PointInTimeInterface,
-    ElapsedPeriod
+    ElapsedPeriod,
 };
 use Innmind\Immutable\{
     Map,
-    Str
+    Str,
 };
 use PHPUnit\Framework\TestCase;
 

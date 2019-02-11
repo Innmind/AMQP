@@ -26,7 +26,7 @@ final class UnsignedLongLongInteger implements Value
 
     public static function fromStream(Readable $stream): Value
     {
-        [, $value] = unpack('J', (string) $stream->read(8));
+        [, $value] = \unpack('J', (string) $stream->read(8));
 
         return new self(new Integer($value));
     }
@@ -38,7 +38,7 @@ final class UnsignedLongLongInteger implements Value
 
     public function __toString(): string
     {
-        return $this->value ?? $this->value = pack('J', $this->original->value());
+        return $this->value ?? $this->value = \pack('J', $this->original->value());
     }
 
     public static function definitionSet(): Set

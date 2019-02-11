@@ -25,7 +25,7 @@ final class UnsignedShortInteger implements Value
 
     public static function fromStream(Readable $stream): Value
     {
-        [, $value] = unpack('n', (string) $stream->read(2));
+        [, $value] = \unpack('n', (string) $stream->read(2));
 
         return new self(new Integer($value));
     }
@@ -37,7 +37,7 @@ final class UnsignedShortInteger implements Value
 
     public function __toString(): string
     {
-        return $this->value ?? $this->value = pack('n', $this->original->value());
+        return $this->value ?? $this->value = \pack('n', $this->original->value());
     }
 
     public static function definitionSet(): Set

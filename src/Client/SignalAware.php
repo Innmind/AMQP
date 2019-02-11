@@ -38,20 +38,20 @@ final class SignalAware implements ClientInterface
             return;
         }
 
-        pcntl_async_signals(true);
+        \pcntl_async_signals(true);
 
         $softClose = function(): void {
             $this->close();
         };
 
-        pcntl_signal(SIGHUP, static function() {
+        \pcntl_signal(SIGHUP, static function() {
             //do nothing so it can run in background
         });
-        pcntl_signal(SIGINT, $softClose);
-        pcntl_signal(SIGABRT, $softClose);
-        pcntl_signal(SIGTERM, $softClose);
-        pcntl_signal(SIGTSTP, $softClose);
-        pcntl_signal(SIGALRM, $softClose);
+        \pcntl_signal(SIGINT, $softClose);
+        \pcntl_signal(SIGABRT, $softClose);
+        \pcntl_signal(SIGTERM, $softClose);
+        \pcntl_signal(SIGTSTP, $softClose);
+        \pcntl_signal(SIGALRM, $softClose);
         $this->handlersRegistered = true;
     }
 }

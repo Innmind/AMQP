@@ -6,13 +6,14 @@ namespace Innmind\AMQP\Model\Basic\Message;
 use Innmind\AMQP\Model\Basic\Message;
 use Innmind\TimeContinuum\{
     PointInTimeInterface,
-    ElapsedPeriod
+    ElapsedPeriod,
 };
 use Innmind\Immutable\{
     MapInterface,
     Map,
-    Str
+    Str,
 };
+use function Innmind\Immutable\assertMap;
 
 final class Generic implements Message
 {
@@ -88,12 +89,7 @@ final class Generic implements Message
 
     public function withHeaders(MapInterface $headers): Message
     {
-        if (
-            (string) $headers->keyType() !== 'string' ||
-            (string) $headers->valueType() !== 'mixed'
-        ) {
-            throw new \TypeError('Argument 1 must be of type MapInterface<string, mixed>');
-        }
+        assertMap('string', 'mixed', $headers, 1);
 
         $self = clone $this;
         $self->headers = $headers;

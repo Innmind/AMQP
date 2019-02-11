@@ -45,11 +45,11 @@ use Innmind\Stream\{
 use Innmind\Math\Algebra\Integer;
 use Innmind\TimeContinuum\{
     ElapsedPeriod,
-    PointInTime\Earth\Now
+    PointInTime\Earth\Now,
 };
 use Innmind\Immutable\{
     Str,
-    Map
+    Map,
 };
 use PHPUnit\Framework\TestCase;
 

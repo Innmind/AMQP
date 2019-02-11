@@ -9,7 +9,7 @@ use Innmind\AMQP\{
     Model\Basic\Message,
     Exception\Reject,
     Exception\Requeue,
-    Exception\Cancel
+    Exception\Cancel,
 };
 use Innmind\Immutable\Str;
 use Psr\Log\LoggerInterface;

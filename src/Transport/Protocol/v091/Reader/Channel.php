@@ -10,7 +10,7 @@ use Innmind\AMQP\{
     Transport\Frame\Value\ShortString,
     Transport\Frame\Value\UnsignedShortInteger,
     Transport\Protocol\v091\Methods,
-    Exception\UnknownMethod
+    Exception\UnknownMethod,
 };
 use Innmind\Stream\Readable;
 use Innmind\Immutable\StreamInterface;

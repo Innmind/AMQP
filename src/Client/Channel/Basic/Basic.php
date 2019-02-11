@@ -17,7 +17,7 @@ use Innmind\AMQP\{
     Transport\Connection,
     Transport\Connection\MessageReader,
     Transport\Frame,
-    Transport\Frame\Channel
+    Transport\Frame\Channel,
 };
 use Innmind\TimeContinuum\ElapsedPeriod;
 

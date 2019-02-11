@@ -18,12 +18,12 @@ use Innmind\AMQP\{
     Model\Queue\DeleteOk,
     Model\Queue\Binding,
     Model\Queue\Unbinding,
-    Model\Channel\Close
+    Model\Channel\Close,
 };
 use Innmind\Socket\Internet\Transport;
 use Innmind\TimeContinuum\{
     ElapsedPeriod,
-    TimeContinuum\Earth
+    TimeContinuum\Earth,
 };
 use Innmind\Url\Url;
 use PHPUnit\Framework\TestCase;

@@ -10,7 +10,7 @@ use Innmind\AMQP\Transport\{
     Protocol\v091\Reader\Exchange,
     Protocol\v091\Reader\Queue,
     Protocol\v091\Reader\Basic,
-    Protocol\v091\Reader\Transaction
+    Protocol\v091\Reader\Transaction,
 };
 use Innmind\Stream\Readable;
 use Innmind\Immutable\StreamInterface;

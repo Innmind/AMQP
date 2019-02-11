@@ -16,7 +16,7 @@ use Innmind\AMQP\{
     Transport\Frame\Value\Table,
     Model\Exchange\Declaration,
     Model\Exchange\Deletion,
-    Model\Exchange\Type
+    Model\Exchange\Type,
 };
 use Innmind\Math\Algebra\Integer;
 use PHPUnit\Framework\TestCase;

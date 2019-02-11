@@ -5,7 +5,7 @@ namespace Tests\Innmind\AMQP\Client\Channel\Transaction;
 
 use Innmind\AMQP\Client\Channel\{
     Transaction\NullTransaction,
-    Transaction
+    Transaction,
 };
 use PHPUnit\Framework\TestCase;
 

@@ -7,7 +7,7 @@ use Innmind\AMQP\Client\Channel\{
     Exchange,
     Queue,
     Basic,
-    Transaction
+    Transaction,
 };
 
 interface Channel

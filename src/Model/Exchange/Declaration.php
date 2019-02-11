@@ -6,7 +6,7 @@ namespace Innmind\AMQP\Model\Exchange;
 use Innmind\AMQP\Exception\NotWaitingPassiveDeclarationDoesNothing;
 use Innmind\Immutable\{
     MapInterface,
-    Map
+    Map,
 };
 
 final class Declaration

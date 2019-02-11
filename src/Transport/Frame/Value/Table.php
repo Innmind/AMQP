@@ -15,6 +15,7 @@ use Innmind\Immutable\{
     MapInterface,
     Map,
 };
+use function Innmind\Immutable\assertMap;
 
 final class Table implements Value
 {
@@ -26,15 +27,7 @@ final class Table implements Value
      */
     public function __construct(MapInterface $map)
     {
-        if (
-            (string) $map->keyType() !== 'string' ||
-            (string) $map->valueType() !== Value::class
-        ) {
-            throw new \TypeError(sprintf(
-                'Argument 1 must be of type MapInterface<string, %s>',
-                Value::class
-            ));
-        }
+        assertMap('string', Value::class, $map, 1);
 
         $texts = $map->filter(static function(string $key, Value $value): bool {
             return $value instanceof Text;

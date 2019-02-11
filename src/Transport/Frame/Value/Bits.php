@@ -9,7 +9,7 @@ use Innmind\Immutable\{
     StreamInterface,
     Stream,
     Str,
-    Sequence as Seq
+    Sequence as Seq,
 };
 
 final class Bits implements Value
@@ -32,7 +32,7 @@ final class Bits implements Value
                 ->reduce(
                     new Seq,
                     static function(Seq $bits, Str $bit): Seq {
-                        return (new Str(decbin(ord((string) $bit))))
+                        return (new Str(\decbin(\ord((string) $bit))))
                             ->chunk()
                             ->reduce(
                                 $bits,
@@ -67,7 +67,7 @@ final class Bits implements Value
                 $value |= $bit << $i;
             }
 
-            $this->value = chr($value);
+            $this->value = \chr($value);
         }
 
         return $this->value;

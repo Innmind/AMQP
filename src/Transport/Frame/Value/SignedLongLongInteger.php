@@ -19,7 +19,7 @@ final class SignedLongLongInteger implements Value
 
     public static function fromStream(Readable $stream): Value
     {
-        [, $value] = unpack('q', (string) $stream->read(8));
+        [, $value] = \unpack('q', (string) $stream->read(8));
 
         return new self(new Integer($value));
     }
@@ -31,6 +31,6 @@ final class SignedLongLongInteger implements Value
 
     public function __toString(): string
     {
-        return $this->value ?? $this->value = pack('q', $this->original->value());
+        return $this->value ?? $this->value = \pack('q', $this->original->value());
     }
 }

@@ -14,7 +14,7 @@ use Innmind\AMQP\{
     Model\Basic\Reject,
     Model\Connection\MaxFrameSize,
     Transport\Frame,
-    Transport\Frame\Channel as FrameChannel
+    Transport\Frame\Channel as FrameChannel,
 };
 use Innmind\Immutable\StreamInterface;
 

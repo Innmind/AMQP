@@ -13,12 +13,12 @@ use Innmind\AMQP\{
     Transport\Connection\Connection,
     Transport\Protocol\ArgumentTranslator\ValueTranslator,
     Transport\Protocol\v091\Protocol,
-    Transport\Frame\Channel as Number
+    Transport\Frame\Channel as Number,
 };
 use Innmind\Socket\Internet\Transport;
 use Innmind\TimeContinuum\{
     ElapsedPeriod,
-    TimeContinuum\Earth
+    TimeContinuum\Earth,
 };
 use Innmind\Url\Url;
 use PHPUnit\Framework\TestCase;

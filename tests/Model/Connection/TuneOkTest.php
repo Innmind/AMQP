@@ -6,7 +6,7 @@ namespace Tests\Innmind\AMQP\Model\Connection;
 use Innmind\AMQP\Model\Connection\{
     TuneOk,
     MaxChannels,
-    MaxFrameSize
+    MaxFrameSize,
 };
 use Innmind\TimeContinuum\ElapsedPeriod;
 use PHPUnit\Framework\TestCase;

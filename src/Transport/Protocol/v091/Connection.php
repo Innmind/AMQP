@@ -20,16 +20,16 @@ use Innmind\AMQP\{
     Transport\Frame\Value\Bits,
     Transport\Frame\Value\ShortString,
     Transport\Frame\Value\UnsignedShortInteger,
-    Transport\Frame\Value\UnsignedLongInteger
+    Transport\Frame\Value\UnsignedLongInteger,
 };
 use Innmind\Url\Authority\UserInformation\{
     UserInterface,
-    PasswordInterface
+    PasswordInterface,
 };
 use Innmind\Math\Algebra\Integer;
 use Innmind\Immutable\{
     Str,
-    Map
+    Map,
 };
 
 final class Connection implements ConnectionInterface
@@ -37,21 +37,21 @@ final class Connection implements ConnectionInterface
     public function startOk(StartOk $command): Frame
     {
         $clientProperties = new Table(
-            (new Map('string', Value::class))
-                ->put('product', new LongString(new Str('InnmindAMQP')))
-                ->put('platform', new LongString(new Str('PHP')))
-                ->put('version', new LongString(new Str('1.0')))
-                ->put('information', new LongString(new Str('')))
-                ->put('copyright', new LongString(new Str('')))
-                ->put(
+            Map::of('string', Value::class)
+                ('product', new LongString(new Str('InnmindAMQP')))
+                ('platform', new LongString(new Str('PHP')))
+                ('version', new LongString(new Str('1.0')))
+                ('information', new LongString(new Str('')))
+                ('copyright', new LongString(new Str('')))
+                (
                     'capabilities',
                     new Table(
-                        (new Map('string', Value::class))
-                            ->put('authentication_failure_close', new Bits(true))
-                            ->put('publisher_confirms', new Bits(true))
-                            ->put('consumer_cancel_notify', new Bits(true))
-                            ->put('exchange_exchange_bindings', new Bits(true))
-                            ->put('connection.blocked', new Bits(true))
+                        Map::of('string', Value::class)
+                            ('authentication_failure_close', new Bits(true))
+                            ('publisher_confirms', new Bits(true))
+                            ('consumer_cancel_notify', new Bits(true))
+                            ('exchange_exchange_bindings', new Bits(true))
+                            ('connection.blocked', new Bits(true))
                     )
                 )
         );
@@ -135,17 +135,11 @@ final class Connection implements ConnectionInterface
     private function response(UserInterface $user, PasswordInterface $password): LongString
     {
         $response = new Table(
-            (new Map('string', Value::class))
-                ->put(
-                    'LOGIN',
-                    new LongString(new Str((string) $user))
-                )
-                ->put(
-                    'PASSWORD',
-                    new LongString(new Str((string) $password))
-                )
+            Map::of('string', Value::class)
+                ('LOGIN', new LongString(new Str((string) $user)))
+                ('PASSWORD', new LongString(new Str((string) $password)))
         );
-        $response = (new Str((string) $response))
+        $response = Str::of((string) $response)
             ->toEncoding('ASCII')
             ->substring(4); //skip the encoded table length integer
 

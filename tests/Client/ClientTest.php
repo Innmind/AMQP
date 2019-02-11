@@ -9,12 +9,12 @@ use Innmind\AMQP\{
     Client\Channel,
     Transport\Connection\Connection,
     Transport\Protocol\ArgumentTranslator\ValueTranslator,
-    Transport\Protocol\v091\Protocol
+    Transport\Protocol\v091\Protocol,
 };
 use Innmind\Socket\Internet\Transport;
 use Innmind\TimeContinuum\{
     ElapsedPeriod,
-    TimeContinuum\Earth
+    TimeContinuum\Earth,
 };
 use Innmind\Url\Url;
 use PHPUnit\Framework\TestCase;

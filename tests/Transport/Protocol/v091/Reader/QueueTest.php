@@ -16,7 +16,7 @@ use Innmind\Math\Algebra\Integer;
 use Innmind\Filesystem\Stream\StringStream;
 use Innmind\Immutable\{
     Str,
-    StreamInterface
+    StreamInterface,
 };
 use PHPUnit\Framework\TestCase;
 

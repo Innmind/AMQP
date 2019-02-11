@@ -12,7 +12,7 @@ use Innmind\AMQP\{
     Transport\Connection,
     Transport\Frame\Channel,
     Exception\Reject,
-    Exception\Requeue
+    Exception\Requeue,
 };
 
 final class GetOk implements Get

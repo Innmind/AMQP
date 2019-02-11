@@ -28,7 +28,7 @@ final class UnsignedOctet implements Value
 
     public static function fromStream(Readable $stream): Value
     {
-        [, $octet] = unpack('C', (string) $stream->read(1));
+        [, $octet] = \unpack('C', (string) $stream->read(1));
 
         return new self(new Integer($octet));
     }
@@ -40,7 +40,7 @@ final class UnsignedOctet implements Value
 
     public function __toString(): string
     {
-        return $this->value ?? $this->value = chr($this->original->value());
+        return $this->value ?? $this->value = \chr($this->original->value());
     }
 
     public static function definitionSet(): Set

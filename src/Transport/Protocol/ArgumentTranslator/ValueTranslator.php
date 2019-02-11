@@ -6,7 +6,7 @@ namespace Innmind\AMQP\Transport\Protocol\ArgumentTranslator;
 use Innmind\AMQP\{
     Transport\Protocol\ArgumentTranslator,
     Transport\Frame\Value,
-    Exception\ValueNotTranslatable
+    Exception\ValueNotTranslatable,
 };
 
 final class ValueTranslator implements ArgumentTranslator

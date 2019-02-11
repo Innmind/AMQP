@@ -11,14 +11,14 @@ use Innmind\AMQP\Transport\Frame\{
     Value\UnsignedOctet,
     Value\UnsignedShortInteger,
     Value\UnsignedLongInteger,
-    Value\Text
+    Value\Text,
 };
 use Innmind\Math\Algebra\Integer;
 use Innmind\Immutable\{
     Sequence,
-    Stream,
     StreamInterface,
-    Str
+    Stream,
+    Str,
 };
 
 final class Frame
@@ -65,7 +65,7 @@ final class Frame
             ...$values
         );
         $self->method = $method;
-        $self->values = (new Sequence(...$values))->reduce(
+        $self->values = Sequence::of(...$values)->reduce(
             $self->values,
             static function(Stream $stream, Value $value): Stream {
                 return $stream->add($value);
@@ -87,7 +87,7 @@ final class Frame
             new UnsignedShortInteger(new Integer(0)), //weight
             ...$values
         );
-        $self->values = (new Sequence(...$values))->reduce(
+        $self->values = Sequence::of(...$values)->reduce(
             $self->values,
             static function(Stream $stream, Value $value): Stream {
                 return $stream->add($value);

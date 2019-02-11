@@ -16,7 +16,7 @@ use Innmind\AMQP\{
     Model\Basic\Message,
     Model\Basic\Qos,
     Model\Basic\Recover,
-    Model\Basic\Reject
+    Model\Basic\Reject,
 };
 use PHPUnit\Framework\TestCase;
 

@@ -5,7 +5,7 @@ namespace Innmind\AMQP\Transport\Protocol;
 
 use Innmind\AMQP\Transport\{
     Frame,
-    Frame\Channel as FrameChannel
+    Frame\Channel as FrameChannel,
 };
 
 interface Transaction

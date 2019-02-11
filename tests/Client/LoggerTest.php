@@ -6,7 +6,7 @@ namespace Tests\Innmind\AMQP\Client;
 use Innmind\AMQP\{
     Client\Logger,
     Client\Channel,
-    Client
+    Client,
 };
 use Psr\Log\LoggerInterface;
 use PHPUnit\Framework\TestCase;

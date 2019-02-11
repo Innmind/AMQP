@@ -8,7 +8,7 @@ use Innmind\AMQP\{
     Model\Basic\Message,
     Exception\Reject,
     Exception\Requeue,
-    Exception\Cancel
+    Exception\Cancel,
 };
 use Psr\Log\LoggerInterface;
 
@@ -61,7 +61,7 @@ final class Logger implements ConsumerInterface
                     'AMQP message consumption generated an exception',
                     [
                         'body' => (string) $message->body(),
-                        'exception' => get_class($e),
+                        'exception' => \get_class($e),
                     ]
                 );
                 throw $e;

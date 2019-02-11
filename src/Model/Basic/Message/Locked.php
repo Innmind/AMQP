@@ -5,15 +5,15 @@ namespace Innmind\AMQP\Model\Basic\Message;
 
 use Innmind\AMQP\{
     Model\Basic\Message,
-    Exception\MessageLocked
+    Exception\MessageLocked,
 };
 use Innmind\TimeContinuum\{
     PointInTimeInterface,
-    ElapsedPeriod
+    ElapsedPeriod,
 };
 use Innmind\Immutable\{
     MapInterface,
-    Str
+    Str,
 };
 
 final class Locked implements Message

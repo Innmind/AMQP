@@ -14,7 +14,7 @@ use Innmind\AMQP\{
     Transport\Frame\Type,
     Transport\Frame\Value\ShortString,
     Transport\Frame\Value\Bits,
-    Transport\Frame\Value\UnsignedShortInteger
+    Transport\Frame\Value\UnsignedShortInteger,
 };
 use Innmind\Math\Algebra\Integer;
 use Innmind\Immutable\Str;

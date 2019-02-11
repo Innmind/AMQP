@@ -5,7 +5,7 @@ namespace Innmind\AMQP\Model\Queue;
 
 use Innmind\Immutable\{
     MapInterface,
-    Map
+    Map,
 };
 
 final class Binding

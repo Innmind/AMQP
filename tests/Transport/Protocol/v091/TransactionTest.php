@@ -9,7 +9,7 @@ use Innmind\AMQP\Transport\{
     Frame,
     Frame\Type,
     Frame\Channel,
-    Frame\Method
+    Frame\Method,
 };
 use PHPUnit\Framework\TestCase;
 

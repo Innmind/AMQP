@@ -16,7 +16,7 @@ use Innmind\AMQP\{
     Exception\PayloadTooShort,
     Exception\UnknownFrameType,
     Exception\NoFrameDetected,
-    Exception\LogicException
+    Exception\LogicException,
 };
 use Innmind\Stream\Readable;
 use Innmind\Filesystem\Stream\StringStream;

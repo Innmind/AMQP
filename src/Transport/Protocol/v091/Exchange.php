@@ -15,12 +15,12 @@ use Innmind\AMQP\{
     Transport\Frame\Value\Bits,
     Transport\Frame\Value\Table,
     Transport\Protocol\Exchange as ExchangeInterface,
-    Transport\Protocol\ArgumentTranslator
+    Transport\Protocol\ArgumentTranslator,
 };
 use Innmind\Math\Algebra\Integer;
 use Innmind\Immutable\{
     Str,
-    Map
+    Map,
 };
 
 final class Exchange implements ExchangeInterface

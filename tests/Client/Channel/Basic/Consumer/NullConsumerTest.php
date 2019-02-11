@@ -5,7 +5,7 @@ namespace Tests\Innmind\AMQP\Client\Channel\Basic\Consumer;
 
 use Innmind\AMQP\Client\Channel\Basic\{
     Consumer\NullConsumer,
-    Consumer
+    Consumer,
 };
 use PHPUnit\Framework\TestCase;
 

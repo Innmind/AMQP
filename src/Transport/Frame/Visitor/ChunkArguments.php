@@ -7,7 +7,7 @@ use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\Stream\Readable;
 use Innmind\Immutable\{
     StreamInterface,
-    Stream
+    Stream,
 };
 
 final class ChunkArguments

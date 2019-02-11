@@ -18,13 +18,13 @@ use Innmind\AMQP\{
     Transport\Frame\Value\Bits,
     Transport\Frame\Value\Table,
     Transport\Protocol\Queue as QueueInterface,
-    Transport\Protocol\ArgumentTranslator
+    Transport\Protocol\ArgumentTranslator,
 };
 use Innmind\Math\Algebra\Integer;
 use Innmind\Immutable\{
     Str,
+    MapInterface,
     Map,
-    MapInterface
 };
 
 final class Queue implements QueueInterface

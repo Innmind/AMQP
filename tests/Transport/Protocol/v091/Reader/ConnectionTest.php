@@ -21,7 +21,7 @@ use Innmind\Filesystem\Stream\StringStream;
 use Innmind\Immutable\{
     Str,
     StreamInterface,
-    Map
+    Map,
 };
 use PHPUnit\Framework\TestCase;
 

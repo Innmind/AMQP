@@ -5,7 +5,7 @@ namespace Innmind\AMQP\Model\Connection;
 
 use Innmind\Url\Authority\UserInformation\{
     UserInterface,
-    PasswordInterface
+    PasswordInterface,
 };
 
 final class StartOk

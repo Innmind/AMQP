@@ -36,13 +36,13 @@ use Innmind\AMQP\{
 };
 use Innmind\TimeContinuum\{
     ElapsedPeriod,
-    PointInTime\Earth\Now
+    PointInTime\Earth\Now,
 };
 use Innmind\Filesystem\Stream\StringStream;
 use Innmind\Immutable\{
     Str,
     Map,
-    StreamInterface
+    StreamInterface,
 };
 use PHPUnit\Framework\TestCase;
 

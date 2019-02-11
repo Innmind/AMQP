@@ -29,7 +29,7 @@ use Innmind\Socket\Internet\Transport;
 use Innmind\Url\Url;
 use Innmind\TimeContinuum\{
     ElapsedPeriod,
-    TimeContinuum\Earth
+    TimeContinuum\Earth,
 };
 use Innmind\Stream\Readable;
 use Innmind\Immutable\StreamInterface;

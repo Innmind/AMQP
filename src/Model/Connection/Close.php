@@ -31,7 +31,7 @@ final class Close
 
     public function hasReply(): bool
     {
-        return is_int($this->replyCode);
+        return \is_int($this->replyCode);
     }
 
     public function replyCode(): int
@@ -46,7 +46,7 @@ final class Close
 
     public function causedKnown(): bool
     {
-        return is_string($this->cause);
+        return \is_string($this->cause);
     }
 
     public function cause(): string

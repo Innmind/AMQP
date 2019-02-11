@@ -20,7 +20,7 @@ use Innmind\AMQP\{
     Model\Queue\Deletion,
     Model\Queue\Binding,
     Model\Queue\Unbinding,
-    Model\Queue\Purge
+    Model\Queue\Purge,
 };
 use Innmind\Math\Algebra\Integer;
 use PHPUnit\Framework\TestCase;

@@ -8,13 +8,13 @@ use Innmind\AMQP\{
     Transport\Connection as ConnectionInterface,
     Transport\Protocol,
     Transport\Frame,
-    Exception\ConnectionClosed
+    Exception\ConnectionClosed,
 };
 use Innmind\Socket\Internet\Transport;
 use Innmind\Url\UrlInterface;
 use Innmind\TimeContinuum\{
     TimeContinuumInterface,
-    ElapsedPeriod
+    ElapsedPeriod,
 };
 
 final class Lazy implements ConnectionInterface

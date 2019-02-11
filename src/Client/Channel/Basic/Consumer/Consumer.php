@@ -17,7 +17,7 @@ use Innmind\AMQP\{
     Exception\MessageFromAnotherConsumerReceived,
     Exception\Requeue,
     Exception\Reject,
-    Exception\Cancel
+    Exception\Cancel,
 };
 
 final class Consumer implements ConsumerInterface
@@ -147,7 +147,7 @@ final class Consumer implements ConsumerInterface
             return false;
         }
 
-        if (is_null($this->take)) {
+        if (\is_null($this->take)) {
             return true;
         }
 
@@ -156,7 +156,7 @@ final class Consumer implements ConsumerInterface
 
     private function flagConsumed(): void
     {
-        if (is_null($this->take)) {
+        if (\is_null($this->take)) {
             return;
         }
 

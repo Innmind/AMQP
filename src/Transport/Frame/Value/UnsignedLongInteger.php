@@ -25,7 +25,7 @@ final class UnsignedLongInteger implements Value
 
     public static function fromStream(Readable $stream): Value
     {
-        [, $value] = unpack('N', (string) $stream->read(4));
+        [, $value] = \unpack('N', (string) $stream->read(4));
 
         return new self(new Integer($value));
     }
@@ -37,7 +37,7 @@ final class UnsignedLongInteger implements Value
 
     public function __toString(): string
     {
-        return $this->value ?? $this->value = pack('N', $this->original->value());
+        return $this->value ?? $this->value = \pack('N', $this->original->value());
     }
 
     public static function definitionSet(): Set
