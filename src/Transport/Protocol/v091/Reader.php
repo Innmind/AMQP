@@ -12,10 +12,8 @@ use Innmind\AMQP\Transport\{
     Protocol\v091\Reader\Basic,
     Protocol\v091\Reader\Transaction
 };
-use Innmind\Immutable\{
-    Str,
-    StreamInterface
-};
+use Innmind\Stream\Readable;
+use Innmind\Immutable\StreamInterface;
 
 final class Reader
 {
@@ -39,7 +37,7 @@ final class Reader
     /**
      * @return StreamInterface<Value>
      */
-    public function __invoke(Method $method, Str $arguments): StreamInterface
+    public function __invoke(Method $method, Readable $arguments): StreamInterface
     {
         return ($this->{Methods::class($method)})($method, $arguments);
     }

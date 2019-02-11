@@ -30,10 +30,8 @@ use Innmind\TimeContinuum\{
     ElapsedPeriod,
     TimeContinuum\Earth
 };
-use Innmind\Immutable\{
-    Str,
-    StreamInterface
-};
+use Innmind\Stream\Readable;
+use Innmind\Immutable\StreamInterface;
 use PHPUnit\Framework\TestCase;
 
 class ConnectionTest extends TestCase
@@ -120,8 +118,8 @@ class ConnectionTest extends TestCase
                 return $this;
             }
 
-            public function read(Method $method, Str $arguments): StreamInterface {}
-            public function readHeader(Str $arguments): StreamInterface {}
+            public function read(Method $method, Readable $arguments): StreamInterface {}
+            public function readHeader(Readable $arguments): StreamInterface {}
             public function method(string $name): Method {}
             public function connection(): PConnection {}
             public function channel(): PChannel {}

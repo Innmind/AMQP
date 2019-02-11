@@ -8,12 +8,13 @@ use Innmind\AMQP\Transport\Frame\{
     Value\SignedOctet,
     Value\LongString,
     Value\Text,
-    Value
+    Value,
 };
 use Innmind\Math\Algebra\Integer;
+use Innmind\Filesystem\Stream\StringStream;
 use Innmind\Immutable\{
     Map,
-    Str
+    Str,
 };
 use PHPUnit\Framework\TestCase;
 
@@ -49,9 +50,9 @@ class TableTest extends TestCase
     /**
      * @dataProvider cases
      */
-    public function testFromString($string, $expected)
+    public function testFromStream($string, $expected)
     {
-        $value = Table::fromString(new Str($string));
+        $value = Table::fromStream(new StringStream($string));
 
         $this->assertInstanceOf(Table::class, $value);
         $this->assertCount($expected->size(), $value->original());
@@ -68,25 +69,6 @@ class TableTest extends TestCase
         }
 
         $this->assertSame($string, (string) $value);
-    }
-
-    /**
-     * @dataProvider cases
-     */
-    public function testCut($string)
-    {
-        $str = Table::cut(new Str($string.'foo'));
-
-        $this->assertInstanceOf(Str::class, $str);
-        $this->assertSame($string, (string) $str);
-    }
-
-    /**
-     * @expectedException Innmind\AMQP\Exception\StringNotOfExpectedLength
-     */
-    public function testThrowWhenInvalidString()
-    {
-        Table::fromString(new Str(pack('N', 5).chr(3).'foob'.chr(1)));
     }
 
     /**

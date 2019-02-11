@@ -4,6 +4,7 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
+use Innmind\Stream\Readable;
 use Innmind\Immutable\{
     StreamInterface,
     Stream,
@@ -18,24 +19,14 @@ final class Bits implements Value
 
     public function __construct(bool $first, bool ...$bits)
     {
-        array_unshift($bits, $first);
-        $value = 0;
-        $stream = new Stream('bool');
-
-        foreach ($bits as $i => $bit) {
-            $stream = $stream->add($bit);
-            $bit = (int) $bit;
-            $value |= $bit << $i;
-        }
-
-        $this->value = chr($value);
-        $this->original = $stream;
+        $this->original = Stream::of('bool', $first, ...$bits);
     }
 
-    public static function fromString(Str $string): Value
+    public static function fromStream(Readable $stream): Value
     {
         return new self(
-            ...$string
+            ...$stream
+                ->read(1)
                 ->toEncoding('ASCII')
                 ->chunk()
                 ->reduce(
@@ -58,11 +49,6 @@ final class Bits implements Value
         );
     }
 
-    public static function cut(Str $string): Str
-    {
-        return $string->toEncoding('ASCII')->substring(0, 1);
-    }
-
     /**
      * @return StreamInterface<bool>
      */
@@ -73,6 +59,17 @@ final class Bits implements Value
 
     public function __toString(): string
     {
+        if (\is_null($this->value)) {
+            $value = 0;
+
+            foreach ($this->original as $i => $bit) {
+                $bit = (int) $bit;
+                $value |= $bit << $i;
+            }
+
+            $this->value = chr($value);
+        }
+
         return $this->value;
     }
 }

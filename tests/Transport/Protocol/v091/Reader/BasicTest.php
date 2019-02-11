@@ -15,6 +15,7 @@ use Innmind\AMQP\Transport\{
     Frame\Value\UnsignedLongInteger
 };
 use Innmind\Math\Algebra\Integer;
+use Innmind\Filesystem\Stream\StringStream;
 use Innmind\Immutable\{
     Str,
     StreamInterface
@@ -32,7 +33,7 @@ class BasicTest extends TestCase
 
         $stream = $read(
             Methods::get($method),
-            new Str(implode('', $arguments))
+            new StringStream(implode('', $arguments))
         );
 
         $this->assertInstanceOf(StreamInterface::class, $stream);
@@ -51,7 +52,7 @@ class BasicTest extends TestCase
      */
     public function testThrowWhenUnknownMethod()
     {
-        (new Basic)(new Method(0, 0), new Str(''));
+        (new Basic)(new Method(0, 0), new StringStream(''));
     }
 
     public function cases(): array

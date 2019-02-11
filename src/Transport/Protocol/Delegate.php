@@ -8,9 +8,9 @@ use Innmind\AMQP\{
     Transport\Frame\Method,
     Exception\VersionNotUsable
 };
+use Innmind\Stream\Readable;
 use Innmind\Immutable\{
     Sequence,
-    Str,
     StreamInterface
 };
 
@@ -59,7 +59,7 @@ final class Delegate implements Protocol
     /**
      * {@inheritdoc}
      */
-    public function read(Method $method, Str $arguments): StreamInterface
+    public function read(Method $method, Readable $arguments): StreamInterface
     {
         return $this->inUse->read($method, $arguments);
     }
@@ -67,7 +67,7 @@ final class Delegate implements Protocol
     /**
      * {@inheritdoc}
      */
-    public function readHeader(Str $arguments): StreamInterface
+    public function readHeader(Readable $arguments): StreamInterface
     {
         return $this->inUse->readHeader($arguments);
     }

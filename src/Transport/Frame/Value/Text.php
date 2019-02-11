@@ -4,6 +4,7 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
+use Innmind\Stream\Readable;
 use Innmind\Immutable\Str;
 
 final class Text implements Value
@@ -17,14 +18,9 @@ final class Text implements Value
         $this->original = $string;
     }
 
-    public static function fromString(Str $string): Value
+    public static function fromStream(Readable $stream): Value
     {
-        return new self($string);
-    }
-
-    public static function cut(Str $string): Str
-    {
-        return $string;
+        return new self($stream->read());
     }
 
     public function original(): Str

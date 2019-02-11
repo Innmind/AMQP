@@ -21,11 +21,13 @@ use Innmind\AMQP\{
     Transport\Frame\Value\Timestamp,
     Transport\Frame\Value\Table,
     Transport\Frame\Value\ShortString,
+    Transport\Frame\Value,
     Exception\VersionNotUsable
 };
+use Innmind\Stream\Readable;
 use Innmind\Immutable\{
-    Str,
-    StreamInterface
+    StreamInterface,
+    Stream,
 };
 
 final class Protocol implements ProtocolInterface
@@ -68,7 +70,7 @@ final class Protocol implements ProtocolInterface
     /**
      * {@inheritdoc}
      */
-    public function read(Method $method, Str $arguments): StreamInterface
+    public function read(Method $method, Readable $arguments): StreamInterface
     {
         return ($this->read)($method, $arguments);
     }
@@ -76,19 +78,16 @@ final class Protocol implements ProtocolInterface
     /**
      * {@inheritdoc}
      */
-    public function readHeader(Str $payload): StreamInterface
+    public function readHeader(Readable $payload): StreamInterface
     {
         $chunk = new ChunkArguments(
             UnsignedLongLongInteger::class,
             UnsignedShortInteger::class
         );
-        [$bodySize, $flagBits] = $chunk($payload);
+        [$bodySize, $flags] = $chunk($payload);
 
-        $flagBits = $flagBits->original()->value();
-        $toChunk = [
-            UnsignedLongLongInteger::class, //body size
-            UnsignedShortInteger::class, // flag bits
-        ];
+        $flagBits = $flags->original()->value();
+        $toChunk = [];
 
         if ($flagBits & (1 << 15)) {
             $toChunk[] = ShortString::class; //content type
@@ -142,7 +141,12 @@ final class Protocol implements ProtocolInterface
             $toChunk[] = ShortString::class; //app id
         }
 
-        return (new ChunkArguments(...$toChunk))($payload);
+        return Stream::of(
+            Value::class,
+            $bodySize,
+            $flags,
+            ...(new ChunkArguments(...$toChunk))($payload)
+        );
     }
 
     public function method(string $name): Method

@@ -20,7 +20,7 @@ use Innmind\AMQP\Transport\Frame\Value\{
     ShortString,
     LongString,
     Sequence,
-    Table
+    Table,
 };
 use PHPUnit\Framework\TestCase;
 

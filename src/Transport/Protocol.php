@@ -13,10 +13,8 @@ use Innmind\AMQP\Transport\{
     Protocol\Basic,
     Protocol\Transaction
 };
-use Innmind\Immutable\{
-    Str,
-    StreamInterface
-};
+use Innmind\Stream\Readable;
+use Innmind\Immutable\StreamInterface;
 
 interface Protocol
 {
@@ -26,12 +24,12 @@ interface Protocol
     /**
      * @return StreamInterface<Value>
      */
-    public function read(Method $method, Str $arguments): StreamInterface;
+    public function read(Method $method, Readable $arguments): StreamInterface;
 
     /**
      * @return StreamInterface<Value>
      */
-    public function readHeader(Str $arguments): StreamInterface;
+    public function readHeader(Readable $arguments): StreamInterface;
     public function method(string $name): Method;
     public function connection(): Connection;
     public function channel(): Channel;

@@ -9,6 +9,7 @@ use Innmind\AMQP\Transport\{
     Frame\Method,
     Frame\Value
 };
+use Innmind\Filesystem\Stream\StringStream;
 use Innmind\Immutable\{
     Str,
     StreamInterface
@@ -26,7 +27,7 @@ class TransactionTest extends TestCase
 
         $stream = $read(
             Methods::get($method),
-            new Str(implode('', $arguments))
+            new StringStream(implode('', $arguments))
         );
 
         $this->assertInstanceOf(StreamInterface::class, $stream);
@@ -45,7 +46,7 @@ class TransactionTest extends TestCase
      */
     public function testThrowWhenUnknownMethod()
     {
-        (new Transaction)(new Method(0, 0), new Str(''));
+        (new Transaction)(new Method(0, 0), new StringStream(''));
     }
 
     public function cases(): array

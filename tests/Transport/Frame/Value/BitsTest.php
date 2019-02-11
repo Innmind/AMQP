@@ -5,12 +5,10 @@ namespace Tests\Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\{
     Value\Bits,
-    Value
+    Value,
 };
-use Innmind\Immutable\{
-    StreamInterface,
-    Str
-};
+use Innmind\Filesystem\Stream\StringStream;
+use Innmind\Immutable\StreamInterface;
 use PHPUnit\Framework\TestCase;
 
 class BitsTest extends TestCase
@@ -35,24 +33,13 @@ class BitsTest extends TestCase
     /**
      * @dataProvider decode
      */
-    public function testFromSting($expected, $string)
+    public function testFromStream($expected, $string)
     {
-        $value = Bits::fromString(new Str($string));
+        $value = Bits::fromStream(new StringStream($string));
 
         $this->assertInstanceOf(Bits::class, $value);
         $this->assertSame($expected, $value->original()->toPrimitive());
         $this->assertSame($string, (string) $value);
-    }
-
-    /**
-     * @dataProvider decode
-     */
-    public function testCut($_, $string)
-    {
-        $str = Bits::cut(new Str($string.'foo'));
-
-        $this->assertInstanceOf(Str::class, $str);
-        $this->assertSame($string, (string) $str);
     }
 
     public function cases(): array

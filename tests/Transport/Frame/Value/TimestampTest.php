@@ -5,14 +5,14 @@ namespace Tests\Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\{
     Value\Timestamp,
-    Value
+    Value,
 };
 use Innmind\TimeContinuum\{
     PointInTime\Earth\Now,
     PointInTime\Earth\PointInTime,
-    PointInTimeInterface
+    PointInTimeInterface,
 };
-use Innmind\Immutable\Str;
+use Innmind\Filesystem\Stream\StringStream;
 use PHPUnit\Framework\TestCase;
 
 class TimestampTest extends TestCase
@@ -32,9 +32,9 @@ class TimestampTest extends TestCase
         $this->assertSame($now, $value->original());
     }
 
-    public function testFromString()
+    public function testFromStream()
     {
-        $value = Timestamp::fromString(new Str(pack('J', $time = time())));
+        $value = Timestamp::fromStream(new StringStream(pack('J', $time = time())));
 
         $this->assertInstanceOf(Timestamp::class, $value);
         $this->assertInstanceOf(PointInTimeInterface::class, $value->original());
@@ -44,14 +44,5 @@ class TimestampTest extends TestCase
             )
         );
         $this->assertSame(pack('J', $time), (string) $value);
-    }
-
-    public function testCut()
-    {
-        $string = pack('J', $time = time());
-        $str = Timestamp::cut(new Str($string.'foo'));
-
-        $this->assertInstanceOf(Str::class, $str);
-        $this->assertSame($string, (string) $str);
     }
 }
