@@ -33,7 +33,7 @@ class QueueTest extends TestCase
     private $queue;
     private $conncetion;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->queue = new Queue(
             $this->connection = new Connection(
@@ -53,7 +53,7 @@ class QueueTest extends TestCase
             ->wait('channel.open-ok');
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         $this->connection
             ->send(

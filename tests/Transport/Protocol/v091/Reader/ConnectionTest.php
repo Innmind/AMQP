@@ -3,17 +3,18 @@ declare(strict_types = 1);
 
 namespace Tests\Innmind\AMQP\Transport\Protocol\v091\Reader;
 
-use Innmind\AMQP\Transport\{
-    Protocol\v091\Reader\Connection,
-    Protocol\v091\Methods,
-    Frame\Method,
-    Frame\Value,
-    Frame\Value\UnsignedOctet,
-    Frame\Value\Table,
-    Frame\Value\LongString,
-    Frame\Value\UnsignedShortInteger,
-    Frame\Value\UnsignedLongInteger,
-    Frame\Value\ShortString
+use Innmind\AMQP\{
+    Transport\Protocol\v091\Reader\Connection,
+    Transport\Protocol\v091\Methods,
+    Transport\Frame\Method,
+    Transport\Frame\Value,
+    Transport\Frame\Value\UnsignedOctet,
+    Transport\Frame\Value\Table,
+    Transport\Frame\Value\LongString,
+    Transport\Frame\Value\UnsignedShortInteger,
+    Transport\Frame\Value\UnsignedLongInteger,
+    Transport\Frame\Value\ShortString,
+    Exception\UnknownMethod,
 };
 use Innmind\Math\Algebra\Integer;
 use Innmind\Filesystem\Stream\StringStream;
@@ -48,12 +49,11 @@ class ConnectionTest extends TestCase
         }
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\UnknownMethod
-     * @expectedExceptionMessage 0,0
-     */
     public function testThrowWhenUnknownMethod()
     {
+        $this->expectException(UnknownMethod::class);
+        $this->expectExceptionMessage('0,0');
+
         (new Connection)(new Method(0, 0), new StringStream(''));
     }
 

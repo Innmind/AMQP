@@ -3,14 +3,15 @@ declare(strict_types = 1);
 
 namespace Tests\Innmind\AMQP\Transport\Protocol\v091\Reader;
 
-use Innmind\AMQP\Transport\{
-    Protocol\v091\Reader\Channel,
-    Protocol\v091\Methods,
-    Frame\Method,
-    Frame\Value,
-    Frame\Value\UnsignedShortInteger,
-    Frame\Value\ShortString,
-    Frame\Value\Bits
+use Innmind\AMQP\{
+    Transport\Protocol\v091\Reader\Channel,
+    Transport\Protocol\v091\Methods,
+    Transport\Frame\Method,
+    Transport\Frame\Value,
+    Transport\Frame\Value\UnsignedShortInteger,
+    Transport\Frame\Value\ShortString,
+    Transport\Frame\Value\Bits,
+    Exception\UnknownMethod,
 };
 use Innmind\Math\Algebra\Integer;
 use Innmind\Filesystem\Stream\StringStream;
@@ -44,12 +45,11 @@ class ChannelTest extends TestCase
         }
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\UnknownMethod
-     * @expectedExceptionMessage 0,0
-     */
     public function testThrowWhenUnknownMethod()
     {
+        $this->expectException(UnknownMethod::class);
+        $this->expectExceptionMessage('0,0');
+
         (new Channel)(new Method(0, 0), new StringStream(''));
     }
 

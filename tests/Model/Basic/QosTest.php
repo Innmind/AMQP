@@ -3,7 +3,10 @@ declare(strict_types = 1);
 
 namespace Tests\Innmind\AMQP\Model\Basic;
 
-use Innmind\AMQP\Model\Basic\Qos;
+use Innmind\AMQP\{
+    Model\Basic\Qos,
+    Exception\DomainException,
+};
 use PHPUnit\Framework\TestCase;
 
 class QosTest extends TestCase
@@ -27,19 +30,17 @@ class QosTest extends TestCase
         $this->assertTrue($command->isGlobal());
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\DomainException
-     */
     public function testThrowWhenNegativePrefetchSize()
     {
+        $this->expectException(DomainException::class);
+
         new Qos(-1, 0);
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\DomainException
-     */
     public function testThrowWhenNegativePrefetchCount()
     {
+        $this->expectException(DomainException::class);
+
         new Qos(0, -1);
     }
 }

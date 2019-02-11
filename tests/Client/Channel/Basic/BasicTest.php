@@ -75,7 +75,7 @@ class BasicTest extends TestCase
     private $basic;
     private $connection;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->basic = new Basic(
             $this->connection = new Connection(
@@ -94,7 +94,7 @@ class BasicTest extends TestCase
             ->wait('channel.open-ok');
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         $this->connection
             ->send(

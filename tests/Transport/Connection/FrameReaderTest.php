@@ -34,7 +34,9 @@ use Innmind\AMQP\{
     Model\Basic\Message\UserId,
     Model\Connection\MaxFrameSize,
     TimeContinuum\Format\Timestamp as TimestampFormat,
-    Exception\NoFrameDetected
+    Exception\NoFrameDetected,
+    Exception\ReceivedFrameNotDelimitedCorrectly,
+    Exception\PayloadTooShort,
 };
 use Innmind\Stream\{
     Readable\Stream,
@@ -55,7 +57,7 @@ class FrameReaderTest extends TestCase
 {
     private $protocol;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->protocol = new Protocol(new ValueTranslator);
     }
@@ -85,9 +87,6 @@ class FrameReaderTest extends TestCase
         $this->assertInstanceOf(Frame::class, $frame);
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\ReceivedFrameNotDelimitedCorrectly
-     */
     public function testThrowWhenFrameEndMarkerInvalid()
     {
         $read = new FrameReader;
@@ -108,12 +107,11 @@ class FrameReaderTest extends TestCase
         fseek($file, 0);
         $stream = new Stream($file);
 
+        $this->expectException(ReceivedFrameNotDelimitedCorrectly::class);
+
         $read($stream, $this->protocol);
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\PayloadTooShort
-     */
     public function testThrowWhenPayloadTooShort()
     {
         $read = new FrameReader;
@@ -127,6 +125,8 @@ class FrameReaderTest extends TestCase
         fwrite($file, $frame);
         fseek($file, 0);
         $stream = new Stream($file);
+
+        $this->expectException(PayloadTooShort::class);
 
         $read($stream, $this->protocol);
     }

@@ -31,7 +31,8 @@ use Innmind\AMQP\{
     Model\Basic\Message\ReplyTo,
     Model\Basic\Message\Type,
     Model\Basic\Message\UserId,
-    Model\Connection\MaxFrameSize
+    Model\Connection\MaxFrameSize,
+    Exception\VersionNotUsable,
 };
 use Innmind\TimeContinuum\{
     ElapsedPeriod,
@@ -123,21 +124,19 @@ class ProtocolTest extends TestCase
         );
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\VersionNotUsable
-     * @expectedExceptionMessage 1.0.0
-     */
     public function testThrowWhenUsingHigherVersion()
     {
+        $this->expectException(VersionNotUsable::class);
+        $this->expectExceptionMessage('1.0.0');
+
         (new Protocol($this->createMock(ArgumentTranslator::class)))->use(new Version(1, 0, 0));
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\VersionNotUsable
-     * @expectedExceptionMessage 0.8.0
-     */
     public function testThrowWhenUsingLowerVersion()
     {
+        $this->expectException(VersionNotUsable::class);
+        $this->expectExceptionMessage('0.8.0');
+
         (new Protocol($this->createMock(ArgumentTranslator::class)))->use(new Version(0, 8, 0));
     }
 

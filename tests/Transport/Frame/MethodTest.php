@@ -3,7 +3,10 @@ declare(strict_types = 1);
 
 namespace Tests\Innmind\AMQP\Transport\Frame;
 
-use Innmind\AMQP\Transport\Frame\Method;
+use Innmind\AMQP\{
+    Transport\Frame\Method,
+    Exception\DomainException,
+};
 use PHPUnit\Framework\TestCase;
 
 class MethodTest extends TestCase
@@ -21,19 +24,17 @@ class MethodTest extends TestCase
         $this->assertSame(20, $method->method());
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\DomainException
-     */
     public function testThrowWhenClassIdTooLow()
     {
+        $this->expectException(DomainException::class);
+
         new Method(-1, 0);
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\DomainException
-     */
     public function testThrowWhenMethodIdTooLow()
     {
+        $this->expectException(DomainException::class);
+
         new Method(0, -1);
     }
 }

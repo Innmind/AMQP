@@ -25,7 +25,7 @@ class TransactionTest extends TestCase
     private $transaction;
     private $connection;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->transaction = new Transaction(
             $this->connection = new Connection(
@@ -44,7 +44,7 @@ class TransactionTest extends TestCase
             ->wait('channel.open-ok');
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         $this->connection
             ->send(

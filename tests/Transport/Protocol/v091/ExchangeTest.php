@@ -26,7 +26,7 @@ class ExchangeTest extends TestCase
     private $exchange;
     private $translator;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->exchange = new Exchange(
             $this->translator = $this->createMock(ArgumentTranslator::class)

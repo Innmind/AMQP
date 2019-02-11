@@ -58,7 +58,7 @@ class BasicTest extends TestCase
     private $basic;
     private $translator;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->basic = new Basic(
             $this->translator = $this->createMock(ArgumentTranslator::class)

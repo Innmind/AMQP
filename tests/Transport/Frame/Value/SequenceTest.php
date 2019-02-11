@@ -3,11 +3,12 @@ declare(strict_types = 1);
 
 namespace Tests\Innmind\AMQP\Transport\Frame\Value;
 
-use Innmind\AMQP\Transport\Frame\{
-    Value\Sequence,
-    Value\LongString,
-    Value\Text,
-    Value,
+use Innmind\AMQP\{
+    Transport\Frame\Value\Sequence,
+    Transport\Frame\Value\LongString,
+    Transport\Frame\Value\Text,
+    Transport\Frame\Value,
+    Exception\UnboundedTextCannotBeWrapped,
 };
 use Innmind\Filesystem\Stream\StringStream;
 use Innmind\Immutable\{
@@ -59,11 +60,10 @@ class SequenceTest extends TestCase
         $this->assertSame($string, (string) $value);
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\UnboundedTextCannotBeWrapped
-     */
     public function testThrowWhenUsingUnboundedText()
     {
+        $this->expectException(UnboundedTextCannotBeWrapped::class);
+
         new Sequence(new Text(new Str('')));
     }
 

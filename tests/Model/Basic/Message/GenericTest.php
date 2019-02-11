@@ -99,12 +99,11 @@ class GenericTest extends TestCase
         $this->assertSame($expected, $message2->headers());
     }
 
-    /**
-     * @expectedException TypeError
-     * @expectedExceptionMessage Argument 1 must be of type MapInterface<string, mixed>
-     */
     public function testThrowWhenInvalidHeaderMap()
     {
+        $this->expectException(\TypeError::class);
+        $this->expectExceptionMessage('Argument 1 must be of type MapInterface<string, mixed>');
+
         (new Generic(new Str('')))->withHeaders(new Map('string', 'string'));
     }
 

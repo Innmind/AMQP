@@ -3,7 +3,10 @@ declare(strict_types = 1);
 
 namespace Tests\Innmind\AMQP\Model\Basic\Message;
 
-use Innmind\AMQP\Model\Basic\Message\ContentType;
+use Innmind\AMQP\{
+    Model\Basic\Message\ContentType,
+    Exception\DomainException,
+};
 use PHPUnit\Framework\TestCase;
 
 class ContentTypeTest extends TestCase
@@ -16,11 +19,10 @@ class ContentTypeTest extends TestCase
         );
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\DomainException
-     */
     public function testThrowWhenInvalidContentType()
     {
+        $this->expectException(DomainException::class);
+
         new ContentType('foo', 'json');
     }
 }

@@ -48,18 +48,15 @@ class BootstrapTest extends TestCase
         $signalAware = $services['client']['signal_aware'];
         $autoDeclare = $services['client']['auto_declare'];
         $this->assertInstanceOf(Client::class, $services['client']['basic']);
-        $this->assertInternalType('callable', $fluent);
-        $this->assertInternalType('callable', $logger);
-        $this->assertInternalType('callable', $signalAware);
-        $this->assertInternalType('callable', $autoDeclare);
-        $this->assertInternalType(
-            'callable',
-            $autoDeclare(
-                Set::of(Exchange::class),
-                Set::of(Queue::class),
-                Set::of(Binding::class)
-            )
-        );
+        $this->assertIsCallable($fluent);
+        $this->assertIsCallable($logger);
+        $this->assertIsCallable($signalAware);
+        $this->assertIsCallable($autoDeclare);
+        $this->assertIsCallable($autoDeclare(
+            Set::of(Exchange::class),
+            Set::of(Queue::class),
+            Set::of(Binding::class)
+        ));
         $this->assertInstanceOf(
             Fluent::class,
             $fluent($services['client']['basic'])
@@ -84,16 +81,16 @@ class BootstrapTest extends TestCase
         $purge = $services['command']['purge'];
         $get = $services['command']['get'];
         $consume = $services['command']['consume'];
-        $this->assertInternalType('callable', $purge);
-        $this->assertInternalType('callable', $get);
-        $this->assertInternalType('callable', $consume);
+        $this->assertIsCallable($purge);
+        $this->assertIsCallable($get);
+        $this->assertIsCallable($consume);
         $this->assertInstanceOf(
             Purge::class,
             $purge($services['client']['basic'])
         );
         $consumers = new Map('string', 'callable');
-        $this->assertInternalType('callable', $get($consumers));
-        $this->assertInternalType('callable', $consume($consumers));
+        $this->assertIsCallable($get($consumers));
+        $this->assertIsCallable($consume($consumers));
         $this->assertInstanceOf(
             Get::class,
             $get($consumers)($services['client']['basic'])
@@ -104,8 +101,8 @@ class BootstrapTest extends TestCase
         );
 
         $producers = $services['producers'];
-        $this->assertInternalType('callable', $producers);
-        $this->assertInternalType('callable', $producers(Set::of(Exchange::class)));
+        $this->assertIsCallable($producers);
+        $this->assertIsCallable($producers(Set::of(Exchange::class)));
         $this->assertInstanceOf(
             Producers::class,
             $producers(Set::of(Exchange::class))($services['client']['basic'])

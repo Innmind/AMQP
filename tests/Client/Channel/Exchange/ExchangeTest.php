@@ -28,7 +28,7 @@ class ExchangeTest extends TestCase
     private $exchange;
     private $conncetion;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->exchange = new Exchange(
             $this->connection = new Connection(
@@ -48,7 +48,7 @@ class ExchangeTest extends TestCase
             ->wait('channel.open-ok');
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         $this->connection
             ->send(

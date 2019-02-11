@@ -30,7 +30,7 @@ class QueueTest extends TestCase
     private $queue;
     private $translator;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->queue = new Queue(
             $this->translator = $this->createMock(ArgumentTranslator::class)

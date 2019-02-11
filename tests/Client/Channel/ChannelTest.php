@@ -28,7 +28,7 @@ class ChannelTest extends TestCase
     private $channel;
     private $connection;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->channel = new Channel(
             $this->connection = new Connection(

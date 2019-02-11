@@ -3,7 +3,10 @@ declare(strict_types = 1);
 
 namespace Tests\Innmind\AMQP\Transport\Frame;
 
-use Innmind\AMQP\Transport\Frame\Type;
+use Innmind\AMQP\{
+    Transport\Frame\Type,
+    Exception\UnknownFrameType,
+};
 use PHPUnit\Framework\TestCase;
 
 class TypeTest extends TestCase
@@ -28,12 +31,11 @@ class TypeTest extends TestCase
         $this->assertSame(Type::$expected(), Type::fromInt($type));
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\UnknownFrameType
-     * @expectedExceptionMessage 4
-     */
     public function testThrowWhenUnknownType()
     {
+        $this->expectException(UnknownFrameType::class);
+        $this->expectExceptionMessage('4');
+
         Type::fromInt(4);
     }
 

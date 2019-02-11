@@ -3,7 +3,10 @@ declare(strict_types = 1);
 
 namespace Tests\Innmind\AMQP\Model\Connection;
 
-use Innmind\AMQP\Model\Connection\MaxChannels;
+use Innmind\AMQP\{
+    Model\Connection\MaxChannels,
+    Exception\DomainException,
+};
 use PHPUnit\Framework\TestCase;
 
 class MaxChannelsTest extends TestCase
@@ -20,11 +23,10 @@ class MaxChannelsTest extends TestCase
         $this->assertTrue((new MaxChannels(0))->allows(1));
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\DomainException
-     */
     public function testThrowWhenNegativeValue()
     {
+        $this->expectException(DomainException::class);
+
         new MaxChannels(-1);
     }
 }

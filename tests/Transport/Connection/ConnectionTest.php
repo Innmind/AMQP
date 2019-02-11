@@ -22,7 +22,8 @@ use Innmind\AMQP\{
     Transport\Frame\Method,
     Model\Connection\MaxFrameSize,
     Exception\VersionNotUsable,
-    Exception\ConnectionClosed
+    Exception\ConnectionClosed,
+    Exception\UnexpectedFrame,
 };
 use Innmind\Socket\Internet\Transport;
 use Innmind\Url\Url;
@@ -75,9 +76,6 @@ class ConnectionTest extends TestCase
         $this->assertTrue($connection->closed());
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\UnexpectedFrame
-     */
     public function testThrowWhenReceivedFrameIsNotTheExpectedOne()
     {
         $connection = new Connection(
@@ -87,6 +85,9 @@ class ConnectionTest extends TestCase
             new ElapsedPeriod(1000),
             new Earth
         );
+
+        $this->expectException(UnexpectedFrame::class);
+
         $connection
             ->send(
                 $protocol->channel()->open(new Channel(2))
