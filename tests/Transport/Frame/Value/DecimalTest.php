@@ -49,6 +49,14 @@ class DecimalTest extends TestCase
         $this->assertSame($string, (string) $value);
     }
 
+    public function testThrowWhenIntegerTooHigh()
+    {
+        $this->assertSame(
+            'ℕ',
+            (string) Decimal::definitionSet()
+        );
+    }
+
     public function cases(): array
     {
         return [

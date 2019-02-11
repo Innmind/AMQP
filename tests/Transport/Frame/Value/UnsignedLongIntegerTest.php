@@ -21,22 +21,12 @@ class UnsignedLongIntegerTest extends TestCase
         );
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\OutOfRangeValue
-     * @expectedExceptionMessage 4294967296 ∉ [0;4294967295]
-     */
     public function testThrowWhenIntegerTooHigh()
     {
-        new UnsignedLongInteger(new Integer(4294967296));
-    }
-
-    /**
-     * @expectedException Innmind\AMQP\Exception\OutOfRangeValue
-     * @expectedExceptionMessage -1 ∉ [0;4294967295]
-     */
-    public function testThrowWhenIntegerTooLow()
-    {
-        new UnsignedLongInteger(new Integer(-1));
+        $this->assertSame(
+            '[0;4294967295]',
+            (string) UnsignedLongInteger::definitionSet()
+        );
     }
 
     /**

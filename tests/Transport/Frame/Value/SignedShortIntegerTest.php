@@ -43,22 +43,12 @@ class SignedShortIntegerTest extends TestCase
         $this->assertSame($string, (string) $value);
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\OutOfRangeValue
-     * @expectedExceptionMessage 32768 ∉ [-32768;32767]
-     */
     public function testThrowWhenIntegerTooHigh()
     {
-        new SignedShortInteger(new Integer(32768));
-    }
-
-    /**
-     * @expectedException Innmind\AMQP\Exception\OutOfRangeValue
-     * @expectedExceptionMessage -32769 ∉ [-32768;32767]
-     */
-    public function testThrowWhenIntegerTooLow()
-    {
-        new SignedShortInteger(new Integer(-32769));
+        $this->assertSame(
+            '[-32768;32767]',
+            (string) SignedShortInteger::definitionSet()
+        );
     }
 
     public function cases(): array

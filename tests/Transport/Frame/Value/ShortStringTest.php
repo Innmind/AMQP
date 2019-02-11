@@ -40,15 +40,6 @@ class ShortStringTest extends TestCase
         $this->assertSame($string, (string) $value);
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\OutOfRangeValue
-     * @expectedExceptionMessage 256 ∉ [0;255]
-     */
-    public function testThrowWhenStringTooLong()
-    {
-        new ShortString(new Str(str_repeat('i', 256)));
-    }
-
     public function cases(): array
     {
         return [

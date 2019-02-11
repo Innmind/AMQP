@@ -44,22 +44,12 @@ class UnsignedShortIntegerTest extends TestCase
         $this->assertSame($string, (string) $value);
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\OutOfRangeValue
-     * @expectedExceptionMessage 65536 ∉ [0;65535]
-     */
     public function testThrowWhenIntegerTooHigh()
     {
-        new UnsignedShortInteger(new Integer(65536));
-    }
-
-    /**
-     * @expectedException Innmind\AMQP\Exception\OutOfRangeValue
-     * @expectedExceptionMessage -1 ∉ [0;65535]
-     */
-    public function testThrowWhenIntegerTooLow()
-    {
-        new UnsignedShortInteger(new Integer(-1));
+        $this->assertSame(
+            '[0;65535]',
+            (string) UnsignedShortInteger::definitionSet()
+        );
     }
 
     public function cases(): array

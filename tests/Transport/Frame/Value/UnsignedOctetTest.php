@@ -43,22 +43,12 @@ class UnsignedOctetTest extends TestCase
         $this->assertSame($string, (string) $value);
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\OutOfRangeValue
-     * @expectedExceptionMessage 256 ∉ [0;255]
-     */
     public function testThrowWhenStringTooHigh()
     {
-        new UnsignedOctet(new Integer(256));
-    }
-
-    /**
-     * @expectedException Innmind\AMQP\Exception\OutOfRangeValue
-     * @expectedExceptionMessage -1 ∉ [0;255]
-     */
-    public function testThrowWhenStringTooLow()
-    {
-        new UnsignedOctet(new Integer(-1));
+        $this->assertSame(
+            '[0;255]',
+            (string) UnsignedOctet::definitionSet()
+        );
     }
 
     public function cases(): array

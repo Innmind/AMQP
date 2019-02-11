@@ -3,9 +3,7 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport\Frame\Value;
 
-use Innmind\AMQP\{
-    Transport\Frame\Value,
-};
+use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\Math\Algebra\Integer;
 use Innmind\Stream\Readable;
 

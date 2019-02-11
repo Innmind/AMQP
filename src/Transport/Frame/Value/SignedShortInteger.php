@@ -3,10 +3,7 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport\Frame\Value;
 
-use Innmind\AMQP\{
-    Transport\Frame\Value,
-    Exception\OutOfRangeValue,
-};
+use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\Math\{
     Algebra\Integer,
     DefinitionSet\Set,
@@ -24,10 +21,6 @@ final class SignedShortInteger implements Value
 
     public function __construct(Integer $value)
     {
-        if (!self::definitionSet()->contains($value)) {
-            throw new OutOfRangeValue($value, self::definitionSet());
-        }
-
         $this->original = $value;
     }
 

@@ -43,22 +43,12 @@ class SignedLongIntegerTest extends TestCase
         $this->assertSame($string, (string) $value);
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\OutOfRangeValue
-     * @expectedExceptionMessage 2147483648 ∉ [-2147483648;2147483647]
-     */
     public function testThrowWhenIntegerTooHigh()
     {
-        new SignedLongInteger(new Integer(2147483648));
-    }
-
-    /**
-     * @expectedException Innmind\AMQP\Exception\OutOfRangeValue
-     * @expectedExceptionMessage -2147483649 ∉ [-2147483648;2147483647]
-     */
-    public function testThrowWhenIntegerTooLow()
-    {
-        new SignedLongInteger(new Integer(-2147483649));
+        $this->assertSame(
+            '[-2147483648;2147483647]',
+            (string) SignedLongInteger::definitionSet()
+        );
     }
 
     public function cases(): array

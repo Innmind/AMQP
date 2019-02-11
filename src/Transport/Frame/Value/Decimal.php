@@ -3,10 +3,7 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport\Frame\Value;
 
-use Innmind\AMQP\{
-    Transport\Frame\Value,
-    Exception\OutOfRangeValue,
-};
+use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\Math\{
     Algebra\Number,
     Algebra\Integer,
@@ -24,10 +21,6 @@ final class Decimal implements Value
 
     public function __construct(Integer $value, Integer $scale)
     {
-        if (!self::definitionSet()->contains($scale)) {
-            throw new OutOfRangeValue($scale, self::definitionSet());
-        }
-
         $this->value = (string) new UnsignedOctet($scale);
         $this->value .= (string) new SignedLongInteger($value);
         $this->original = $value->divideBy(

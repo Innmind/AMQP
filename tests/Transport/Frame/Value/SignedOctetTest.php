@@ -40,22 +40,12 @@ class SignedOctetTest extends TestCase
         $this->assertSame($string, (string) $value);
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\OutOfRangeValue
-     * @expectedExceptionMessage 128 ∉ [-128;127]
-     */
     public function testThrowWhenStringTooHigh()
     {
-        new SignedOctet(new Integer(128));
-    }
-
-    /**
-     * @expectedException Innmind\AMQP\Exception\OutOfRangeValue
-     * @expectedExceptionMessage -129 ∉ [-128;127]
-     */
-    public function testThrowWhenStringTooLow()
-    {
-        new SignedOctet(new Integer(-129));
+        $this->assertSame(
+            '[-128;127]',
+            (string) SignedOctet::definitionSet()
+        );
     }
 
     public function cases(): array
