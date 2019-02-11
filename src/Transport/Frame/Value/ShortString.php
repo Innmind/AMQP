@@ -16,11 +16,6 @@ final class ShortString implements Value
     public function __construct(Str $string)
     {
         $this->original = $string;
-        $string = $string->toEncoding('ASCII');
-        $this->value = (string) new UnsignedOctet(
-            new Integer($string->length())
-        );
-        $this->value .= $string;
     }
 
     public static function fromStream(Readable $stream): Value
@@ -37,6 +32,8 @@ final class ShortString implements Value
 
     public function __toString(): string
     {
-        return $this->value;
+        return $this->value ?? $this->value = new UnsignedOctet(
+            new Integer($this->original->toEncoding('ASCII')->length())
+        ).$this->original;
     }
 }

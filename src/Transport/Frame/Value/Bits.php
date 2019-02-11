@@ -19,18 +19,7 @@ final class Bits implements Value
 
     public function __construct(bool $first, bool ...$bits)
     {
-        array_unshift($bits, $first);
-        $value = 0;
-        $stream = new Stream('bool');
-
-        foreach ($bits as $i => $bit) {
-            $stream = $stream->add($bit);
-            $bit = (int) $bit;
-            $value |= $bit << $i;
-        }
-
-        $this->value = chr($value);
-        $this->original = $stream;
+        $this->original = Stream::of('bool', $first, ...$bits);
     }
 
     public static function fromStream(Readable $stream): Value
@@ -70,6 +59,17 @@ final class Bits implements Value
 
     public function __toString(): string
     {
+        if (\is_null($this->value)) {
+            $value = 0;
+
+            foreach ($this->original as $i => $bit) {
+                $bit = (int) $bit;
+                $value |= $bit << $i;
+            }
+
+            $this->value = chr($value);
+        }
+
         return $this->value;
     }
 }

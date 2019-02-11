@@ -44,23 +44,6 @@ final class Table implements Value
             throw new UnboundedTextCannotBeWrapped;
         }
 
-        $data = $map
-            ->reduce(
-                new Seq,
-                static function(Seq $sequence, string $key, Value $value): Seq {
-                    return $sequence
-                        ->add(new ShortString(new Str($key)))
-                        ->add(Symbols::symbol(get_class($value)))
-                        ->add($value);
-                }
-            )
-            ->join('')
-            ->toEncoding('ASCII');
-
-        $this->value = (string) new UnsignedLongInteger(
-            new Integer($data->length())
-        );
-        $this->value .= $data;
         $this->original = $map;
     }
 
@@ -94,6 +77,27 @@ final class Table implements Value
 
     public function __toString(): string
     {
+        if (\is_null($this->value)) {
+            $data = $this
+                ->original
+                ->reduce(
+                    new Seq,
+                    static function(Seq $sequence, string $key, Value $value): Seq {
+                        return $sequence
+                            ->add(new ShortString(new Str($key)))
+                            ->add(Symbols::symbol(\get_class($value)))
+                            ->add($value);
+                    }
+                )
+                ->join('')
+                ->toEncoding('ASCII');
+
+            $this->value = (string) new UnsignedLongInteger(
+                new Integer($data->length())
+            );
+            $this->value .= $data;
+        }
+
         return $this->value;
     }
 }

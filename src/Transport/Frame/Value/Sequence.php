@@ -25,9 +25,9 @@ final class Sequence implements Value
 
     public function __construct(Value ...$values)
     {
-        $sequence = new Seq(...$values);
+        $values = Stream::of(Value::class, ...$values);
 
-        $texts = $sequence->filter(static function(Value $value): bool {
+        $texts = $values->filter(static function(Value $value): bool {
             return $value instanceof Text;
         });
 
@@ -35,27 +35,7 @@ final class Sequence implements Value
             throw new UnboundedTextCannotBeWrapped;
         }
 
-        $data = $sequence
-            ->reduce(
-                new Seq,
-                static function(Seq $carry, Value $value): Seq {
-                    return $carry
-                        ->add(Symbols::symbol(get_class($value)))
-                        ->add($value);
-                }
-            )
-            ->join('')
-            ->toEncoding('ASCII');
-        $this->value = (string) new UnsignedLongInteger(
-            new Integer($data->length())
-        );
-        $this->value .= $data;
-        $this->original = $sequence->reduce(
-            new Stream(Value::class),
-            static function(Stream $stream, Value $value): Stream {
-                return $stream->add($value);
-            }
-        );
+        $this->original = $values;
     }
 
     public static function fromStream(Readable $stream): Value
@@ -85,6 +65,25 @@ final class Sequence implements Value
 
     public function __toString(): string
     {
+        if (\is_null($this->value)) {
+            $data = $this
+                ->original
+                ->reduce(
+                    new Seq,
+                    static function(Seq $carry, Value $value): Seq {
+                        return $carry
+                            ->add(Symbols::symbol(\get_class($value)))
+                            ->add($value);
+                    }
+                )
+                ->join('')
+                ->toEncoding('ASCII');
+            $this->value = (string) new UnsignedLongInteger(
+                new Integer($data->length())
+            );
+            $this->value .= $data;
+        }
+
         return $this->value;
     }
 }

@@ -12,17 +12,20 @@ use Innmind\Math\{
 };
 use Innmind\Stream\Readable;
 
+
 final class Decimal implements Value
 {
     private static $definitionSet;
 
+    private $string;
     private $value;
+    private $scale;
     private $original;
 
     public function __construct(Integer $value, Integer $scale)
     {
-        $this->value = (string) new UnsignedOctet($scale);
-        $this->value .= (string) new SignedLongInteger($value);
+        $this->scale = (string) new UnsignedOctet($scale);
+        $this->value = (string) new SignedLongInteger($value);
         $this->original = $value->divideBy(
             (new Integer(10))->power($scale)
         );
@@ -43,7 +46,7 @@ final class Decimal implements Value
 
     public function __toString(): string
     {
-        return $this->value;
+        return $this->string ?? $this->string = $this->scale.$this->value;
     }
 
     public static function definitionSet(): Set

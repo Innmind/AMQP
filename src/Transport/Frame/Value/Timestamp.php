@@ -22,9 +22,6 @@ final class Timestamp implements Value
 
     public function __construct(PointInTimeInterface $point)
     {
-        $this->value = (string) new UnsignedLongLongInteger(
-            new Integer((int) $point->format(new TimestampFormat))
-        );
         $this->original = $point;
     }
 
@@ -46,6 +43,8 @@ final class Timestamp implements Value
 
     public function __toString(): string
     {
-        return $this->value;
+        return $this->value ?? $this->value = (string) new UnsignedLongLongInteger(
+            new Integer((int) $this->original->format(new TimestampFormat))
+        );
     }
 }
