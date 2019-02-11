@@ -5,10 +5,10 @@ namespace Tests\Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\{
     Value\UnsignedOctet,
-    Value
+    Value,
 };
 use Innmind\Math\Algebra\Integer;
-use Innmind\Immutable\Str;
+use Innmind\Filesystem\Stream\StringStream;
 use PHPUnit\Framework\TestCase;
 
 class UnsignedOctetTest extends TestCase
@@ -34,50 +34,21 @@ class UnsignedOctetTest extends TestCase
     /**
      * @dataProvider cases
      */
-    public function testFromString($string, $expected)
+    public function testFromStream($string, $expected)
     {
-        $value = UnsignedOctet::fromString(new Str($string));
+        $value = UnsignedOctet::fromStream(new StringStream($string));
 
         $this->assertInstanceOf(UnsignedOctet::class, $value);
         $this->assertSame($expected, $value->original()->value());
         $this->assertSame($string, (string) $value);
     }
 
-    /**
-     * @dataProvider cases
-     */
-    public function testCut($string)
-    {
-        $str = UnsignedOctet::cut(new Str($string.'foo'));
-
-        $this->assertInstanceOf(Str::class, $str);
-        $this->assertSame($string, (string) $str);
-    }
-
-    /**
-     * @expectedException Innmind\AMQP\Exception\OutOfRangeValue
-     * @expectedExceptionMessage 256 ∉ [0;255]
-     */
     public function testThrowWhenStringTooHigh()
     {
-        new UnsignedOctet(new Integer(256));
-    }
-
-    /**
-     * @expectedException Innmind\AMQP\Exception\OutOfRangeValue
-     * @expectedExceptionMessage -1 ∉ [0;255]
-     */
-    public function testThrowWhenStringTooLow()
-    {
-        new UnsignedOctet(new Integer(-1));
-    }
-
-    /**
-     * @expectedException Innmind\AMQP\Exception\StringNotOfExpectedLength
-     */
-    public function testThrowWhenStringNotOfExpectedLength()
-    {
-        UnsignedOctet::fromString(new Str('foo'));
+        $this->assertSame(
+            '[0;255]',
+            (string) UnsignedOctet::definitionSet()
+        );
     }
 
     public function cases(): array

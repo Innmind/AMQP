@@ -5,16 +5,14 @@ namespace Tests\Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\{
     Value\Decimal,
-    Value
+    Value,
 };
 use Innmind\Math\Algebra\{
     Number,
-    Integer
+    Integer,
 };
-use Innmind\Immutable\{
-    StreamInterface,
-    Str
-};
+use Innmind\Filesystem\Stream\StringStream;
+use Innmind\Immutable\StreamInterface;
 use PHPUnit\Framework\TestCase;
 
 class DecimalTest extends TestCase
@@ -42,24 +40,21 @@ class DecimalTest extends TestCase
     /**
      * @dataProvider cases
      */
-    public function testFromSting($number, $scale, $string)
+    public function testFromStream($number, $scale, $string)
     {
-        $value = Decimal::fromString(new Str($string));
+        $value = Decimal::fromStream(new StringStream($string));
 
         $this->assertInstanceOf(Decimal::class, $value);
         $this->assertSame(($number / (10**$scale)), $value->original()->value());
         $this->assertSame($string, (string) $value);
     }
 
-    /**
-     * @dataProvider cases
-     */
-    public function testCut($_, $__, $string)
+    public function testThrowWhenIntegerTooHigh()
     {
-        $str = Decimal::cut(new Str($string.'foo'));
-
-        $this->assertInstanceOf(Str::class, $str);
-        $this->assertSame($string, (string) $str);
+        $this->assertSame(
+            'ℕ',
+            (string) Decimal::definitionSet()
+        );
     }
 
     public function cases(): array

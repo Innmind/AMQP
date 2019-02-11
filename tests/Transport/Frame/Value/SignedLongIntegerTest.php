@@ -5,10 +5,10 @@ namespace Tests\Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\{
     Value\SignedLongInteger,
-    Value
+    Value,
 };
 use Innmind\Math\Algebra\Integer;
-use Innmind\Immutable\Str;
+use Innmind\Filesystem\Stream\StringStream;
 use PHPUnit\Framework\TestCase;
 
 class SignedLongIntegerTest extends TestCase
@@ -34,51 +34,21 @@ class SignedLongIntegerTest extends TestCase
     /**
      * @dataProvider cases
      */
-    public function testFromString($expected, $string)
+    public function testFromStream($expected, $string)
     {
-        $value = SignedLongInteger::fromString(new Str($string));
+        $value = SignedLongInteger::fromStream(new StringStream($string));
 
         $this->assertInstanceOf(SignedLongInteger::class, $value);
         $this->assertSame($expected, $value->original()->value());
         $this->assertSame($string, (string) $value);
     }
 
-    /**
-     * @dataProvider cases
-     */
-    public function testCut($_, $string)
-    {
-        $str = SignedLongInteger::cut(new Str($string.'foo'));
-
-        $this->assertInstanceOf(Str::class, $str);
-        $this->assertSame($string, (string) $str);
-    }
-
-    /**
-     * @expectedException Innmind\AMQP\Exception\OutOfRangeValue
-     * @expectedExceptionMessage 2147483648 ∉ [-2147483648;2147483647]
-     */
     public function testThrowWhenIntegerTooHigh()
     {
-        new SignedLongInteger(new Integer(2147483648));
-    }
-
-    /**
-     * @expectedException Innmind\AMQP\Exception\OutOfRangeValue
-     * @expectedExceptionMessage -2147483649 ∉ [-2147483648;2147483647]
-     */
-    public function testThrowWhenIntegerTooLow()
-    {
-        new SignedLongInteger(new Integer(-2147483649));
-    }
-
-    /**
-     * @expectedException Innmind\AMQP\Exception\StringNotOfExpectedLength
-     * @expectedExceptionMessage String "foo" is expected of being 4 characters, got 3
-     */
-    public function testThrowWhenStringNotOfExpectedLength()
-    {
-        SignedLongInteger::fromString(new Str('foo'));
+        $this->assertSame(
+            '[-2147483648;2147483647]',
+            (string) SignedLongInteger::definitionSet()
+        );
     }
 
     public function cases(): array

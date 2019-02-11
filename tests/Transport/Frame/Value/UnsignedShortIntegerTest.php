@@ -5,10 +5,10 @@ namespace Tests\Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\{
     Value\UnsignedShortInteger,
-    Value
+    Value,
 };
 use Innmind\Math\Algebra\Integer;
-use Innmind\Immutable\Str;
+use Innmind\Filesystem\Stream\StringStream;
 use PHPUnit\Framework\TestCase;
 
 class UnsignedShortIntegerTest extends TestCase
@@ -34,9 +34,9 @@ class UnsignedShortIntegerTest extends TestCase
     /**
      * @dataProvider cases
      */
-    public function testFromString($expected, $string)
+    public function testFromStream($expected, $string)
     {
-        $value = UnsignedShortInteger::fromString(new Str($string));
+        $value = UnsignedShortInteger::fromStream(new StringStream($string));
 
         $this->assertInstanceOf(UnsignedShortInteger::class, $value);
         $this->assertInstanceOf(Integer::class, $value->original());
@@ -44,42 +44,12 @@ class UnsignedShortIntegerTest extends TestCase
         $this->assertSame($string, (string) $value);
     }
 
-    /**
-     * @dataProvider cases
-     */
-    public function testCut($_, $string)
-    {
-        $str = UnsignedShortInteger::cut(new Str($string.'foo'));
-
-        $this->assertInstanceOf(Str::class, $str);
-        $this->assertSame($string, (string) $str);
-    }
-
-    /**
-     * @expectedException Innmind\AMQP\Exception\OutOfRangeValue
-     * @expectedExceptionMessage 65536 ∉ [0;65535]
-     */
     public function testThrowWhenIntegerTooHigh()
     {
-        new UnsignedShortInteger(new Integer(65536));
-    }
-
-    /**
-     * @expectedException Innmind\AMQP\Exception\OutOfRangeValue
-     * @expectedExceptionMessage -1 ∉ [0;65535]
-     */
-    public function testThrowWhenIntegerTooLow()
-    {
-        new UnsignedShortInteger(new Integer(-1));
-    }
-
-    /**
-     * @expectedException Innmind\AMQP\Exception\StringNotOfExpectedLength
-     * @expectedExceptionMessage String "foo" is expected of being 2 characters, got 3
-     */
-    public function testThrowWhenStringNotOfExpectedLength()
-    {
-        UnsignedShortInteger::fromString(new Str('foo'));
+        $this->assertSame(
+            '[0;65535]',
+            (string) UnsignedShortInteger::definitionSet()
+        );
     }
 
     public function cases(): array

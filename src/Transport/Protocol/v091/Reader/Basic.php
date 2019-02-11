@@ -14,17 +14,15 @@ use Innmind\AMQP\{
     Transport\Protocol\v091\Methods,
     Exception\UnknownMethod
 };
-use Innmind\Immutable\{
-    Str,
-    StreamInterface
-};
+use Innmind\Stream\Readable;
+use Innmind\Immutable\StreamInterface;
 
 final class Basic
 {
     /**
      * @return StreamInterface<Value>
      */
-    public function __invoke(Method $method, Str $arguments): StreamInterface
+    public function __invoke(Method $method, Readable $arguments): StreamInterface
     {
         switch (true) {
             case Methods::get('basic.qos-ok')->equals($method):

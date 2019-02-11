@@ -37,6 +37,7 @@ use Innmind\TimeContinuum\{
     ElapsedPeriod,
     PointInTime\Earth\Now
 };
+use Innmind\Filesystem\Stream\StringStream;
 use Innmind\Immutable\{
     Str,
     Map,
@@ -111,7 +112,7 @@ class ProtocolTest extends TestCase
             )
             ->get(1);
 
-        $values = $protocol->readHeader(new Str((string) $header->values()->join('')));
+        $values = $protocol->readHeader(new StringStream((string) $header->values()->join('')));
 
         $this->assertInstanceOf(StreamInterface::class, $values);
         $this->assertSame(Value::class, (string) $values->type());

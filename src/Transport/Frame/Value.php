@@ -3,12 +3,11 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport\Frame;
 
-use Innmind\Immutable\Str;
+use Innmind\Stream\Readable;
 
 interface Value
 {
-    public static function fromString(Str $string): self;
-    public static function cut(Str $string): Str;
+    public static function fromStream(Readable $stream): self;
 
     /**
      * Original value

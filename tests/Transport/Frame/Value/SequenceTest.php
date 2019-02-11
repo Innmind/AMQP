@@ -7,11 +7,12 @@ use Innmind\AMQP\Transport\Frame\{
     Value\Sequence,
     Value\LongString,
     Value\Text,
-    Value
+    Value,
 };
+use Innmind\Filesystem\Stream\StringStream;
 use Innmind\Immutable\{
+    StreamInterface,
     Str,
-    StreamInterface
 };
 use PHPUnit\Framework\TestCase;
 
@@ -37,9 +38,9 @@ class SequenceTest extends TestCase
     /**
      * @dataProvider cases
      */
-    public function testFromString($string, $expected)
+    public function testFromStream($string, $expected)
     {
-        $value = Sequence::fromString(new Str($string));
+        $value = Sequence::fromStream(new StringStream($string));
 
         $this->assertInstanceOf(Sequence::class, $value);
         $this->assertCount(count($expected), $value->original());
@@ -56,17 +57,6 @@ class SequenceTest extends TestCase
         }
 
         $this->assertSame($string, (string) $value);
-    }
-
-    /**
-     * @dataProvider cases
-     */
-    public function testCut($string)
-    {
-        $str = Sequence::cut(new Str($string.'foo'));
-
-        $this->assertInstanceOf(Str::class, $str);
-        $this->assertSame($string, (string) $str);
     }
 
     /**
