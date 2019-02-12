@@ -10,7 +10,10 @@ use Innmind\TimeContinuum\{
     ElapsedPeriod,
 };
 use Innmind\CLI\Command as CLICommand;
-use Innmind\OperatingSystem\CurrentProcess;
+use Innmind\OperatingSystem\{
+    CurrentProcess,
+    Remote,
+};
 use Innmind\Immutable\{
     SetInterface,
     Set,
@@ -24,6 +27,7 @@ function bootstrap(
     ElapsedPeriod $timeout,
     TimeContinuumInterface $clock,
     CurrentProcess $process,
+    Remote $remote,
     LoggerInterface $logger = null
 ): array {
     $argumentTranslators = Set::of(
@@ -42,7 +46,8 @@ function bootstrap(
         $server,
         new Transport\Protocol\Delegate(...$protocols),
         $timeout,
-        $clock
+        $clock,
+        $remote
     );
 
     if ($logger instanceof LoggerInterface) {

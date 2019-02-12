@@ -59,6 +59,8 @@ use Innmind\TimeContinuum\{
     PointInTime\Earth\Now,
 };
 use Innmind\Url\Url;
+use Innmind\OperatingSystem\Remote;
+use Innmind\Server\Control\Server;
 use Innmind\Math\Algebra\Integer;
 use Innmind\Immutable\{
     Str,
@@ -83,7 +85,8 @@ class BasicTest extends TestCase
                 Url::fromString('//guest:guest@localhost:5672/'),
                 new Protocol(new ValueTranslator),
                 new ElapsedPeriod(1000),
-                new Earth
+                new Earth,
+                new Remote\Generic($this->createMock(Server::class))
             ),
             new Channel(1)
         );

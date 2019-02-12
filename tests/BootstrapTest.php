@@ -20,7 +20,10 @@ use Innmind\AMQP\{
 };
 use Innmind\Socket\Internet\Transport;
 use Innmind\Url\Url;
-use Innmind\OperatingSystem\CurrentProcess;
+use Innmind\OperatingSystem\{
+    CurrentProcess,
+    Remote,
+};
 use Innmind\TimeContinuum\{
     TimeContinuumInterface,
     ElapsedPeriod,
@@ -42,6 +45,7 @@ class BootstrapTest extends TestCase
             new ElapsedPeriod(60000),
             $this->createMock(TimeContinuumInterface::class),
             $this->createMock(CurrentProcess::class),
+            $this->createMock(Remote::class),
             $this->createMock(LoggerInterface::class)
         );
 

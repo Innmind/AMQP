@@ -18,6 +18,8 @@ use Innmind\TimeContinuum\{
     TimeContinuum\Earth,
 };
 use Innmind\Url\Url;
+use Innmind\OperatingSystem\Remote;
+use Innmind\Server\Control\Server;
 use PHPUnit\Framework\TestCase;
 
 class TransactionTest extends TestCase
@@ -33,7 +35,8 @@ class TransactionTest extends TestCase
                 Url::fromString('//guest:guest@localhost:5672/'),
                 new Protocol($this->createMock(ArgumentTranslator::class)),
                 new ElapsedPeriod(1000),
-                new Earth
+                new Earth,
+                new Remote\Generic($this->createMock(Server::class))
             ),
             new Channel(1)
         );

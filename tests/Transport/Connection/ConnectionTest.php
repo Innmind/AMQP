@@ -32,6 +32,8 @@ use Innmind\TimeContinuum\{
     TimeContinuum\Earth,
 };
 use Innmind\Stream\Readable;
+use Innmind\OperatingSystem\Remote;
+use Innmind\Server\Control\Server;
 use Innmind\Immutable\StreamInterface;
 use PHPUnit\Framework\TestCase;
 
@@ -44,7 +46,8 @@ class ConnectionTest extends TestCase
             Url::fromString('//guest:guest@localhost:5672/'),
             $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
             new ElapsedPeriod(1000),
-            new Earth
+            new Earth,
+            new Remote\Generic($this->createMock(Server::class))
         );
 
         $this->assertInstanceOf(ConnectionInterface::class, $connection);
@@ -68,7 +71,8 @@ class ConnectionTest extends TestCase
             Url::fromString('//guest:guest@localhost:5672/'),
             $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
             new ElapsedPeriod(1000),
-            new Earth
+            new Earth,
+            new Remote\Generic($this->createMock(Server::class))
         );
 
         $this->assertFalse($connection->closed());
@@ -83,7 +87,8 @@ class ConnectionTest extends TestCase
             Url::fromString('//guest:guest@localhost:5672/'),
             $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
             new ElapsedPeriod(1000),
-            new Earth
+            new Earth,
+            new Remote\Generic($this->createMock(Server::class))
         );
 
         $this->expectException(UnexpectedFrame::class);
@@ -134,7 +139,8 @@ class ConnectionTest extends TestCase
             Url::fromString('//guest:guest@localhost:5672/'),
             $protocol = new Delegate($top, new Protocol($this->createMock(ArgumentTranslator::class))),
             new ElapsedPeriod(1000),
-            new Earth
+            new Earth,
+            new Remote\Generic($this->createMock(Server::class))
         );
 
         $this->assertSame(
@@ -158,7 +164,8 @@ class ConnectionTest extends TestCase
             Url::fromString('//guest:guest@localhost:5672/'),
             $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
             new ElapsedPeriod(1000),
-            new Earth
+            new Earth,
+            new Remote\Generic($this->createMock(Server::class))
         );
 
         try {

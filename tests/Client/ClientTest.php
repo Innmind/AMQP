@@ -12,7 +12,11 @@ use Innmind\AMQP\{
     Transport\Protocol\v091\Protocol,
 };
 use Innmind\Socket\Internet\Transport;
-use Innmind\OperatingSystem\CurrentProcess;
+use Innmind\OperatingSystem\{
+    CurrentProcess,
+    Remote,
+};
+use Innmind\Server\Control\Server;
 use Innmind\Server\Status\Server\Process\Pid;
 use Innmind\TimeContinuum\{
     ElapsedPeriod,
@@ -35,7 +39,8 @@ class ClientTest extends TestCase
                 Url::fromString('//guest:guest@localhost:5672/'),
                 new Protocol(new ValueTranslator),
                 new ElapsedPeriod(1000),
-                new Earth
+                new Earth,
+                new Remote\Generic($this->createMock(Server::class))
             ),
             $this->process = $this->createMock(CurrentProcess::class)
         );

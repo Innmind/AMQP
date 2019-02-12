@@ -38,6 +38,7 @@ use Innmind\TimeContinuum\{
     ElapsedPeriod,
     TimeContinuumInterface,
 };
+use Innmind\OperatingSystem\Remote;
 use Innmind\Immutable\Str;
 
 final class Connection implements ConnectionInterface
@@ -48,6 +49,7 @@ final class Connection implements ConnectionInterface
     private $protocol;
     private $socket;
     private $timeout;
+    private $remote;
     private $select;
     private $read;
     private $closed = true;
@@ -63,13 +65,15 @@ final class Connection implements ConnectionInterface
         UrlInterface $server,
         Protocol $protocol,
         ElapsedPeriod $timeout,
-        TimeContinuumInterface $clock
+        TimeContinuumInterface $clock,
+        Remote $remote
     ) {
         $this->transport = $transport;
         $this->authority = $server->authority();
         $this->vhost = $server->path();
         $this->protocol = $protocol;
         $this->timeout = $timeout;
+        $this->remote = $remote;
         $this->buildSocket();
         $this->read = new FrameReader;
         $this->maxChannels = new MaxChannels(0);
@@ -193,7 +197,7 @@ final class Connection implements ConnectionInterface
 
     private function buildSocket(): void
     {
-        $this->socket = new Socket(
+        $this->socket = $this->remote->socket(
             $this->transport,
             $this->authority->withUserInformation(new NullUserInformation)
         );
