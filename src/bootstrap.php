@@ -16,7 +16,6 @@ use Innmind\OperatingSystem\{
 };
 use Innmind\Immutable\{
     SetInterface,
-    Set,
     MapInterface,
 };
 use Psr\Log\LoggerInterface;
@@ -30,21 +29,12 @@ function bootstrap(
     Remote $remote,
     LoggerInterface $logger = null
 ): array {
-    $argumentTranslators = Set::of(
-        Transport\Protocol\ArgumentTranslator::class,
-        new Transport\Protocol\ArgumentTranslator\ValueTranslator
-    );
-    $protocols = Set::of(
-        Transport\Protocol::class,
-        new Transport\Protocol\v091\Protocol(
-            new Transport\Protocol\ArgumentTranslator\Delegate(...$argumentTranslators)
-        )
-    );
-
     $connection = new Transport\Connection\Lazy(
         $transport,
         $server,
-        new Transport\Protocol\Delegate(...$protocols),
+        new Transport\Protocol\v091\Protocol(
+            new Transport\Protocol\ArgumentTranslator\ValueTranslator
+        ),
         $timeout,
         $clock,
         $remote
