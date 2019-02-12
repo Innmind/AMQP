@@ -9,7 +9,7 @@ final class UnknownMethod extends LogicException
 {
     public function __construct(Method $method)
     {
-        parent::__construct(sprintf(
+        parent::__construct(\sprintf(
             '%s,%s',
             $method->class(),
             $method->method()

@@ -9,7 +9,7 @@ final class VersionNotUsable extends RuntimeException
 {
     public function __construct(Version $version)
     {
-        parent::__construct(sprintf(
+        parent::__construct(\sprintf(
             '%s.%s.%s',
             $version->major(),
             $version->minor(),

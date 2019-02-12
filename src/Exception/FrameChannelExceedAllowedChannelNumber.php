@@ -5,7 +5,7 @@ namespace Innmind\AMQP\Exception;
 
 use Innmind\AMQP\{
     Model\Connection\MaxChannels,
-    Transport\Frame\Channel
+    Transport\Frame\Channel,
 };
 
 final class FrameChannelExceedAllowedChannelNumber extends LogicException
