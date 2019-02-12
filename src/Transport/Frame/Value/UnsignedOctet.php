@@ -3,7 +3,10 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport\Frame\Value;
 
-use Innmind\AMQP\Transport\Frame\Value;
+use Innmind\AMQP\{
+    Transport\Frame\Value,
+    Exception\OutOfRangeValue,
+};
 use Innmind\Math\{
     Algebra\Integer,
     DefinitionSet\Set,
@@ -24,6 +27,15 @@ final class UnsignedOctet implements Value
     public function __construct(Integer $octet)
     {
         $this->original = $octet;
+    }
+
+    public static function of(Integer $octet): self
+    {
+        if (!self::definitionSet()->contains($octet)) {
+            throw new OutOfRangeValue($octet, self::definitionSet());
+        }
+
+        return new self($octet);
     }
 
     public static function fromStream(Readable $stream): Value

@@ -18,6 +18,13 @@ final class LongString implements Value
         $this->original = $string;
     }
 
+    public static function of(Str $string): self
+    {
+        UnsignedLongInteger::of(new Integer($string->toEncoding('ASCII')->length()));
+
+        return new self($string);
+    }
+
     public static function fromStream(Readable $stream): Value
     {
         $length = UnsignedLongInteger::fromStream($stream)->original();

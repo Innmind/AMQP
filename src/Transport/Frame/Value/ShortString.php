@@ -18,6 +18,13 @@ final class ShortString implements Value
         $this->original = $string;
     }
 
+    public static function of(Str $string): self
+    {
+        UnsignedOctet::of(new Integer($string->toEncoding('ASCII')->length()));
+
+        return new self($string);
+    }
+
     public static function fromStream(Readable $stream): Value
     {
         $length = UnsignedOctet::fromStream($stream)->original();

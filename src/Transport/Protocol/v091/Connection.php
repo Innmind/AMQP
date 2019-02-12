@@ -80,9 +80,9 @@ final class Connection implements ConnectionInterface
         return Frame::method(
             new Channel(0),
             Methods::get('connection.tune-ok'),
-            new UnsignedShortInteger(new Integer($command->maxChannels())),
-            new UnsignedLongInteger(new Integer($command->maxFrameSize())),
-            new UnsignedShortInteger(new Integer(
+            UnsignedShortInteger::of(new Integer($command->maxChannels())),
+            UnsignedLongInteger::of(new Integer($command->maxFrameSize())),
+            UnsignedShortInteger::of(new Integer(
                 (int) ($command->heartbeat()->milliseconds() / 1000)
             ))
         );
@@ -93,7 +93,7 @@ final class Connection implements ConnectionInterface
         return Frame::method(
             new Channel(0),
             Methods::get('connection.open'),
-            new ShortString(new Str((string) $command->virtualHost())),
+            ShortString::of(new Str((string) $command->virtualHost())),
             new ShortString(new Str('')), //capabilities (reserved)
             new Bits(false) //insist (reserved)
         );
@@ -117,10 +117,10 @@ final class Connection implements ConnectionInterface
         return Frame::method(
             new Channel(0),
             Methods::get('connection.close'),
-            new UnsignedShortInteger(new Integer($replyCode)),
-            new ShortString(new Str($replyText)),
-            new UnsignedShortInteger(new Integer($method->class())),
-            new UnsignedShortInteger(new Integer($method->method()))
+            UnsignedShortInteger::of(new Integer($replyCode)),
+            ShortString::of(new Str($replyText)),
+            UnsignedShortInteger::of(new Integer($method->class())),
+            UnsignedShortInteger::of(new Integer($method->method()))
         );
     }
 
@@ -136,8 +136,8 @@ final class Connection implements ConnectionInterface
     {
         $response = new Table(
             Map::of('string', Value::class)
-                ('LOGIN', new LongString(new Str((string) $user)))
-                ('PASSWORD', new LongString(new Str((string) $password)))
+                ('LOGIN', LongString::of(new Str((string) $user)))
+                ('PASSWORD', LongString::of(new Str((string) $password)))
         );
         $response = Str::of((string) $response)
             ->toEncoding('ASCII')

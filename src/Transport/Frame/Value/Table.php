@@ -85,7 +85,7 @@ final class Table implements Value
                 ->join('')
                 ->toEncoding('ASCII');
 
-            $this->value = (string) new UnsignedLongInteger(
+            $this->value = (string) UnsignedLongInteger::of(
                 new Integer($data->length())
             );
             $this->value .= $data;

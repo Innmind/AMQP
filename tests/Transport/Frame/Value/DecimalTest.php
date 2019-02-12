@@ -3,9 +3,10 @@ declare(strict_types = 1);
 
 namespace Tests\Innmind\AMQP\Transport\Frame\Value;
 
-use Innmind\AMQP\Transport\Frame\{
-    Value\Decimal,
-    Value,
+use Innmind\AMQP\{
+    Transport\Frame\Value\Decimal,
+    Transport\Frame\Value,
+    Exception\OutOfRangeValue,
 };
 use Innmind\Math\Algebra\{
     Number,
@@ -49,12 +50,36 @@ class DecimalTest extends TestCase
         $this->assertSame($string, (string) $value);
     }
 
-    public function testThrowWhenIntegerTooHigh()
+    public function testThrowWhenValueTooHigh()
     {
-        $this->assertSame(
-            'ℕ',
-            (string) Decimal::definitionSet()
-        );
+        $this->expectException(OutOfRangeValue::class);
+        $this->expectExceptionMessage('2147483648 ∉ [-2147483648;2147483647]');
+
+        Decimal::of(new Integer(2147483648), new Integer(0));
+    }
+
+    public function testThrowWhenValueTooLow()
+    {
+        $this->expectException(OutOfRangeValue::class);
+        $this->expectExceptionMessage('-2147483649 ∉ [-2147483648;2147483647]');
+
+        Decimal::of(new Integer(-2147483649), new Integer(0));
+    }
+
+    public function testThrowWhenScaleTooHigh()
+    {
+        $this->expectException(OutOfRangeValue::class);
+        $this->expectExceptionMessage('256 ∉ [0;255]');
+
+        Decimal::of(new Integer(1), new Integer(256));
+    }
+
+    public function testThrowWhenScaleTooLow()
+    {
+        $this->expectException(OutOfRangeValue::class);
+        $this->expectExceptionMessage('-1 ∉ [0;255]');
+
+        Decimal::of(new Integer(1), new Integer(-1));
     }
 
     public function cases(): array

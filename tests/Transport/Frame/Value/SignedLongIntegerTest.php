@@ -3,9 +3,10 @@ declare(strict_types = 1);
 
 namespace Tests\Innmind\AMQP\Transport\Frame\Value;
 
-use Innmind\AMQP\Transport\Frame\{
-    Value\SignedLongInteger,
-    Value,
+use Innmind\AMQP\{
+    Transport\Frame\Value\SignedLongInteger,
+    Transport\Frame\Value,
+    Exception\OutOfRangeValue,
 };
 use Innmind\Math\Algebra\Integer;
 use Innmind\Filesystem\Stream\StringStream;
@@ -45,10 +46,18 @@ class SignedLongIntegerTest extends TestCase
 
     public function testThrowWhenIntegerTooHigh()
     {
-        $this->assertSame(
-            '[-2147483648;2147483647]',
-            (string) SignedLongInteger::definitionSet()
-        );
+        $this->expectException(OutOfRangeValue::class);
+        $this->expectExceptionMessage('2147483648 ∉ [-2147483648;2147483647]');
+
+        SignedLongInteger::of(new Integer(2147483648));
+    }
+
+    public function testThrowWhenIntegerTooLow()
+    {
+        $this->expectException(OutOfRangeValue::class);
+        $this->expectExceptionMessage('-2147483649 ∉ [-2147483648;2147483647]');
+
+        SignedLongInteger::of(new Integer(-2147483649));
     }
 
     public function cases(): array

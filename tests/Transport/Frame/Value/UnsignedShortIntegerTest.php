@@ -3,9 +3,10 @@ declare(strict_types = 1);
 
 namespace Tests\Innmind\AMQP\Transport\Frame\Value;
 
-use Innmind\AMQP\Transport\Frame\{
-    Value\UnsignedShortInteger,
-    Value,
+use Innmind\AMQP\{
+    Transport\Frame\Value\UnsignedShortInteger,
+    Transport\Frame\Value,
+    Exception\OutOfRangeValue,
 };
 use Innmind\Math\Algebra\Integer;
 use Innmind\Filesystem\Stream\StringStream;
@@ -46,10 +47,18 @@ class UnsignedShortIntegerTest extends TestCase
 
     public function testThrowWhenIntegerTooHigh()
     {
-        $this->assertSame(
-            '[0;65535]',
-            (string) UnsignedShortInteger::definitionSet()
-        );
+        $this->expectException(OutOfRangeValue::class);
+        $this->expectExceptionMessage('65536 ∉ [0;65535]');
+
+        UnsignedShortInteger::of(new Integer(65536));
+    }
+
+    public function testThrowWhenIntegerTooLow()
+    {
+        $this->expectException(OutOfRangeValue::class);
+        $this->expectExceptionMessage('-1 ∉ [0;65535]');
+
+        UnsignedShortInteger::of(new Integer(-1));
     }
 
     public function cases(): array

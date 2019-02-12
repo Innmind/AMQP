@@ -24,11 +24,19 @@ final class Decimal implements Value
 
     public function __construct(Integer $value, Integer $scale)
     {
-        $this->scale = (string) new UnsignedOctet($scale);
-        $this->value = (string) new SignedLongInteger($value);
+        $this->scale = $scale;
+        $this->value = $value;
         $this->original = $value->divideBy(
             (new Integer(10))->power($scale)
         );
+    }
+
+    public static function of(Integer $value, Integer $scale): self
+    {
+        SignedLongInteger::of($value);
+        UnsignedOctet::of($scale);
+
+        return new self($value, $scale);
     }
 
     public static function fromStream(Readable $stream): Value
@@ -46,7 +54,7 @@ final class Decimal implements Value
 
     public function __toString(): string
     {
-        return $this->string ?? $this->string = $this->scale.$this->value;
+        return $this->string ?? $this->string = new UnsignedOctet($this->scale).new SignedLongInteger($this->value);
     }
 
     public static function definitionSet(): Set

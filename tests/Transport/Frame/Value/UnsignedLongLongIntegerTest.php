@@ -3,9 +3,10 @@ declare(strict_types = 1);
 
 namespace Tests\Innmind\AMQP\Transport\Frame\Value;
 
-use Innmind\AMQP\Transport\Frame\{
-    Value\UnsignedLongLongInteger,
-    Value,
+use Innmind\AMQP\{
+    Transport\Frame\Value\UnsignedLongLongInteger,
+    Transport\Frame\Value,
+    Exception\OutOfRangeValue,
 };
 use Innmind\Math\Algebra\Integer;
 use Innmind\Filesystem\Stream\StringStream;
@@ -23,10 +24,10 @@ class UnsignedLongLongIntegerTest extends TestCase
 
     public function testThrowWhenIntegerTooLow()
     {
-        $this->assertSame(
-            '[0;+∞]',
-            (string) UnsignedLongLongInteger::definitionSet()
-        );
+        $this->expectException(OutOfRangeValue::class);
+        $this->expectExceptionMessage('-1 ∉ [0;+∞]');
+
+        UnsignedLongLongInteger::of(new Integer(-1));
     }
 
     /**

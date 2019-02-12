@@ -3,9 +3,10 @@ declare(strict_types = 1);
 
 namespace Tests\Innmind\AMQP\Transport\Frame\Value;
 
-use Innmind\AMQP\Transport\Frame\{
-    Value\UnsignedOctet,
-    Value,
+use Innmind\AMQP\{
+    Transport\Frame\Value\UnsignedOctet,
+    Transport\Frame\Value,
+    Exception\OutOfRangeValue,
 };
 use Innmind\Math\Algebra\Integer;
 use Innmind\Filesystem\Stream\StringStream;
@@ -45,10 +46,18 @@ class UnsignedOctetTest extends TestCase
 
     public function testThrowWhenStringTooHigh()
     {
-        $this->assertSame(
-            '[0;255]',
-            (string) UnsignedOctet::definitionSet()
-        );
+        $this->expectException(OutOfRangeValue::class);
+        $this->expectExceptionMessage('256 ∉ [0;255]');
+
+        UnsignedOctet::of(new Integer(256));
+    }
+
+    public function testThrowWhenStringTooLow()
+    {
+        $this->expectException(OutOfRangeValue::class);
+        $this->expectExceptionMessage('-1 ∉ [0;255]');
+
+        UnsignedOctet::of(new Integer(-1));
     }
 
     public function cases(): array

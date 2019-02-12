@@ -38,8 +38,8 @@ final class Exchange implements ExchangeInterface
             $channel,
             Methods::get('exchange.declare'),
             new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
-            new ShortString(new Str($command->name())),
-            new ShortString(new Str((string) $command->type())),
+            ShortString::of(new Str($command->name())),
+            ShortString::of(new Str((string) $command->type())),
             new Bits(
                 $command->isPassive(),
                 $command->isDurable(),
@@ -69,7 +69,7 @@ final class Exchange implements ExchangeInterface
             $channel,
             Methods::get('exchange.delete'),
             new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
-            new ShortString(new Str($command->name())),
+            ShortString::of(new Str($command->name())),
             new Bits(
                 $command->onlyIfUnused(),
                 !$command->shouldWait()
