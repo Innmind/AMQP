@@ -33,20 +33,21 @@ use Innmind\AMQP\{
     Model\Basic\Publish
 };
 use Innmind\Socket\Internet\Transport;
-use Innmind\TimeContinuum\{
-    ElapsedPeriod,
-    TimeContinuum\Earth
-};
+use Innmind\TimeContinuum\ElapsedPeriod;
+use Innmind\OperatingSystem\Factory;
 use Innmind\Url\Url;
 use Innmind\Immutable\Str;
 
-$amqp = bootstrap(
+$os = Factory::build();
+$amqp = bootstrap();
+$client = $amqp['client']['basic'](
     Transport::tcp(),
     Url::fromString('amqp://guest:guest@localhost:5672/'),
     new ElapsedPeriod(1000), //timeout
-    new Earth
+    $os->clock(),
+    $os->process(),
+    $os->remote()
 );
-$client = $amqp['client']['basic'];
 $client
     ->channel()
     ->exchange()
@@ -138,13 +139,7 @@ By default no activity is logged when using this library, but you have 2 strateg
 ```php
 use Psr\Log\LoggerInterface;
 
-$amqp = bootstrap(
-    Transport::tcp(),
-    Url::fromString('amqp://guest:guest@localhost:5672/'),
-    new ElapsedPeriod(1000), //timeout
-    new Earth,
-    /* instance of LoggerInterface */
-);
+$amqp = bootstrap(/* instance of LoggerInterface */);
 $client = $amqp['client']['logger'];
 ```
 
