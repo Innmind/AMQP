@@ -10,6 +10,7 @@ use Innmind\TimeContinuum\{
     ElapsedPeriod,
 };
 use Innmind\CLI\Command as CLICommand;
+use Innmind\OperatingSystem\CurrentProcess;
 use Innmind\Immutable\{
     SetInterface,
     Set,
@@ -22,6 +23,7 @@ function bootstrap(
     UrlInterface $server,
     ElapsedPeriod $timeout,
     TimeContinuumInterface $clock,
+    CurrentProcess $process,
     LoggerInterface $logger = null
 ): array {
     $argumentTranslators = Set::of(
@@ -49,7 +51,7 @@ function bootstrap(
 
     return [
         'client' => [
-            'basic' => new Client\Client($connection),
+            'basic' => new Client\Client($connection, $process),
             'fluent' => static function(Client $client): Client {
                 return new Client\Fluent($client);
             },

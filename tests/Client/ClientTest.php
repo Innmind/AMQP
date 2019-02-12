@@ -12,6 +12,8 @@ use Innmind\AMQP\{
     Transport\Protocol\v091\Protocol,
 };
 use Innmind\Socket\Internet\Transport;
+use Innmind\OperatingSystem\CurrentProcess;
+use Innmind\Server\Status\Server\Process\Pid;
 use Innmind\TimeContinuum\{
     ElapsedPeriod,
     TimeContinuum\Earth,
@@ -23,6 +25,7 @@ class ClientTest extends TestCase
 {
     private $client;
     private $connection;
+    private $process;
 
     public function setUp(): void
     {
@@ -33,7 +36,8 @@ class ClientTest extends TestCase
                 new Protocol(new ValueTranslator),
                 new ElapsedPeriod(1000),
                 new Earth
-            )
+            ),
+            $this->process = $this->createMock(CurrentProcess::class)
         );
     }
 
@@ -44,6 +48,12 @@ class ClientTest extends TestCase
 
     public function testChannel()
     {
+        $this
+            ->process
+            ->expects($this->exactly(2))
+            ->method('id')
+            ->willReturn(new Pid(42));
+
         $channel = $this->client->channel();
 
         $this->assertInstanceOf(Channel::class, $channel);
@@ -53,6 +63,12 @@ class ClientTest extends TestCase
 
     public function testClose()
     {
+        $this
+            ->process
+            ->expects($this->once())
+            ->method('id')
+            ->willReturn(new Pid(42));
+
         $this->client->channel();
         $this->assertFalse($this->client->closed());
         $this->assertNull($this->client->close());
