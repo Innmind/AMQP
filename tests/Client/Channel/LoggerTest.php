@@ -9,7 +9,7 @@ use Innmind\AMQP\Client\{
     Channel\Exchange,
     Channel\Queue,
     Channel\Basic,
-    Channel\Transaction
+    Channel\Transaction,
 };
 use Psr\Log\LoggerInterface;
 use PHPUnit\Framework\TestCase;

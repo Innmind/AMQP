@@ -7,7 +7,7 @@ use Innmind\AMQP\Exception\DomainException;
 use Innmind\Filesystem\{
     MediaType\MediaType,
     Exception\Exception,
-    Exception\ExceptionInterface
+    Exception\ExceptionInterface,
 };
 
 /**

@@ -7,6 +7,7 @@ use Innmind\Immutable\{
     MapInterface,
     Map,
 };
+use function Innmind\Immutable\assertMap;
 
 final class Consumers
 {
@@ -16,12 +17,7 @@ final class Consumers
     {
         $consumers = $consumers ?? new Map('string', 'callable');
 
-        if (
-            (string) $consumers->keyType() !== 'string' ||
-            (string) $consumers->valueType() !== 'callable'
-        ) {
-            throw new \TypeError('Argument 1 must be of type MapInterface<string, callable>');
-        }
+        assertMap('string', 'callable', $consumers, 1);
 
         $this->consumers = $consumers;
     }

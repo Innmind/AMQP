@@ -22,18 +22,19 @@ use Innmind\AMQP\{
     Transport\Frame\Method,
     Model\Connection\MaxFrameSize,
     Exception\VersionNotUsable,
-    Exception\ConnectionClosed
+    Exception\ConnectionClosed,
+    Exception\UnexpectedFrame,
 };
 use Innmind\Socket\Internet\Transport;
 use Innmind\Url\Url;
 use Innmind\TimeContinuum\{
     ElapsedPeriod,
-    TimeContinuum\Earth
+    TimeContinuum\Earth,
 };
-use Innmind\Immutable\{
-    Str,
-    StreamInterface
-};
+use Innmind\Stream\Readable;
+use Innmind\OperatingSystem\Remote;
+use Innmind\Server\Control\Server;
+use Innmind\Immutable\StreamInterface;
 use PHPUnit\Framework\TestCase;
 
 class ConnectionTest extends TestCase
@@ -45,7 +46,8 @@ class ConnectionTest extends TestCase
             Url::fromString('//guest:guest@localhost:5672/'),
             $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
             new ElapsedPeriod(1000),
-            new Earth
+            new Earth,
+            new Remote\Generic($this->createMock(Server::class))
         );
 
         $this->assertInstanceOf(ConnectionInterface::class, $connection);
@@ -69,7 +71,8 @@ class ConnectionTest extends TestCase
             Url::fromString('//guest:guest@localhost:5672/'),
             $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
             new ElapsedPeriod(1000),
-            new Earth
+            new Earth,
+            new Remote\Generic($this->createMock(Server::class))
         );
 
         $this->assertFalse($connection->closed());
@@ -77,9 +80,6 @@ class ConnectionTest extends TestCase
         $this->assertTrue($connection->closed());
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\UnexpectedFrame
-     */
     public function testThrowWhenReceivedFrameIsNotTheExpectedOne()
     {
         $connection = new Connection(
@@ -87,8 +87,12 @@ class ConnectionTest extends TestCase
             Url::fromString('//guest:guest@localhost:5672/'),
             $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
             new ElapsedPeriod(1000),
-            new Earth
+            new Earth,
+            new Remote\Generic($this->createMock(Server::class))
         );
+
+        $this->expectException(UnexpectedFrame::class);
+
         $connection
             ->send(
                 $protocol->channel()->open(new Channel(2))
@@ -120,8 +124,8 @@ class ConnectionTest extends TestCase
                 return $this;
             }
 
-            public function read(Method $method, Str $arguments): StreamInterface {}
-            public function readHeader(Str $arguments): StreamInterface {}
+            public function read(Method $method, Readable $arguments): StreamInterface {}
+            public function readHeader(Readable $arguments): StreamInterface {}
             public function method(string $name): Method {}
             public function connection(): PConnection {}
             public function channel(): PChannel {}
@@ -135,7 +139,8 @@ class ConnectionTest extends TestCase
             Url::fromString('//guest:guest@localhost:5672/'),
             $protocol = new Delegate($top, new Protocol($this->createMock(ArgumentTranslator::class))),
             new ElapsedPeriod(1000),
-            new Earth
+            new Earth,
+            new Remote\Generic($this->createMock(Server::class))
         );
 
         $this->assertSame(
@@ -159,7 +164,8 @@ class ConnectionTest extends TestCase
             Url::fromString('//guest:guest@localhost:5672/'),
             $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
             new ElapsedPeriod(1000),
-            new Earth
+            new Earth,
+            new Remote\Generic($this->createMock(Server::class))
         );
 
         try {

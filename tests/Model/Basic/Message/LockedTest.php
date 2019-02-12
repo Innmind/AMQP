@@ -3,28 +3,29 @@ declare(strict_types = 1);
 
 namespace Tests\Innmind\AMQP\Model\Basic\Message;
 
-use Innmind\AMQP\Model\Basic\{
-    Message\Locked,
-    Message\Generic,
-    Message,
-    Message\ContentType,
-    Message\ContentEncoding,
-    Message\AppId,
-    Message\CorrelationId,
-    Message\DeliveryMode,
-    Message\Id,
-    Message\Priority,
-    Message\ReplyTo,
-    Message\Type,
-    Message\UserId
+use Innmind\AMQP\{
+    Model\Basic\Message\Locked,
+    Model\Basic\Message\Generic,
+    Model\Basic\Message,
+    Model\Basic\Message\ContentType,
+    Model\Basic\Message\ContentEncoding,
+    Model\Basic\Message\AppId,
+    Model\Basic\Message\CorrelationId,
+    Model\Basic\Message\DeliveryMode,
+    Model\Basic\Message\Id,
+    Model\Basic\Message\Priority,
+    Model\Basic\Message\ReplyTo,
+    Model\Basic\Message\Type,
+    Model\Basic\Message\UserId,
+    Exception\MessageLocked,
 };
 use Innmind\TimeContinuum\{
     PointInTimeInterface,
-    ElapsedPeriod
+    ElapsedPeriod,
 };
 use Innmind\Immutable\{
     Map,
-    Str
+    Str,
 };
 use PHPUnit\Framework\TestCase;
 
@@ -64,11 +65,10 @@ class LockedTest extends TestCase
         $this->assertSame($expected, $message->contentType());
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\MessageLocked
-     */
     public function testThrowWhenAddingContentType()
     {
+        $this->expectException(MessageLocked::class);
+
         (new Locked(new Generic(new Str(''))))->withContentType(
             new ContentType('text', 'plain')
         );
@@ -85,11 +85,10 @@ class LockedTest extends TestCase
         $this->assertSame($expected, $message->contentEncoding());
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\MessageLocked
-     */
     public function testThrowWhenAddingContentEncoding()
     {
+        $this->expectException(MessageLocked::class);
+
         (new Locked(new Generic(new Str(''))))->withContentEncoding(
             new ContentEncoding('gzip')
         );
@@ -107,11 +106,10 @@ class LockedTest extends TestCase
         $this->assertSame($expected, $message->headers());
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\MessageLocked
-     */
     public function testThrowWhenAddingHeaders()
     {
+        $this->expectException(MessageLocked::class);
+
         (new Locked(new Generic(new Str(''))))->withHeaders(
             new Map('string', 'mixed')
         );
@@ -128,11 +126,10 @@ class LockedTest extends TestCase
         $this->assertSame($expected, $message->deliveryMode());
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\MessageLocked
-     */
     public function testThrowWhenAddingDeliveryMode()
     {
+        $this->expectException(MessageLocked::class);
+
         (new Locked(new Generic(new Str(''))))->withDeliveryMode(
             DeliveryMode::nonPersistent()
         );
@@ -149,11 +146,10 @@ class LockedTest extends TestCase
         $this->assertSame($expected, $message->priority());
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\MessageLocked
-     */
     public function testThrowWhenAddingPriority()
     {
+        $this->expectException(MessageLocked::class);
+
         (new Locked(new Generic(new Str(''))))->withPriority(
             new Priority(5)
         );
@@ -170,11 +166,10 @@ class LockedTest extends TestCase
         $this->assertSame($expected, $message->correlationId());
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\MessageLocked
-     */
     public function testThrowWhenAddingCorrelationId()
     {
+        $this->expectException(MessageLocked::class);
+
         (new Locked(new Generic(new Str(''))))->withCorrelationId(
             new CorrelationId('')
         );
@@ -191,11 +186,10 @@ class LockedTest extends TestCase
         $this->assertSame($expected, $message->replyTo());
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\MessageLocked
-     */
     public function testThrowWhenAddingReplyTo()
     {
+        $this->expectException(MessageLocked::class);
+
         (new Locked(new Generic(new Str(''))))->withReplyTo(
             new ReplyTo('')
         );
@@ -212,11 +206,10 @@ class LockedTest extends TestCase
         $this->assertSame($expected, $message->expiration());
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\MessageLocked
-     */
     public function testThrowWhenAddingExpiration()
     {
+        $this->expectException(MessageLocked::class);
+
         (new Locked(new Generic(new Str(''))))->withExpiration(
             new ElapsedPeriod(1000)
         );
@@ -233,11 +226,10 @@ class LockedTest extends TestCase
         $this->assertSame($expected, $message->id());
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\MessageLocked
-     */
     public function testThrowWhenAddingId()
     {
+        $this->expectException(MessageLocked::class);
+
         (new Locked(new Generic(new Str(''))))->withId(
             new Id('')
         );
@@ -254,11 +246,10 @@ class LockedTest extends TestCase
         $this->assertSame($expected, $message->timestamp());
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\MessageLocked
-     */
     public function testThrowWhenAddingTimestamp()
     {
+        $this->expectException(MessageLocked::class);
+
         (new Locked(new Generic(new Str(''))))->withTimestamp(
             $this->createMock(PointInTimeInterface::class)
         );
@@ -275,11 +266,10 @@ class LockedTest extends TestCase
         $this->assertSame($expected, $message->type());
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\MessageLocked
-     */
     public function testThrowWhenAddingType()
     {
+        $this->expectException(MessageLocked::class);
+
         (new Locked(new Generic(new Str(''))))->withType(
             new Type('')
         );
@@ -296,11 +286,10 @@ class LockedTest extends TestCase
         $this->assertSame($expected, $message->userId());
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\MessageLocked
-     */
     public function testThrowWhenAddingUserId()
     {
+        $this->expectException(MessageLocked::class);
+
         (new Locked(new Generic(new Str(''))))->withUserId(
             new UserId('')
         );
@@ -317,11 +306,10 @@ class LockedTest extends TestCase
         $this->assertSame($expected, $message->appId());
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\MessageLocked
-     */
     public function testThrowWhenAddingAppId()
     {
+        $this->expectException(MessageLocked::class);
+
         (new Locked(new Generic(new Str(''))))->withAppId(
             new AppId('')
         );

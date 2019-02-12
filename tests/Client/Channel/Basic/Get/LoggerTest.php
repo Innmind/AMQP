@@ -8,7 +8,7 @@ use Innmind\AMQP\{
     Client\Channel\Basic\Get,
     Model\Basic\Message,
     Exception\Reject,
-    Exception\Requeue
+    Exception\Requeue,
 };
 use Innmind\Immutable\Str;
 use Psr\Log\LoggerInterface;

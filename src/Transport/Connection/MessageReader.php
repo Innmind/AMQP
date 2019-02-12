@@ -17,12 +17,12 @@ use Innmind\AMQP\{
     Model\Basic\Message\UserId,
     Model\Basic\Message\AppId,
     Transport\Connection as ConnectionInterface,
-    Transport\Frame\Value
+    Transport\Frame\Value,
 };
 use Innmind\TimeContinuum\ElapsedPeriod;
 use Innmind\Immutable\{
     Map,
-    Str
+    Str,
 };
 
 final class MessageReader

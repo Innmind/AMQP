@@ -7,7 +7,7 @@ use Innmind\AMQP\{
     Model\Exchange\Declaration,
     Model\Exchange\Deletion,
     Transport\Frame,
-    Transport\Frame\Channel as FrameChannel
+    Transport\Frame\Channel as FrameChannel,
 };
 
 interface Exchange

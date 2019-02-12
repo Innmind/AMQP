@@ -10,7 +10,7 @@ use Innmind\AMQP\{
     Model\Queue\Unbinding,
     Model\Queue\Purge,
     Transport\Frame,
-    Transport\Frame\Channel as FrameChannel
+    Transport\Frame\Channel as FrameChannel,
 };
 
 interface Queue

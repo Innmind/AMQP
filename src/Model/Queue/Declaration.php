@@ -6,11 +6,11 @@ namespace Innmind\AMQP\Model\Queue;
 use Innmind\AMQP\Exception\{
     ExclusivePassiveDeclarationNotAllowed,
     NotWaitingPassiveDeclarationDoesNothing,
-    PassiveQueueDeclarationMustHaveAName
+    PassiveQueueDeclarationMustHaveAName,
 };
 use Innmind\Immutable\{
     MapInterface,
-    Map
+    Map,
 };
 
 final class Declaration
@@ -157,7 +157,7 @@ final class Declaration
 
     public function shouldAutoGenerateName(): bool
     {
-        return !is_string($this->name);
+        return !\is_string($this->name);
     }
 
     public function name(): string

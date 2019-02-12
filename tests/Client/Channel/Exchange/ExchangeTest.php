@@ -13,14 +13,16 @@ use Innmind\AMQP\{
     Model\Exchange\Declaration,
     Model\Exchange\Deletion,
     Model\Exchange\Type,
-    Model\Channel\Close
+    Model\Channel\Close,
 };
 use Innmind\Socket\Internet\Transport;
 use Innmind\TimeContinuum\{
     ElapsedPeriod,
-    TimeContinuum\Earth
+    TimeContinuum\Earth,
 };
 use Innmind\Url\Url;
+use Innmind\OperatingSystem\Remote;
+use Innmind\Server\Control\Server;
 use PHPUnit\Framework\TestCase;
 
 class ExchangeTest extends TestCase
@@ -28,7 +30,7 @@ class ExchangeTest extends TestCase
     private $exchange;
     private $conncetion;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->exchange = new Exchange(
             $this->connection = new Connection(
@@ -36,7 +38,8 @@ class ExchangeTest extends TestCase
                 Url::fromString('//guest:guest@localhost:5672/'),
                 new Protocol($this->createMock(ArgumentTranslator::class)),
                 new ElapsedPeriod(1000),
-                new Earth
+                new Earth,
+                new Remote\Generic($this->createMock(Server::class))
             ),
             new Channel(1)
         );
@@ -48,7 +51,7 @@ class ExchangeTest extends TestCase
             ->wait('channel.open-ok');
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         $this->connection
             ->send(

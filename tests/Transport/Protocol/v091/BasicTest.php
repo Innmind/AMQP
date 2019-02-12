@@ -39,17 +39,17 @@ use Innmind\AMQP\{
     Model\Basic\Message\ReplyTo,
     Model\Basic\Message\Type as MessageType,
     Model\Basic\Message\UserId,
-    Model\Connection\MaxFrameSize
+    Model\Connection\MaxFrameSize,
 };
 use Innmind\Math\Algebra\Integer;
 use Innmind\TimeContinuum\{
     PointInTime\Earth\Now,
-    ElapsedPeriod
+    ElapsedPeriod,
 };
 use Innmind\Immutable\{
     Str,
     StreamInterface,
-    Map
+    Map,
 };
 use PHPUnit\Framework\TestCase;
 
@@ -58,7 +58,7 @@ class BasicTest extends TestCase
     private $basic;
     private $translator;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->basic = new Basic(
             $this->translator = $this->createMock(ArgumentTranslator::class)

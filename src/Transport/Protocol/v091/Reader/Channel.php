@@ -10,19 +10,17 @@ use Innmind\AMQP\{
     Transport\Frame\Value\ShortString,
     Transport\Frame\Value\UnsignedShortInteger,
     Transport\Protocol\v091\Methods,
-    Exception\UnknownMethod
+    Exception\UnknownMethod,
 };
-use Innmind\Immutable\{
-    Str,
-    StreamInterface
-};
+use Innmind\Stream\Readable;
+use Innmind\Immutable\StreamInterface;
 
 final class Channel
 {
     /**
      * @return StreamInterface<Value>
      */
-    public function __invoke(Method $method, Str $arguments): StreamInterface
+    public function __invoke(Method $method, Readable $arguments): StreamInterface
     {
         switch (true) {
             case Methods::get('channel.open-ok')->equals($method):

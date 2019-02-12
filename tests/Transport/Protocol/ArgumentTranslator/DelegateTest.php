@@ -7,7 +7,7 @@ use Innmind\AMQP\{
     Transport\Protocol\ArgumentTranslator\Delegate,
     Transport\Protocol\ArgumentTranslator,
     Transport\Frame\Value,
-    Exception\ValueNotTranslatable
+    Exception\ValueNotTranslatable,
 };
 use PHPUnit\Framework\TestCase;
 

@@ -8,14 +8,15 @@ use Innmind\AMQP\{
     Transport\Connection as ConnectionInterface,
     Transport\Protocol,
     Transport\Frame,
-    Exception\ConnectionClosed
+    Exception\ConnectionClosed,
 };
 use Innmind\Socket\Internet\Transport;
 use Innmind\Url\UrlInterface;
 use Innmind\TimeContinuum\{
     TimeContinuumInterface,
-    ElapsedPeriod
+    ElapsedPeriod,
 };
+use Innmind\OperatingSystem\Remote;
 
 final class Lazy implements ConnectionInterface
 {
@@ -24,6 +25,7 @@ final class Lazy implements ConnectionInterface
     private $protocol;
     private $timeout;
     private $clock;
+    private $remote;
     private $connection;
     private $closed = false;
 
@@ -32,13 +34,15 @@ final class Lazy implements ConnectionInterface
         UrlInterface $server,
         Protocol $protocol,
         ElapsedPeriod $timeout,
-        TimeContinuumInterface $clock
+        TimeContinuumInterface $clock,
+        Remote $remote
     ) {
         $this->transport = $transport;
         $this->server = $server;
         $this->protocol = $protocol;
         $this->timeout = $timeout;
         $this->clock = $clock;
+        $this->remote = $remote;
     }
 
     public function protocol(): Protocol
@@ -104,7 +108,8 @@ final class Lazy implements ConnectionInterface
             $this->server,
             $this->protocol,
             $this->timeout,
-            $this->clock
+            $this->clock,
+            $this->remote
         );
     }
 }

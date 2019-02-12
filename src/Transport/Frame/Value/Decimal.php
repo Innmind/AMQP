@@ -3,56 +3,48 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport\Frame\Value;
 
-use Innmind\AMQP\{
-    Transport\Frame\Value,
-    Exception\OutOfRangeValue
-};
+use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\Math\{
     Algebra\Number,
     Algebra\Integer,
     DefinitionSet\Set,
-    DefinitionSet\NaturalNumbers
+    DefinitionSet\NaturalNumbers,
 };
-use Innmind\Immutable\Str;
+use Innmind\Stream\Readable;
+
 
 final class Decimal implements Value
 {
     private static $definitionSet;
 
+    private $string;
     private $value;
+    private $scale;
     private $original;
 
     public function __construct(Integer $value, Integer $scale)
     {
-        if (!self::definitionSet()->contains($scale)) {
-            throw new OutOfRangeValue($scale, self::definitionSet());
-        }
-
-        $this->value = (string) new UnsignedOctet($scale);
-        $this->value .= (string) new SignedLongInteger($value);
+        $this->scale = $scale;
+        $this->value = $value;
         $this->original = $value->divideBy(
             (new Integer(10))->power($scale)
         );
     }
 
-    public static function fromString(Str $string): Value
+    public static function of(Integer $value, Integer $scale): self
     {
-        $string = $string->toEncoding('ASCII');
+        SignedLongInteger::of($value);
+        UnsignedOctet::of($scale);
 
-        return new self(
-            SignedLongInteger::fromString($string->substring(1))->original(),
-            UnsignedOctet::fromString($string->substring(0, 1))->original()
-        );
+        return new self($value, $scale);
     }
 
-    public static function cut(Str $string): Str
+    public static function fromStream(Readable $stream): Value
     {
-        return $string
-            ->toEncoding('ASCII')
-            ->substring(0, 1)
-            ->append(
-                (string) SignedLongInteger::cut($string->substring(1))
-            );
+        $scale = UnsignedOctet::fromStream($stream)->original();
+        $value = SignedLongInteger::fromStream($stream)->original();
+
+        return new self($value, $scale);
     }
 
     public function original(): Number
@@ -62,7 +54,7 @@ final class Decimal implements Value
 
     public function __toString(): string
     {
-        return $this->value;
+        return $this->string ?? $this->string = new UnsignedOctet($this->scale).new SignedLongInteger($this->value);
     }
 
     public static function definitionSet(): Set

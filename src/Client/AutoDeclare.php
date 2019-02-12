@@ -13,6 +13,7 @@ use Innmind\Immutable\{
     SetInterface,
     Set,
 };
+use function Innmind\Immutable\assertSet;
 
 final class AutoDeclare implements Client
 {
@@ -38,26 +39,9 @@ final class AutoDeclare implements Client
         $this->queues = $queues ?? Set::of(Queue::class);
         $this->bindings = $bindings ?? Set::of(Binding::class);
 
-        if ((string) $this->exchanges->type() !== Exchange::class) {
-            throw new \TypeError(sprintf(
-                'Argument 2 must be of type SetInterface<%s>',
-                Exchange::class
-            ));
-        }
-
-        if ((string) $this->queues->type() !== Queue::class) {
-            throw new \TypeError(sprintf(
-                'Argument 3 must be of type SetInterface<%s>',
-                Queue::class
-            ));
-        }
-
-        if ((string) $this->bindings->type() !== Binding::class) {
-            throw new \TypeError(sprintf(
-                'Argument 4 must be of type SetInterface<%s>',
-                Binding::class
-            ));
-        }
+        assertSet(Exchange::class, $this->exchanges, 2);
+        assertSet(Queue::class, $this->queues, 3);
+        assertSet(Binding::class, $this->bindings, 4);
     }
 
     public function channel(): Channel

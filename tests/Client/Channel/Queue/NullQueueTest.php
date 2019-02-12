@@ -10,7 +10,7 @@ use Innmind\AMQP\{
     Model\Queue\Deletion,
     Model\Queue\Binding,
     Model\Queue\Unbinding,
-    Model\Queue\Purge
+    Model\Queue\Purge,
 };
 use PHPUnit\Framework\TestCase;
 

@@ -3,12 +3,13 @@ declare(strict_types = 1);
 
 namespace Tests\Innmind\AMQP\Transport\Frame\Value;
 
-use Innmind\AMQP\Transport\Frame\{
-    Value\SignedShortInteger,
-    Value
+use Innmind\AMQP\{
+    Transport\Frame\Value\SignedShortInteger,
+    Transport\Frame\Value,
+    Exception\OutOfRangeValue,
 };
 use Innmind\Math\Algebra\Integer;
-use Innmind\Immutable\Str;
+use Innmind\Filesystem\Stream\StringStream;
 use PHPUnit\Framework\TestCase;
 
 class SignedShortIntegerTest extends TestCase
@@ -34,51 +35,29 @@ class SignedShortIntegerTest extends TestCase
     /**
      * @dataProvider cases
      */
-    public function testFromString($expected, $string)
+    public function testFromStream($expected, $string)
     {
-        $value = SignedShortInteger::fromString(new Str($string));
+        $value = SignedShortInteger::fromStream(new StringStream($string));
 
         $this->assertInstanceOf(SignedShortInteger::class, $value);
         $this->assertSame($expected, $value->original()->value());
         $this->assertSame($string, (string) $value);
     }
 
-    /**
-     * @dataProvider cases
-     */
-    public function testCut($_, $string)
-    {
-        $str = SignedShortInteger::cut(new Str($string.'foo'));
-
-        $this->assertInstanceOf(Str::class, $str);
-        $this->assertSame($string, (string) $str);
-    }
-
-    /**
-     * @expectedException Innmind\AMQP\Exception\OutOfRangeValue
-     * @expectedExceptionMessage 32768 ∉ [-32768;32767]
-     */
     public function testThrowWhenIntegerTooHigh()
     {
-        new SignedShortInteger(new Integer(32768));
+        $this->expectException(OutOfRangeValue::class);
+        $this->expectExceptionMessage('32768 ∉ [-32768;32767]');
+
+        SignedShortInteger::of(new Integer(32768));
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\OutOfRangeValue
-     * @expectedExceptionMessage -32769 ∉ [-32768;32767]
-     */
     public function testThrowWhenIntegerTooLow()
     {
-        new SignedShortInteger(new Integer(-32769));
-    }
+        $this->expectException(OutOfRangeValue::class);
+        $this->expectExceptionMessage('-32769 ∉ [-32768;32767]');
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\StringNotOfExpectedLength
-     * @expectedExceptionMessage String "foo" is expected of being 2 characters, got 3
-     */
-    public function testThrowWhenStringNotOfExpectedLength()
-    {
-        SignedShortInteger::fromString(new Str('foo'));
+        SignedShortInteger::of(new Integer(-32769));
     }
 
     public function cases(): array

@@ -23,21 +23,22 @@ use Innmind\AMQP\{
     Exception\UnexpectedFrame,
     Exception\NoFrameDetected,
     Exception\ConnectionClosed,
-    Exception\ExpectedMethodFrame
+    Exception\ExpectedMethodFrame,
 };
 use Innmind\Socket\{
     Internet\Transport,
-    Client\Internet as Socket
+    Client\Internet as Socket,
 };
 use Innmind\Stream\Select;
 use Innmind\Url\{
     UrlInterface,
-    Authority\NullUserInformation
+    Authority\NullUserInformation,
 };
 use Innmind\TimeContinuum\{
     ElapsedPeriod,
-    TimeContinuumInterface
+    TimeContinuumInterface,
 };
+use Innmind\OperatingSystem\Remote;
 use Innmind\Immutable\Str;
 
 final class Connection implements ConnectionInterface
@@ -48,6 +49,7 @@ final class Connection implements ConnectionInterface
     private $protocol;
     private $socket;
     private $timeout;
+    private $remote;
     private $select;
     private $read;
     private $closed = true;
@@ -63,13 +65,15 @@ final class Connection implements ConnectionInterface
         UrlInterface $server,
         Protocol $protocol,
         ElapsedPeriod $timeout,
-        TimeContinuumInterface $clock
+        TimeContinuumInterface $clock,
+        Remote $remote
     ) {
         $this->transport = $transport;
         $this->authority = $server->authority();
         $this->vhost = $server->path();
         $this->protocol = $protocol;
         $this->timeout = $timeout;
+        $this->remote = $remote;
         $this->buildSocket();
         $this->read = new FrameReader;
         $this->maxChannels = new MaxChannels(0);
@@ -95,7 +99,7 @@ final class Connection implements ConnectionInterface
             );
         }
 
-        $frame = (new Str((string) $frame))->toEncoding('ASCII');
+        $frame = Str::of((string) $frame)->toEncoding('ASCII');
 
         if (!$this->maxFrameSize->allows($frame->length())) {
             throw new FrameExceedAllowedSize(
@@ -136,7 +140,7 @@ final class Connection implements ConnectionInterface
             return $this->wait(...$names);
         }
 
-        if (count($names) === 0) {
+        if (\count($names) === 0) {
             return $frame;
         }
 
@@ -193,7 +197,7 @@ final class Connection implements ConnectionInterface
 
     private function buildSocket(): void
     {
-        $this->socket = new Socket(
+        $this->socket = $this->remote->socket(
             $this->transport,
             $this->authority->withUserInformation(new NullUserInformation)
         );
@@ -223,23 +227,19 @@ final class Connection implements ConnectionInterface
         try {
             $frame = $this->wait('connection.start');
         } catch (NoFrameDetected $e) {
-            $content = $e->content()->toEncoding('ASCII');
+            $content = $e->content();
 
-            if (
-                $content->length() !== 8 ||
-                !$content->matches('/^AMQP/')
-            ) {
+            if ((string) $content->read(4) !== 'AMQP') {
                 throw $e;
             }
 
-            $version = $content
-                ->substring(5, 8)
-                ->chunk();
+            $content->read(1); // there is a zero between AMQP and version number
+
             $this->protocol->use(
                 new Version(
-                    UnsignedOctet::fromString($version->get(0))->original()->value(),
-                    UnsignedOctet::fromString($version->get(1))->original()->value(),
-                    UnsignedOctet::fromString($version->get(2))->original()->value()
+                    UnsignedOctet::fromStream($content)->original()->value(),
+                    UnsignedOctet::fromStream($content)->original()->value(),
+                    UnsignedOctet::fromStream($content)->original()->value()
                 )
             );
             //socket rebuilt as the server close the connection on version mismatch

@@ -7,7 +7,7 @@ use Innmind\AMQP\{
     Client\Channel as ChannelInterfce,
     Model\Channel\Close,
     Transport\Connection,
-    Transport\Frame\Channel as Number
+    Transport\Frame\Channel as Number,
 };
 
 final class Channel implements ChannelInterfce

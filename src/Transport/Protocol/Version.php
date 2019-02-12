@@ -13,7 +13,7 @@ final class Version
 
     public function __construct(int $major, int $minor, int $fix)
     {
-        if (min($major, $minor, $fix) < 0) {
+        if (\min($major, $minor, $fix) < 0) {
             throw new DomainException;
         }
 
@@ -65,11 +65,11 @@ final class Version
 
     public function __toString(): string
     {
-        return sprintf(
+        return \sprintf(
             "AMQP\x00%s%s%s",
-            chr($this->major),
-            chr($this->minor),
-            chr($this->fix)
+            \chr($this->major),
+            \chr($this->minor),
+            \chr($this->fix)
         );
     }
 }

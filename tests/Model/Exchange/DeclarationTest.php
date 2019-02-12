@@ -3,9 +3,10 @@ declare(strict_types = 1);
 
 namespace Tests\Innmind\AMQP\Model\Exchange;
 
-use Innmind\AMQP\Model\Exchange\{
-    Declaration,
-    Type
+use Innmind\AMQP\{
+    Model\Exchange\Declaration,
+    Model\Exchange\Type,
+    Exception\NotWaitingPassiveDeclarationDoesNothing,
 };
 use Innmind\Immutable\MapInterface;
 use PHPUnit\Framework\TestCase;
@@ -91,11 +92,10 @@ class DeclarationTest extends TestCase
         $this->assertFalse($command2->shouldWait());
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\NotWaitingPassiveDeclarationDoesNothing
-     */
     public function testThrowWhenNotWaitingPassiveDeclaration()
     {
+        $this->expectException(NotWaitingPassiveDeclarationDoesNothing::class);
+
         Declaration::passive('foo', Type::direct())->dontWait();
     }
 

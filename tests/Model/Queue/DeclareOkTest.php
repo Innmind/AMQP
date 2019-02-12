@@ -5,7 +5,7 @@ namespace Tests\Innmind\AMQP\Model\Queue;
 
 use Innmind\AMQP\Model\{
     Queue\DeclareOk,
-    Count
+    Count,
 };
 use PHPUnit\Framework\TestCase;
 

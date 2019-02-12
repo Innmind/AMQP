@@ -5,15 +5,15 @@ namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\{
     Transport\Frame\Value,
-    TimeContinuum\Format\Timestamp as TimestampFormat
+    TimeContinuum\Format\Timestamp as TimestampFormat,
 };
 use Innmind\TimeContinuum\{
     PointInTimeInterface,
     PointInTime\Earth\PointInTime,
-    Format\ISO8601
+    Format\ISO8601,
 };
 use Innmind\Math\Algebra\Integer;
-use Innmind\Immutable\Str;
+use Innmind\Stream\Readable;
 
 final class Timestamp implements Value
 {
@@ -22,26 +22,18 @@ final class Timestamp implements Value
 
     public function __construct(PointInTimeInterface $point)
     {
-        $this->value = (string) new UnsignedLongLongInteger(
-            new Integer((int) $point->format(new TimestampFormat))
-        );
         $this->original = $point;
     }
 
-    public static function fromString(Str $string): Value
+    public static function fromStream(Readable $stream): Value
     {
-        $time = UnsignedLongLongInteger::fromString($string)
+        $time = UnsignedLongLongInteger::fromStream($stream)
             ->original()
             ->value();
 
         return new self(new PointInTime(
-            date((string) new ISO8601, $time)
+            \date((string) new ISO8601, $time)
         ));
-    }
-
-    public static function cut(Str $string): Str
-    {
-        return UnsignedLongLongInteger::cut($string);
     }
 
     public function original(): PointInTimeInterface
@@ -51,6 +43,8 @@ final class Timestamp implements Value
 
     public function __toString(): string
     {
-        return $this->value;
+        return $this->value ?? $this->value = (string) new UnsignedLongLongInteger(
+            new Integer((int) $this->original->format(new TimestampFormat))
+        );
     }
 }

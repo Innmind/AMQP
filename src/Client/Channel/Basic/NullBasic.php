@@ -13,7 +13,7 @@ use Innmind\AMQP\{
     Model\Basic\Qos,
     Model\Basic\Recover,
     Model\Basic\Reject,
-    Model\Basic\Message
+    Model\Basic\Message,
 };
 
 final class NullBasic implements BasicInterface

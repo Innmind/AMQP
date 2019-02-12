@@ -16,7 +16,7 @@ use Innmind\AMQP\{
     Transport\Frame\Value\Table,
     Model\Exchange\Declaration,
     Model\Exchange\Deletion,
-    Model\Exchange\Type
+    Model\Exchange\Type,
 };
 use Innmind\Math\Algebra\Integer;
 use PHPUnit\Framework\TestCase;
@@ -26,7 +26,7 @@ class ExchangeTest extends TestCase
     private $exchange;
     private $translator;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->exchange = new Exchange(
             $this->translator = $this->createMock(ArgumentTranslator::class)

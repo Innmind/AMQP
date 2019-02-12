@@ -3,32 +3,32 @@ declare(strict_types = 1);
 
 namespace Tests\Innmind\AMQP\Transport\Protocol;
 
-use Innmind\AMQP\Transport\Protocol\Version;
+use Innmind\AMQP\{
+    Transport\Protocol\Version,
+    Exception\DomainException,
+};
 use PHPUnit\Framework\TestCase;
 
 class VersionTest extends TestCase
 {
-    /**
-     * @expectedException Innmind\AMQP\Exception\DomainException
-     */
     public function testThrowWhenInvalidMajorVersion()
     {
+        $this->expectException(DomainException::class);
+
         new Version(-1, 0, 0);
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\DomainException
-     */
     public function testThrowWhenInvalidMinorVersion()
     {
+        $this->expectException(DomainException::class);
+
         new Version(0, -1, 0);
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\DomainException
-     */
     public function testThrowWhenInvalidFixVersion()
     {
+        $this->expectException(DomainException::class);
+
         new Version(0, 0, -1);
     }
 

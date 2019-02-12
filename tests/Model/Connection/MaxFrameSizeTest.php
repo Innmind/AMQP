@@ -3,7 +3,10 @@ declare(strict_types = 1);
 
 namespace Tests\Innmind\AMQP\Model\Connection;
 
-use Innmind\AMQP\Model\Connection\MaxFrameSize;
+use Innmind\AMQP\{
+    Model\Connection\MaxFrameSize,
+    Exception\DomainException,
+};
 use PHPUnit\Framework\TestCase;
 
 class MaxFrameSizeTest extends TestCase
@@ -27,20 +30,20 @@ class MaxFrameSizeTest extends TestCase
         $this->assertFalse((new MaxFrameSize(0))->isLimited());
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\DomainException
-     */
     public function testThrowWhenNegativeValue()
     {
+        $this->expectException(DomainException::class);
+
         new MaxFrameSize(-1);
     }
 
     /**
-     * @expectedException Innmind\AMQP\Exception\DomainException
      * @dataProvider invalid
      */
     public function testThrowWhenValueLowerThanFrameFlags($int)
     {
+        $this->expectException(DomainException::class);
+
         //meaning that channel id + payload size int + frame end flag
         //already make a size of 8 leaving no place for the payload
         new MaxFrameSize($int);

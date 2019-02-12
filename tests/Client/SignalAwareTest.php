@@ -6,7 +6,7 @@ namespace Tests\Innmind\AMQP\Client;
 use Innmind\AMQP\{
     Client\SignalAware,
     Client\Channel,
-    Client
+    Client,
 };
 use PHPUnit\Framework\TestCase;
 

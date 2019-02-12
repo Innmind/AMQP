@@ -10,48 +10,47 @@ use Innmind\TimeContinuum\{
     ElapsedPeriod,
 };
 use Innmind\CLI\Command as CLICommand;
+use Innmind\OperatingSystem\{
+    CurrentProcess,
+    Remote,
+};
 use Innmind\Immutable\{
     SetInterface,
-    Set,
     MapInterface,
 };
 use Psr\Log\LoggerInterface;
 
-function bootstrap(
-    Socket $transport,
-    UrlInterface $server,
-    ElapsedPeriod $timeout,
-    TimeContinuumInterface $clock,
-    LoggerInterface $logger = null,
-    SetInterface $protocols = null,
-    SetInterface $argumentTranslators = null
-): array {
-    $argumentTranslators = $argumentTranslators ?? Set::of(
-        Transport\Protocol\ArgumentTranslator::class,
-        new Transport\Protocol\ArgumentTranslator\ValueTranslator
-    );
-    $protocols = $protocols ?? Set::of(
-        Transport\Protocol::class,
-        new Transport\Protocol\v091\Protocol(
-            new Transport\Protocol\ArgumentTranslator\Delegate(...$argumentTranslators)
-        )
-    );
-
-    $connection = new Transport\Connection\Lazy(
-        $transport,
-        $server,
-        new Transport\Protocol\Delegate(...$protocols),
-        $timeout,
-        $clock
-    );
-
-    if ($logger instanceof LoggerInterface) {
-        $connection = new Transport\Connection\Logger($connection, $logger);
-    }
-
+function bootstrap(LoggerInterface $logger = null): array
+{
     return [
         'client' => [
-            'basic' => new Client\Client($connection),
+            'basic' => static function(
+                Socket $transport,
+                UrlInterface $server,
+                ElapsedPeriod $timeout,
+                TimeContinuumInterface $clock,
+                CurrentProcess $process,
+                Remote $remote
+            ) use (
+                $logger
+            ): Client {
+                $connection = new Transport\Connection\Lazy(
+                    $transport,
+                    $server,
+                    new Transport\Protocol\v091\Protocol(
+                        new Transport\Protocol\ArgumentTranslator\ValueTranslator
+                    ),
+                    $timeout,
+                    $clock,
+                    $remote
+                );
+
+                if ($logger instanceof LoggerInterface) {
+                    $connection = new Transport\Connection\Logger($connection, $logger);
+                }
+
+                return new Client\Client($connection, $process);
+            },
             'fluent' => static function(Client $client): Client {
                 return new Client\Fluent($client);
             },

@@ -9,7 +9,7 @@ use Innmind\AMQP\{
     Model\Connection\TuneOk,
     Model\Connection\Open,
     Model\Connection\Close,
-    Transport\Frame
+    Transport\Frame,
 };
 
 interface Connection

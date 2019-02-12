@@ -7,11 +7,12 @@ use Innmind\AMQP\Transport\Frame\{
     Visitor\ChunkArguments,
     Value,
     Value\Bits,
-    Value\LongString
+    Value\LongString,
 };
+use Innmind\Filesystem\Stream\StringStream;
 use Innmind\Immutable\{
     StreamInterface,
-    Str
+    Str,
 };
 use PHPUnit\Framework\TestCase;
 
@@ -26,7 +27,7 @@ class ChunkArgumentsTest extends TestCase
 
         $arguments = new Bits(true).new LongString(new Str('foo'));
 
-        $stream = $visit(new Str($arguments));
+        $stream = $visit(new StringStream($arguments));
 
         $this->assertInstanceOf(StreamInterface::class, $stream);
         $this->assertSame(Value::class, (string) $stream->type());

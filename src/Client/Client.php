@@ -6,25 +6,28 @@ namespace Innmind\AMQP\Client;
 use Innmind\AMQP\{
     Client as ClientInterface,
     Transport\Connection,
-    Transport\Frame\Channel as Number
+    Transport\Frame\Channel as Number,
 };
+use Innmind\OperatingSystem\CurrentProcess;
 use Innmind\Immutable\Map;
 
 final class Client implements ClientInterface
 {
     private $connection;
+    private $process;
     private $channels;
     private $channel = 1;
 
-    public function __construct(Connection $connection)
+    public function __construct(Connection $connection, CurrentProcess $process)
     {
         $this->connection = $connection;
+        $this->process = $process;
         $this->channels = new Map('int', Channel::class);
     }
 
     public function channel(): Channel
     {
-        $pid = getmypid();
+        $pid = $this->process->id()->toInt();
 
         if ($this->channels->contains($pid)) {
             return $this->channels->get($pid);

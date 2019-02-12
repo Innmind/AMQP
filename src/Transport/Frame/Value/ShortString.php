@@ -3,11 +3,9 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport\Frame\Value;
 
-use Innmind\AMQP\{
-    Transport\Frame\Value,
-    Exception\StringNotOfExpectedLength
-};
+use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\Math\Algebra\Integer;
+use Innmind\Stream\Readable;
 use Innmind\Immutable\Str;
 
 final class ShortString implements Value
@@ -18,32 +16,20 @@ final class ShortString implements Value
     public function __construct(Str $string)
     {
         $this->original = $string;
-        $string = $string->toEncoding('ASCII');
-        $this->value = (string) new UnsignedOctet(
-            new Integer($string->length())
-        );
-        $this->value .= $string;
     }
 
-    public static function fromString(Str $string): Value
+    public static function of(Str $string): self
     {
-        $string = $string->toEncoding('ASCII');
-        $length = UnsignedOctet::fromString($string->substring(0, 1))->original();
-        $string = $string->substring(1);
-
-        if ($string->length() !== $length->value()) {
-            throw new StringNotOfExpectedLength($string, $length->value());
-        }
+        UnsignedOctet::of(new Integer($string->toEncoding('ASCII')->length()));
 
         return new self($string);
     }
 
-    public static function cut(Str $string): Str
+    public static function fromStream(Readable $stream): Value
     {
-        $string = $string->toEncoding('ASCII');
-        $length = UnsignedOctet::fromString($string->substring(0, 1))->original();
+        $length = UnsignedOctet::fromStream($stream)->original();
 
-        return $string->substring(0, $length->value() + 1);
+        return new self($stream->read($length->value()));
     }
 
     public function original(): Str
@@ -53,6 +39,8 @@ final class ShortString implements Value
 
     public function __toString(): string
     {
-        return $this->value;
+        return $this->value ?? $this->value = new UnsignedOctet(
+            new Integer($this->original->toEncoding('ASCII')->length())
+        ).$this->original;
     }
 }

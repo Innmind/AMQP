@@ -6,7 +6,7 @@ namespace Tests\Innmind\AMQP\Model\Connection;
 use Innmind\AMQP\Model\Connection\StartOk;
 use Innmind\Url\Authority\UserInformation\{
     UserInterface,
-    PasswordInterface
+    PasswordInterface,
 };
 use PHPUnit\Framework\TestCase;
 

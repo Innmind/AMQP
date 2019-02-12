@@ -1,10 +1,10 @@
 # AMQP
 
-| `master` | `develop` |
-|----------|-----------|
-| [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/Innmind/AMQP/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/Innmind/AMQP/?branch=master) | [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/Innmind/AMQP/badges/quality-score.png?b=develop)](https://scrutinizer-ci.com/g/Innmind/AMQP/?branch=develop) |
-| [![Code Coverage](https://scrutinizer-ci.com/g/Innmind/AMQP/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/Innmind/AMQP/?branch=master) | [![Code Coverage](https://scrutinizer-ci.com/g/Innmind/AMQP/badges/coverage.png?b=develop)](https://scrutinizer-ci.com/g/Innmind/AMQP/?branch=develop) |
-| [![Build Status](https://scrutinizer-ci.com/g/Innmind/AMQP/badges/build.png?b=master)](https://scrutinizer-ci.com/g/Innmind/AMQP/build-status/master) | [![Build Status](https://scrutinizer-ci.com/g/Innmind/AMQP/badges/build.png?b=develop)](https://scrutinizer-ci.com/g/Innmind/AMQP/build-status/develop) |
+| `develop` |
+|-----------|
+| [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/Innmind/AMQP/badges/quality-score.png?b=develop)](https://scrutinizer-ci.com/g/Innmind/AMQP/?branch=develop) |
+| [![Code Coverage](https://scrutinizer-ci.com/g/Innmind/AMQP/badges/coverage.png?b=develop)](https://scrutinizer-ci.com/g/Innmind/AMQP/?branch=develop) |
+| [![Build Status](https://scrutinizer-ci.com/g/Innmind/AMQP/badges/build.png?b=develop)](https://scrutinizer-ci.com/g/Innmind/AMQP/build-status/develop) |
 
 This is an AMQP client implementing the version `0.9` of the protocol. Even though the `1.0` is out it's not implemented (yet?) as RabbitMQ is still on 0.9 (despite that the code has been structured so it can be easy to create this implementation).
 
@@ -23,11 +23,8 @@ composer require innmind/amqp
 ## Usage
 
 ```php
+use function Innmind\AMQP\bootstrap;
 use Innmind\AMQP\{
-    Client\Client,
-    Transport\Connection\Connection,
-    Transport\Protocol\ArgumentTranslator\ValueTranslator,
-    Transport\Protocol\v091\Protocol,
     Model\Exchange\Declaration as Exchange,
     Model\Exchange\Type,
     Model\Queue\Declaration as Queue,
@@ -36,21 +33,20 @@ use Innmind\AMQP\{
     Model\Basic\Publish
 };
 use Innmind\Socket\Internet\Transport;
-use Innmind\TimeContinuum\{
-    ElapsedPeriod,
-    TimeContinuum\Earth
-};
+use Innmind\TimeContinuum\ElapsedPeriod;
+use Innmind\OperatingSystem\Factory;
 use Innmind\Url\Url;
 use Innmind\Immutable\Str;
 
-$client = new Client(
-    new Connection(
-        Transport::tcp(),
-        Url::fromString('//guest:guest@localhost:5672/'),
-        new Protocol(new ValueTranslator),
-        new ElapsedPeriod(1000), //timeout
-        new Earth
-    )
+$os = Factory::build();
+$amqp = bootstrap();
+$client = $amqp['client']['basic'](
+    Transport::tcp(),
+    Url::fromString('amqp://guest:guest@localhost:5672/'),
+    new ElapsedPeriod(1000), //timeout
+    $os->clock(),
+    $os->process(),
+    $os->remote()
 );
 $client
     ->channel()
@@ -131,9 +127,7 @@ By default if you send commands via the client but the connection is closed it w
 If you want the client to fail silenty you can simply decorate the client like so:
 
 ```php
-use Innmind\AMQP\Client\Fluent;
-
-$client = new Fluent($client);
+$client = $amqp['client']['fluent']($client);
 ```
 
 This will for example allow you to _consume_ a queue but in reality will do nothing if the connection is closed, of course if it's opened it will receive messages like before.
@@ -143,15 +137,10 @@ This will for example allow you to _consume_ a queue but in reality will do noth
 By default no activity is logged when using this library, but you have 2 strategies to log what's happening: at the transport layer or at the client level. This is done either by decorating the connection object or the client one:
 
 ```php
-use Innminq\AMQP\{
-    Client\Logger as LoggerClient,
-    Transport\Connection\Logger as LoggerTransport
-};
 use Psr\Log\LoggerInterface;
 
-$client = new Client(new LoggerTransport(new Connection(/*arguments*/)));
-//or
-$client = new LoggerClient($client);
+$amqp = bootstrap(/* instance of LoggerInterface */);
+$client = $amqp['client']['logger'];
 ```
 
 By decorating the connection it will log every sent and received frames, do this if you want to know what's sent through the wire. By decorating the client it will log every received messages and if they've been rejected or requeued; explicit cancel calls (via the exception) and errors thrown during message consumption will be as well.
@@ -165,13 +154,13 @@ Of course you can use both at the same time if you want to be thorough.
 ```
 Publishing 4000 msgs with 1KB of content:
 php benchmark/producer.php 4000
-0.6799578666687
+0.71036601066589
 Consuming 4000:
 php benchmark/consumer.php
-Pid: 14477, Count: 4000, Time: 3.2876
+Pid: 8086, Count: 4000, Time: 2.7770
 Stream produce 100:
 php benchmark/stream_tmp_produce.php 100
-0.20840692520142
+0.2612419128418
 ```
 
 By comparison, the `php-amqplib` produces this result:

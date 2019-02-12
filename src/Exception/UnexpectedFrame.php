@@ -13,7 +13,7 @@ final class UnexpectedFrame extends RuntimeException
     {
         parent::__construct(sprintf(
             'Expected %s',
-            implode(' or ', $names)
+            \implode(' or ', $names)
         ));
         $this->frame = $frame;
     }

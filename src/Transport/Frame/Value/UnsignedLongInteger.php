@@ -6,14 +6,13 @@ namespace Innmind\AMQP\Transport\Frame\Value;
 use Innmind\AMQP\{
     Transport\Frame\Value,
     Exception\OutOfRangeValue,
-    Exception\StringNotOfExpectedLength
 };
 use Innmind\Math\{
     Algebra\Integer,
     DefinitionSet\Set,
-    DefinitionSet\Range
+    DefinitionSet\Range,
 };
-use Innmind\Immutable\Str;
+use Innmind\Stream\Readable;
 
 final class UnsignedLongInteger implements Value
 {
@@ -24,29 +23,23 @@ final class UnsignedLongInteger implements Value
 
     public function __construct(Integer $value)
     {
+        $this->original = $value;
+    }
+
+    public static function of(Integer $value): self
+    {
         if (!self::definitionSet()->contains($value)) {
             throw new OutOfRangeValue($value, self::definitionSet());
         }
 
-        $this->original = $value;
+        return new self($value);
     }
 
-    public static function fromString(Str $string): Value
+    public static function fromStream(Readable $stream): Value
     {
-        $string = $string->toEncoding('ASCII');
-
-        if ($string->length() !== 4) {
-            throw new StringNotOfExpectedLength($string, 4);
-        }
-
-        [, $value] = unpack('N', (string) $string);
+        [, $value] = \unpack('N', (string) $stream->read(4));
 
         return new self(new Integer($value));
-    }
-
-    public static function cut(Str $string): Str
-    {
-        return $string->toEncoding('ASCII')->substring(0, 4);
     }
 
     public function original(): Integer
@@ -56,7 +49,7 @@ final class UnsignedLongInteger implements Value
 
     public function __toString(): string
     {
-        return $this->value ?? $this->value = pack('N', $this->original->value());
+        return $this->value ?? $this->value = \pack('N', $this->original->value());
     }
 
     public static function definitionSet(): Set

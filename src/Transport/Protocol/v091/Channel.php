@@ -14,7 +14,7 @@ use Innmind\AMQP\{
     Transport\Frame\Type,
     Transport\Frame\Value\ShortString,
     Transport\Frame\Value\Bits,
-    Transport\Frame\Value\UnsignedShortInteger
+    Transport\Frame\Value\UnsignedShortInteger,
 };
 use Innmind\Math\Algebra\Integer;
 use Innmind\Immutable\Str;
@@ -66,10 +66,10 @@ final class Channel implements ChannelInterface
         return Frame::method(
             $channel,
             Methods::get('channel.close'),
-            new UnsignedShortInteger(new Integer($replyCode)),
-            new ShortString(new Str($replyText)),
-            new UnsignedShortInteger(new Integer($method->class())),
-            new UnsignedShortInteger(new Integer($method->method()))
+            UnsignedShortInteger::of(new Integer($replyCode)),
+            ShortString::of(new Str($replyText)),
+            UnsignedShortInteger::of(new Integer($method->class())),
+            UnsignedShortInteger::of(new Integer($method->method()))
         );
     }
 

@@ -10,11 +10,11 @@ use Innmind\AMQP\Transport\{
     Frame\Method,
     Frame\Value,
     Frame\Value\Bits,
-    Frame\Value\Text
+    Frame\Value\Text,
 };
 use Innmind\Immutable\{
     Str,
-    StreamInterface
+    StreamInterface,
 };
 use PHPUnit\Framework\TestCase;
 

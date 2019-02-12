@@ -6,12 +6,12 @@ namespace Innmind\AMQP\Transport\Protocol;
 use Innmind\AMQP\{
     Transport\Protocol,
     Transport\Frame\Method,
-    Exception\VersionNotUsable
+    Exception\VersionNotUsable,
 };
+use Innmind\Stream\Readable;
 use Innmind\Immutable\{
     Sequence,
-    Str,
-    StreamInterface
+    StreamInterface,
 };
 
 final class Delegate implements Protocol
@@ -21,7 +21,7 @@ final class Delegate implements Protocol
 
     public function __construct(Protocol $first, Protocol ...$protocols)
     {
-        $protocols = (new Sequence($first, ...$protocols))->sort(static function(Protocol $a, Protocol $b): bool {
+        $protocols = Sequence::of($first, ...$protocols)->sort(static function(Protocol $a, Protocol $b): bool {
             return $b->version()->higherThan($a->version());
         });
         $this->inUse = $protocols->first();
@@ -59,7 +59,7 @@ final class Delegate implements Protocol
     /**
      * {@inheritdoc}
      */
-    public function read(Method $method, Str $arguments): StreamInterface
+    public function read(Method $method, Readable $arguments): StreamInterface
     {
         return $this->inUse->read($method, $arguments);
     }
@@ -67,7 +67,7 @@ final class Delegate implements Protocol
     /**
      * {@inheritdoc}
      */
-    public function readHeader(Str $arguments): StreamInterface
+    public function readHeader(Readable $arguments): StreamInterface
     {
         return $this->inUse->readHeader($arguments);
     }

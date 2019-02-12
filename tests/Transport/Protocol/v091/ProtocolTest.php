@@ -31,16 +31,18 @@ use Innmind\AMQP\{
     Model\Basic\Message\ReplyTo,
     Model\Basic\Message\Type,
     Model\Basic\Message\UserId,
-    Model\Connection\MaxFrameSize
+    Model\Connection\MaxFrameSize,
+    Exception\VersionNotUsable,
 };
 use Innmind\TimeContinuum\{
     ElapsedPeriod,
-    PointInTime\Earth\Now
+    PointInTime\Earth\Now,
 };
+use Innmind\Filesystem\Stream\StringStream;
 use Innmind\Immutable\{
     Str,
     Map,
-    StreamInterface
+    StreamInterface,
 };
 use PHPUnit\Framework\TestCase;
 
@@ -111,7 +113,7 @@ class ProtocolTest extends TestCase
             )
             ->get(1);
 
-        $values = $protocol->readHeader(new Str((string) $header->values()->join('')));
+        $values = $protocol->readHeader(new StringStream((string) $header->values()->join('')));
 
         $this->assertInstanceOf(StreamInterface::class, $values);
         $this->assertSame(Value::class, (string) $values->type());
@@ -122,21 +124,19 @@ class ProtocolTest extends TestCase
         );
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\VersionNotUsable
-     * @expectedExceptionMessage 1.0.0
-     */
     public function testThrowWhenUsingHigherVersion()
     {
+        $this->expectException(VersionNotUsable::class);
+        $this->expectExceptionMessage('1.0.0');
+
         (new Protocol($this->createMock(ArgumentTranslator::class)))->use(new Version(1, 0, 0));
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\VersionNotUsable
-     * @expectedExceptionMessage 0.8.0
-     */
     public function testThrowWhenUsingLowerVersion()
     {
+        $this->expectException(VersionNotUsable::class);
+        $this->expectExceptionMessage('0.8.0');
+
         (new Protocol($this->createMock(ArgumentTranslator::class)))->use(new Version(0, 8, 0));
     }
 

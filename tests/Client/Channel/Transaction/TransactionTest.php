@@ -10,14 +10,16 @@ use Innmind\AMQP\{
     Transport\Frame\Channel,
     Transport\Protocol\v091\Protocol,
     Transport\Protocol\ArgumentTranslator,
-    Model\Channel\Close
+    Model\Channel\Close,
 };
 use Innmind\Socket\Internet\Transport;
 use Innmind\TimeContinuum\{
     ElapsedPeriod,
-    TimeContinuum\Earth
+    TimeContinuum\Earth,
 };
 use Innmind\Url\Url;
+use Innmind\OperatingSystem\Remote;
+use Innmind\Server\Control\Server;
 use PHPUnit\Framework\TestCase;
 
 class TransactionTest extends TestCase
@@ -25,7 +27,7 @@ class TransactionTest extends TestCase
     private $transaction;
     private $connection;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->transaction = new Transaction(
             $this->connection = new Connection(
@@ -33,7 +35,8 @@ class TransactionTest extends TestCase
                 Url::fromString('//guest:guest@localhost:5672/'),
                 new Protocol($this->createMock(ArgumentTranslator::class)),
                 new ElapsedPeriod(1000),
-                new Earth
+                new Earth,
+                new Remote\Generic($this->createMock(Server::class))
             ),
             new Channel(1)
         );
@@ -44,7 +47,7 @@ class TransactionTest extends TestCase
             ->wait('channel.open-ok');
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         $this->connection
             ->send(

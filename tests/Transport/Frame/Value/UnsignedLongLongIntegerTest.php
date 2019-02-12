@@ -3,12 +3,13 @@ declare(strict_types = 1);
 
 namespace Tests\Innmind\AMQP\Transport\Frame\Value;
 
-use Innmind\AMQP\Transport\Frame\{
-    Value\UnsignedLongLongInteger,
-    Value
+use Innmind\AMQP\{
+    Transport\Frame\Value\UnsignedLongLongInteger,
+    Transport\Frame\Value,
+    Exception\OutOfRangeValue,
 };
 use Innmind\Math\Algebra\Integer;
-use Innmind\Immutable\Str;
+use Innmind\Filesystem\Stream\StringStream;
 use PHPUnit\Framework\TestCase;
 
 class UnsignedLongLongIntegerTest extends TestCase
@@ -21,13 +22,12 @@ class UnsignedLongLongIntegerTest extends TestCase
         );
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\OutOfRangeValue
-     * @expectedExceptionMessage -1 ∉ [0;+∞]
-     */
     public function testThrowWhenIntegerTooLow()
     {
-        new UnsignedLongLongInteger(new Integer(-1));
+        $this->expectException(OutOfRangeValue::class);
+        $this->expectExceptionMessage('-1 ∉ [0;+∞]');
+
+        UnsignedLongLongInteger::of(new Integer(-1));
     }
 
     /**
@@ -43,34 +43,14 @@ class UnsignedLongLongIntegerTest extends TestCase
     /**
      * @dataProvider cases
      */
-    public function testFromString($expected, $string)
+    public function testFromStream($expected, $string)
     {
-        $value = UnsignedLongLongInteger::fromString(new Str($string));
+        $value = UnsignedLongLongInteger::fromStream(new StringStream($string));
 
         $this->assertInstanceOf(UnsignedLongLongInteger::class, $value);
         $this->assertInstanceOf(Integer::class, $value->original());
         $this->assertSame($expected, $value->original()->value());
         $this->assertSame($string, (string) $value);
-    }
-
-    /**
-     * @dataProvider cases
-     */
-    public function testCut($_, $string)
-    {
-        $str = UnsignedLongLongInteger::cut(new Str($string.'foo'));
-
-        $this->assertInstanceOf(Str::class, $str);
-        $this->assertSame($string, (string) $str);
-    }
-
-    /**
-     * @expectedException Innmind\AMQP\Exception\StringNotOfExpectedLength
-     * @expectedExceptionMessage String "foo" is expected of being 8 characters, got 3
-     */
-    public function testThrowWhenStringNotOfExpectedLength()
-    {
-        UnsignedLongLongInteger::fromString(new Str('foo'));
     }
 
     public function cases(): array

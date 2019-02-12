@@ -14,15 +14,15 @@ use Innmind\AMQP\Model\Basic\Message\{
     Id,
     Type,
     UserId,
-    AppId
+    AppId,
 };
 use Innmind\TimeContinuum\{
     PointInTimeInterface,
-    ElapsedPeriod
+    ElapsedPeriod,
 };
 use Innmind\Immutable\{
     MapInterface,
-    Str
+    Str,
 };
 
 interface Message

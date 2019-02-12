@@ -5,8 +5,9 @@ namespace Tests\Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\{
     Value\Text,
-    Value
+    Value,
 };
+use Innmind\Filesystem\Stream\StringStream;
 use Innmind\Immutable\Str;
 use PHPUnit\Framework\TestCase;
 
@@ -30,23 +31,13 @@ class TextTest extends TestCase
     /**
      * @dataProvider cases
      */
-    public function testFromString($expected, $string)
+    public function testFromStream($expected, $string)
     {
-        $value = Text::fromString($str = new Str($string));
+        $value = Text::fromStream(new StringStream($string));
 
         $this->assertInstanceOf(Text::class, $value);
-        $this->assertSame($str, $value->original());
+        $this->assertSame((string) $string, (string) $value->original());
         $this->assertSame($expected, (string) $value);
-    }
-
-    /**
-     * @dataProvider cases
-     */
-    public function testCut($_, $string)
-    {
-        $value = Text::cut($str = new Str($string));
-
-        $this->assertSame($str, $value);
     }
 
     public function cases(): array

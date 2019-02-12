@@ -7,7 +7,7 @@ use Innmind\AMQP\{
     Transport\Connection as ConnectionInterface,
     Transport\Protocol,
     Transport\Frame,
-    Model\Connection\MaxFrameSize
+    Model\Connection\MaxFrameSize,
 };
 use Ramsey\Uuid\Uuid;
 use Psr\Log\LoggerInterface;

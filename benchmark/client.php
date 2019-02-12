@@ -8,14 +8,14 @@ use Innmind\AMQP\{
     Client\Client,
     Transport\Connection\Connection,
     Transport\Protocol\ArgumentTranslator\ValueTranslator,
-    Transport\Protocol\v091\Protocol
+    Transport\Protocol\v091\Protocol,
 };
 use Innmind\Socket\Internet\Transport;
-use Innmind\TimeContinuum\{
-    ElapsedPeriod,
-    TimeContinuum\Earth
-};
+use Innmind\TimeContinuum\ElapsedPeriod;
 use Innmind\Url\Url;
+use Innmind\OperatingSystem\Factory;
+
+$os = Factory::build();
 
 return new SignalAware(
     new Client(
@@ -24,7 +24,9 @@ return new SignalAware(
             Url::fromString('//guest:guest@localhost:5672/'),
             new Protocol(new ValueTranslator),
             new ElapsedPeriod(1000),
-            new Earth
-        )
+            $os->clock(),
+            $os->remote()
+        ),
+        $os->process()
     )
 );

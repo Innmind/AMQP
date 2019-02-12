@@ -21,13 +21,13 @@ use Innmind\AMQP\{
     Model\Connection\Open,
     Model\Connection\Close,
     Model\Connection\MaxChannels,
-    Model\Connection\MaxFrameSize
+    Model\Connection\MaxFrameSize,
 };
 use Innmind\TimeContinuum\ElapsedPeriod;
 use Innmind\Url\{
     Authority\UserInformation\User,
     Authority\UserInformation\Password,
-    Path
+    Path,
 };
 use PHPUnit\Framework\TestCase;
 

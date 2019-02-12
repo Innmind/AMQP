@@ -3,15 +3,17 @@ declare(strict_types = 1);
 
 namespace Tests\Innmind\AMQP\Transport\Protocol\v091\Reader;
 
-use Innmind\AMQP\Transport\{
-    Protocol\v091\Reader\Exchange,
-    Protocol\v091\Methods,
-    Frame\Method,
-    Frame\Value
+use Innmind\AMQP\{
+    Transport\Protocol\v091\Reader\Exchange,
+    Transport\Protocol\v091\Methods,
+    Transport\Frame\Method,
+    Transport\Frame\Value,
+    Exception\UnknownMethod,
 };
+use Innmind\Filesystem\Stream\StringStream;
 use Innmind\Immutable\{
     Str,
-    StreamInterface
+    StreamInterface,
 };
 use PHPUnit\Framework\TestCase;
 
@@ -26,7 +28,7 @@ class ExchangeTest extends TestCase
 
         $stream = $read(
             Methods::get($method),
-            new Str(implode('', $arguments))
+            new StringStream(implode('', $arguments))
         );
 
         $this->assertInstanceOf(StreamInterface::class, $stream);
@@ -39,13 +41,12 @@ class ExchangeTest extends TestCase
         }
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\UnknownMethod
-     * @expectedExceptionMessage 0,0
-     */
     public function testThrowWhenUnknownMethod()
     {
-        (new Exchange)(new Method(0, 0), new Str(''));
+        $this->expectException(UnknownMethod::class);
+        $this->expectExceptionMessage('0,0');
+
+        (new Exchange)(new Method(0, 0), new StringStream(''));
     }
 
     public function cases(): array

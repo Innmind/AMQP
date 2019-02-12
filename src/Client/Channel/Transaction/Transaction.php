@@ -6,7 +6,7 @@ namespace Innmind\AMQP\Client\Channel\Transaction;
 use Innmind\AMQP\{
     Client\Channel\Transaction as TransactionInterface,
     Transport\Connection,
-    Transport\Frame\Channel
+    Transport\Frame\Channel,
 };
 
 final class Transaction implements TransactionInterface

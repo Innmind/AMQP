@@ -14,7 +14,7 @@ use Innmind\AMQP\{
     Model\Basic\Message,
     Model\Basic\Qos,
     Model\Basic\Recover,
-    Model\Basic\Reject
+    Model\Basic\Reject,
 };
 use Psr\Log\LoggerInterface;
 use PHPUnit\Framework\TestCase;

@@ -16,29 +16,30 @@ use Innmind\AMQP\{
     Exception\PayloadTooShort,
     Exception\UnknownFrameType,
     Exception\NoFrameDetected,
-    Exception\LogicException
+    Exception\LogicException,
 };
 use Innmind\Stream\Readable;
+use Innmind\Filesystem\Stream\StringStream;
 
 final class FrameReader
 {
     public function __invoke(Readable $stream, Protocol $protocol): Frame
     {
-        $octet = $stream->read(1);
+        $octet = UnsignedOctet::fromStream($stream);
 
         try {
-            $type = Type::fromInt(
-                UnsignedOctet::fromString($octet)->original()->value()
-            );
+            $type = Type::fromInt($octet->original()->value());
         } catch (UnknownFrameType $e) {
-            throw new NoFrameDetected($octet->append((string) $stream->read()));
+            throw new NoFrameDetected(new StringStream(
+                (string) $stream->read()->prepend((string) $octet)
+            ));
         }
 
         $channel = new Channel(
-            UnsignedShortInteger::fromString($stream->read(2))->original()->value()
+            UnsignedShortInteger::fromStream($stream)->original()->value()
         );
         $payload = $stream
-            ->read(UnsignedLongInteger::fromString($stream->read(4))->original()->value())
+            ->read(UnsignedLongInteger::fromStream($stream)->original()->value())
             ->toEncoding('ASCII');
 
         if (
@@ -51,51 +52,45 @@ final class FrameReader
             throw new PayloadTooShort;
         }
 
-        $end = $stream->read(1)->toEncoding('ASCII');
-
-        if ($end->length() !== 1) {
-            throw new ReceivedFrameNotDelimitedCorrectly;
-        }
-
-        $end = UnsignedOctet::fromString($end)->original()->value();
+        $end = UnsignedOctet::fromStream($stream)->original()->value();
 
         if ($end !== Frame::end()) {
             throw new ReceivedFrameNotDelimitedCorrectly;
         }
 
+        $payload = new StringStream((string) $payload);
+
         switch ($type) {
             case Type::method():
-                $method = $payload->substring(0, 4);
                 $method = new Method(
-                    UnsignedShortInteger::fromString($method->substring(0, 2))
+                    UnsignedShortInteger::fromStream($payload)
                         ->original()
                         ->value(),
-                    UnsignedShortInteger::fromString($method->substring(2, 4))
+                    UnsignedShortInteger::fromStream($payload)
                         ->original()
                         ->value()
                 );
-                $arguments = $payload->substring(4);
 
                 return Frame::method(
                     $channel,
                     $method,
-                    ...$protocol->read($method, $arguments)
+                    ...$protocol->read($method, $payload)
                 );
 
             case Type::header():
-                $header = $payload->substring(0, 4); //3 and 4 are the weight
-                $class = UnsignedShortInteger::fromString($header->substring(0, 2))
+                $class = UnsignedShortInteger::fromStream($payload)
                     ->original()
                     ->value();
+                $payload->read(2); // walk over the weight definition
 
                 return Frame::header(
                     $channel,
                     $class,
-                    ...$protocol->readHeader($payload->substring(4))
+                    ...$protocol->readHeader($payload)
                 );
 
             case Type::body():
-                return Frame::body($channel, $payload);
+                return Frame::body($channel, $payload->read());
 
             case Type::heartbeat():
                 return Frame::heartbeat();

@@ -12,7 +12,7 @@ use Innmind\AMQP\Model\Basic\{
     Qos,
     Recover,
     Reject,
-    Message
+    Message,
 };
 
 interface Basic

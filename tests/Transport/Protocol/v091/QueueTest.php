@@ -20,7 +20,7 @@ use Innmind\AMQP\{
     Model\Queue\Deletion,
     Model\Queue\Binding,
     Model\Queue\Unbinding,
-    Model\Queue\Purge
+    Model\Queue\Purge,
 };
 use Innmind\Math\Algebra\Integer;
 use PHPUnit\Framework\TestCase;
@@ -30,7 +30,7 @@ class QueueTest extends TestCase
     private $queue;
     private $translator;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->queue = new Queue(
             $this->translator = $this->createMock(ArgumentTranslator::class)

@@ -7,19 +7,17 @@ use Innmind\AMQP\{
     Transport\Frame\Method,
     Transport\Frame\Visitor\ChunkArguments,
     Transport\Protocol\v091\Methods,
-    Exception\UnknownMethod
+    Exception\UnknownMethod,
 };
-use Innmind\Immutable\{
-    Str,
-    StreamInterface
-};
+use Innmind\Stream\Readable;
+use Innmind\Immutable\StreamInterface;
 
 final class Transaction
 {
     /**
      * @return StreamInterface<Value>
      */
-    public function __invoke(Method $method, Str $arguments): StreamInterface
+    public function __invoke(Method $method, Readable $arguments): StreamInterface
     {
         switch (true) {
             case Methods::get('tx.select-ok')->equals($method):

@@ -6,14 +6,13 @@ namespace Innmind\AMQP\Transport\Frame\Value;
 use Innmind\AMQP\{
     Transport\Frame\Value,
     Exception\OutOfRangeValue,
-    Exception\StringNotOfExpectedLength
 };
 use Innmind\Math\{
     Algebra\Integer,
     DefinitionSet\Set,
-    DefinitionSet\Range
+    DefinitionSet\Range,
 };
-use Innmind\Immutable\Str;
+use Innmind\Stream\Readable;
 
 /**
  * Same as shortshort
@@ -27,29 +26,23 @@ final class SignedOctet implements Value
 
     public function __construct(Integer $octet)
     {
-        if (!self::definitionSet()->contains($octet)) {
-            throw new OutOfRangeValue($octet, self::definitionSet());
-        }
-
         $this->original = $octet;
     }
 
-    public static function fromString(Str $string): Value
+    public static function of(Integer $value): self
     {
-        $string = $string->toEncoding('ASCII');
-
-        if ($string->length() !== 1) {
-            throw new StringNotOfExpectedLength($string, 1);
+        if (!self::definitionSet()->contains($value)) {
+            throw new OutOfRangeValue($value, self::definitionSet());
         }
 
-        [, $value] = unpack('c', (string) $string);
-
-        return new self(new Integer($value));
+        return new self($value);
     }
 
-    public static function cut(Str $string): Str
+    public static function fromStream(Readable $stream): Value
     {
-        return $string->toEncoding('ASCII')->substring(0, 1);
+        [, $value] = \unpack('c', (string) $stream->read(1));
+
+        return new self(new Integer($value));
     }
 
     public function original(): Integer
@@ -59,7 +52,7 @@ final class SignedOctet implements Value
 
     public function __toString(): string
     {
-        return $this->value ?? $this->value = pack('c', $this->original->value());
+        return $this->value ?? $this->value = \pack('c', $this->original->value());
     }
 
     public static function definitionSet(): Set

@@ -3,7 +3,10 @@ declare(strict_types = 1);
 
 namespace Tests\Innmind\AMQP\Model\Basic\Message;
 
-use Innmind\AMQP\Model\Basic\Message\ContentEncoding;
+use Innmind\AMQP\{
+    Model\Basic\Message\ContentEncoding,
+    Exception\DomainException,
+};
 use PHPUnit\Framework\TestCase;
 
 class ContentEncodingTest extends TestCase
@@ -13,11 +16,10 @@ class ContentEncodingTest extends TestCase
         $this->assertSame('gzip', (string) new ContentEncoding('gzip'));
     }
 
-    /**
-     * @expectedException Innmind\AMQP\Exception\DomainException
-     */
     public function testThrowWhenInvalidContentEncoding()
     {
+        $this->expectException(DomainException::class);
+
         new ContentEncoding('foo bar');
     }
 }

@@ -50,19 +50,21 @@ use Innmind\AMQP\{
     TimeContinuum\Format\Timestamp as TimestampFormat,
     Exception\Reject,
     Exception\Requeue,
-    Exception\Cancel
+    Exception\Cancel,
 };
 use Innmind\Socket\Internet\Transport;
 use Innmind\TimeContinuum\{
     ElapsedPeriod,
     TimeContinuum\Earth,
-    PointInTime\Earth\Now
+    PointInTime\Earth\Now,
 };
 use Innmind\Url\Url;
+use Innmind\OperatingSystem\Remote;
+use Innmind\Server\Control\Server;
 use Innmind\Math\Algebra\Integer;
 use Innmind\Immutable\{
     Str,
-    Map
+    Map,
 };
 use PHPUnit\Framework\TestCase;
 
@@ -75,7 +77,7 @@ class BasicTest extends TestCase
     private $basic;
     private $connection;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->basic = new Basic(
             $this->connection = new Connection(
@@ -83,7 +85,8 @@ class BasicTest extends TestCase
                 Url::fromString('//guest:guest@localhost:5672/'),
                 new Protocol(new ValueTranslator),
                 new ElapsedPeriod(1000),
-                new Earth
+                new Earth,
+                new Remote\Generic($this->createMock(Server::class))
             ),
             new Channel(1)
         );
@@ -94,7 +97,7 @@ class BasicTest extends TestCase
             ->wait('channel.open-ok');
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         $this->connection
             ->send(

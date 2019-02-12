@@ -11,7 +11,7 @@ use Innmind\AMQP\Model\Queue\{
     Binding,
     Unbinding,
     Purge,
-    PurgeOk
+    PurgeOk,
 };
 
 interface Queue
