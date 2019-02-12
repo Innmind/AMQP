@@ -20,33 +20,37 @@ use Innmind\Immutable\{
 };
 use Psr\Log\LoggerInterface;
 
-function bootstrap(
-    Socket $transport,
-    UrlInterface $server,
-    ElapsedPeriod $timeout,
-    TimeContinuumInterface $clock,
-    CurrentProcess $process,
-    Remote $remote,
-    LoggerInterface $logger = null
-): array {
-    $connection = new Transport\Connection\Lazy(
-        $transport,
-        $server,
-        new Transport\Protocol\v091\Protocol(
-            new Transport\Protocol\ArgumentTranslator\ValueTranslator
-        ),
-        $timeout,
-        $clock,
-        $remote
-    );
-
-    if ($logger instanceof LoggerInterface) {
-        $connection = new Transport\Connection\Logger($connection, $logger);
-    }
-
+function bootstrap(LoggerInterface $logger = null): array
+{
     return [
         'client' => [
-            'basic' => new Client\Client($connection, $process),
+            'basic' => static function(
+                Socket $transport,
+                UrlInterface $server,
+                ElapsedPeriod $timeout,
+                TimeContinuumInterface $clock,
+                CurrentProcess $process,
+                Remote $remote
+            ) use (
+                $logger
+            ): Client {
+                $connection = new Transport\Connection\Lazy(
+                    $transport,
+                    $server,
+                    new Transport\Protocol\v091\Protocol(
+                        new Transport\Protocol\ArgumentTranslator\ValueTranslator
+                    ),
+                    $timeout,
+                    $clock,
+                    $remote
+                );
+
+                if ($logger instanceof LoggerInterface) {
+                    $connection = new Transport\Connection\Logger($connection, $logger);
+                }
+
+                return new Client\Client($connection, $process);
+            },
             'fluent' => static function(Client $client): Client {
                 return new Client\Fluent($client);
             },
