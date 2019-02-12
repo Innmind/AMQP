@@ -1,10 +1,10 @@
 # AMQP
 
-| `master` | `develop` |
-|----------|-----------|
-| [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/Innmind/AMQP/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/Innmind/AMQP/?branch=master) | [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/Innmind/AMQP/badges/quality-score.png?b=develop)](https://scrutinizer-ci.com/g/Innmind/AMQP/?branch=develop) |
-| [![Code Coverage](https://scrutinizer-ci.com/g/Innmind/AMQP/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/Innmind/AMQP/?branch=master) | [![Code Coverage](https://scrutinizer-ci.com/g/Innmind/AMQP/badges/coverage.png?b=develop)](https://scrutinizer-ci.com/g/Innmind/AMQP/?branch=develop) |
-| [![Build Status](https://scrutinizer-ci.com/g/Innmind/AMQP/badges/build.png?b=master)](https://scrutinizer-ci.com/g/Innmind/AMQP/build-status/master) | [![Build Status](https://scrutinizer-ci.com/g/Innmind/AMQP/badges/build.png?b=develop)](https://scrutinizer-ci.com/g/Innmind/AMQP/build-status/develop) |
+| `develop` |
+|-----------|
+| [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/Innmind/AMQP/badges/quality-score.png?b=develop)](https://scrutinizer-ci.com/g/Innmind/AMQP/?branch=develop) |
+| [![Code Coverage](https://scrutinizer-ci.com/g/Innmind/AMQP/badges/coverage.png?b=develop)](https://scrutinizer-ci.com/g/Innmind/AMQP/?branch=develop) |
+| [![Build Status](https://scrutinizer-ci.com/g/Innmind/AMQP/badges/build.png?b=develop)](https://scrutinizer-ci.com/g/Innmind/AMQP/build-status/develop) |
 
 This is an AMQP client implementing the version `0.9` of the protocol. Even though the `1.0` is out it's not implemented (yet?) as RabbitMQ is still on 0.9 (despite that the code has been structured so it can be easy to create this implementation).
 
