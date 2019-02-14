@@ -2,7 +2,8 @@
 
 | `develop` |
 |-----------|
-| [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/Innmind/AMQP/badges/quality-score.png?b=develop)](https://scrutinizer-ci.com/g/Innmind/AMQP/?branch=develop) |
+| [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/Innmind/AMQP/badges/quality-score.png?b=develop)](https://scrutinizer-ci.com/g/Innmind/AMQP/?branch=develop) [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FInnmind%2FAMQP.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FInnmind%2FAMQP?ref=badge_shield)
+|
 | [![Code Coverage](https://scrutinizer-ci.com/g/Innmind/AMQP/badges/coverage.png?b=develop)](https://scrutinizer-ci.com/g/Innmind/AMQP/?branch=develop) |
 | [![Build Status](https://scrutinizer-ci.com/g/Innmind/AMQP/badges/build.png?b=develop)](https://scrutinizer-ci.com/g/Innmind/AMQP/build-status/develop) |
 
@@ -178,3 +179,7 @@ php benchmark/stream_tmp_produce.php 100
 ```
 
 So it appears _pure_ functions come at a cost!
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FInnmind%2FAMQP.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FInnmind%2FAMQP?ref=badge_large)
