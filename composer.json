@@ -20,7 +20,7 @@
         "innmind/time-continuum": "^1.0",
         "innmind/math": "^4.1",
         "innmind/url": "^2.0",
-        "innmind/socket": "^1.0",
+        "innmind/socket": "^1.0|~2.0",
         "innmind/filesystem": "^3.0",
         "ramsey/uuid": "^3.7",
         "innmind/operating-system": "^1.4",
