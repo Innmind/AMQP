@@ -28,5 +28,6 @@ return new SignalAware(
             $os->remote()
         ),
         $os->process()
-    )
+    ),
+    $os->process()->signals()
 );
