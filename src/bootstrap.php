@@ -12,6 +12,7 @@ use Innmind\TimeContinuum\{
 use Innmind\CLI\Command as CLICommand;
 use Innmind\OperatingSystem\{
     CurrentProcess,
+    CurrentProcess\Signals,
     Remote,
 };
 use Innmind\Immutable\{
@@ -57,8 +58,8 @@ function bootstrap(LoggerInterface $logger = null): array
             'logger' => static function(Client $client) use ($logger): Client {
                 return new Client\Logger($client, $logger);
             },
-            'signal_aware' => static function(Client $client): Client {
-                return new Client\SignalAware($client);
+            'signal_aware' => static function(Client $client, Signals $signals): Client {
+                return new Client\SignalAware($client, $signals);
             },
             'auto_declare' => static function(SetInterface $exchanges, SetInterface $queues, SetInterface $bindings): callable {
                 return static function(Client $client) use ($exchanges, $queues, $bindings): Client {
