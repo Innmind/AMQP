@@ -22,6 +22,7 @@ use Innmind\Socket\Internet\Transport;
 use Innmind\Url\Url;
 use Innmind\OperatingSystem\{
     CurrentProcess,
+    CurrentProcess\Signals,
     Remote,
 };
 use Innmind\TimeContinuum\{
@@ -76,7 +77,7 @@ class BootstrapTest extends TestCase
         );
         $this->assertInstanceOf(
             SignalAware::class,
-            $signalAware($basic)
+            $signalAware($basic, $this->createMock(Signals::class))
         );
         $this->assertInstanceOf(
             AutoDeclare::class,

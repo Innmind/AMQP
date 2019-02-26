@@ -4,15 +4,19 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Client;
 
 use Innmind\AMQP\Client as ClientInterface;
+use Innmind\OperatingSystem\CurrentProcess\Signals;
+use Innmind\Signals\Signal;
 
 final class SignalAware implements ClientInterface
 {
     private $client;
+    private $signals;
     private $handlersRegistered = false;
 
-    public function __construct(ClientInterface $client)
+    public function __construct(ClientInterface $client, Signals $signals)
     {
         $this->client = $client;
+        $this->signals = $signals;
     }
 
     public function channel(): Channel
@@ -38,20 +42,18 @@ final class SignalAware implements ClientInterface
             return;
         }
 
-        \pcntl_async_signals(true);
-
         $softClose = function(): void {
             $this->close();
         };
 
-        \pcntl_signal(SIGHUP, static function() {
+        $this->signals->listen(Signal::hangup(), static function() {
             //do nothing so it can run in background
         });
-        \pcntl_signal(SIGINT, $softClose);
-        \pcntl_signal(SIGABRT, $softClose);
-        \pcntl_signal(SIGTERM, $softClose);
-        \pcntl_signal(SIGTSTP, $softClose);
-        \pcntl_signal(SIGALRM, $softClose);
+        $this->signals->listen(Signal::interrupt(), $softClose);
+        $this->signals->listen(Signal::abort(), $softClose);
+        $this->signals->listen(Signal::terminate(), $softClose);
+        $this->signals->listen(Signal::terminalStop(), $softClose);
+        $this->signals->listen(Signal::alarm(), $softClose);
         $this->handlersRegistered = true;
     }
 }
