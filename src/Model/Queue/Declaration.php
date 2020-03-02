@@ -15,13 +15,13 @@ use Innmind\Immutable\{
 
 final class Declaration
 {
-    private $name;
-    private $passive = false;
-    private $durable = false;
-    private $autoDelete = false;
-    private $exclusive = false;
-    private $wait = true;
-    private $arguments;
+    private ?string $name = null;
+    private bool $passive = false;
+    private bool $durable = false;
+    private bool $autoDelete = false;
+    private bool $exclusive = false;
+    private bool $wait = true;
+    private Map $arguments;
 
     private function __construct()
     {

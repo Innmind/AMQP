@@ -9,8 +9,8 @@ use Innmind\Stream\Readable;
 
 final class SignedLongLongInteger implements Value
 {
-    private $value;
-    private $original;
+    private ?string $value = null;
+    private Integer $original;
 
     public function __construct(Integer $value)
     {

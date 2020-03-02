@@ -5,8 +5,8 @@ namespace Innmind\AMQP\Model\Basic;
 
 final class Cancel
 {
-    private $consumerTag;
-    private $wait = true;
+    private string $consumerTag;
+    private bool $wait = true;
 
     public function __construct(string $consumerTag)
     {

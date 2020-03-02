@@ -17,8 +17,8 @@ use Innmind\CLI\{
 
 final class Get implements Command
 {
-    private $client;
-    private $consumers;
+    private Client $client;
+    private Consumers $consumers;
 
     public function __construct(Client $client, Consumers $consumers)
     {

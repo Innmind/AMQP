@@ -9,9 +9,9 @@ use Innmind\Signals\Signal;
 
 final class SignalAware implements ClientInterface
 {
-    private $client;
-    private $signals;
-    private $handlersRegistered = false;
+    private ClientInterface $client;
+    private Signals $signals;
+    private bool $handlersRegistered = false;
 
     public function __construct(ClientInterface $client, Signals $signals)
     {

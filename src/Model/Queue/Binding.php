@@ -10,11 +10,11 @@ use Innmind\Immutable\{
 
 final class Binding
 {
-    private $exchange;
-    private $queue;
-    private $routingKey;
-    private $wait = true;
-    private $arguments;
+    private string $exchange;
+    private string $queue;
+    private string $routingKey;
+    private bool $wait = true;
+    private Map $arguments;
 
     public function __construct(string $exchange, string $queue, string $routingKey = '')
     {

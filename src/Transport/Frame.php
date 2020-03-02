@@ -23,11 +23,11 @@ use Innmind\Immutable\{
 
 final class Frame
 {
-    private $type;
-    private $channel;
-    private $method;
-    private $values;
-    private $string;
+    private Type $type;
+    private Channel $channel;
+    private ?Method $method = null;
+    private Stream $values;
+    private string $string;
 
     private function __construct(
         Type $type,

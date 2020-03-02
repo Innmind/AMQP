@@ -14,8 +14,8 @@ use Innmind\Immutable\{
 
 final class Bits implements Value
 {
-    private $value;
-    private $original;
+    private ?string $value = null;
+    private Stream $original;
 
     public function __construct(bool $first, bool ...$bits)
     {

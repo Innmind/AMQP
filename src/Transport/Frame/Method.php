@@ -7,8 +7,8 @@ use Innmind\AMQP\Exception\DomainException;
 
 final class Method
 {
-    private $class;
-    private $method;
+    private int $class;
+    private int $method;
 
     public function __construct(int $class, int $method)
     {

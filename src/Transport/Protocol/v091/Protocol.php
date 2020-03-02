@@ -32,14 +32,14 @@ use Innmind\Immutable\{
 
 final class Protocol implements ProtocolInterface
 {
-    private $version;
-    private $read;
-    private $connection;
-    private $channel;
-    private $exchange;
-    private $queue;
-    private $basic;
-    private $transaction;
+    private Version $version;
+    private Reader $read;
+    private Connection $connection;
+    private Channel $channel;
+    private Exchange $exchange;
+    private Queue $queue;
+    private Basic $basic;
+    private Transaction $transaction;
 
     public function __construct(ArgumentTranslator $translator)
     {

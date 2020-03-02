@@ -15,7 +15,7 @@
         "issues": "http://github.com/Innmind/AMQP/issues"
     },
     "require": {
-        "php": "~7.2",
+        "php": "~7.4",
         "innmind/immutable": "^2.4",
         "innmind/time-continuum": "^1.0",
         "innmind/math": "^4.1",

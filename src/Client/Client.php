@@ -13,10 +13,10 @@ use Innmind\Immutable\Map;
 
 final class Client implements ClientInterface
 {
-    private $connection;
-    private $process;
-    private $channels;
-    private $channel = 1;
+    private Connection $connection;
+    private CurrentProcess $process;
+    private Map $channels;
+    private int $channel = 1;
 
     public function __construct(Connection $connection, CurrentProcess $process)
     {

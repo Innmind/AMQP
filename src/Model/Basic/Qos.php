@@ -13,9 +13,9 @@ use Innmind\AMQP\Exception\DomainException;
  */
 final class Qos
 {
-    private $prefetchSize;
-    private $prefetchCount;
-    private $global = false;
+    private int $prefetchSize;
+    private int $prefetchCount;
+    private bool $global = false;
 
     public function __construct(int $prefetchSize, int $prefetchCount)
     {

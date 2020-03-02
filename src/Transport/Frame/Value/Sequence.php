@@ -20,8 +20,8 @@ use Innmind\Immutable\{
  */
 final class Sequence implements Value
 {
-    private $value;
-    private $original;
+    private ?string $value = null;
+    private Stream $original;
 
     public function __construct(Value ...$values)
     {

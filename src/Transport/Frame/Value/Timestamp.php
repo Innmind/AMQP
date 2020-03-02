@@ -17,8 +17,8 @@ use Innmind\Stream\Readable;
 
 final class Timestamp implements Value
 {
-    private $value;
-    private $original;
+    private ?string $value = null;
+    private PointInTimeInterface $original;
 
     public function __construct(PointInTimeInterface $point)
     {

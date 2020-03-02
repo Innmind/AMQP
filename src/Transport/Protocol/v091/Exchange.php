@@ -25,7 +25,7 @@ use Innmind\Immutable\{
 
 final class Exchange implements ExchangeInterface
 {
-    private $translate;
+    private ArgumentTranslator $translate;
 
     public function __construct(ArgumentTranslator $translator)
     {

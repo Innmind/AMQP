@@ -7,7 +7,7 @@ use Innmind\Stream\Readable;
 
 final class NoFrameDetected extends RuntimeException
 {
-    private $content;
+    private Readable $content;
 
     public function __construct(Readable $content)
     {

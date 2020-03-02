@@ -19,8 +19,8 @@ use function Innmind\Immutable\assertMap;
 
 final class Table implements Value
 {
-    private $value;
-    private $original;
+    private ?string $value = null;
+    private MapInterface $original;
 
     /**
      * @param MapInterface<string, Value> $map

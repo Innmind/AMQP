@@ -19,8 +19,8 @@ use Psr\Log\LoggerInterface;
 
 final class Logger implements BasicInterface
 {
-    private $basic;
-    private $logger;
+    private BasicInterface $basic;
+    private LoggerInterface $logger;
 
     public function __construct(BasicInterface $basic, LoggerInterface $logger)
     {

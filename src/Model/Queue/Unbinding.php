@@ -10,10 +10,10 @@ use Innmind\Immutable\{
 
 final class Unbinding
 {
-    private $exchange;
-    private $queue;
-    private $routingKey;
-    private $arguments;
+    private string $exchange;
+    private string $queue;
+    private string $routingKey;
+    private Map $arguments;
 
     public function __construct(string $exchange, string $queue, string $routingKey = '')
     {

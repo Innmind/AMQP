@@ -29,7 +29,7 @@ use Innmind\Immutable\{
 
 final class Queue implements QueueInterface
 {
-    private $translate;
+    private ArgumentTranslator $translate;
 
     public function __construct(ArgumentTranslator $translator)
     {

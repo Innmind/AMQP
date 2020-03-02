@@ -9,8 +9,8 @@ use Innmind\Immutable\Str;
 
 final class Text implements Value
 {
-    private $value;
-    private $original;
+    private string $value;
+    private Str $original;
 
     public function __construct(Str $string)
     {

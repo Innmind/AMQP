@@ -5,7 +5,7 @@ namespace Innmind\AMQP\Model\Channel;
 
 final class FlowOk
 {
-    private $active;
+    private bool $active;
 
     public function __construct(bool $active)
     {

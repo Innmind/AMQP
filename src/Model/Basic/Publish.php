@@ -5,11 +5,11 @@ namespace Innmind\AMQP\Model\Basic;
 
 final class Publish
 {
-    private $message;
-    private $exchange = '';
-    private $routingKey = '';
-    private $mandatory = false;
-    private $immediate = false;
+    private Message $message;
+    private string $exchange = '';
+    private string $routingKey = '';
+    private bool $mandatory = false;
+    private bool $immediate = false;
 
     public function __construct(Message $message)
     {

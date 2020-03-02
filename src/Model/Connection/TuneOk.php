@@ -7,9 +7,9 @@ use Innmind\TimeContinuum\ElapsedPeriod;
 
 final class TuneOk
 {
-    private $maxChannels;
-    private $maxFrameSize;
-    private $heartbeat;
+    private MaxChannels $maxChannels;
+    private MaxFrameSize $maxFrameSize;
+    private ElapsedPeriod $heartbeat;
 
     public function __construct(
         MaxChannels $maxChannels,

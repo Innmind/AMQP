@@ -15,7 +15,7 @@ use Innmind\Filesystem\{
  */
 final class ContentType
 {
-    private $value;
+    private string $value;
 
     public function __construct(string $topLevel, string $subType)
     {

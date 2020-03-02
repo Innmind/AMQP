@@ -18,7 +18,7 @@ use Innmind\Immutable\{
 
 final class Locked implements Message
 {
-    private $message;
+    private Message $message;
 
     public function __construct(Message $message)
     {

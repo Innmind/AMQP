@@ -7,7 +7,7 @@ use Innmind\AMQP\Transport\Frame\Method;
 
 final class ConnectionClosed extends RuntimeException
 {
-    private $cause;
+    private ?Method $cause = null;
 
     public static function byServer(string $message, int $code, Method $cause): self
     {

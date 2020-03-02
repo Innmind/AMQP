@@ -7,7 +7,7 @@ use Innmind\AMQP\Exception\DomainException;
 
 final class Channel
 {
-    private $value;
+    private int $value;
 
     public function __construct(int $value)
     {

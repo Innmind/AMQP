@@ -41,7 +41,7 @@ use Innmind\Immutable\{
 
 final class Basic implements BasicInterface
 {
-    private $translate;
+    private ArgumentTranslator $translate;
 
     public function __construct(ArgumentTranslator $translator)
     {

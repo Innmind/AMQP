@@ -11,13 +11,13 @@ use Innmind\Immutable\{
 
 final class Consume
 {
-    private $queue;
-    private $consumerTag;
-    private $local = true;
-    private $ack = true;
-    private $exclusive = false;
-    private $wait = true;
-    private $arguments;
+    private string $queue;
+    private ?string $consumerTag = null;
+    private bool $local = true;
+    private bool $ack = true;
+    private bool $exclusive = false;
+    private bool $wait = true;
+    private Map $arguments;
 
     public function __construct(string $queue)
     {

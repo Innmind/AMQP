@@ -20,14 +20,14 @@ use Innmind\OperatingSystem\Remote;
 
 final class Lazy implements ConnectionInterface
 {
-    private $transport;
-    private $server;
-    private $protocol;
-    private $timeout;
-    private $clock;
-    private $remote;
-    private $connection;
-    private $closed = false;
+    private Transport $transport;
+    private UrlInterface $server;
+    private Protocol $protocol;
+    private ElapsedPeriod $timeout;
+    private TimeContinuumInterface $clock;
+    private Remote $remote;
+    private ?Connection $connection = null;
+    private bool $closed = false;
 
     public function __construct(
         Transport $transport,

@@ -14,8 +14,8 @@ use Psr\Log\LoggerInterface;
 
 final class Logger implements ConsumerInterface
 {
-    private $consumer;
-    private $logger;
+    private ConsumerInterface $consumer;
+    private LoggerInterface $logger;
 
     public function __construct(
         ConsumerInterface $consumer,

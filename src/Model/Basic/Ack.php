@@ -8,8 +8,8 @@ namespace Innmind\AMQP\Model\Basic;
  */
 final class Ack
 {
-    private $deliveryTag;
-    private $multiple = false;
+    private int $deliveryTag;
+    private bool $multiple = false;
 
     public function __construct(int $deliveryTag)
     {

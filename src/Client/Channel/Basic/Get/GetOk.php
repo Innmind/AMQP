@@ -17,16 +17,16 @@ use Innmind\AMQP\{
 
 final class GetOk implements Get
 {
-    private $connection;
-    private $channel;
-    private $command;
-    private $message;
-    private $deliveryTag;
-    private $redelivered;
-    private $exchange;
-    private $routingKey;
-    private $messageCount;
-    private $consumed = false;
+    private Connection $connection;
+    private Channel $channel;
+    private Command $command;
+    private Message $message;
+    private int $deliveryTag;
+    private bool $redelivered;
+    private string $exchange;
+    private string $routingKey;
+    private int $messageCount;
+    private bool $consumed = false;
 
     public function __construct(
         Connection $connection,

@@ -12,13 +12,13 @@ use Innmind\AMQP\{
 
 final class Channel implements ChannelInterfce
 {
-    private $connection;
-    private $number;
-    private $exchange;
-    private $queue;
-    private $basic;
-    private $transaction;
-    private $closed = false;
+    private Connection $connection;
+    private Number $number;
+    private Exchange $exchange;
+    private Queue $queue;
+    private Basic $basic;
+    private Transaction $transaction;
+    private bool $closed = false;
 
     public function __construct(Connection $connection, Number $number)
     {

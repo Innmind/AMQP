@@ -23,9 +23,9 @@ use Innmind\TimeContinuum\ElapsedPeriod;
 
 final class Basic implements BasicInterface
 {
-    private $connection;
-    private $channel;
-    private $read;
+    private Connection $connection;
+    private Channel $channel;
+    private MessageReader $read;
 
     public function __construct(Connection $connection, Channel $channel)
     {

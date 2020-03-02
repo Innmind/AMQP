@@ -19,10 +19,10 @@ use Innmind\Stream\Readable;
  */
 final class SignedOctet implements Value
 {
-    private static $definitionSet;
+    private static ?Set $definitionSet = null;
 
-    private $value;
-    private $original;
+    private ?string $value = null;
+    private Integer $original;
 
     public function __construct(Integer $octet)
     {

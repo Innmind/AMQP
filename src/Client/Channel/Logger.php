@@ -8,8 +8,8 @@ use Psr\Log\LoggerInterface;
 
 final class Logger implements ChannelInterface
 {
-    private $channel;
-    private $basic;
+    private ChannelInterface $channel;
+    private Basic $basic;
 
     public function __construct(
         ChannelInterface $channel,

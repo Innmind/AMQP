@@ -11,8 +11,8 @@ use Innmind\AMQP\{
 
 final class Transaction implements TransactionInterface
 {
-    private $connection;
-    private $channel;
+    private Connection $connection;
+    private Channel $channel;
 
     public function __construct(Connection $connection, Channel $channel)
     {

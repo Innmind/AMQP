@@ -17,12 +17,12 @@ use Innmind\Immutable\StreamInterface;
 
 final class Reader
 {
-    private $connection;
-    private $channel;
-    private $exchange;
-    private $queue;
-    private $basic;
-    private $tx;
+    private Connection $connection;
+    private Channel $channel;
+    private Exchange $exchange;
+    private Queue $queue;
+    private Basic $basic;
+    private Transaction $tx;
 
     public function __construct()
     {

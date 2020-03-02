@@ -18,7 +18,7 @@ use Innmind\Immutable\Str;
 
 final class Purge implements Command
 {
-    private $client;
+    private Client $client;
 
     public function __construct(Client $client)
     {

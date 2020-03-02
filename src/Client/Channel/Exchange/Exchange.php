@@ -13,8 +13,8 @@ use Innmind\AMQP\{
 
 final class Exchange implements ExchangeInterface
 {
-    private $connection;
-    private $channel;
+    private Connection $connection;
+    private Channel $channel;
 
     public function __construct(Connection $connection, Channel $channel)
     {

@@ -13,8 +13,8 @@ use Psr\Log\LoggerInterface;
 
 final class Logger implements Get
 {
-    private $get;
-    private $logger;
+    private Get $get;
+    private LoggerInterface $logger;
 
     public function __construct(
         Get $get,

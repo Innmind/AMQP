@@ -15,12 +15,12 @@ use Innmind\Stream\Readable;
 
 final class Decimal implements Value
 {
-    private static $definitionSet;
+    private static ?NaturalNumbers $definitionSet = null;
 
-    private $string;
-    private $value;
-    private $scale;
-    private $original;
+    private ?string $string = null;
+    private Integer $value;
+    private Integer $scale;
+    private Number $original;
 
     public function __construct(Integer $value, Integer $scale)
     {

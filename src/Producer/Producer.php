@@ -11,8 +11,8 @@ use Innmind\AMQP\{
 };
 final class Producer implements ProducerInterface
 {
-    private $client;
-    private $exchange;
+    private Client $client;
+    private string $exchange;
 
     public function __construct(Client $client, string $exchange)
     {

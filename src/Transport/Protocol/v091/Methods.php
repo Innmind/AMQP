@@ -11,8 +11,8 @@ use Innmind\Immutable\{
 
 final class Methods
 {
-    private static $all;
-    private static $classes;
+    private static ?Map $all = null;
+    private static ?Map $classes = null;
 
     public static function get(string $method): Method
     {

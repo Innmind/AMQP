@@ -22,14 +22,14 @@ use Innmind\AMQP\{
 
 final class Consumer implements ConsumerInterface
 {
-    private $connection;
-    private $command;
-    private $channel;
-    private $consumerTag;
-    private $read;
-    private $take;
-    private $predicate;
-    private $canceled = false;
+    private Connection $connection;
+    private Consume $command;
+    private Channel $channel;
+    private string $consumerTag;
+    private MessageReader $read;
+    private ?int $take = null;
+    private \Closure $predicate;
+    private bool $canceled = false;
 
     public function __construct(
         Connection $connection,

@@ -8,7 +8,7 @@ namespace Innmind\AMQP\Model\Basic\Message;
  */
 final class UserId
 {
-    private $value;
+    private string $value;
 
     public function __construct(string $value)
     {

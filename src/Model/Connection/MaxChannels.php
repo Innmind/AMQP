@@ -7,7 +7,7 @@ use Innmind\AMQP\Exception\DomainException;
 
 final class MaxChannels
 {
-    private $value;
+    private int $value;
 
     public function __construct(int $value)
     {

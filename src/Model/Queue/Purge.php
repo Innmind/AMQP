@@ -5,8 +5,8 @@ namespace Innmind\AMQP\Model\Queue;
 
 final class Purge
 {
-    private $name;
-    private $wait = true;
+    private string $name;
+    private bool $wait = true;
 
     public function __construct(string $name)
     {

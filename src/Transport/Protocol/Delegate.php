@@ -16,8 +16,8 @@ use Innmind\Immutable\{
 
 final class Delegate implements Protocol
 {
-    private $protocols;
-    private $inUse;
+    private Sequence $protocols;
+    private Protocol $inUse;
 
     public function __construct(Protocol $first, Protocol ...$protocols)
     {

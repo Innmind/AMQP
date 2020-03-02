@@ -10,8 +10,8 @@ use Innmind\Immutable\{
 
 final class Symbols
 {
-    private static $symbols;
-    private static $classes;
+    private static ?Map $symbols = null;
+    private static ?Map $classes = null;
 
     private function __construct()
     {

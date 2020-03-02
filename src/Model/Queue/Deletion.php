@@ -5,10 +5,10 @@ namespace Innmind\AMQP\Model\Queue;
 
 final class Deletion
 {
-    private $name;
-    private $ifUnused = false;
-    private $ifEmpty = false;
-    private $wait = true;
+    private string $name;
+    private bool $ifUnused = false;
+    private bool $ifEmpty = false;
+    private bool $wait = true;
 
     public function __construct(string $name)
     {

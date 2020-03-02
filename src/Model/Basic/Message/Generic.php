@@ -17,20 +17,20 @@ use function Innmind\Immutable\assertMap;
 
 final class Generic implements Message
 {
-    private $contentType;
-    private $contentEncoding;
-    private $headers;
-    private $deliveryMode;
-    private $priority;
-    private $correlationId;
-    private $replyTo;
-    private $expiration;
-    private $id;
-    private $timestamp;
-    private $type;
-    private $userId;
-    private $appId;
-    private $body;
+    private ?ContentType $contentType = null;
+    private ?ContentEncoding $contentEncoding = null;
+    private Map $headers;
+    private ?DeliveryMode $deliveryMode = null;
+    private ?Priority $priority = null;
+    private ?CorrelationId $correlationId = null;
+    private ?ReplyTo $replyTo = null;
+    private ?ElapsedPeriod $expiration = null;
+    private ?Id $id = null;
+    private ?PointInTimeInterface $timestamp = null;
+    private ?Type $type = null;
+    private ?UserId $userId = null;
+    private ?AppId $appId = null;
+    private Str $body;
 
     public function __construct(Str $body)
     {

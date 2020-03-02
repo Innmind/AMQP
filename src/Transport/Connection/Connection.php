@@ -32,33 +32,36 @@ use Innmind\Socket\{
 use Innmind\Stream\Select;
 use Innmind\Url\{
     UrlInterface,
+    PathInterface,
+    Authority,
     Authority\NullUserInformation,
 };
 use Innmind\TimeContinuum\{
     ElapsedPeriod,
     TimeContinuumInterface,
+    PointInTimeInterface,
 };
 use Innmind\OperatingSystem\Remote;
 use Innmind\Immutable\Str;
 
 final class Connection implements ConnectionInterface
 {
-    private $transport;
-    private $authority;
-    private $vhost;
-    private $protocol;
-    private $socket;
-    private $timeout;
-    private $remote;
-    private $select;
-    private $read;
-    private $closed = true;
-    private $opening = true;
-    private $maxChannels;
-    private $maxFrameSize;
-    private $heartbeat;
-    private $clock;
-    private $lastReceivedData;
+    private Transport $transport;
+    private Authority $authority;
+    private PathInterface $vhost;
+    private Protocol $protocol;
+    private Socket $socket;
+    private ElapsedPeriod $timeout;
+    private Remote $remote;
+    private Select $select;
+    private FrameReader $read;
+    private bool $closed = true;
+    private bool $opening = true;
+    private MaxChannels $maxChannels;
+    private MaxFrameSize $maxFrameSize;
+    private ElapsedPeriod $heartbeat;
+    private TimeContinuumInterface $clock;
+    private PointInTimeInterface $lastReceivedData;
 
     public function __construct(
         Transport $transport,

@@ -5,9 +5,9 @@ namespace Innmind\AMQP\Model\Connection;
 
 final class Close
 {
-    private $replyCode;
-    private $replyText;
-    private $cause;
+    private ?int $replyCode = null;
+    private ?string $replyText = null;
+    private ?string $cause = null;
 
     public static function reply(int $code, string $text): self
     {

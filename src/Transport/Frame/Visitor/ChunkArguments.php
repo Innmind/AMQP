@@ -12,7 +12,7 @@ use Innmind\Immutable\{
 
 final class ChunkArguments
 {
-    private $types;
+    private array $types;
 
     public function __construct(string ...$types)
     {

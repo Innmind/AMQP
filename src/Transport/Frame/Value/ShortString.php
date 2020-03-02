@@ -10,8 +10,8 @@ use Innmind\Immutable\Str;
 
 final class ShortString implements Value
 {
-    private $value;
-    private $original;
+    private ?string $value = null;
+    private Str $original;
 
     public function __construct(Str $string)
     {

@@ -11,7 +11,7 @@ use function Innmind\Immutable\assertMap;
 
 final class Consumers
 {
-    private $consumers;
+    private MapInterface $consumers;
 
     public function __construct(MapInterface $consumers = null)
     {

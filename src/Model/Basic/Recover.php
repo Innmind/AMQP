@@ -5,7 +5,7 @@ namespace Innmind\AMQP\Model\Basic;
 
 final class Recover
 {
-    private $requeue = false;
+    private bool $requeue = false;
 
     /**
      * This will requeue unacknowledged messages meaning they may be delivered

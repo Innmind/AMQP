@@ -8,10 +8,10 @@ final class DeliveryMode
     private const NON_PERSISTENT = 1;
     private const PERSISTENT = 2;
 
-    private static $nonPersistent;
-    private static $persistent;
+    private static ?self $nonPersistent = null;
+    private static ?self $persistent = null;
 
-    private $mode;
+    private int $mode;
 
     private function __construct(int $mode)
     {

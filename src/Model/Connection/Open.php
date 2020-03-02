@@ -7,7 +7,7 @@ use Innmind\Url\PathInterface;
 
 final class Open
 {
-    private $virtualHost;
+    private PathInterface $virtualHost;
 
     public function __construct(PathInterface $virtualHost)
     {

@@ -10,8 +10,8 @@ use Innmind\Url\Authority\UserInformation\{
 
 final class StartOk
 {
-    private $user;
-    private $password;
+    private UserInterface $user;
+    private PasswordInterface $password;
 
     public function __construct(UserInterface $user, PasswordInterface $password)
     {

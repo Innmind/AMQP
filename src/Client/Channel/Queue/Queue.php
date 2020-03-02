@@ -20,8 +20,8 @@ use Innmind\AMQP\{
 
 final class Queue implements QueueInterface
 {
-    private $connection;
-    private $channel;
+    private Connection $connection;
+    private Channel $channel;
 
     public function __construct(Connection $connection, Channel $channel)
     {

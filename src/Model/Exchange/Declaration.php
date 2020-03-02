@@ -11,13 +11,13 @@ use Innmind\Immutable\{
 
 final class Declaration
 {
-    private $name;
-    private $type;
-    private $passive = false;
-    private $durable = false;
-    private $autoDelete = false;
-    private $wait = true;
-    private $arguments;
+    private string $name;
+    private Type $type;
+    private bool $passive = false;
+    private bool $durable = false;
+    private bool $autoDelete = false;
+    private bool $wait = true;
+    private Map $arguments;
 
     private function __construct(string $name, Type $type)
     {

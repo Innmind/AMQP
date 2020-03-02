@@ -7,9 +7,9 @@ use Innmind\AMQP\Exception\DomainException;
 
 final class Version
 {
-    private $major;
-    private $minor;
-    private $fix;
+    private int $major;
+    private int $minor;
+    private int $fix;
 
     public function __construct(int $major, int $minor, int $fix)
     {

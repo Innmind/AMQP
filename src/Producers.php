@@ -11,7 +11,7 @@ use Innmind\Immutable\{
 
 final class Producers
 {
-    private $producers;
+    private Map $producers;
 
     public function __construct(Client $client, string ...$exchanges)
     {

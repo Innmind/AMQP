@@ -12,12 +12,12 @@ final class Type
     private const BODY = 3;
     private const HEARTBEAT = 8;
 
-    private static $method;
-    private static $header;
-    private static $body;
-    private static $heartbeat;
+    private static ?self $method = null;
+    private static ?self $header = null;
+    private static ?self $body = null;
+    private static ?self $heartbeat = null;
 
-    private $value;
+    private int $value;
 
     private function __construct(int $value)
     {
