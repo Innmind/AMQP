@@ -24,6 +24,7 @@ use Innmind\OperatingSystem\{
     CurrentProcess,
     CurrentProcess\Signals,
     Remote,
+    Sockets,
 };
 use Innmind\TimeContinuum\{
     Clock,
@@ -53,7 +54,8 @@ class BootstrapTest extends TestCase
             new ElapsedPeriod(60000),
             $this->createMock(Clock::class),
             $this->createMock(CurrentProcess::class),
-            $this->createMock(Remote::class)
+            $this->createMock(Remote::class),
+            $this->createMock(Sockets::class),
         );
 
         $this->assertIsCallable($services['client']['basic']);

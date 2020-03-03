@@ -16,7 +16,10 @@ use Innmind\TimeContinuum\{
     Clock,
     ElapsedPeriod,
 };
-use Innmind\OperatingSystem\Remote;
+use Innmind\OperatingSystem\{
+    Remote,
+    Sockets,
+};
 
 final class Lazy implements ConnectionInterface
 {
@@ -26,6 +29,7 @@ final class Lazy implements ConnectionInterface
     private ElapsedPeriod $timeout;
     private Clock $clock;
     private Remote $remote;
+    private Sockets $sockets;
     private ?Connection $connection = null;
     private bool $closed = false;
 
@@ -35,7 +39,8 @@ final class Lazy implements ConnectionInterface
         Protocol $protocol,
         ElapsedPeriod $timeout,
         Clock $clock,
-        Remote $remote
+        Remote $remote,
+        Sockets $sockets
     ) {
         $this->transport = $transport;
         $this->server = $server;
@@ -43,6 +48,7 @@ final class Lazy implements ConnectionInterface
         $this->timeout = $timeout;
         $this->clock = $clock;
         $this->remote = $remote;
+        $this->sockets = $sockets;
     }
 
     public function protocol(): Protocol
@@ -109,7 +115,8 @@ final class Lazy implements ConnectionInterface
             $this->protocol,
             $this->timeout,
             $this->clock,
-            $this->remote
+            $this->remote,
+            $this->sockets,
         );
     }
 }

@@ -26,7 +26,10 @@ use Innmind\TimeContinuum\Earth\{
     Clock,
 };
 use Innmind\Url\Url;
-use Innmind\OperatingSystem\Remote;
+use Innmind\OperatingSystem\{
+    Remote,
+    Sockets,
+};
 use Innmind\Server\Control\Server;
 use PHPUnit\Framework\TestCase;
 
@@ -44,7 +47,8 @@ class QueueTest extends TestCase
                 new Protocol($this->createMock(ArgumentTranslator::class)),
                 new ElapsedPeriod(1000),
                 new Clock,
-                new Remote\Generic($this->createMock(Server::class))
+                new Remote\Generic($this->createMock(Server::class)),
+                new Sockets\Unix,
             ),
             new Channel(1)
         );

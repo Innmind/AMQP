@@ -25,7 +25,8 @@ return new SignalAware(
             new Protocol(new ValueTranslator),
             new ElapsedPeriod(1000),
             $os->clock(),
-            $os->remote()
+            $os->remote(),
+            $os->sockets(),
         ),
         $os->process()
     ),

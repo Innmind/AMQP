@@ -15,6 +15,7 @@ use Innmind\Socket\Internet\Transport;
 use Innmind\OperatingSystem\{
     CurrentProcess,
     Remote,
+    Sockets,
 };
 use Innmind\Server\Control\{
     Server,
@@ -42,7 +43,8 @@ class ClientTest extends TestCase
                 new Protocol(new ValueTranslator),
                 new ElapsedPeriod(1000),
                 new Clock,
-                new Remote\Generic($this->createMock(Server::class))
+                new Remote\Generic($this->createMock(Server::class)),
+                new Sockets\Unix,
             ),
             $this->process = $this->createMock(CurrentProcess::class)
         );

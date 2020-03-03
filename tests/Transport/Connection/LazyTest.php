@@ -20,7 +20,10 @@ use Innmind\TimeContinuum\Earth\{
     Clock,
     ElapsedPeriod,
 };
-use Innmind\OperatingSystem\Remote;
+use Innmind\OperatingSystem\{
+    Remote,
+    Sockets,
+};
 use Innmind\Server\Control\Server;
 use PHPUnit\Framework\TestCase;
 
@@ -34,7 +37,8 @@ class LazyTest extends TestCase
             $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
             new ElapsedPeriod(1000),
             new Clock,
-            $this->createMock(Remote::class)
+            $this->createMock(Remote::class),
+            $this->createMock(Sockets::class),
         );
 
         $this->assertInstanceOf(Connection::class, $connection);
@@ -49,7 +53,8 @@ class LazyTest extends TestCase
                 $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
                 new ElapsedPeriod(1000),
                 new Clock,
-                new Remote\Generic($this->createMock(Server::class))
+                new Remote\Generic($this->createMock(Server::class)),
+                new Sockets\Unix,
             );
             $connection->protocol();
             $this->fail('it should fail');
@@ -67,7 +72,8 @@ class LazyTest extends TestCase
                 $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
                 new ElapsedPeriod(1000),
                 new Clock,
-                new Remote\Generic($this->createMock(Server::class))
+                new Remote\Generic($this->createMock(Server::class)),
+                new Sockets\Unix,
             );
             $connection->send(Frame::heartbeat());
             $this->fail('it should fail');
@@ -85,7 +91,8 @@ class LazyTest extends TestCase
                 $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
                 new ElapsedPeriod(1000),
                 new Clock,
-                new Remote\Generic($this->createMock(Server::class))
+                new Remote\Generic($this->createMock(Server::class)),
+                new Sockets\Unix,
             );
             $connection->wait();
             $this->fail('it should fail');
@@ -103,7 +110,8 @@ class LazyTest extends TestCase
                 $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
                 new ElapsedPeriod(1000),
                 new Clock,
-                new Remote\Generic($this->createMock(Server::class))
+                new Remote\Generic($this->createMock(Server::class)),
+                new Sockets\Unix,
             );
             $connection->maxFrameSize();
             $this->fail('it should fail');
@@ -125,7 +133,8 @@ class LazyTest extends TestCase
             $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
             new ElapsedPeriod(1000),
             new Clock,
-            $remote
+            $remote,
+            $this->createMock(Sockets::class),
         );
 
         $this->assertFalse($connection->closed());
@@ -144,7 +153,8 @@ class LazyTest extends TestCase
             $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
             new ElapsedPeriod(1000),
             new Clock,
-            $remote
+            $remote,
+            $this->createMock(Sockets::class),
         );
 
         $this->assertNull($connection->close());
@@ -164,7 +174,8 @@ class LazyTest extends TestCase
             $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
             new ElapsedPeriod(1000),
             new Clock,
-            $remote
+            $remote,
+            $this->createMock(Sockets::class),
         );
 
         $connection->close();

@@ -14,6 +14,7 @@ use Innmind\OperatingSystem\{
     CurrentProcess,
     CurrentProcess\Signals,
     Remote,
+    Sockets,
 };
 use Innmind\Immutable\{
     Set,
@@ -32,7 +33,8 @@ function bootstrap(LoggerInterface $logger = null): array
                 ElapsedPeriod $timeout,
                 Clock $clock,
                 CurrentProcess $process,
-                Remote $remote
+                Remote $remote,
+                Sockets $sockets
             ) use (
                 $logger
             ): Client {
@@ -44,7 +46,8 @@ function bootstrap(LoggerInterface $logger = null): array
                     ),
                     $timeout,
                     $clock,
-                    $remote
+                    $remote,
+                    $sockets,
                 );
 
                 if ($logger instanceof LoggerInterface) {

@@ -29,7 +29,7 @@ use Innmind\Socket\{
     Internet\Transport,
     Client\Internet as Socket,
 };
-use Innmind\Stream\Watch\Select;
+use Innmind\Stream\Watch;
 use Innmind\Url\{
     Url,
     Path,
@@ -41,7 +41,10 @@ use Innmind\TimeContinuum\{
     PointInTime,
     Earth,
 };
-use Innmind\OperatingSystem\Remote;
+use Innmind\OperatingSystem\{
+    Remote,
+    Sockets,
+};
 use Innmind\Immutable\Str;
 
 final class Connection implements ConnectionInterface
@@ -53,7 +56,8 @@ final class Connection implements ConnectionInterface
     private Socket $socket;
     private ElapsedPeriod $timeout;
     private Remote $remote;
-    private Select $select;
+    private Sockets $sockets;
+    private Watch $watch;
     private FrameReader $read;
     private bool $closed = true;
     private bool $opening = true;
@@ -69,7 +73,8 @@ final class Connection implements ConnectionInterface
         Protocol $protocol,
         ElapsedPeriod $timeout,
         Clock $clock,
-        Remote $remote
+        Remote $remote,
+        Sockets $sockets
     ) {
         $this->transport = $transport;
         $this->authority = $server->authority();
@@ -77,6 +82,7 @@ final class Connection implements ConnectionInterface
         $this->protocol = $protocol;
         $this->timeout = $timeout;
         $this->remote = $remote;
+        $this->sockets = $sockets;
         $this->buildSocket();
         $this->read = new FrameReader;
         $this->maxChannels = new MaxChannels(0);
@@ -133,7 +139,7 @@ final class Connection implements ConnectionInterface
                 $this->send(Frame::heartbeat());
             }
 
-            $ready = ($this->select)();
+            $ready = ($this->watch)();
         } while (!$ready->toRead()->contains($this->socket));
 
         $frame = ($this->read)($this->socket, $this->protocol);
@@ -204,7 +210,7 @@ final class Connection implements ConnectionInterface
             $this->transport,
             $this->authority->withoutUserInformation(),
         );
-        $this->select = (new Select($this->timeout))->forRead($this->socket);
+        $this->watch = $this->sockets->watch($this->timeout)->forRead($this->socket);
     }
 
     private function open(): void
@@ -283,7 +289,7 @@ final class Connection implements ConnectionInterface
         $this->heartbeat = new Earth\ElapsedPeriod(
             $frame->values()->get(2)->original()->value()
         );
-        $this->select = (new Select($this->heartbeat))->forRead($this->socket);
+        $this->watch = $this->sockets->watch($this->heartbeat)->forRead($this->socket);
         $this->send($this->protocol->connection()->tuneOk(
             new TuneOk(
                 $this->maxChannels,

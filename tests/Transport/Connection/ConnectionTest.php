@@ -32,7 +32,10 @@ use Innmind\TimeContinuum\Earth\{
     Clock,
 };
 use Innmind\Stream\Readable;
-use Innmind\OperatingSystem\Remote;
+use Innmind\OperatingSystem\{
+    Remote,
+    Sockets,
+};
 use Innmind\Server\Control\Server;
 use Innmind\Immutable\Sequence;
 use PHPUnit\Framework\TestCase;
@@ -47,7 +50,8 @@ class ConnectionTest extends TestCase
             $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
             new ElapsedPeriod(1000),
             new Clock,
-            new Remote\Generic($this->createMock(Server::class))
+            new Remote\Generic($this->createMock(Server::class)),
+            new Sockets\Unix,
         );
 
         $this->assertInstanceOf(ConnectionInterface::class, $connection);
@@ -72,7 +76,8 @@ class ConnectionTest extends TestCase
             $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
             new ElapsedPeriod(1000),
             new Clock,
-            new Remote\Generic($this->createMock(Server::class))
+            new Remote\Generic($this->createMock(Server::class)),
+            new Sockets\Unix,
         );
 
         $this->assertFalse($connection->closed());
@@ -88,7 +93,8 @@ class ConnectionTest extends TestCase
             $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
             new ElapsedPeriod(1000),
             new Clock,
-            new Remote\Generic($this->createMock(Server::class))
+            new Remote\Generic($this->createMock(Server::class)),
+            new Sockets\Unix,
         );
 
         $this->expectException(UnexpectedFrame::class);
@@ -140,7 +146,8 @@ class ConnectionTest extends TestCase
             $protocol = new Delegate($top, new Protocol($this->createMock(ArgumentTranslator::class))),
             new ElapsedPeriod(1000),
             new Clock,
-            new Remote\Generic($this->createMock(Server::class))
+            new Remote\Generic($this->createMock(Server::class)),
+            new Sockets\Unix,
         );
 
         $this->assertSame(
@@ -165,7 +172,8 @@ class ConnectionTest extends TestCase
             $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
             new ElapsedPeriod(1000),
             new Clock,
-            new Remote\Generic($this->createMock(Server::class))
+            new Remote\Generic($this->createMock(Server::class)),
+            new Sockets\Unix,
         );
 
         try {

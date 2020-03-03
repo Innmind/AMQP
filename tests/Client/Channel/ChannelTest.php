@@ -21,7 +21,10 @@ use Innmind\TimeContinuum\Earth\{
     Clock,
 };
 use Innmind\Url\Url;
-use Innmind\OperatingSystem\Remote;
+use Innmind\OperatingSystem\{
+    Remote,
+    Sockets,
+};
 use Innmind\Server\Control\Server;
 use PHPUnit\Framework\TestCase;
 
@@ -39,7 +42,8 @@ class ChannelTest extends TestCase
                 new Protocol(new ValueTranslator),
                 new ElapsedPeriod(1000),
                 new Clock,
-                new Remote\Generic($this->createMock(Server::class))
+                new Remote\Generic($this->createMock(Server::class)),
+                new Sockets\Unix,
             ),
             new Number(1)
         );

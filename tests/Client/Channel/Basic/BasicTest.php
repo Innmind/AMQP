@@ -59,7 +59,10 @@ use Innmind\TimeContinuum\Earth\{
     PointInTime\Now,
 };
 use Innmind\Url\Url;
-use Innmind\OperatingSystem\Remote;
+use Innmind\OperatingSystem\{
+    Remote,
+    Sockets,
+};
 use Innmind\Server\Control\Server;
 use Innmind\Math\Algebra\Integer;
 use Innmind\Immutable\{
@@ -86,7 +89,8 @@ class BasicTest extends TestCase
                 new Protocol(new ValueTranslator),
                 new ElapsedPeriod(1000),
                 new Clock,
-                new Remote\Generic($this->createMock(Server::class))
+                new Remote\Generic($this->createMock(Server::class)),
+                new Sockets\Unix,
             ),
             new Channel(1)
         );
