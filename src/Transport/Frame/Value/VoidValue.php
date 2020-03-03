@@ -8,7 +8,7 @@ use Innmind\Stream\Readable;
 
 final class VoidValue implements Value
 {
-    public static function fromStream(Readable $stream): Value
+    public static function unpack(Readable $stream): Value
     {
         return new self;
     }
@@ -17,7 +17,7 @@ final class VoidValue implements Value
     {
     }
 
-    public function __toString(): string
+    public function pack(): string
     {
         return '';
     }

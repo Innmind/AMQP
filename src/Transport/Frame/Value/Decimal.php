@@ -39,10 +39,10 @@ final class Decimal implements Value
         return new self($value, $scale);
     }
 
-    public static function fromStream(Readable $stream): Value
+    public static function unpack(Readable $stream): Value
     {
-        $scale = UnsignedOctet::fromStream($stream)->original();
-        $value = SignedLongInteger::fromStream($stream)->original();
+        $scale = UnsignedOctet::unpack($stream)->original();
+        $value = SignedLongInteger::unpack($stream)->original();
 
         return new self($value, $scale);
     }
@@ -52,9 +52,9 @@ final class Decimal implements Value
         return $this->original;
     }
 
-    public function __toString(): string
+    public function pack(): string
     {
-        return $this->string ?? $this->string = new UnsignedOctet($this->scale).new SignedLongInteger($this->value);
+        return $this->string ?? $this->string = (new UnsignedOctet($this->scale))->pack().(new SignedLongInteger($this->value))->pack();
     }
 
     public static function definitionSet(): Set

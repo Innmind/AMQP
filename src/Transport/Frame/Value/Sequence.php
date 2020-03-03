@@ -35,9 +35,9 @@ final class Sequence implements Value
         $this->original = $values;
     }
 
-    public static function fromStream(Readable $stream): Value
+    public static function unpack(Readable $stream): Value
     {
-        $length = UnsignedLongInteger::fromStream($stream)->original();
+        $length = UnsignedLongInteger::unpack($stream)->original();
         $position = $stream->position()->toInt();
         $boundary = $position + $length->value();
 
@@ -45,7 +45,7 @@ final class Sequence implements Value
 
         while ($position < $boundary) {
             $class = Symbols::class($stream->read(1)->toString());
-            $values[] = [$class, 'fromStream']($stream);
+            $values[] = [$class, 'unpack']($stream);
             $position = $stream->position()->toInt();
         }
 
@@ -60,7 +60,7 @@ final class Sequence implements Value
         return $this->original;
     }
 
-    public function __toString(): string
+    public function pack(): string
     {
         if (\is_null($this->value)) {
             $data = $this
@@ -70,13 +70,13 @@ final class Sequence implements Value
                     static function(Seq $carry, Value $value): Seq {
                         return $carry
                             ->add(Symbols::symbol(\get_class($value)))
-                            ->add((string) $value);
+                            ->add($value->pack());
                     }
                 );
             $data = join('', $data)->toEncoding('ASCII');
-            $this->value = (string) new UnsignedLongInteger(
+            $this->value = (new UnsignedLongInteger(
                 new Integer($data->length())
-            );
+            ))->pack();
             $this->value .= $data->toString();
         }
 

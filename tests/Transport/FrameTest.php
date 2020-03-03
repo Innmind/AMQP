@@ -38,7 +38,7 @@ class FrameTest extends TestCase
         $this->assertSame(Value::class, (string) $frame->values()->type());
         $this->assertSame([$bit, $text], unwrap($frame->values()));
         $this->assertSame(
-            chr(1).pack('n', 42).pack('N', 11).pack('n', 10).pack('n', 10).$bit.$text.chr(0xCE),
+            chr(1).pack('n', 42).pack('N', 11).pack('n', 10).pack('n', 10).$bit->pack().$text->pack().chr(0xCE),
             (string) $frame
         );
     }

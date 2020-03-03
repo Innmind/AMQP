@@ -102,7 +102,7 @@ class FrameReaderTest extends TestCase
             new LongString(Str::of('en_US'))
         );
         $frame = mb_substr($frame, 0, -1, 'ASCII'); //remove end marker
-        $frame .= new UnsignedOctet(new Integer(0xCD));
+        $frame .= (new UnsignedOctet(new Integer(0xCD)))->pack();
         fwrite($file, $frame);
         fseek($file, 0);
         $stream = new Stream($file);

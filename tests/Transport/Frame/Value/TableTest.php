@@ -43,7 +43,7 @@ class TableTest extends TestCase
     public function testStringCast($expected, $map)
     {
         $value = new Table($map);
-        $this->assertSame($expected, (string) $value);
+        $this->assertSame($expected, $value->pack());
         $this->assertSame($map, $value->original());
     }
 
@@ -52,7 +52,7 @@ class TableTest extends TestCase
      */
     public function testFromStream($string, $expected)
     {
-        $value = Table::fromStream(Stream::ofContent($string));
+        $value = Table::unpack(Stream::ofContent($string));
 
         $this->assertInstanceOf(Table::class, $value);
         $this->assertCount($expected->size(), $value->original());
@@ -63,12 +63,12 @@ class TableTest extends TestCase
                 $value->original()->get($i)
             );
             $this->assertSame(
-                (string) $v,
-                (string) $value->original()->get($i)
+                $v->pack(),
+                $value->original()->get($i)->pack(),
             );
         }
 
-        $this->assertSame($string, (string) $value);
+        $this->assertSame($string, $value->pack());
     }
 
     public function testThrowWhenUsingUnboundedText()

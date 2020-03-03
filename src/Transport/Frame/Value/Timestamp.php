@@ -25,9 +25,9 @@ final class Timestamp implements Value
         $this->original = $point;
     }
 
-    public static function fromStream(Readable $stream): Value
+    public static function unpack(Readable $stream): Value
     {
-        $time = UnsignedLongLongInteger::fromStream($stream)
+        $time = UnsignedLongLongInteger::unpack($stream)
             ->original()
             ->value();
 
@@ -41,10 +41,10 @@ final class Timestamp implements Value
         return $this->original;
     }
 
-    public function __toString(): string
+    public function pack(): string
     {
-        return $this->value ?? $this->value = (string) new UnsignedLongLongInteger(
+        return $this->value ?? $this->value = (new UnsignedLongLongInteger(
             new Integer((int) $this->original->format(new TimestampFormat))
-        );
+        ))->pack();
     }
 }

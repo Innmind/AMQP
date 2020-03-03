@@ -21,7 +21,7 @@ final class Bits implements Value
         $this->original = Seq::of('bool', $first, ...$bits);
     }
 
-    public static function fromStream(Readable $stream): Value
+    public static function unpack(Readable $stream): Value
     {
         return new self(
             ...unwrap($stream
@@ -56,7 +56,7 @@ final class Bits implements Value
         return $this->original;
     }
 
-    public function __toString(): string
+    public function pack(): string
     {
         if (\is_null($this->value)) {
             $value = 0;

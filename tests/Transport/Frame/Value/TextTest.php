@@ -24,7 +24,7 @@ class TextTest extends TestCase
     public function testStringCast($string, $expected)
     {
         $value = new Text($str = Str::of($string));
-        $this->assertSame($expected, (string) $value);
+        $this->assertSame($expected, $value->pack());
         $this->assertSame($str, $value->original());
     }
 
@@ -33,11 +33,11 @@ class TextTest extends TestCase
      */
     public function testFromStream($expected, $string)
     {
-        $value = Text::fromStream(Stream::ofContent($string));
+        $value = Text::unpack(Stream::ofContent($string));
 
         $this->assertInstanceOf(Text::class, $value);
         $this->assertSame($string, $value->original()->toString());
-        $this->assertSame($expected, (string) $value);
+        $this->assertSame($expected, $value->pack());
     }
 
     public function cases(): array

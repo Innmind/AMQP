@@ -24,7 +24,7 @@ final class ChunkArguments
         $sequence = Sequence::of(Value::class);
 
         foreach ($this->types as $type) {
-            $sequence = ($sequence)([$type, 'fromStream']($arguments));
+            $sequence = ($sequence)([$type, 'unpack']($arguments));
         }
 
         return $sequence;

@@ -42,19 +42,19 @@ final class Table implements Value
         $this->original = $map;
     }
 
-    public static function fromStream(Readable $stream): Value
+    public static function unpack(Readable $stream): Value
     {
-        $length = UnsignedLongInteger::fromStream($stream)->original();
+        $length = UnsignedLongInteger::unpack($stream)->original();
         $position = $stream->position()->toInt();
         $boundary = $position + $length->value();
 
         $map = Map::of('string', Value::class);
 
         while ($position < $boundary) {
-            $key = ShortString::fromStream($stream)->original();
+            $key = ShortString::unpack($stream)->original();
             $class = Symbols::class($stream->read(1)->toString());
 
-            $map = $map->put($key->toString(), [$class, 'fromStream']($stream));
+            $map = $map->put($key->toString(), [$class, 'unpack']($stream));
 
             $position = $stream->position()->toInt();
         }
@@ -70,7 +70,7 @@ final class Table implements Value
         return $this->original;
     }
 
-    public function __toString(): string
+    public function pack(): string
     {
         if (\is_null($this->value)) {
             $data = $this
@@ -79,16 +79,16 @@ final class Table implements Value
                     Seq::strings(),
                     static function(Seq $sequence, string $key, Value $value): Seq {
                         return $sequence
-                            ->add((string) new ShortString(Str::of($key)))
+                            ->add((new ShortString(Str::of($key)))->pack())
                             ->add(Symbols::symbol(\get_class($value)))
-                            ->add((string) $value);
+                            ->add($value->pack());
                     },
                 );
             $data = join('', $data)->toEncoding('ASCII');
 
-            $this->value = (string) UnsignedLongInteger::of(
+            $this->value = UnsignedLongInteger::of(
                 new Integer($data->length())
-            );
+            )->pack();
             $this->value .= $data->toString();
         }
 

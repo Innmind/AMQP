@@ -35,9 +35,15 @@ class ReaderTest extends TestCase
     {
         $read = new Reader;
 
+        $args = '';
+
+        foreach ($arguments as $arg) {
+            $args .= $arg->pack();
+        }
+
         $stream = $read(
             Methods::get($method),
-            Stream::ofContent(implode('', $arguments))
+            Stream::ofContent($args)
         );
 
         $this->assertInstanceOf(Sequence::class, $stream);
@@ -46,7 +52,7 @@ class ReaderTest extends TestCase
 
         foreach ($arguments as $i => $argument) {
             $this->assertInstanceOf(get_class($argument), $stream->get($i));
-            $this->assertSame((string) $argument, (string) $stream->get($i));
+            $this->assertSame($argument->pack(), $stream->get($i)->pack());
         }
     }
 

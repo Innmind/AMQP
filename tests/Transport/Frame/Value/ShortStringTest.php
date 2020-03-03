@@ -25,7 +25,7 @@ class ShortStringTest extends TestCase
     public function testStringCast($string, $expected)
     {
         $value = new ShortString($str = Str::of($string));
-        $this->assertSame($expected, (string) $value);
+        $this->assertSame($expected, $value->pack());
         $this->assertSame($str, $value->original());
     }
 
@@ -34,11 +34,11 @@ class ShortStringTest extends TestCase
      */
     public function testFromStream($expected, $string)
     {
-        $value = ShortString::fromStream(Stream::ofContent($string));
+        $value = ShortString::unpack(Stream::ofContent($string));
 
         $this->assertInstanceOf(ShortString::class, $value);
         $this->assertSame($expected, $value->original()->toString());
-        $this->assertSame($string, (string) $value);
+        $this->assertSame($string, $value->pack());
     }
 
     public function testThrowWhenTooLongString()

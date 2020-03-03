@@ -7,7 +7,7 @@ use Innmind\Stream\Readable;
 
 interface Value
 {
-    public static function fromStream(Readable $stream): self;
+    public static function unpack(Readable $stream): self;
 
     /**
      * Original value
@@ -15,5 +15,5 @@ interface Value
      * @return mixed
      */
     public function original();
-    public function __toString(): string;
+    public function pack(): string;
 }

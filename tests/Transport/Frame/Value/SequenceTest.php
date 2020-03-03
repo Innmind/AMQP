@@ -31,7 +31,7 @@ class SequenceTest extends TestCase
     public function testStringCast($expected, $values)
     {
         $value = new Sequence(...$values);
-        $this->assertSame($expected, (string) $value);
+        $this->assertSame($expected, $value->pack());
         $this->assertInstanceOf(Seq::class, $value->original());
         $this->assertSame(Value::class, (string) $value->original()->type());
         $this->assertSame($values, unwrap($value->original()));
@@ -42,7 +42,7 @@ class SequenceTest extends TestCase
      */
     public function testFromStream($string, $expected)
     {
-        $value = Sequence::fromStream(Stream::ofContent($string));
+        $value = Sequence::unpack(Stream::ofContent($string));
 
         $this->assertInstanceOf(Sequence::class, $value);
         $this->assertCount(count($expected), $value->original());
@@ -53,12 +53,12 @@ class SequenceTest extends TestCase
                 $value->original()->get($i)
             );
             $this->assertSame(
-                (string) $v,
-                (string) $value->original()->get($i)
+                $v->pack(),
+                $value->original()->get($i)->pack()
             );
         }
 
-        $this->assertSame($string, (string) $value);
+        $this->assertSame($string, $value->pack());
     }
 
     public function testThrowWhenUsingUnboundedText()

@@ -25,9 +25,9 @@ final class LongString implements Value
         return new self($string);
     }
 
-    public static function fromStream(Readable $stream): Value
+    public static function unpack(Readable $stream): Value
     {
-        $length = UnsignedLongInteger::fromStream($stream)->original();
+        $length = UnsignedLongInteger::unpack($stream)->original();
 
         return new self($stream->read($length->value()));
     }
@@ -37,10 +37,10 @@ final class LongString implements Value
         return $this->original;
     }
 
-    public function __toString(): string
+    public function pack(): string
     {
-        return $this->value ?? $this->value = new UnsignedLongInteger(
+        return $this->value ?? $this->value = (new UnsignedLongInteger(
             new Integer($this->original->toEncoding('ASCII')->length())
-        ).$this->original->toString();
+        ))->pack().$this->original->toString();
     }
 }

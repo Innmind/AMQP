@@ -139,7 +139,7 @@ final class Connection implements ConnectionInterface
                 ('LOGIN', LongString::of(Str::of($user->toString())))
                 ('PASSWORD', LongString::of(Str::of($password->toString())))
         );
-        $response = Str::of((string) $response)
+        $response = Str::of($response->pack())
             ->toEncoding('ASCII')
             ->substring(4); //skip the encoded table length integer
 

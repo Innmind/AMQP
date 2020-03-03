@@ -18,7 +18,7 @@ final class Text implements Value
         $this->original = $string;
     }
 
-    public static function fromStream(Readable $stream): Value
+    public static function unpack(Readable $stream): Value
     {
         return new self($stream->read());
     }
@@ -28,7 +28,7 @@ final class Text implements Value
         return $this->original;
     }
 
-    public function __toString(): string
+    public function pack(): string
     {
         return $this->value;
     }

@@ -38,7 +38,7 @@ final class SignedOctet implements Value
         return new self($value);
     }
 
-    public static function fromStream(Readable $stream): Value
+    public static function unpack(Readable $stream): Value
     {
         [, $value] = \unpack('c', $stream->read(1)->toString());
 
@@ -50,7 +50,7 @@ final class SignedOctet implements Value
         return $this->original;
     }
 
-    public function __toString(): string
+    public function pack(): string
     {
         return $this->value ?? $this->value = \pack('c', $this->original->value());
     }

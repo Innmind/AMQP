@@ -120,7 +120,7 @@ class ProtocolTest extends TestCase
                 ->values()
                 ->mapTo(
                     'string',
-                    fn($v) => (string) $v,
+                    fn($v) => $v->pack(),
                 ),
         )->toString()));
 
@@ -132,14 +132,14 @@ class ProtocolTest extends TestCase
                 '',
                 $values->mapTo(
                     'string',
-                    fn($v) => (string) $v,
+                    fn($v) => $v->pack(),
                 ),
             )->toString(),
             join(
                 '',
                 $header->values()->mapTo(
                     'string',
-                    fn($v) => (string) $v,
+                    fn($v) => $v->pack(),
                 ),
             )->toString(),
         );

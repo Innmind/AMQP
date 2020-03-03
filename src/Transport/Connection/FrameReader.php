@@ -28,21 +28,21 @@ final class FrameReader
 {
     public function __invoke(Readable $stream, Protocol $protocol): Frame
     {
-        $octet = UnsignedOctet::fromStream($stream);
+        $octet = UnsignedOctet::unpack($stream);
 
         try {
             $type = Type::fromInt($octet->original()->value());
         } catch (UnknownFrameType $e) {
             throw new NoFrameDetected(Stream::ofContent(
-                $stream->read()->prepend((string) $octet)->toString()
+                $stream->read()->prepend($octet->pack())->toString()
             ));
         }
 
         $channel = new Channel(
-            UnsignedShortInteger::fromStream($stream)->original()->value()
+            UnsignedShortInteger::unpack($stream)->original()->value()
         );
         $payload = $stream
-            ->read(UnsignedLongInteger::fromStream($stream)->original()->value())
+            ->read(UnsignedLongInteger::unpack($stream)->original()->value())
             ->toEncoding('ASCII');
 
         if (
@@ -55,7 +55,7 @@ final class FrameReader
             throw new PayloadTooShort;
         }
 
-        $end = UnsignedOctet::fromStream($stream)->original()->value();
+        $end = UnsignedOctet::unpack($stream)->original()->value();
 
         if ($end !== Frame::end()) {
             throw new ReceivedFrameNotDelimitedCorrectly;
@@ -66,10 +66,10 @@ final class FrameReader
         switch ($type) {
             case Type::method():
                 $method = new Method(
-                    UnsignedShortInteger::fromStream($payload)
+                    UnsignedShortInteger::unpack($payload)
                         ->original()
                         ->value(),
-                    UnsignedShortInteger::fromStream($payload)
+                    UnsignedShortInteger::unpack($payload)
                         ->original()
                         ->value()
                 );
@@ -81,7 +81,7 @@ final class FrameReader
                 );
 
             case Type::header():
-                $class = UnsignedShortInteger::fromStream($payload)
+                $class = UnsignedShortInteger::unpack($payload)
                     ->original()
                     ->value();
                 $payload->read(2); // walk over the weight definition

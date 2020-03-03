@@ -39,22 +39,22 @@ final class Frame
 
         $values = Sequence::of(Value::class, ...$values)->mapTo(
             'string',
-            static fn(Value $value): string => (string) $value,
+            static fn(Value $value): string => $value->pack(),
         );
         $payload = join('', $values)->toEncoding('ASCII');
 
         $frame = Sequence::of(
-            'string|'.Value::class,
+            Value::class,
             new UnsignedOctet(new Integer($type->toInt())),
             new UnsignedShortInteger(new Integer($channel->toInt())),
             new UnsignedLongInteger(new Integer($payload->length())),
-            $payload->toString(),
+            new Text($payload),
         );
         $frame = $frame
             ->add(new UnsignedOctet(new Integer(self::end())))
             ->mapTo(
                 'string',
-                static fn($value): string => (string) $value,
+                static fn(Value $value): string => $value->pack(),
             );
         $this->string = join('', $frame)->toString();
     }

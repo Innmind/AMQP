@@ -240,9 +240,9 @@ final class Connection implements ConnectionInterface
 
             $this->protocol->use(
                 new Version(
-                    UnsignedOctet::fromStream($content)->original()->value(),
-                    UnsignedOctet::fromStream($content)->original()->value(),
-                    UnsignedOctet::fromStream($content)->original()->value(),
+                    UnsignedOctet::unpack($content)->original()->value(),
+                    UnsignedOctet::unpack($content)->original()->value(),
+                    UnsignedOctet::unpack($content)->original()->value(),
                 ),
             );
             //socket rebuilt as the server close the connection on version mismatch

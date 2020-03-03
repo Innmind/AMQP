@@ -45,7 +45,7 @@ class UnsignedLongIntegerTest extends TestCase
     {
         $this->assertSame(
             $expected,
-            (string) new UnsignedLongInteger(new Integer($int))
+            (new UnsignedLongInteger(new Integer($int)))->pack()
         );
     }
 
@@ -54,12 +54,12 @@ class UnsignedLongIntegerTest extends TestCase
      */
     public function testFromStream($expected, $string)
     {
-        $value = UnsignedLongInteger::fromStream(Stream::ofContent($string));
+        $value = UnsignedLongInteger::unpack(Stream::ofContent($string));
 
         $this->assertInstanceOf(UnsignedLongInteger::class, $value);
         $this->assertInstanceOf(Integer::class, $value->original());
         $this->assertSame($expected, $value->original()->value());
-        $this->assertSame($string, (string) $value);
+        $this->assertSame($string, $value->pack());
     }
 
     public function cases(): array

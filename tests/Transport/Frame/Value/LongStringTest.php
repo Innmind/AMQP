@@ -24,7 +24,7 @@ class LongStringTest extends TestCase
     public function testStringCast($string, $expected)
     {
         $value = new LongString($str = Str::of($string));
-        $this->assertSame($expected, (string) $value);
+        $this->assertSame($expected, $value->pack());
         $this->assertSame($str, $value->original());
     }
 
@@ -33,12 +33,12 @@ class LongStringTest extends TestCase
      */
     public function testFromStream($expected, $string)
     {
-        $value = LongString::fromStream(Stream::ofContent($string));
+        $value = LongString::unpack(Stream::ofContent($string));
 
         $this->assertInstanceOf(LongString::class, $value);
         $this->assertInstanceOf(Str::class, $value->original());
         $this->assertSame($expected, $value->original()->toString());
-        $this->assertSame($string, (string) $value);
+        $this->assertSame($string, $value->pack());
     }
 
     public function cases(): array

@@ -38,7 +38,7 @@ final class UnsignedOctet implements Value
         return new self($octet);
     }
 
-    public static function fromStream(Readable $stream): Value
+    public static function unpack(Readable $stream): Value
     {
         [, $octet] = \unpack('C', $stream->read(1)->toString());
 
@@ -50,7 +50,7 @@ final class UnsignedOctet implements Value
         return $this->original;
     }
 
-    public function __toString(): string
+    public function pack(): string
     {
         return $this->value ?? $this->value = \chr($this->original->value());
     }

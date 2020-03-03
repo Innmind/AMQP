@@ -25,7 +25,7 @@ class SignedOctetTest extends TestCase
     public function testStringCast($expected, $octet)
     {
         $value = new SignedOctet($int = new Integer($octet));
-        $this->assertSame($expected, (string) $value);
+        $this->assertSame($expected, $value->pack());
         $this->assertSame($int, $value->original());
     }
 
@@ -34,11 +34,11 @@ class SignedOctetTest extends TestCase
      */
     public function testFromStream($string, $expected)
     {
-        $value = SignedOctet::fromStream(Stream::ofContent($string));
+        $value = SignedOctet::unpack(Stream::ofContent($string));
 
         $this->assertInstanceOf(SignedOctet::class, $value);
         $this->assertSame($expected, $value->original()->value());
-        $this->assertSame($string, (string) $value);
+        $this->assertSame($string, $value->pack());
     }
 
     public function testThrowWhenStringTooHigh()

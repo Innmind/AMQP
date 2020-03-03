@@ -32,7 +32,7 @@ class DecimalTest extends TestCase
     public function testStringCast($number, $scale, $expected)
     {
         $value = new Decimal(new Integer($number), new Integer($scale));
-        $this->assertSame($expected, (string) $value);
+        $this->assertSame($expected, $value->pack());
         $this->assertInstanceOf(Number::class, $value->original());
         $this->assertSame("$number ÷ (10^$scale)", $value->original()->toString());
         $this->assertSame($number / (10**$scale), $value->original()->value());
@@ -43,11 +43,11 @@ class DecimalTest extends TestCase
      */
     public function testFromStream($number, $scale, $string)
     {
-        $value = Decimal::fromStream(Stream::ofContent($string));
+        $value = Decimal::unpack(Stream::ofContent($string));
 
         $this->assertInstanceOf(Decimal::class, $value);
         $this->assertSame(($number / (10**$scale)), $value->original()->value());
-        $this->assertSame($string, (string) $value);
+        $this->assertSame($string, $value->pack());
     }
 
     public function testThrowWhenValueTooHigh()

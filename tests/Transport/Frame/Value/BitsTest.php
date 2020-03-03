@@ -25,7 +25,7 @@ class BitsTest extends TestCase
     public function testStringCast($bits, $expected)
     {
         $value = new Bits(...$bits);
-        $this->assertSame($expected, (string) $value);
+        $this->assertSame($expected, $value->pack());
         $this->assertInstanceOf(Sequence::class, $value->original());
         $this->assertSame('bool', (string) $value->original()->type());
         $this->assertSame($bits, unwrap($value->original()));
@@ -36,11 +36,11 @@ class BitsTest extends TestCase
      */
     public function testFromStream($expected, $string)
     {
-        $value = Bits::fromStream(Stream::ofContent($string));
+        $value = Bits::unpack(Stream::ofContent($string));
 
         $this->assertInstanceOf(Bits::class, $value);
         $this->assertSame($expected, unwrap($value->original()));
-        $this->assertSame($string, (string) $value);
+        $this->assertSame($string, $value->pack());
     }
 
     public function cases(): array

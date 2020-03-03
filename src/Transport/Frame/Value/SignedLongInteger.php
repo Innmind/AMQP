@@ -35,7 +35,7 @@ final class SignedLongInteger implements Value
         return new self($value);
     }
 
-    public static function fromStream(Readable $stream): Value
+    public static function unpack(Readable $stream): Value
     {
         [, $value] = \unpack('l', $stream->read(4)->toString());
 
@@ -47,7 +47,7 @@ final class SignedLongInteger implements Value
         return $this->original;
     }
 
-    public function __toString(): string
+    public function pack(): string
     {
         return $this->value ?? $this->value = \pack('l', $this->original->value());
     }
