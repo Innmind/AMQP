@@ -41,6 +41,6 @@ final class LongString implements Value
     {
         return $this->value ?? $this->value = new UnsignedLongInteger(
             new Integer($this->original->toEncoding('ASCII')->length())
-        ).$this->original;
+        ).$this->original->toString();
     }
 }

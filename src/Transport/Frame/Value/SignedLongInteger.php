@@ -37,7 +37,7 @@ final class SignedLongInteger implements Value
 
     public static function fromStream(Readable $stream): Value
     {
-        [, $value] = \unpack('l', (string) $stream->read(4));
+        [, $value] = \unpack('l', $stream->read(4)->toString());
 
         return new self(new Integer($value));
     }

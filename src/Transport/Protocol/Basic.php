@@ -16,7 +16,7 @@ use Innmind\AMQP\{
     Transport\Frame,
     Transport\Frame\Channel as FrameChannel,
 };
-use Innmind\Immutable\StreamInterface;
+use Innmind\Immutable\Sequence;
 
 interface Basic
 {
@@ -26,13 +26,13 @@ interface Basic
     public function get(FrameChannel $channel, Get $command): Frame;
 
     /**
-     * @return StreamInterface<Frame>
+     * @return Sequence<Frame>
      */
     public function publish(
         FrameChannel $channel,
         Publish $command,
         MaxFrameSize $maxFrameSize
-    ): StreamInterface;
+    ): Sequence;
     public function qos(FrameChannel $channel, Qos $command): Frame;
     public function recover(FrameChannel $channel, Recover $command): Frame;
     public function reject(FrameChannel $channel, Reject $command): Frame;

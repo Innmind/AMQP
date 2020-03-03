@@ -5,11 +5,10 @@ namespace Innmind\AMQP\Model\Basic\Message;
 
 use Innmind\AMQP\Model\Basic\Message;
 use Innmind\TimeContinuum\{
-    PointInTimeInterface,
+    PointInTime,
     ElapsedPeriod,
 };
 use Innmind\Immutable\{
-    MapInterface,
     Map,
     Str,
 };
@@ -26,7 +25,7 @@ final class Generic implements Message
     private ?ReplyTo $replyTo = null;
     private ?ElapsedPeriod $expiration = null;
     private ?Id $id = null;
-    private ?PointInTimeInterface $timestamp = null;
+    private ?PointInTime $timestamp = null;
     private ?Type $type = null;
     private ?UserId $userId = null;
     private ?AppId $appId = null;
@@ -35,7 +34,7 @@ final class Generic implements Message
     public function __construct(Str $body)
     {
         $this->body = $body->toEncoding('ASCII');
-        $this->headers = new Map('string', 'mixed');
+        $this->headers = Map::of('string', 'mixed');
     }
 
     public function hasContentType(): bool
@@ -82,12 +81,12 @@ final class Generic implements Message
     /**
      * {@inheritdoc}
      */
-    public function headers(): MapInterface
+    public function headers(): Map
     {
         return $this->headers;
     }
 
-    public function withHeaders(MapInterface $headers): Message
+    public function withHeaders(Map $headers): Message
     {
         assertMap('string', 'mixed', $headers, 1);
 
@@ -207,15 +206,15 @@ final class Generic implements Message
 
     public function hasTimestamp(): bool
     {
-        return $this->timestamp instanceof PointInTimeInterface;
+        return $this->timestamp instanceof PointInTime;
     }
 
-    public function timestamp(): PointInTimeInterface
+    public function timestamp(): PointInTime
     {
         return $this->timestamp;
     }
 
-    public function withTimestamp(PointInTimeInterface $timestamp): Message
+    public function withTimestamp(PointInTime $timestamp): Message
     {
         $self = clone $this;
         $self->timestamp = $timestamp;

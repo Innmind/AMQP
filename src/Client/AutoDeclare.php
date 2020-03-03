@@ -9,30 +9,27 @@ use Innmind\AMQP\{
     Model\Queue\Declaration as Queue,
     Model\Queue\Binding,
 };
-use Innmind\Immutable\{
-    SetInterface,
-    Set,
-};
+use Innmind\Immutable\Set;
 use function Innmind\Immutable\assertSet;
 
 final class AutoDeclare implements Client
 {
     private Client $client;
-    private SetInterface $exchanges;
-    private SetInterface $queues;
-    private SetInterface $bindings;
+    private Set $exchanges;
+    private Set $queues;
+    private Set $bindings;
     private bool $declared = false;
 
     /**
-     * @param SetInterface<Exchange>|null $exchanges
-     * @param SetInterface<Queue>|null $queues
-     * @param SetInterface<Binding>|null $bindings
+     * @param Set<Exchange>|null $exchanges
+     * @param Set<Queue>|null $queues
+     * @param Set<Binding>|null $bindings
      */
     public function __construct(
         Client $client,
-        SetInterface $exchanges = null,
-        SetInterface $queues = null,
-        SetInterface $bindings = null
+        Set $exchanges = null,
+        Set $queues = null,
+        Set $bindings = null
     ) {
         $this->client = $client;
         $this->exchanges = $exchanges ?? Set::of(Exchange::class);

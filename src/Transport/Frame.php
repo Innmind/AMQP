@@ -16,17 +16,16 @@ use Innmind\AMQP\Transport\Frame\{
 use Innmind\Math\Algebra\Integer;
 use Innmind\Immutable\{
     Sequence,
-    StreamInterface,
-    Stream,
     Str,
 };
+use function Innmind\Immutable\join;
 
 final class Frame
 {
     private Type $type;
     private Channel $channel;
     private ?Method $method = null;
-    private Stream $values;
+    private Sequence $values;
     private string $string;
 
     private function __construct(
@@ -36,20 +35,28 @@ final class Frame
     ) {
         $this->type = $type;
         $this->channel = $channel;
-        $this->values = new Stream(Value::class);
+        $this->values = Sequence::of(Value::class);
 
-        $values = new Sequence(...$values);
-        $payload = $values->join('')->toEncoding('ASCII');
+        $values = Sequence::of(Value::class, ...$values)->mapTo(
+            'string',
+            static fn(Value $value): string => (string) $value,
+        );
+        $payload = join('', $values)->toEncoding('ASCII');
 
-        $frame = new Sequence(
+        $frame = Sequence::of(
+            'string|'.Value::class,
             new UnsignedOctet(new Integer($type->toInt())),
             new UnsignedShortInteger(new Integer($channel->toInt())),
             new UnsignedLongInteger(new Integer($payload->length())),
-            $payload
+            $payload->toString(),
         );
-        $this->string = (string) $frame
+        $frame = $frame
             ->add(new UnsignedOctet(new Integer(self::end())))
-            ->join('');
+            ->mapTo(
+                'string',
+                static fn($value): string => (string) $value,
+            );
+        $this->string = join('', $frame)->toString();
     }
 
     public static function method(
@@ -65,10 +72,10 @@ final class Frame
             ...$values
         );
         $self->method = $method;
-        $self->values = Sequence::of(...$values)->reduce(
+        $self->values = Sequence::of(Value::class, ...$values)->reduce(
             $self->values,
-            static function(Stream $stream, Value $value): Stream {
-                return $stream->add($value);
+            static function(Sequence $sequence, Value $value): Sequence {
+                return $sequence->add($value);
             }
         );
 
@@ -87,10 +94,10 @@ final class Frame
             new UnsignedShortInteger(new Integer(0)), //weight
             ...$values
         );
-        $self->values = Sequence::of(...$values)->reduce(
+        $self->values = Sequence::of(Value::class, ...$values)->reduce(
             $self->values,
-            static function(Stream $stream, Value $value): Stream {
-                return $stream->add($value);
+            static function(Sequence $sequence, Value $value): Sequence {
+                return $sequence->add($value);
             }
         );
 
@@ -137,9 +144,9 @@ final class Frame
     }
 
     /**
-     * @return StreamInterface<Value>
+     * @return Sequence<Value>
      */
-    public function values(): StreamInterface
+    public function values(): Sequence
     {
         return $this->values;
     }

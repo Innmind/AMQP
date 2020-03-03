@@ -26,8 +26,8 @@ use Innmind\OperatingSystem\{
     Remote,
 };
 use Innmind\TimeContinuum\{
-    TimeContinuumInterface,
-    ElapsedPeriod,
+    Clock,
+    Earth\ElapsedPeriod,
 };
 use Innmind\Immutable\{
     Set,
@@ -49,9 +49,9 @@ class BootstrapTest extends TestCase
 
         $basic = $services['client']['basic'](
             Transport::tcp(),
-            Url::fromString('amqp://localhost'),
+            Url::of('amqp://localhost'),
             new ElapsedPeriod(60000),
-            $this->createMock(TimeContinuumInterface::class),
+            $this->createMock(Clock::class),
             $this->createMock(CurrentProcess::class),
             $this->createMock(Remote::class)
         );
@@ -98,7 +98,7 @@ class BootstrapTest extends TestCase
             Purge::class,
             $purge($basic)
         );
-        $consumers = new Map('string', 'callable');
+        $consumers = Map::of('string', 'callable');
         $this->assertIsCallable($get($consumers));
         $this->assertIsCallable($consume($consumers));
         $this->assertInstanceOf(

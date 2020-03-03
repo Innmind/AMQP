@@ -16,8 +16,8 @@ use Innmind\Socket\{
     Exception\FailedToOpenSocket,
 };
 use Innmind\Url\Url;
-use Innmind\TimeContinuum\{
-    TimeContinuum\Earth,
+use Innmind\TimeContinuum\Earth\{
+    Clock,
     ElapsedPeriod,
 };
 use Innmind\OperatingSystem\Remote;
@@ -30,10 +30,10 @@ class LazyTest extends TestCase
     {
         $connection = new Lazy(
             Transport::tcp(),
-            Url::fromString('//guest:guest@localhost:5673/'), //wrong port on purpose
+            Url::of('//guest:guest@localhost:5673/'), //wrong port on purpose
             $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
             new ElapsedPeriod(1000),
-            new Earth,
+            new Clock,
             $this->createMock(Remote::class)
         );
 
@@ -45,10 +45,10 @@ class LazyTest extends TestCase
         try {
             $connection = new Lazy(
                 Transport::tcp(),
-                Url::fromString('//guest:guest@localhost:5673/'), //wrong port on purpose
+                Url::of('//guest:guest@localhost:5673/'), //wrong port on purpose
                 $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
                 new ElapsedPeriod(1000),
-                new Earth,
+                new Clock,
                 new Remote\Generic($this->createMock(Server::class))
             );
             $connection->protocol();
@@ -63,10 +63,10 @@ class LazyTest extends TestCase
         try {
             $connection = new Lazy(
                 Transport::tcp(),
-                Url::fromString('//guest:guest@localhost:5673/'), //wrong port on purpose
+                Url::of('//guest:guest@localhost:5673/'), //wrong port on purpose
                 $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
                 new ElapsedPeriod(1000),
-                new Earth,
+                new Clock,
                 new Remote\Generic($this->createMock(Server::class))
             );
             $connection->send(Frame::heartbeat());
@@ -81,10 +81,10 @@ class LazyTest extends TestCase
         try {
             $connection = new Lazy(
                 Transport::tcp(),
-                Url::fromString('//guest:guest@localhost:5673/'), //wrong port on purpose
+                Url::of('//guest:guest@localhost:5673/'), //wrong port on purpose
                 $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
                 new ElapsedPeriod(1000),
-                new Earth,
+                new Clock,
                 new Remote\Generic($this->createMock(Server::class))
             );
             $connection->wait();
@@ -99,10 +99,10 @@ class LazyTest extends TestCase
         try {
             $connection = new Lazy(
                 Transport::tcp(),
-                Url::fromString('//guest:guest@localhost:5673/'), //wrong port on purpose
+                Url::of('//guest:guest@localhost:5673/'), //wrong port on purpose
                 $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
                 new ElapsedPeriod(1000),
-                new Earth,
+                new Clock,
                 new Remote\Generic($this->createMock(Server::class))
             );
             $connection->maxFrameSize();
@@ -121,10 +121,10 @@ class LazyTest extends TestCase
 
         $connection = new Lazy(
             Transport::tcp(),
-            Url::fromString('//guest:guest@localhost:5673/'), //wrong port on purpose
+            Url::of('//guest:guest@localhost:5673/'), //wrong port on purpose
             $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
             new ElapsedPeriod(1000),
-            new Earth,
+            new Clock,
             $remote
         );
 
@@ -140,10 +140,10 @@ class LazyTest extends TestCase
 
         $connection = new Lazy(
             Transport::tcp(),
-            Url::fromString('//guest:guest@localhost:5673/'), //wrong port on purpose
+            Url::of('//guest:guest@localhost:5673/'), //wrong port on purpose
             $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
             new ElapsedPeriod(1000),
-            new Earth,
+            new Clock,
             $remote
         );
 
@@ -160,10 +160,10 @@ class LazyTest extends TestCase
 
         $connection = new Lazy(
             Transport::tcp(),
-            Url::fromString('//guest:guest@localhost:5673/'), //wrong port on purpose
+            Url::of('//guest:guest@localhost:5673/'), //wrong port on purpose
             $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
             new ElapsedPeriod(1000),
-            new Earth,
+            new Clock,
             $remote
         );
 

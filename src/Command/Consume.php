@@ -52,7 +52,7 @@ final class Consume implements Command
         }
     }
 
-    public function __toString(): string
+    public function toString(): string
     {
         return <<<USAGE
 innmind:amqp:consume queue [number] [prefetch]

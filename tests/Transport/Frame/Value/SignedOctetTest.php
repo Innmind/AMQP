@@ -9,7 +9,7 @@ use Innmind\AMQP\{
     Exception\OutOfRangeValue,
 };
 use Innmind\Math\Algebra\Integer;
-use Innmind\Filesystem\Stream\StringStream;
+use Innmind\Stream\Readable\Stream;
 use PHPUnit\Framework\TestCase;
 
 class SignedOctetTest extends TestCase
@@ -34,7 +34,7 @@ class SignedOctetTest extends TestCase
      */
     public function testFromStream($string, $expected)
     {
-        $value = SignedOctet::fromStream(new StringStream($string));
+        $value = SignedOctet::fromStream(Stream::ofContent($string));
 
         $this->assertInstanceOf(SignedOctet::class, $value);
         $this->assertSame($expected, $value->original()->value());

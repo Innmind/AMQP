@@ -8,10 +8,7 @@ use Innmind\AMQP\Exception\{
     NotWaitingPassiveDeclarationDoesNothing,
     PassiveQueueDeclarationMustHaveAName,
 };
-use Innmind\Immutable\{
-    MapInterface,
-    Map,
-};
+use Innmind\Immutable\Map;
 
 final class Declaration
 {
@@ -25,7 +22,7 @@ final class Declaration
 
     private function __construct()
     {
-        $this->arguments = new Map('string', 'mixed');
+        $this->arguments = Map::of('string', 'mixed');
     }
 
     /**
@@ -191,9 +188,9 @@ final class Declaration
     }
 
     /**
-     * @return MapInterface<string, mixed>
+     * @return Map<string, mixed>
      */
-    public function arguments(): MapInterface
+    public function arguments(): Map
     {
         return $this->arguments;
     }

@@ -6,53 +6,52 @@ namespace Innmind\AMQP\Transport\Frame\Value;
 use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\Stream\Readable;
 use Innmind\Immutable\{
-    StreamInterface,
-    Stream,
     Str,
     Sequence as Seq,
 };
+use function Innmind\Immutable\unwrap;
 
 final class Bits implements Value
 {
     private ?string $value = null;
-    private Stream $original;
+    private Seq $original;
 
     public function __construct(bool $first, bool ...$bits)
     {
-        $this->original = Stream::of('bool', $first, ...$bits);
+        $this->original = Seq::of('bool', $first, ...$bits);
     }
 
     public static function fromStream(Readable $stream): Value
     {
         return new self(
-            ...$stream
+            ...unwrap($stream
                 ->read(1)
                 ->toEncoding('ASCII')
                 ->chunk()
                 ->reduce(
-                    new Seq,
+                    Seq::of('int'),
                     static function(Seq $bits, Str $bit): Seq {
-                        return (new Str(\decbin(\ord((string) $bit))))
+                        return Str::of(\decbin(\ord($bit->toString())))
                             ->chunk()
                             ->reduce(
                                 $bits,
                                 static function(Seq $bits, Str $bit): Seq {
-                                    return $bits->add((int) (string) $bit);
+                                    return $bits->add((int) $bit->toString());
                                 }
                             );
                     }
                 )
-                ->map(static function(int $bit): bool {
+                ->mapTo('bool', static function(int $bit): bool {
                     return (bool) $bit;
                 })
-                ->reverse()
+                ->reverse()),
         );
     }
 
     /**
-     * @return StreamInterface<bool>
+     * @return Seq<bool>
      */
-    public function original(): StreamInterface
+    public function original(): Seq
     {
         return $this->original;
     }
@@ -62,7 +61,7 @@ final class Bits implements Value
         if (\is_null($this->value)) {
             $value = 0;
 
-            foreach ($this->original as $i => $bit) {
+            foreach (unwrap($this->original) as $i => $bit) {
                 $bit = (int) $bit;
                 $value |= $bit << $i;
             }

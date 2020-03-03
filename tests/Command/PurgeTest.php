@@ -39,7 +39,7 @@ innmind:amqp:purge queue
 Will delete all messages for the given queue
 USAGE;
 
-        $this->assertSame($expected, (string) new Purge($this->createMock(Client::class)));
+        $this->assertSame($expected, (new Purge($this->createMock(Client::class)))->toString());
     }
 
     public function testInvokation()
@@ -69,7 +69,7 @@ USAGE;
 
         $this->assertNull($purge(
             $env,
-            new Arguments((new Map('string', 'mixed'))->put('queue', 'foo')),
+            new Arguments(Map::of('string', 'string')('queue', 'foo')),
             new Options
         ));
     }
@@ -89,7 +89,7 @@ USAGE;
 
         $purge(
             $this->createMock(Environment::class),
-            new Arguments((new Map('string', 'mixed'))->put('queue', 'foo')),
+            new Arguments(Map::of('string', 'string')('queue', 'foo')),
             new Options
         );
     }
@@ -125,12 +125,12 @@ USAGE;
             ->expects($this->once())
             ->method('write')
             ->with($this->callback(static function($str): bool {
-                return (string) $str === 'Purging "foo" failed';
+                return $str->toString() === 'Purging "foo" failed';
             }));
 
         $this->assertNull($purge(
             $env,
-            new Arguments((new Map('string', 'mixed'))->put('queue', 'foo')),
+            new Arguments(Map::of('string', 'string')('queue', 'foo')),
             new Options
         ));
     }

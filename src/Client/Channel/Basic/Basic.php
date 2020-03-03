@@ -19,7 +19,6 @@ use Innmind\AMQP\{
     Transport\Frame,
     Transport\Frame\Channel,
 };
-use Innmind\TimeContinuum\ElapsedPeriod;
 
 final class Basic implements BasicInterface
 {
@@ -73,7 +72,7 @@ final class Basic implements BasicInterface
 
         if ($command->shouldWait()) {
             $frame = $this->connection->wait('basic.consume-ok');
-            $consumerTag = (string) $frame->values()->first()->original();
+            $consumerTag = $frame->values()->first()->original()->toString();
         } else {
             $consumerTag = $command->consumerTag();
         }
@@ -109,8 +108,8 @@ final class Basic implements BasicInterface
             new Locked($message),
             $frame->values()->first()->original()->value(), //deliveryTag
             $frame->values()->get(1)->original()->first(), //redelivered
-            (string) $frame->values()->get(2)->original(), //exchange
-            (string) $frame->values()->get(3)->original(), //routingKey
+            $frame->values()->get(2)->original()->toString(), //exchange
+            $frame->values()->get(3)->original()->toString(), //routingKey
             $frame->values()->get(4)->original()->value() //messageCount
         );
     }

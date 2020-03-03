@@ -9,7 +9,7 @@ use Innmind\AMQP\{
     Exception\OutOfRangeValue,
 };
 use Innmind\Math\Algebra\Integer;
-use Innmind\Filesystem\Stream\StringStream;
+use Innmind\Stream\Readable\Stream;
 use PHPUnit\Framework\TestCase;
 
 class SignedShortIntegerTest extends TestCase
@@ -37,7 +37,7 @@ class SignedShortIntegerTest extends TestCase
      */
     public function testFromStream($expected, $string)
     {
-        $value = SignedShortInteger::fromStream(new StringStream($string));
+        $value = SignedShortInteger::fromStream(Stream::ofContent($string));
 
         $this->assertInstanceOf(SignedShortInteger::class, $value);
         $this->assertSame($expected, $value->original()->value());

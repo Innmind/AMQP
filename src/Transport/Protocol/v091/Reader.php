@@ -13,7 +13,7 @@ use Innmind\AMQP\Transport\{
     Protocol\v091\Reader\Transaction,
 };
 use Innmind\Stream\Readable;
-use Innmind\Immutable\StreamInterface;
+use Innmind\Immutable\Sequence;
 
 final class Reader
 {
@@ -35,9 +35,9 @@ final class Reader
     }
 
     /**
-     * @return StreamInterface<Value>
+     * @return Sequence<Value>
      */
-    public function __invoke(Method $method, Readable $arguments): StreamInterface
+    public function __invoke(Method $method, Readable $arguments): Sequence
     {
         return ($this->{Methods::class($method)})($method, $arguments);
     }

@@ -15,14 +15,14 @@ use Innmind\AMQP\{
     Exception\UnknownMethod,
 };
 use Innmind\Stream\Readable;
-use Innmind\Immutable\StreamInterface;
+use Innmind\Immutable\Sequence;
 
 final class Basic
 {
     /**
-     * @return StreamInterface<Value>
+     * @return Sequence<Value>
      */
-    public function __invoke(Method $method, Readable $arguments): StreamInterface
+    public function __invoke(Method $method, Readable $arguments): Sequence
     {
         switch (true) {
             case Methods::get('basic.qos-ok')->equals($method):

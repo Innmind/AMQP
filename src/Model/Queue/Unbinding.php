@@ -3,10 +3,7 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Model\Queue;
 
-use Innmind\Immutable\{
-    MapInterface,
-    Map,
-};
+use Innmind\Immutable\Map;
 
 final class Unbinding
 {
@@ -20,7 +17,7 @@ final class Unbinding
         $this->exchange = $exchange;
         $this->queue = $queue;
         $this->routingKey = $routingKey;
-        $this->arguments = new Map('string', 'mixed');
+        $this->arguments = Map::of('string', 'mixed');
     }
 
     public function withArgument(string $key, $value): self
@@ -47,9 +44,9 @@ final class Unbinding
     }
 
     /**
-     * @return MapInterface<string, mixed>
+     * @return Map<string, mixed>
      */
-    public function arguments(): MapInterface
+    public function arguments(): Map
     {
         return $this->arguments;
     }

@@ -17,11 +17,11 @@ use Innmind\AMQP\Model\Basic\Message\{
     AppId,
 };
 use Innmind\TimeContinuum\{
-    PointInTimeInterface,
+    PointInTime,
     ElapsedPeriod,
 };
 use Innmind\Immutable\{
-    MapInterface,
+    Map,
     Str,
 };
 
@@ -36,10 +36,10 @@ interface Message
     public function hasHeaders(): bool;
 
     /**
-     * @return MapInterface<string, mixed>
+     * @return Map<string, mixed>
      */
-    public function headers(): MapInterface;
-    public function withHeaders(MapInterface $headers): self;
+    public function headers(): Map;
+    public function withHeaders(Map $headers): self;
     public function hasDeliveryMode(): bool;
     public function deliveryMode(): DeliveryMode;
     public function withDeliveryMode(DeliveryMode $deliveryMode): self;
@@ -59,8 +59,8 @@ interface Message
     public function id(): Id;
     public function withId(Id $id): self;
     public function hasTimestamp(): bool;
-    public function timestamp(): PointInTimeInterface;
-    public function withTimestamp(PointInTimeInterface $timestamp): self;
+    public function timestamp(): PointInTime;
+    public function withTimestamp(PointInTime $timestamp): self;
     public function hasType(): bool;
     public function type(): Type;
     public function withType(Type $type): self;

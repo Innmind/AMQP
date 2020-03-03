@@ -9,7 +9,7 @@ use Innmind\AMQP\{
     Exception\OutOfRangeValue,
 };
 use Innmind\Math\Algebra\Integer;
-use Innmind\Filesystem\Stream\StringStream;
+use Innmind\Stream\Readable\Stream;
 use PHPUnit\Framework\TestCase;
 
 class UnsignedLongIntegerTest extends TestCase
@@ -54,7 +54,7 @@ class UnsignedLongIntegerTest extends TestCase
      */
     public function testFromStream($expected, $string)
     {
-        $value = UnsignedLongInteger::fromStream(new StringStream($string));
+        $value = UnsignedLongInteger::fromStream(Stream::ofContent($string));
 
         $this->assertInstanceOf(UnsignedLongInteger::class, $value);
         $this->assertInstanceOf(Integer::class, $value->original());

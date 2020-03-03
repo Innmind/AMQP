@@ -14,7 +14,7 @@ final class Text implements Value
 
     public function __construct(Str $string)
     {
-        $this->value = (string) $string;
+        $this->value = $string->toString();
         $this->original = $string;
     }
 

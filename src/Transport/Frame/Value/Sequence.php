@@ -9,11 +9,8 @@ use Innmind\AMQP\{
 };
 use Innmind\Math\Algebra\Integer;
 use Innmind\Stream\Readable;
-use Innmind\Immutable\{
-    Sequence as Seq,
-    StreamInterface,
-    Stream,
-};
+use Innmind\Immutable\Sequence as Seq;
+use function Innmind\Immutable\join;
 
 /**
  * It's an array, but "array" is a reserved keyword in PHP
@@ -21,11 +18,11 @@ use Innmind\Immutable\{
 final class Sequence implements Value
 {
     private ?string $value = null;
-    private Stream $original;
+    private Seq $original;
 
     public function __construct(Value ...$values)
     {
-        $values = Stream::of(Value::class, ...$values);
+        $values = Seq::of(Value::class, ...$values);
 
         $texts = $values->filter(static function(Value $value): bool {
             return $value instanceof Text;
@@ -47,7 +44,7 @@ final class Sequence implements Value
         $values = [];
 
         while ($position < $boundary) {
-            $class = Symbols::class((string) $stream->read(1));
+            $class = Symbols::class($stream->read(1)->toString());
             $values[] = [$class, 'fromStream']($stream);
             $position = $stream->position()->toInt();
         }
@@ -56,9 +53,9 @@ final class Sequence implements Value
     }
 
     /**
-     * @return StreamInterface<Value>
+     * @return Seq<Value>
      */
-    public function original(): StreamInterface
+    public function original(): Seq
     {
         return $this->original;
     }
@@ -69,19 +66,18 @@ final class Sequence implements Value
             $data = $this
                 ->original
                 ->reduce(
-                    new Seq,
+                    Seq::strings(),
                     static function(Seq $carry, Value $value): Seq {
                         return $carry
                             ->add(Symbols::symbol(\get_class($value)))
-                            ->add($value);
+                            ->add((string) $value);
                     }
-                )
-                ->join('')
-                ->toEncoding('ASCII');
+                );
+            $data = join('', $data)->toEncoding('ASCII');
             $this->value = (string) new UnsignedLongInteger(
                 new Integer($data->length())
             );
-            $this->value .= $data;
+            $this->value .= $data->toString();
         }
 
         return $this->value;

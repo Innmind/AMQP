@@ -37,7 +37,7 @@ final class UnsignedShortInteger implements Value
 
     public static function fromStream(Readable $stream): Value
     {
-        [, $value] = \unpack('n', (string) $stream->read(2));
+        [, $value] = \unpack('n', $stream->read(2)->toString());
 
         return new self(new Integer($value));
     }

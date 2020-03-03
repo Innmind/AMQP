@@ -12,7 +12,7 @@ use Innmind\Math\Algebra\{
     Number,
     Integer,
 };
-use Innmind\Filesystem\Stream\StringStream;
+use Innmind\Stream\Readable\Stream;
 use Innmind\Immutable\StreamInterface;
 use PHPUnit\Framework\TestCase;
 
@@ -34,7 +34,7 @@ class DecimalTest extends TestCase
         $value = new Decimal(new Integer($number), new Integer($scale));
         $this->assertSame($expected, (string) $value);
         $this->assertInstanceOf(Number::class, $value->original());
-        $this->assertSame("$number ÷ (10^$scale)", (string) $value->original());
+        $this->assertSame("$number ÷ (10^$scale)", $value->original()->toString());
         $this->assertSame($number / (10**$scale), $value->original()->value());
     }
 
@@ -43,7 +43,7 @@ class DecimalTest extends TestCase
      */
     public function testFromStream($number, $scale, $string)
     {
-        $value = Decimal::fromStream(new StringStream($string));
+        $value = Decimal::fromStream(Stream::ofContent($string));
 
         $this->assertInstanceOf(Decimal::class, $value);
         $this->assertSame(($number / (10**$scale)), $value->original()->value());

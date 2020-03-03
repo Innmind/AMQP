@@ -43,7 +43,7 @@ final class Purge implements Command
         }
     }
 
-    public function __toString(): string
+    public function toString(): string
     {
         return <<<USAGE
 innmind:amqp:purge queue

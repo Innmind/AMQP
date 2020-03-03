@@ -28,7 +28,7 @@ class AutoDeclareTest extends TestCase
     public function testThrowWhenInvalidExchangeSet()
     {
         $this->expectException(\TypeError::class);
-        $this->expectExceptionMessage('Argument 2 must be of type SetInterface<Innmind\AMQP\Model\Exchange\Declaration>');
+        $this->expectExceptionMessage('Argument 2 must be of type Set<Innmind\AMQP\Model\Exchange\Declaration>');
 
         new AutoDeclare(
             $this->createMock(Client::class),
@@ -39,7 +39,7 @@ class AutoDeclareTest extends TestCase
     public function testThrowWhenInvalidQueueSet()
     {
         $this->expectException(\TypeError::class);
-        $this->expectExceptionMessage('Argument 3 must be of type SetInterface<Innmind\AMQP\Model\Queue\Declaration>');
+        $this->expectExceptionMessage('Argument 3 must be of type Set<Innmind\AMQP\Model\Queue\Declaration>');
 
         new AutoDeclare(
             $this->createMock(Client::class),
@@ -51,7 +51,7 @@ class AutoDeclareTest extends TestCase
     public function testThrowWhenInvalidBindingSet()
     {
         $this->expectException(\TypeError::class);
-        $this->expectExceptionMessage('Argument 4 must be of type SetInterface<Innmind\AMQP\Model\Queue\Binding>');
+        $this->expectExceptionMessage('Argument 4 must be of type Set<Innmind\AMQP\Model\Queue\Binding>');
 
         new AutoDeclare(
             $this->createMock(Client::class),

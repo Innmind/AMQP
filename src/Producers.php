@@ -8,6 +8,7 @@ use Innmind\Immutable\{
     Sequence,
     Map,
 };
+use function Innmind\Immutable\unwrap;
 
 final class Producers
 {
@@ -15,8 +16,8 @@ final class Producers
 
     public function __construct(Client $client, string ...$exchanges)
     {
-        $this->producers = Sequence::of(...$exchanges)->reduce(
-            new Map('string', Producer::class),
+        $this->producers = Sequence::strings(...$exchanges)->reduce(
+            Map::of('string', Producer::class),
             static function(Map $producers, string $exchange) use ($client): Map {
                 return $producers->put(
                     $exchange,
@@ -28,11 +29,14 @@ final class Producers
 
     public static function fromDeclarations(Client $client, Declaration ...$exchanges): self
     {
+        $exchanges = Sequence::of(Declaration::class, ...$exchanges)->mapTo(
+            'string',
+            static fn(Declaration $exchange): string => $exchange->name(),
+        );
+
         return new self(
             $client,
-            ...Sequence::of(...$exchanges)->map(static function(Declaration $exchange): string {
-                return $exchange->name();
-            })
+            ...unwrap($exchanges),
         );
     }
 

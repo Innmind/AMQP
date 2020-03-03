@@ -38,8 +38,8 @@ final class Exchange implements ExchangeInterface
             $channel,
             Methods::get('exchange.declare'),
             new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
-            ShortString::of(new Str($command->name())),
-            ShortString::of(new Str((string) $command->type())),
+            ShortString::of(Str::of($command->name())),
+            ShortString::of(Str::of((string) $command->type())),
             new Bits(
                 $command->isPassive(),
                 $command->isDurable(),
@@ -51,7 +51,7 @@ final class Exchange implements ExchangeInterface
                 $command
                     ->arguments()
                     ->reduce(
-                        new Map('string', Value::class),
+                        Map::of('string', Value::class),
                         function(Map $carry, string $key, $value): Map {
                             return $carry->put(
                                 $key,
@@ -69,7 +69,7 @@ final class Exchange implements ExchangeInterface
             $channel,
             Methods::get('exchange.delete'),
             new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
-            ShortString::of(new Str($command->name())),
+            ShortString::of(Str::of($command->name())),
             new Bits(
                 $command->onlyIfUnused(),
                 !$command->shouldWait()

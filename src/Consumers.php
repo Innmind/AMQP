@@ -3,19 +3,16 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP;
 
-use Innmind\Immutable\{
-    MapInterface,
-    Map,
-};
+use Innmind\Immutable\Map;
 use function Innmind\Immutable\assertMap;
 
 final class Consumers
 {
-    private MapInterface $consumers;
+    private Map $consumers;
 
-    public function __construct(MapInterface $consumers = null)
+    public function __construct(Map $consumers = null)
     {
-        $consumers = $consumers ?? new Map('string', 'callable');
+        $consumers ??= Map::of('string', 'callable');
 
         assertMap('string', 'callable', $consumers, 1);
 

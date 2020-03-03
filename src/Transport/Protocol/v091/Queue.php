@@ -23,7 +23,6 @@ use Innmind\AMQP\{
 use Innmind\Math\Algebra\Integer;
 use Innmind\Immutable\{
     Str,
-    MapInterface,
     Map,
 };
 
@@ -48,7 +47,7 @@ final class Queue implements QueueInterface
             $channel,
             Methods::get('queue.declare'),
             new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
-            ShortString::of(new Str($name)),
+            ShortString::of(Str::of($name)),
             new Bits(
                 $command->isPassive(),
                 $command->isDurable(),
@@ -66,7 +65,7 @@ final class Queue implements QueueInterface
             $channel,
             Methods::get('queue.delete'),
             new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
-            ShortString::of(new Str($command->name())),
+            ShortString::of(Str::of($command->name())),
             new Bits(
                 $command->onlyIfUnused(),
                 $command->onlyIfEmpty(),
@@ -81,9 +80,9 @@ final class Queue implements QueueInterface
             $channel,
             Methods::get('queue.bind'),
             new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
-            ShortString::of(new Str($command->queue())),
-            ShortString::of(new Str($command->exchange())),
-            ShortString::of(new Str($command->routingKey())),
+            ShortString::of(Str::of($command->queue())),
+            ShortString::of(Str::of($command->exchange())),
+            ShortString::of(Str::of($command->routingKey())),
             new Bits(!$command->shouldWait()),
             $this->translate($command->arguments())
         );
@@ -95,9 +94,9 @@ final class Queue implements QueueInterface
             $channel,
             Methods::get('queue.unbind'),
             new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
-            ShortString::of(new Str($command->queue())),
-            ShortString::of(new Str($command->exchange())),
-            ShortString::of(new Str($command->routingKey())),
+            ShortString::of(Str::of($command->queue())),
+            ShortString::of(Str::of($command->exchange())),
+            ShortString::of(Str::of($command->routingKey())),
             $this->translate($command->arguments())
         );
     }
@@ -108,19 +107,19 @@ final class Queue implements QueueInterface
             $channel,
             Methods::get('queue.purge'),
             new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
-            ShortString::of(new Str($command->name())),
+            ShortString::of(Str::of($command->name())),
             new Bits(!$command->shouldWait())
         );
     }
 
     /**
-     * @param MapInterface<string, mixed> $arguments
+     * @param Map<string, mixed> $arguments
      */
-    private function translate(MapInterface $arguments): Table
+    private function translate(Map $arguments): Table
     {
         return new Table(
             $arguments->reduce(
-                new Map('string', Value::class),
+                Map::of('string', Value::class),
                 function(Map $carry, string $key, $value): Map {
                     return $carry->put(
                         $key,

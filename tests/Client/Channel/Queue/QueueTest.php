@@ -21,9 +21,9 @@ use Innmind\AMQP\{
     Model\Channel\Close,
 };
 use Innmind\Socket\Internet\Transport;
-use Innmind\TimeContinuum\{
+use Innmind\TimeContinuum\Earth\{
     ElapsedPeriod,
-    TimeContinuum\Earth,
+    Clock,
 };
 use Innmind\Url\Url;
 use Innmind\OperatingSystem\Remote;
@@ -40,10 +40,10 @@ class QueueTest extends TestCase
         $this->queue = new Queue(
             $this->connection = new Connection(
                 Transport::tcp(),
-                Url::fromString('//guest:guest@localhost:5672/'),
+                Url::of('//guest:guest@localhost:5672/'),
                 new Protocol($this->createMock(ArgumentTranslator::class)),
                 new ElapsedPeriod(1000),
-                new Earth,
+                new Clock,
                 new Remote\Generic($this->createMock(Server::class))
             ),
             new Channel(1)

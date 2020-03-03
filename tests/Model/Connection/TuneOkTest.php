@@ -8,7 +8,7 @@ use Innmind\AMQP\Model\Connection\{
     MaxChannels,
     MaxFrameSize,
 };
-use Innmind\TimeContinuum\ElapsedPeriod;
+use Innmind\TimeContinuum\Earth\ElapsedPeriod;
 use PHPUnit\Framework\TestCase;
 
 class TuneOkTest extends TestCase

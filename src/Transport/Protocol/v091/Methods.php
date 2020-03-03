@@ -4,10 +4,8 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Transport\Protocol\v091;
 
 use Innmind\AMQP\Transport\Frame\Method;
-use Innmind\Immutable\{
-    MapInterface,
-    Map,
-};
+use Innmind\Immutable\Map;
+use function Innmind\Immutable\first;
 
 final class Methods
 {
@@ -26,17 +24,17 @@ final class Methods
 
     public static function classId(string $class): int
     {
-        return self::classes()
+        return first(self::classes()
             ->filter(static function(int $id, string $name) use ($class): bool {
                 return $name === $class;
             })
-            ->key();
+            ->keys());
     }
 
     /**
-     * @return MapInterface<string, Method>
+     * @return Map<string, Method>
      */
-    public static function all(): MapInterface
+    public static function all(): Map
     {
         return self::$all ?? self::$all = Map::of('string', Method::class)
             ('connection.start', new Method(10, 10))
@@ -95,9 +93,9 @@ final class Methods
     }
 
     /**
-     * @return MapInterface<int, string>
+     * @return Map<int, string>
      */
-    public static function classes(): MapInterface
+    public static function classes(): Map
     {
         return self::$classes ?? self::$classes = Map::of('int', 'string')
             (10, 'connection')

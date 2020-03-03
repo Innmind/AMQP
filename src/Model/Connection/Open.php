@@ -3,18 +3,18 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Model\Connection;
 
-use Innmind\Url\PathInterface;
+use Innmind\Url\Path;
 
 final class Open
 {
-    private PathInterface $virtualHost;
+    private Path $virtualHost;
 
-    public function __construct(PathInterface $virtualHost)
+    public function __construct(Path $virtualHost)
     {
         $this->virtualHost = $virtualHost;
     }
 
-    public function virtualHost(): PathInterface
+    public function virtualHost(): Path
     {
         return $this->virtualHost;
     }

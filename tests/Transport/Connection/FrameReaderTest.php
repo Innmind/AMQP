@@ -43,9 +43,9 @@ use Innmind\Stream\{
     Readable,
 };
 use Innmind\Math\Algebra\Integer;
-use Innmind\TimeContinuum\{
+use Innmind\TimeContinuum\Earth\{
     ElapsedPeriod,
-    PointInTime\Earth\Now,
+    PointInTime\Now,
 };
 use Innmind\Immutable\{
     Str,
@@ -74,9 +74,9 @@ class FrameReaderTest extends TestCase
                 new Method(10, 10), // connection.start
                 new UnsignedOctet(new Integer(0)),
                 new UnsignedOctet(new Integer(9)),
-                new Table(new Map('string', Value::class)),
-                new LongString(new Str('AMQPLAIN')),
-                new LongString(new Str('en_US'))
+                new Table(Map::of('string', Value::class)),
+                new LongString(Str::of('AMQPLAIN')),
+                new LongString(Str::of('en_US'))
             )
         );
         fseek($file, 0);
@@ -97,9 +97,9 @@ class FrameReaderTest extends TestCase
             new Method(10, 10), // connection.start
             new UnsignedOctet(new Integer(0)),
             new UnsignedOctet(new Integer(9)),
-            new Table(new Map('string', Value::class)),
-            new LongString(new Str('AMQPLAIN')),
-            new LongString(new Str('en_US'))
+            new Table(Map::of('string', Value::class)),
+            new LongString(Str::of('AMQPLAIN')),
+            new LongString(Str::of('en_US'))
         );
         $frame = mb_substr($frame, 0, -1, 'ASCII'); //remove end marker
         $frame .= new UnsignedOctet(new Integer(0xCD));
@@ -143,7 +143,7 @@ class FrameReaderTest extends TestCase
             $this->fail('it should throw an exception');
         } catch (NoFrameDetected $e) {
             $this->assertInstanceOf(Readable::class, $e->content());
-            $this->assertSame($content, (string) $e->content());
+            $this->assertSame($content, $e->content()->toString());
         }
     }
 
@@ -155,12 +155,12 @@ class FrameReaderTest extends TestCase
             ->publish(
                 new Channel(1),
                 new Publish(
-                    (new Generic(new Str('foobar')))
+                    (new Generic(Str::of('foobar')))
                         ->withContentType(new ContentType('application', 'json'))
                         ->withContentEncoding(new ContentEncoding('gzip'))
                         ->withHeaders(
-                            (new Map('string', 'mixed'))
-                                ->put('foo', new ShortString(new Str('bar')))
+                            Map::of('string', 'mixed')
+                                ('foo', new ShortString(Str::of('bar')))
                         )
                         ->withDeliveryMode(DeliveryMode::persistent())
                         ->withPriority(new Priority(5))
@@ -216,7 +216,7 @@ class FrameReaderTest extends TestCase
         );
         $this->assertSame(
             'application/json',
-            (string) $frame->values()->get(2)->original()
+            $frame->values()->get(2)->original()->toString(),
         );
         $this->assertInstanceOf(
             ShortString::class,
@@ -224,7 +224,7 @@ class FrameReaderTest extends TestCase
         );
         $this->assertSame(
             'gzip',
-            (string) $frame->values()->get(3)->original()
+            $frame->values()->get(3)->original()->toString(),
         );
         $this->assertInstanceOf(
             Table::class,
@@ -233,7 +233,7 @@ class FrameReaderTest extends TestCase
         $this->assertCount(1, $frame->values()->get(4)->original());
         $this->assertSame(
             'bar',
-            (string) $frame->values()->get(4)->original()->get('foo')->original()
+            $frame->values()->get(4)->original()->get('foo')->original()->toString(),
         );
         $this->assertInstanceOf(
             UnsignedOctet::class,
@@ -257,7 +257,7 @@ class FrameReaderTest extends TestCase
         );
         $this->assertSame(
             'correlation',
-            (string) $frame->values()->get(7)->original()
+            $frame->values()->get(7)->original()->toString(),
         );
         $this->assertInstanceOf(
             ShortString::class,
@@ -265,7 +265,7 @@ class FrameReaderTest extends TestCase
         );
         $this->assertSame(
             'reply',
-            (string) $frame->values()->get(8)->original()
+            $frame->values()->get(8)->original()->toString(),
         );
         $this->assertInstanceOf(
             ShortString::class,
@@ -273,7 +273,7 @@ class FrameReaderTest extends TestCase
         );
         $this->assertSame(
             '1000',
-            (string) $frame->values()->get(9)->original()
+            $frame->values()->get(9)->original()->toString(),
         );
         $this->assertInstanceOf(
             ShortString::class,
@@ -281,7 +281,7 @@ class FrameReaderTest extends TestCase
         );
         $this->assertSame(
             'id',
-            (string) $frame->values()->get(10)->original()
+            $frame->values()->get(10)->original()->toString(),
         );
         $this->assertInstanceOf(
             Timestamp::class,
@@ -297,7 +297,7 @@ class FrameReaderTest extends TestCase
         );
         $this->assertSame(
             'type',
-            (string) $frame->values()->get(12)->original()
+            $frame->values()->get(12)->original()->toString(),
         );
         $this->assertInstanceOf(
             ShortString::class,
@@ -305,7 +305,7 @@ class FrameReaderTest extends TestCase
         );
         $this->assertSame(
             'guest',
-            (string) $frame->values()->get(13)->original()
+            $frame->values()->get(13)->original()->toString(),
         );
         $this->assertInstanceOf(
             ShortString::class,
@@ -313,7 +313,7 @@ class FrameReaderTest extends TestCase
         );
         $this->assertSame(
             'webcrawler',
-            (string) $frame->values()->get(14)->original()
+            $frame->values()->get(14)->original()->toString(),
         );
     }
 
@@ -322,7 +322,7 @@ class FrameReaderTest extends TestCase
         $file = tmpfile();
         fwrite($file, (string) Frame::body(
             new Channel(1),
-            new Str('foobar')
+            Str::of('foobar')
         ));
         fseek($file, 0);
 
@@ -333,7 +333,7 @@ class FrameReaderTest extends TestCase
         $this->assertSame(1, $frame->channel()->toInt());
         $this->assertCount(1, $frame->values());
         $this->assertInstanceOf(Text::class, $frame->values()->first());
-        $this->assertSame('foobar', (string) $frame->values()->first()->original());
+        $this->assertSame('foobar', $frame->values()->first()->original()->toString());
     }
 
     public function testReadHeartbeat()

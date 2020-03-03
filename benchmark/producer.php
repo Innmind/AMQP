@@ -43,7 +43,7 @@ abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzab
 abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz
 abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyza
 EOT;
-$message = (new Publish(new Generic(new Str($msgBody))))
+$message = (new Publish(new Generic(Str::of($msgBody))))
     ->to('bench_exchange');
 
 $time = microtime(true);
@@ -61,7 +61,7 @@ echo microtime(true) - $time, "\n";
 $channel
     ->basic()
     ->publish(
-        (new Publish(new Generic(new Str('quit'))))->to('bench_exchange')
+        (new Publish(new Generic(Str::of('quit'))))->to('bench_exchange')
     );
 
 $client->close();

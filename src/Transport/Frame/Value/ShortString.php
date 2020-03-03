@@ -41,6 +41,6 @@ final class ShortString implements Value
     {
         return $this->value ?? $this->value = new UnsignedOctet(
             new Integer($this->original->toEncoding('ASCII')->length())
-        ).$this->original;
+        ).$this->original->toString();
     }
 }

@@ -17,7 +17,7 @@ use Innmind\AMQP\{
     Exception\VersionNotUsable,
 };
 use Innmind\Stream\Readable;
-use Innmind\Immutable\StreamInterface;
+use Innmind\Immutable\Sequence;
 use PHPUnit\Framework\TestCase;
 
 class DelegateTest extends TestCase
@@ -75,8 +75,8 @@ class DelegateTest extends TestCase
                 return $this;
             }
 
-            public function read(Method $method, Readable $arguments): StreamInterface {}
-            public function readHeader(Readable $arguments): StreamInterface {}
+            public function read(Method $method, Readable $arguments): Sequence {}
+            public function readHeader(Readable $arguments): Sequence {}
             public function method(string $name): Method {}
             public function connection(): Connection {}
             public function channel(): Channel {}

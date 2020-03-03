@@ -18,8 +18,11 @@ use Innmind\AMQP\{
     Exception\NoFrameDetected,
     Exception\LogicException,
 };
-use Innmind\Stream\Readable;
-use Innmind\Filesystem\Stream\StringStream;
+use Innmind\Stream\{
+    Readable,
+    Readable\Stream,
+};
+use function Innmind\Immutable\unwrap;
 
 final class FrameReader
 {
@@ -30,8 +33,8 @@ final class FrameReader
         try {
             $type = Type::fromInt($octet->original()->value());
         } catch (UnknownFrameType $e) {
-            throw new NoFrameDetected(new StringStream(
-                (string) $stream->read()->prepend((string) $octet)
+            throw new NoFrameDetected(Stream::ofContent(
+                $stream->read()->prepend((string) $octet)->toString()
             ));
         }
 
@@ -58,7 +61,7 @@ final class FrameReader
             throw new ReceivedFrameNotDelimitedCorrectly;
         }
 
-        $payload = new StringStream((string) $payload);
+        $payload = Stream::ofContent($payload->toString());
 
         switch ($type) {
             case Type::method():
@@ -74,7 +77,7 @@ final class FrameReader
                 return Frame::method(
                     $channel,
                     $method,
-                    ...$protocol->read($method, $payload)
+                    ...unwrap($protocol->read($method, $payload)),
                 );
 
             case Type::header():
@@ -86,7 +89,7 @@ final class FrameReader
                 return Frame::header(
                     $channel,
                     $class,
-                    ...$protocol->readHeader($payload)
+                    ...unwrap($protocol->readHeader($payload)),
                 );
 
             case Type::body():

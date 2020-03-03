@@ -42,10 +42,10 @@ USAGE;
 
         $this->assertSame(
             $expected,
-            (string) new Get(
+            (new Get(
                 $this->createMock(Client::class),
                 new Consumers
-            )
+            ))->toString(),
         );
     }
 
@@ -54,8 +54,8 @@ USAGE;
         $command = new Get(
             $client = $this->createMock(Client::class),
             new Consumers(
-                (new Map('string', 'callable'))
-                    ->put('foo', $expected = function(){})
+                Map::of('string', 'callable')
+                    ('foo', $expected = function(){})
             )
         );
         $client
@@ -90,7 +90,7 @@ USAGE;
 
         $this->assertNull($command(
             $env,
-            new Arguments((new Map('string', 'mixed'))->put('queue', 'foo')),
+            new Arguments(Map::of('string', 'string')('queue', 'foo')),
             new Options
         ));
     }
@@ -100,8 +100,8 @@ USAGE;
         $command = new Get(
             $client = $this->createMock(Client::class),
             new Consumers(
-                (new Map('string', 'callable'))
-                    ->put('foo', function(){})
+                Map::of('string', 'callable')
+                    ('foo', function(){})
             )
         );
         $client
@@ -131,7 +131,7 @@ USAGE;
 
         $command(
             $this->createMock(Environment::class),
-            new Arguments((new Map('string', 'mixed'))->put('queue', 'foo')),
+            new Arguments(Map::of('string', 'string')('queue', 'foo')),
             new Options
         );
     }

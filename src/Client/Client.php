@@ -22,7 +22,7 @@ final class Client implements ClientInterface
     {
         $this->connection = $connection;
         $this->process = $process;
-        $this->channels = new Map('int', Channel::class);
+        $this->channels = Map::of('int', Channel::class);
     }
 
     public function channel(): Channel
@@ -37,7 +37,7 @@ final class Client implements ClientInterface
             $this->connection,
             new Number($this->channel++)
         );
-        $this->channels = $this->channels->put($pid, $channel);
+        $this->channels = ($this->channels)($pid, $channel);
 
         return $channel;
     }

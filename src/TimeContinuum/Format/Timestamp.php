@@ -3,11 +3,11 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\TimeContinuum\Format;
 
-use Innmind\TimeContinuum\FormatInterface;
+use Innmind\TimeContinuum\Format;
 
-final class Timestamp implements FormatInterface
+final class Timestamp implements Format
 {
-    public function __toString(): string
+    public function toString(): string
     {
         return 'U';
     }

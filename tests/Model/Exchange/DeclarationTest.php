@@ -8,7 +8,7 @@ use Innmind\AMQP\{
     Model\Exchange\Type,
     Exception\NotWaitingPassiveDeclarationDoesNothing,
 };
-use Innmind\Immutable\MapInterface;
+use Innmind\Immutable\Map;
 use PHPUnit\Framework\TestCase;
 
 class DeclarationTest extends TestCase
@@ -24,7 +24,7 @@ class DeclarationTest extends TestCase
         $this->assertFalse($command->isDurable());
         $this->assertFalse($command->isAutoDeleted());
         $this->assertTrue($command->shouldWait());
-        $this->assertInstanceOf(MapInterface::class, $command->arguments());
+        $this->assertInstanceOf(Map::class, $command->arguments());
         $this->assertSame('string', (string) $command->arguments()->keyType());
         $this->assertSame('mixed', (string) $command->arguments()->valueType());
         $this->assertCount(0, $command->arguments());
@@ -41,7 +41,7 @@ class DeclarationTest extends TestCase
         $this->assertTrue($command->isDurable());
         $this->assertFalse($command->isAutoDeleted());
         $this->assertTrue($command->shouldWait());
-        $this->assertInstanceOf(MapInterface::class, $command->arguments());
+        $this->assertInstanceOf(Map::class, $command->arguments());
         $this->assertSame('string', (string) $command->arguments()->keyType());
         $this->assertSame('mixed', (string) $command->arguments()->valueType());
         $this->assertCount(0, $command->arguments());
@@ -58,7 +58,7 @@ class DeclarationTest extends TestCase
         $this->assertFalse($command->isDurable());
         $this->assertFalse($command->isAutoDeleted());
         $this->assertTrue($command->shouldWait());
-        $this->assertInstanceOf(MapInterface::class, $command->arguments());
+        $this->assertInstanceOf(Map::class, $command->arguments());
         $this->assertSame('string', (string) $command->arguments()->keyType());
         $this->assertSame('mixed', (string) $command->arguments()->valueType());
         $this->assertCount(0, $command->arguments());
@@ -75,7 +75,7 @@ class DeclarationTest extends TestCase
         $this->assertFalse($command->isDurable());
         $this->assertTrue($command->isAutoDeleted());
         $this->assertTrue($command->shouldWait());
-        $this->assertInstanceOf(MapInterface::class, $command->arguments());
+        $this->assertInstanceOf(Map::class, $command->arguments());
         $this->assertSame('string', (string) $command->arguments()->keyType());
         $this->assertSame('mixed', (string) $command->arguments()->valueType());
         $this->assertCount(0, $command->arguments());

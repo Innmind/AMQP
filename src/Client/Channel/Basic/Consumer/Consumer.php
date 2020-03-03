@@ -61,11 +61,11 @@ final class Consumer implements ConsumerInterface
                 $frame = $this->connection->wait('basic.deliver');
                 $message = ($this->read)($this->connection);
                 $message = new Locked($message);
-                $consumerTag = (string) $frame->values()->first()->original();
+                $consumerTag = $frame->values()->first()->original()->toString();
                 $deliveryTag = $frame->values()->get(1)->original()->value();
                 $redelivered = $frame->values()->get(2)->original()->first();
-                $exchange = (string) $frame->values()->get(3)->original();
-                $routingKey = (string) $frame->values()->get(4)->original();
+                $exchange = $frame->values()->get(3)->original()->toString();
+                $routingKey = $frame->values()->get(4)->original()->toString();
 
                 if ($this->consumerTag !== $consumerTag) {
                     throw new MessageFromAnotherConsumerReceived(

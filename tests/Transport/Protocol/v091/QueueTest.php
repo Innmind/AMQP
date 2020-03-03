@@ -23,6 +23,7 @@ use Innmind\AMQP\{
     Model\Queue\Purge,
 };
 use Innmind\Math\Algebra\Integer;
+use function Innmind\Immutable\unwrap;
 use PHPUnit\Framework\TestCase;
 
 class QueueTest extends TestCase
@@ -78,11 +79,11 @@ class QueueTest extends TestCase
         );
         $this->assertSame(0, $frame->values()->get(0)->original()->value());
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(1));
-        $this->assertSame('foo', (string) $frame->values()->get(1)->original());
+        $this->assertSame('foo', $frame->values()->get(1)->original()->toString());
         $this->assertInstanceOf(Bits::class, $frame->values()->get(2));
         $this->assertSame(
             [true, false, false, false, false],
-            $frame->values()->get(2)->original()->toPrimitive()
+            unwrap($frame->values()->get(2)->original())
         );
         $this->assertInstanceOf(Table::class, $frame->values()->get(3));
         $this->assertCount(2, $frame->values()->get(3)->original());
@@ -94,10 +95,10 @@ class QueueTest extends TestCase
             Declaration::durable()
         );
 
-        $this->assertSame('', (string) $frame->values()->get(1)->original());
+        $this->assertSame('', $frame->values()->get(1)->original()->toString());
         $this->assertSame(
             [false, true, false, false, false],
-            $frame->values()->get(2)->original()->toPrimitive()
+            unwrap($frame->values()->get(2)->original())
         );
 
         $frame = $this->queue->declare(
@@ -105,10 +106,10 @@ class QueueTest extends TestCase
             Declaration::temporary()
         );
 
-        $this->assertSame('', (string) $frame->values()->get(1)->original());
+        $this->assertSame('', $frame->values()->get(1)->original()->toString());
         $this->assertSame(
             [false, false, false, false, false],
-            $frame->values()->get(2)->original()->toPrimitive()
+            unwrap($frame->values()->get(2)->original())
         );
 
         $frame = $this->queue->declare(
@@ -116,10 +117,10 @@ class QueueTest extends TestCase
             Declaration::autoDelete()
         );
 
-        $this->assertSame('', (string) $frame->values()->get(1)->original());
+        $this->assertSame('', $frame->values()->get(1)->original()->toString());
         $this->assertSame(
             [false, false, false, true, false],
-            $frame->values()->get(2)->original()->toPrimitive()
+            unwrap($frame->values()->get(2)->original())
         );
 
         $frame = $this->queue->declare(
@@ -127,10 +128,10 @@ class QueueTest extends TestCase
             Declaration::autoDelete()->exclusive()
         );
 
-        $this->assertSame('', (string) $frame->values()->get(1)->original());
+        $this->assertSame('', $frame->values()->get(1)->original()->toString());
         $this->assertSame(
             [false, false, true, true, false],
-            $frame->values()->get(2)->original()->toPrimitive()
+            unwrap($frame->values()->get(2)->original())
         );
 
         $frame = $this->queue->declare(
@@ -138,10 +139,10 @@ class QueueTest extends TestCase
             Declaration::autoDelete()->dontWait()
         );
 
-        $this->assertSame('', (string) $frame->values()->get(1)->original());
+        $this->assertSame('', $frame->values()->get(1)->original()->toString());
         $this->assertSame(
             [false, false, false, true, true],
-            $frame->values()->get(2)->original()->toPrimitive()
+            unwrap($frame->values()->get(2)->original())
         );
 
         $frame = $this->queue->declare(
@@ -149,7 +150,7 @@ class QueueTest extends TestCase
             Declaration::autoDelete()->withName('foo')
         );
 
-        $this->assertSame('foo', (string) $frame->values()->get(1)->original());
+        $this->assertSame('foo', $frame->values()->get(1)->original()->toString());
     }
 
     public function testDelete()
@@ -170,11 +171,11 @@ class QueueTest extends TestCase
         );
         $this->assertSame(0, $frame->values()->get(0)->original()->value());
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(1));
-        $this->assertSame('foo', (string) $frame->values()->get(1)->original());
+        $this->assertSame('foo', $frame->values()->get(1)->original()->toString());
         $this->assertInstanceOf(Bits::class, $frame->values()->get(2));
         $this->assertSame(
             [false, false, false],
-            $frame->values()->get(2)->original()->toPrimitive()
+            unwrap($frame->values()->get(2)->original())
         );
 
         $frame = $this->queue->delete(
@@ -184,7 +185,7 @@ class QueueTest extends TestCase
 
         $this->assertSame(
             [true, false, false],
-            $frame->values()->get(2)->original()->toPrimitive()
+            unwrap($frame->values()->get(2)->original())
         );
 
         $frame = $this->queue->delete(
@@ -194,7 +195,7 @@ class QueueTest extends TestCase
 
         $this->assertSame(
             [false, true, false],
-            $frame->values()->get(2)->original()->toPrimitive()
+            unwrap($frame->values()->get(2)->original())
         );
 
         $frame = $this->queue->delete(
@@ -204,7 +205,7 @@ class QueueTest extends TestCase
 
         $this->assertSame(
             [false, false, true],
-            $frame->values()->get(2)->original()->toPrimitive()
+            unwrap($frame->values()->get(2)->original())
         );
     }
 
@@ -244,11 +245,11 @@ class QueueTest extends TestCase
         );
         $this->assertSame(0, $frame->values()->get(0)->original()->value());
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(1));
-        $this->assertSame('q', (string) $frame->values()->get(1)->original());
+        $this->assertSame('q', $frame->values()->get(1)->original()->toString());
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(2));
-        $this->assertSame('ex', (string) $frame->values()->get(2)->original());
+        $this->assertSame('ex', $frame->values()->get(2)->original()->toString());
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(3));
-        $this->assertSame('rk', (string) $frame->values()->get(3)->original());
+        $this->assertSame('rk', $frame->values()->get(3)->original()->toString());
         $this->assertInstanceOf(Bits::class, $frame->values()->get(4));
         $this->assertFalse($frame->values()->get(4)->original()->first());
         $this->assertInstanceOf(Table::class, $frame->values()->get(5));
@@ -300,11 +301,11 @@ class QueueTest extends TestCase
         );
         $this->assertSame(0, $frame->values()->get(0)->original()->value());
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(1));
-        $this->assertSame('q', (string) $frame->values()->get(1)->original());
+        $this->assertSame('q', $frame->values()->get(1)->original()->toString());
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(2));
-        $this->assertSame('ex', (string) $frame->values()->get(2)->original());
+        $this->assertSame('ex', $frame->values()->get(2)->original()->toString());
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(3));
-        $this->assertSame('rk', (string) $frame->values()->get(3)->original());
+        $this->assertSame('rk', $frame->values()->get(3)->original()->toString());
         $this->assertInstanceOf(Table::class, $frame->values()->get(4));
         $this->assertCount(2, $frame->values()->get(4)->original());
         $this->assertSame($firstArgument, $frame->values()->get(4)->original()->get('foo'));
@@ -329,7 +330,7 @@ class QueueTest extends TestCase
         );
         $this->assertSame(0, $frame->values()->get(0)->original()->value());
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(1));
-        $this->assertSame('q', (string) $frame->values()->get(1)->original());
+        $this->assertSame('q', $frame->values()->get(1)->original()->toString());
         $this->assertInstanceOf(Bits::class, $frame->values()->get(2));
         $this->assertFalse($frame->values()->get(2)->original()->first());
 

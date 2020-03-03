@@ -34,16 +34,17 @@ use Innmind\AMQP\{
     Model\Connection\MaxFrameSize,
     Exception\VersionNotUsable,
 };
-use Innmind\TimeContinuum\{
+use Innmind\TimeContinuum\Earth\{
     ElapsedPeriod,
-    PointInTime\Earth\Now,
+    PointInTime\Now,
 };
-use Innmind\Filesystem\Stream\StringStream;
+use Innmind\Stream\Readable\Stream;
 use Innmind\Immutable\{
     Str,
     Map,
-    StreamInterface,
+    Sequence,
 };
+use function Innmind\Immutable\join;
 use PHPUnit\Framework\TestCase;
 
 class ProtocolTest extends TestCase
@@ -91,12 +92,12 @@ class ProtocolTest extends TestCase
             ->publish(
                 new FrameChannel(1),
                 new Publish(
-                    (new Generic(new Str('foobar')))
+                    (new Generic(Str::of('foobar')))
                         ->withContentType(new ContentType('application', 'json'))
                         ->withContentEncoding(new ContentEncoding('gzip'))
                         ->withHeaders(
-                            (new Map('string', 'mixed'))
-                                ->put('foo', new ShortString(new Str('bar')))
+                            Map::of('string', 'mixed')
+                                ('foo', new ShortString(Str::of('bar')))
                         )
                         ->withDeliveryMode(DeliveryMode::persistent())
                         ->withPriority(new Priority(5))
@@ -113,14 +114,34 @@ class ProtocolTest extends TestCase
             )
             ->get(1);
 
-        $values = $protocol->readHeader(new StringStream((string) $header->values()->join('')));
+        $values = $protocol->readHeader(Stream::ofContent(join(
+            '',
+            $header
+                ->values()
+                ->mapTo(
+                    'string',
+                    fn($v) => (string) $v,
+                ),
+        )->toString()));
 
-        $this->assertInstanceOf(StreamInterface::class, $values);
+        $this->assertInstanceOf(Sequence::class, $values);
         $this->assertSame(Value::class, (string) $values->type());
         $this->assertCount(15, $values); // body size + flag bits + 13 properties
         $this->assertSame(
-            (string) $values->join(''),
-            (string) $header->values()->join('')
+            join(
+                '',
+                $values->mapTo(
+                    'string',
+                    fn($v) => (string) $v,
+                ),
+            )->toString(),
+            join(
+                '',
+                $header->values()->mapTo(
+                    'string',
+                    fn($v) => (string) $v,
+                ),
+            )->toString(),
         );
     }
 

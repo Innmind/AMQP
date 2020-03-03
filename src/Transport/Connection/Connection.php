@@ -29,17 +29,17 @@ use Innmind\Socket\{
     Internet\Transport,
     Client\Internet as Socket,
 };
-use Innmind\Stream\Select;
+use Innmind\Stream\Watch\Select;
 use Innmind\Url\{
-    UrlInterface,
-    PathInterface,
+    Url,
+    Path,
     Authority,
-    Authority\NullUserInformation,
 };
 use Innmind\TimeContinuum\{
     ElapsedPeriod,
-    TimeContinuumInterface,
-    PointInTimeInterface,
+    Clock,
+    PointInTime,
+    Earth,
 };
 use Innmind\OperatingSystem\Remote;
 use Innmind\Immutable\Str;
@@ -48,7 +48,7 @@ final class Connection implements ConnectionInterface
 {
     private Transport $transport;
     private Authority $authority;
-    private PathInterface $vhost;
+    private Path $vhost;
     private Protocol $protocol;
     private Socket $socket;
     private ElapsedPeriod $timeout;
@@ -60,15 +60,15 @@ final class Connection implements ConnectionInterface
     private MaxChannels $maxChannels;
     private MaxFrameSize $maxFrameSize;
     private ElapsedPeriod $heartbeat;
-    private TimeContinuumInterface $clock;
-    private PointInTimeInterface $lastReceivedData;
+    private Clock $clock;
+    private PointInTime $lastReceivedData;
 
     public function __construct(
         Transport $transport,
-        UrlInterface $server,
+        Url $server,
         Protocol $protocol,
         ElapsedPeriod $timeout,
-        TimeContinuumInterface $clock,
+        Clock $clock,
         Remote $remote
     ) {
         $this->transport = $transport;
@@ -133,8 +133,8 @@ final class Connection implements ConnectionInterface
                 $this->send(Frame::heartbeat());
             }
 
-            $streams = ($this->select)();
-        } while (!$streams->get('read')->contains($this->socket));
+            $ready = ($this->select)();
+        } while (!$ready->toRead()->contains($this->socket));
 
         $frame = ($this->read)($this->socket, $this->protocol);
         $this->lastReceivedData = $this->clock->now();
@@ -163,7 +163,7 @@ final class Connection implements ConnectionInterface
             $this->closed = true;
 
             throw ConnectionClosed::byServer(
-                (string) $frame->values()->get(1)->original(),
+                $frame->values()->get(1)->original()->toString(),
                 $frame->values()->get(0)->original()->value(),
                 new Method(
                     $frame->values()->get(2)->original()->value(),
@@ -202,7 +202,7 @@ final class Connection implements ConnectionInterface
     {
         $this->socket = $this->remote->socket(
             $this->transport,
-            $this->authority->withUserInformation(new NullUserInformation)
+            $this->authority->withoutUserInformation(),
         );
         $this->select = (new Select($this->timeout))->forRead($this->socket);
     }
@@ -224,7 +224,7 @@ final class Connection implements ConnectionInterface
     private function start(): void
     {
         $this->socket->write(
-            new Str((string) $this->protocol->version())
+            Str::of((string) $this->protocol->version()),
         );
 
         try {
@@ -232,7 +232,7 @@ final class Connection implements ConnectionInterface
         } catch (NoFrameDetected $e) {
             $content = $e->content();
 
-            if ((string) $content->read(4) !== 'AMQP') {
+            if ($content->read(4)->toString() !== 'AMQP') {
                 throw $e;
             }
 
@@ -242,8 +242,8 @@ final class Connection implements ConnectionInterface
                 new Version(
                     UnsignedOctet::fromStream($content)->original()->value(),
                     UnsignedOctet::fromStream($content)->original()->value(),
-                    UnsignedOctet::fromStream($content)->original()->value()
-                )
+                    UnsignedOctet::fromStream($content)->original()->value(),
+                ),
             );
             //socket rebuilt as the server close the connection on version mismatch
             $this->buildSocket();
@@ -280,7 +280,7 @@ final class Connection implements ConnectionInterface
         $this->maxFrameSize = new MaxFrameSize(
             $frame->values()->get(1)->original()->value()
         );
-        $this->heartbeat = new ElapsedPeriod(
+        $this->heartbeat = new Earth\ElapsedPeriod(
             $frame->values()->get(2)->original()->value()
         );
         $this->select = (new Select($this->heartbeat))->forRead($this->socket);

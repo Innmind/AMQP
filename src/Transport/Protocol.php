@@ -14,7 +14,7 @@ use Innmind\AMQP\Transport\{
     Protocol\Transaction,
 };
 use Innmind\Stream\Readable;
-use Innmind\Immutable\StreamInterface;
+use Innmind\Immutable\Sequence;
 
 interface Protocol
 {
@@ -22,14 +22,14 @@ interface Protocol
     public function use(Version $version): self;
 
     /**
-     * @return StreamInterface<Value>
+     * @return Sequence<Value>
      */
-    public function read(Method $method, Readable $arguments): StreamInterface;
+    public function read(Method $method, Readable $arguments): Sequence;
 
     /**
-     * @return StreamInterface<Value>
+     * @return Sequence<Value>
      */
-    public function readHeader(Readable $arguments): StreamInterface;
+    public function readHeader(Readable $arguments): Sequence;
     public function method(string $name): Method;
     public function connection(): Connection;
     public function channel(): Channel;

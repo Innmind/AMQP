@@ -37,7 +37,7 @@ final class UnsignedLongInteger implements Value
 
     public static function fromStream(Readable $stream): Value
     {
-        [, $value] = \unpack('N', (string) $stream->read(4));
+        [, $value] = \unpack('N', $stream->read(4)->toString());
 
         return new self(new Integer($value));
     }

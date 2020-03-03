@@ -4,27 +4,27 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Model\Connection;
 
 use Innmind\Url\Authority\UserInformation\{
-    UserInterface,
-    PasswordInterface,
+    User,
+    Password,
 };
 
 final class SecureOk
 {
-    private UserInterface $user;
-    private PasswordInterface $password;
+    private User $user;
+    private Password $password;
 
-    public function __construct(UserInterface $user, PasswordInterface $password)
+    public function __construct(User $user, Password $password)
     {
         $this->user = $user;
         $this->password = $password;
     }
 
-    public function user(): UserInterface
+    public function user(): User
     {
         return $this->user;
     }
 
-    public function password(): PasswordInterface
+    public function password(): Password
     {
         return $this->password;
     }

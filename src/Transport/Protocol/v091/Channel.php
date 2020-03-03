@@ -26,7 +26,7 @@ final class Channel implements ChannelInterface
         return Frame::method(
             $channel,
             Methods::get('channel.open'),
-            new ShortString(new Str('')) //out of band (reserved)
+            new ShortString(Str::of('')) //out of band (reserved)
         );
     }
 
@@ -67,7 +67,7 @@ final class Channel implements ChannelInterface
             $channel,
             Methods::get('channel.close'),
             UnsignedShortInteger::of(new Integer($replyCode)),
-            ShortString::of(new Str($replyText)),
+            ShortString::of(Str::of($replyText)),
             UnsignedShortInteger::of(new Integer($method->class())),
             UnsignedShortInteger::of(new Integer($method->method()))
         );

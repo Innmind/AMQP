@@ -42,7 +42,7 @@ final class Get implements Command
         }
     }
 
-    public function __toString(): string
+    public function toString(): string
     {
         return <<<USAGE
 innmind:amqp:get queue

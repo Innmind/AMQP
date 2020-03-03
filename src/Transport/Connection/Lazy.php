@@ -11,9 +11,9 @@ use Innmind\AMQP\{
     Exception\ConnectionClosed,
 };
 use Innmind\Socket\Internet\Transport;
-use Innmind\Url\UrlInterface;
+use Innmind\Url\Url;
 use Innmind\TimeContinuum\{
-    TimeContinuumInterface,
+    Clock,
     ElapsedPeriod,
 };
 use Innmind\OperatingSystem\Remote;
@@ -21,20 +21,20 @@ use Innmind\OperatingSystem\Remote;
 final class Lazy implements ConnectionInterface
 {
     private Transport $transport;
-    private UrlInterface $server;
+    private Url $server;
     private Protocol $protocol;
     private ElapsedPeriod $timeout;
-    private TimeContinuumInterface $clock;
+    private Clock $clock;
     private Remote $remote;
     private ?Connection $connection = null;
     private bool $closed = false;
 
     public function __construct(
         Transport $transport,
-        UrlInterface $server,
+        Url $server,
         Protocol $protocol,
         ElapsedPeriod $timeout,
-        TimeContinuumInterface $clock,
+        Clock $clock,
         Remote $remote
     ) {
         $this->transport = $transport;

@@ -19,7 +19,7 @@ use Innmind\AMQP\{
     Transport\Connection as ConnectionInterface,
     Transport\Frame\Value,
 };
-use Innmind\TimeContinuum\ElapsedPeriod;
+use Innmind\TimeContinuum\Earth\ElapsedPeriod;
 use Innmind\Immutable\{
     Map,
     Str,
@@ -40,15 +40,16 @@ final class MessageReader
             ->get(1)
             ->original()
             ->value();
-        $payload = new Str('');
+        $payload = Str::of('');
 
         while ($payload->length() !== $bodySize) {
             $payload = $payload->append(
-                (string) $connection
+                $connection
                     ->wait()
                     ->values()
                     ->first()
                     ->original()
+                    ->toString()
             );
         }
 
@@ -60,7 +61,7 @@ final class MessageReader
         if ($flagBits & (1 << 15)) {
             [$topLevel, $subType] = explode(
                 '/',
-                (string) $properties->first()->original()
+                $properties->first()->original()->toString(),
             );
             $message = $message->withContentType(new ContentType(
                 $topLevel,
@@ -71,7 +72,7 @@ final class MessageReader
 
         if ($flagBits & (1 << 14)) {
             $message = $message->withContentEncoding(new ContentEncoding(
-                (string) $properties->first()->original()
+                $properties->first()->original()->toString(),
             ));
             $properties = $properties->drop(1);
         }
@@ -82,7 +83,7 @@ final class MessageReader
                     ->first()
                     ->original()
                     ->reduce(
-                        new Map('string', 'mixed'),
+                        Map::of('string', 'mixed'),
                         static function(Map $carry, string $key, Value $value): Map {
                             return $carry->put(
                                 $key,
@@ -111,28 +112,28 @@ final class MessageReader
 
         if ($flagBits & (1 << 10)) {
             $message = $message->withCorrelationId(new CorrelationId(
-                (string) $properties->first()->original()
+                $properties->first()->original()->toString(),
             ));
             $properties = $properties->drop(1);
         }
 
         if ($flagBits & (1 << 9)) {
             $message = $message->withReplyTo(new ReplyTo(
-                (string) $properties->first()->original()
+                $properties->first()->original()->toString(),
             ));
             $properties = $properties->drop(1);
         }
 
         if ($flagBits & (1 << 8)) {
             $message = $message->withExpiration(new ElapsedPeriod(
-                (int) (string) $properties->first()->original()
+                (int) $properties->first()->original()->toString(),
             ));
             $properties = $properties->drop(1);
         }
 
         if ($flagBits & (1 << 7)) {
             $message = $message->withId(new Id(
-                (string) $properties->first()->original()
+                $properties->first()->original()->toString(),
             ));
             $properties = $properties->drop(1);
         }
@@ -146,21 +147,21 @@ final class MessageReader
 
         if ($flagBits & (1 << 5)) {
             $message = $message->withType(new Type(
-                (string) $properties->first()->original()
+                $properties->first()->original()->toString(),
             ));
             $properties = $properties->drop(1);
         }
 
         if ($flagBits & (1 << 4)) {
             $message = $message->withUserId(new UserId(
-                (string) $properties->first()->original()
+                $properties->first()->original()->toString(),
             ));
             $properties = $properties->drop(1);
         }
 
         if ($flagBits & (1 << 3)) {
             $message = $message->withAppId(new AppId(
-                (string) $properties->first()->original()
+                $properties->first()->original()->toString(),
             ));
             $properties = $properties->drop(1);
         }

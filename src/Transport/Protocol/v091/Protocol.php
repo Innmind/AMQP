@@ -25,10 +25,8 @@ use Innmind\AMQP\{
     Exception\VersionNotUsable,
 };
 use Innmind\Stream\Readable;
-use Innmind\Immutable\{
-    StreamInterface,
-    Stream,
-};
+use Innmind\Immutable\Sequence;
+use function Innmind\Immutable\unwrap;
 
 final class Protocol implements ProtocolInterface
 {
@@ -70,7 +68,7 @@ final class Protocol implements ProtocolInterface
     /**
      * {@inheritdoc}
      */
-    public function read(Method $method, Readable $arguments): StreamInterface
+    public function read(Method $method, Readable $arguments): Sequence
     {
         return ($this->read)($method, $arguments);
     }
@@ -78,13 +76,13 @@ final class Protocol implements ProtocolInterface
     /**
      * {@inheritdoc}
      */
-    public function readHeader(Readable $payload): StreamInterface
+    public function readHeader(Readable $payload): Sequence
     {
         $chunk = new ChunkArguments(
             UnsignedLongLongInteger::class,
             UnsignedShortInteger::class
         );
-        [$bodySize, $flags] = $chunk($payload);
+        [$bodySize, $flags] = unwrap($chunk($payload));
 
         $flagBits = $flags->original()->value();
         $toChunk = [];
@@ -141,11 +139,8 @@ final class Protocol implements ProtocolInterface
             $toChunk[] = ShortString::class; //app id
         }
 
-        return Stream::of(
-            Value::class,
-            $bodySize,
-            $flags,
-            ...(new ChunkArguments(...$toChunk))($payload)
+        return Sequence::of(Value::class, $bodySize, $flags)->append(
+            (new ChunkArguments(...$toChunk))($payload),
         );
     }
 

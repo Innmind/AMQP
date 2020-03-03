@@ -10,11 +10,12 @@ use Innmind\AMQP\{
     Transport\Frame\Value,
     Exception\UnboundedTextCannotBeWrapped,
 };
-use Innmind\Filesystem\Stream\StringStream;
+use Innmind\Stream\Readable\Stream;
 use Innmind\Immutable\{
-    StreamInterface,
+    Sequence as Seq,
     Str,
 };
+use function Innmind\Immutable\unwrap;
 use PHPUnit\Framework\TestCase;
 
 class SequenceTest extends TestCase
@@ -31,9 +32,9 @@ class SequenceTest extends TestCase
     {
         $value = new Sequence(...$values);
         $this->assertSame($expected, (string) $value);
-        $this->assertInstanceOf(StreamInterface::class, $value->original());
+        $this->assertInstanceOf(Seq::class, $value->original());
         $this->assertSame(Value::class, (string) $value->original()->type());
-        $this->assertSame($values, $value->original()->toPrimitive());
+        $this->assertSame($values, unwrap($value->original()));
     }
 
     /**
@@ -41,7 +42,7 @@ class SequenceTest extends TestCase
      */
     public function testFromStream($string, $expected)
     {
-        $value = Sequence::fromStream(new StringStream($string));
+        $value = Sequence::fromStream(Stream::ofContent($string));
 
         $this->assertInstanceOf(Sequence::class, $value);
         $this->assertCount(count($expected), $value->original());
@@ -64,7 +65,7 @@ class SequenceTest extends TestCase
     {
         $this->expectException(UnboundedTextCannotBeWrapped::class);
 
-        new Sequence(new Text(new Str('')));
+        new Sequence(new Text(Str::of('')));
     }
 
     public function cases(): array
@@ -72,13 +73,13 @@ class SequenceTest extends TestCase
         return [
             [
                 pack('N', 8).'S'.pack('N', 3).'foo',
-                [new LongString(new Str('foo'))]
+                [new LongString(Str::of('foo'))]
             ],
             [
                 pack('N', 20).'S'.pack('N', 3).'fooS'.pack('N', 7).'🙏bar',
                 [
-                    new LongString(new Str('foo')),
-                    new LongString(new Str('🙏bar')),
+                    new LongString(Str::of('foo')),
+                    new LongString(Str::of('🙏bar')),
                 ],
             ],
         ];

@@ -27,14 +27,14 @@ use Innmind\AMQP\{
 };
 use Innmind\Socket\Internet\Transport;
 use Innmind\Url\Url;
-use Innmind\TimeContinuum\{
+use Innmind\TimeContinuum\Earth\{
     ElapsedPeriod,
-    TimeContinuum\Earth,
+    Clock,
 };
 use Innmind\Stream\Readable;
 use Innmind\OperatingSystem\Remote;
 use Innmind\Server\Control\Server;
-use Innmind\Immutable\StreamInterface;
+use Innmind\Immutable\Sequence;
 use PHPUnit\Framework\TestCase;
 
 class ConnectionTest extends TestCase
@@ -43,10 +43,10 @@ class ConnectionTest extends TestCase
     {
         $connection = new Connection(
             Transport::tcp(),
-            Url::fromString('//guest:guest@localhost:5672/'),
+            Url::of('//guest:guest@localhost:5672/'),
             $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
             new ElapsedPeriod(1000),
-            new Earth,
+            new Clock,
             new Remote\Generic($this->createMock(Server::class))
         );
 
@@ -68,10 +68,10 @@ class ConnectionTest extends TestCase
     {
         $connection = new Connection(
             Transport::tcp(),
-            Url::fromString('//guest:guest@localhost:5672/'),
+            Url::of('//guest:guest@localhost:5672/'),
             $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
             new ElapsedPeriod(1000),
-            new Earth,
+            new Clock,
             new Remote\Generic($this->createMock(Server::class))
         );
 
@@ -84,10 +84,10 @@ class ConnectionTest extends TestCase
     {
         $connection = new Connection(
             Transport::tcp(),
-            Url::fromString('//guest:guest@localhost:5672/'),
+            Url::of('//guest:guest@localhost:5672/'),
             $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
             new ElapsedPeriod(1000),
-            new Earth,
+            new Clock,
             new Remote\Generic($this->createMock(Server::class))
         );
 
@@ -124,8 +124,8 @@ class ConnectionTest extends TestCase
                 return $this;
             }
 
-            public function read(Method $method, Readable $arguments): StreamInterface {}
-            public function readHeader(Readable $arguments): StreamInterface {}
+            public function read(Method $method, Readable $arguments): Sequence {}
+            public function readHeader(Readable $arguments): Sequence {}
             public function method(string $name): Method {}
             public function connection(): PConnection {}
             public function channel(): PChannel {}
@@ -136,10 +136,10 @@ class ConnectionTest extends TestCase
         };
         $connection = new Connection(
             Transport::tcp(),
-            Url::fromString('//guest:guest@localhost:5672/'),
+            Url::of('//guest:guest@localhost:5672/'),
             $protocol = new Delegate($top, new Protocol($this->createMock(ArgumentTranslator::class))),
             new ElapsedPeriod(1000),
-            new Earth,
+            new Clock,
             new Remote\Generic($this->createMock(Server::class))
         );
 
@@ -161,10 +161,10 @@ class ConnectionTest extends TestCase
     {
         $connection = new Connection(
             Transport::tcp(),
-            Url::fromString('//guest:guest@localhost:5672/'),
+            Url::of('//guest:guest@localhost:5672/'),
             $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
             new ElapsedPeriod(1000),
-            new Earth,
+            new Clock,
             new Remote\Generic($this->createMock(Server::class))
         );
 

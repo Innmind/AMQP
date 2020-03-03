@@ -45,7 +45,7 @@ final class Queue implements QueueInterface
         $frame = $this->connection->wait('queue.declare-ok');
 
         return new DeclareOk(
-            (string) $frame->values()->get(0)->original(),
+            $frame->values()->get(0)->original()->toString(),
             new Count($frame->values()->get(1)->original()->value()),
             new Count($frame->values()->get(2)->original()->value())
         );

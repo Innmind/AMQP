@@ -9,6 +9,7 @@ use Innmind\AMQP\{
     Model\Basic\Publish,
     Model\Basic\Message,
 };
+
 final class Producer implements ProducerInterface
 {
     private Client $client;

@@ -9,7 +9,7 @@ use Innmind\AMQP\{
     Exception\NotWaitingPassiveDeclarationDoesNothing,
     Exception\PassiveQueueDeclarationMustHaveAName,
 };
-use Innmind\Immutable\MapInterface;
+use Innmind\Immutable\Map;
 use PHPUnit\Framework\TestCase;
 
 class DeclarationTest extends TestCase
@@ -25,7 +25,7 @@ class DeclarationTest extends TestCase
         $this->assertFalse($command->isAutoDeleted());
         $this->assertFalse($command->isExclusive());
         $this->assertTrue($command->shouldWait());
-        $this->assertInstanceOf(MapInterface::class, $command->arguments());
+        $this->assertInstanceOf(Map::class, $command->arguments());
         $this->assertSame('string', (string) $command->arguments()->keyType());
         $this->assertSame('mixed', (string) $command->arguments()->valueType());
         $this->assertCount(0, $command->arguments());
@@ -42,7 +42,7 @@ class DeclarationTest extends TestCase
         $this->assertFalse($command->isAutoDeleted());
         $this->assertFalse($command->isExclusive());
         $this->assertTrue($command->shouldWait());
-        $this->assertInstanceOf(MapInterface::class, $command->arguments());
+        $this->assertInstanceOf(Map::class, $command->arguments());
         $this->assertSame('string', (string) $command->arguments()->keyType());
         $this->assertSame('mixed', (string) $command->arguments()->valueType());
         $this->assertCount(0, $command->arguments());
@@ -59,7 +59,7 @@ class DeclarationTest extends TestCase
         $this->assertFalse($command->isAutoDeleted());
         $this->assertFalse($command->isExclusive());
         $this->assertTrue($command->shouldWait());
-        $this->assertInstanceOf(MapInterface::class, $command->arguments());
+        $this->assertInstanceOf(Map::class, $command->arguments());
         $this->assertSame('string', (string) $command->arguments()->keyType());
         $this->assertSame('mixed', (string) $command->arguments()->valueType());
         $this->assertCount(0, $command->arguments());
@@ -76,7 +76,7 @@ class DeclarationTest extends TestCase
         $this->assertTrue($command->isAutoDeleted());
         $this->assertFalse($command->isExclusive());
         $this->assertTrue($command->shouldWait());
-        $this->assertInstanceOf(MapInterface::class, $command->arguments());
+        $this->assertInstanceOf(Map::class, $command->arguments());
         $this->assertSame('string', (string) $command->arguments()->keyType());
         $this->assertSame('mixed', (string) $command->arguments()->valueType());
         $this->assertCount(0, $command->arguments());

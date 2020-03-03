@@ -40,7 +40,7 @@ final class SignedOctet implements Value
 
     public static function fromStream(Readable $stream): Value
     {
-        [, $value] = \unpack('c', (string) $stream->read(1));
+        [, $value] = \unpack('c', $stream->read(1)->toString());
 
         return new self(new Integer($value));
     }

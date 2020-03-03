@@ -8,11 +8,11 @@ use Innmind\AMQP\Transport\Frame\{
     Value,
 };
 use Innmind\TimeContinuum\{
-    PointInTime\Earth\Now,
-    PointInTime\Earth\PointInTime,
-    PointInTimeInterface,
+    Earth\PointInTime\Now,
+    Earth\PointInTime\PointInTime,
+    PointInTime as PointInTimeInterface,
 };
-use Innmind\Filesystem\Stream\StringStream;
+use Innmind\Stream\Readable\Stream;
 use PHPUnit\Framework\TestCase;
 
 class TimestampTest extends TestCase
@@ -34,7 +34,7 @@ class TimestampTest extends TestCase
 
     public function testFromStream()
     {
-        $value = Timestamp::fromStream(new StringStream(pack('J', $time = time())));
+        $value = Timestamp::fromStream(Stream::ofContent(pack('J', $time = time())));
 
         $this->assertInstanceOf(Timestamp::class, $value);
         $this->assertInstanceOf(PointInTimeInterface::class, $value->original());

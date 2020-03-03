@@ -12,6 +12,10 @@ final class OutOfRangeValue extends DomainException
 {
     public function __construct(Integer $value, Set $set)
     {
-        parent::__construct(\sprintf('%s ∉ %s', $value, $set));
+        parent::__construct(\sprintf(
+            '%s ∉ %s',
+            $value->toString(),
+            $set->toString(),
+        ));
     }
 }

@@ -5,8 +5,8 @@ namespace Tests\Innmind\AMQP\Model\Connection;
 
 use Innmind\AMQP\Model\Connection\SecureOk;
 use Innmind\Url\Authority\UserInformation\{
-    UserInterface,
-    PasswordInterface,
+    User,
+    Password,
 };
 use PHPUnit\Framework\TestCase;
 
@@ -15,8 +15,8 @@ class SecureOkTest extends TestCase
     public function testInterface()
     {
         $command = new SecureOk(
-            $user = $this->createMock(UserInterface::class),
-            $password = $this->createMock(PasswordInterface::class)
+            $user = User::none(),
+            $password = Password::none(),
         );
 
         $this->assertSame($user, $command->user());

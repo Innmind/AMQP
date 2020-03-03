@@ -40,7 +40,7 @@ final class UnsignedOctet implements Value
 
     public static function fromStream(Readable $stream): Value
     {
-        [, $octet] = \unpack('C', (string) $stream->read(1));
+        [, $octet] = \unpack('C', $stream->read(1)->toString());
 
         return new self(new Integer($octet));
     }

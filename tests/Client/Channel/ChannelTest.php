@@ -16,9 +16,9 @@ use Innmind\AMQP\{
     Transport\Frame\Channel as Number,
 };
 use Innmind\Socket\Internet\Transport;
-use Innmind\TimeContinuum\{
+use Innmind\TimeContinuum\Earth\{
     ElapsedPeriod,
-    TimeContinuum\Earth,
+    Clock,
 };
 use Innmind\Url\Url;
 use Innmind\OperatingSystem\Remote;
@@ -35,10 +35,10 @@ class ChannelTest extends TestCase
         $this->channel = new Channel(
             $this->connection = new Connection(
                 Transport::tcp(),
-                Url::fromString('//guest:guest@localhost:5672/'),
+                Url::of('//guest:guest@localhost:5672/'),
                 new Protocol(new ValueTranslator),
                 new ElapsedPeriod(1000),
-                new Earth,
+                new Clock,
                 new Remote\Generic($this->createMock(Server::class))
             ),
             new Number(1)

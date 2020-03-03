@@ -32,7 +32,7 @@ class LoggerTest extends TestCase
         $message = $this->createMock(Message::class);
         $message
             ->method('body')
-            ->willReturn(new Str('foobar'));
+            ->willReturn(Str::of('foobar'));
 
         $consume = new Logger(
             new class($message) implements Get {
@@ -66,7 +66,7 @@ class LoggerTest extends TestCase
         $message = $this->createMock(Message::class);
         $message
             ->method('body')
-            ->willReturn(new Str('foobar'));
+            ->willReturn(Str::of('foobar'));
 
         $consume = new Logger(
             new class($message) implements Get {
@@ -106,7 +106,7 @@ class LoggerTest extends TestCase
         $message = $this->createMock(Message::class);
         $message
             ->method('body')
-            ->willReturn(new Str('foobar'));
+            ->willReturn(Str::of('foobar'));
 
         $consume = new Logger(
             new class($message) implements Get {
@@ -146,7 +146,7 @@ class LoggerTest extends TestCase
         $message = $this->createMock(Message::class);
         $message
             ->method('body')
-            ->willReturn(new Str('foobar'));
+            ->willReturn(Str::of('foobar'));
 
         $consume = new Logger(
             new class($message) implements Get {

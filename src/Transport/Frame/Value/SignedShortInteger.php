@@ -13,7 +13,6 @@ use Innmind\Math\{
     DefinitionSet\Range,
 };
 use Innmind\Stream\Readable;
-use Innmind\Immutable\Str;
 
 final class SignedShortInteger implements Value
 {
@@ -38,7 +37,7 @@ final class SignedShortInteger implements Value
 
     public static function fromStream(Readable $stream): Value
     {
-        [, $value] = \unpack('s', (string) $stream->read(2));
+        [, $value] = \unpack('s', $stream->read(2)->toString());
 
         return new self(new Integer($value));
     }

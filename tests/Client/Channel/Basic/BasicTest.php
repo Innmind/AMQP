@@ -53,10 +53,10 @@ use Innmind\AMQP\{
     Exception\Cancel,
 };
 use Innmind\Socket\Internet\Transport;
-use Innmind\TimeContinuum\{
+use Innmind\TimeContinuum\Earth\{
     ElapsedPeriod,
-    TimeContinuum\Earth,
-    PointInTime\Earth\Now,
+    Clock,
+    PointInTime\Now,
 };
 use Innmind\Url\Url;
 use Innmind\OperatingSystem\Remote;
@@ -82,10 +82,10 @@ class BasicTest extends TestCase
         $this->basic = new Basic(
             $this->connection = new Connection(
                 Transport::tcp(),
-                Url::fromString('//guest:guest@localhost:5672/'),
+                Url::of('//guest:guest@localhost:5672/'),
                 new Protocol(new ValueTranslator),
                 new ElapsedPeriod(1000),
-                new Earth,
+                new Clock,
                 new Remote\Generic($this->createMock(Server::class))
             ),
             new Channel(1)
@@ -134,7 +134,7 @@ class BasicTest extends TestCase
             ))
             ->wait('queue.bind-ok');
         $this->basic->publish(
-            (new Publish(new Generic(new Str('foobar'))))->to('amq.direct')
+            (new Publish(new Generic(Str::of('foobar'))))->to('amq.direct')
         );
         $frame = $this
             ->connection
@@ -232,7 +232,7 @@ class BasicTest extends TestCase
 
         foreach (range(0, 3) as $i) {
             $this->basic->publish(
-                (new Publish(new Generic(new Str('foobar'.$i))))->to('amq.direct')
+                (new Publish(new Generic(Str::of('foobar'.$i))))->to('amq.direct')
             );
         }
 
@@ -252,7 +252,7 @@ class BasicTest extends TestCase
                 ) use (
                     &$calls
                 ): void {
-                    $this->assertSame('foobar'.$calls, (string) $message->body());
+                    $this->assertSame('foobar'.$calls, $message->body()->toString());
                     $this->assertFalse($redelivered);
                     $this->assertSame('amq.direct', $exchange);
                     $this->assertSame('', $routingKey);
@@ -301,7 +301,7 @@ class BasicTest extends TestCase
 
         foreach (range(0, 3) as $i) {
             $this->basic->publish(
-                (new Publish(new Generic(new Str('foobar'.$i))))->to('amq.direct')
+                (new Publish(new Generic(Str::of('foobar'.$i))))->to('amq.direct')
             );
         }
 
@@ -342,7 +342,7 @@ class BasicTest extends TestCase
 
         foreach (range(0, 3) as $i) {
             $this->basic->publish(
-                (new Publish(new Generic(new Str('foobar'.$i))))->to('amq.direct')
+                (new Publish(new Generic(Str::of('foobar'.$i))))->to('amq.direct')
             );
         }
 
@@ -385,7 +385,7 @@ class BasicTest extends TestCase
 
         foreach (range(0, 3) as $i) {
             $this->basic->publish(
-                (new Publish(new Generic(new Str('foobar'.$i))))->to('amq.direct')
+                (new Publish(new Generic(Str::of('foobar'.$i))))->to('amq.direct')
             );
         }
 
@@ -406,7 +406,7 @@ class BasicTest extends TestCase
                 ) use (
                     &$calls
                 ): void {
-                    $this->assertSame('foobar'.$calls, (string) $message->body());
+                    $this->assertSame('foobar'.$calls, $message->body()->toString());
                     $this->assertFalse($redelivered);
                     $this->assertSame('amq.direct', $exchange);
                     $this->assertSame('', $routingKey);
@@ -451,7 +451,7 @@ class BasicTest extends TestCase
 
         foreach (range(0, 5) as $i) {
             $this->basic->publish(
-                (new Publish(new Generic(new Str('foobar'.$i))))->to('amq.direct')
+                (new Publish(new Generic(Str::of('foobar'.$i))))->to('amq.direct')
             );
         }
 
@@ -473,13 +473,13 @@ class BasicTest extends TestCase
                 ) use (
                     &$filtered
                 ): bool {
-                    $this->assertSame('foobar'.$filtered, (string) $message->body());
+                    $this->assertSame('foobar'.$filtered, $message->body()->toString());
                     $this->assertFalse($redelivered);
                     $this->assertSame('amq.direct', $exchange);
                     $this->assertSame('', $routingKey);
                     ++$filtered;
 
-                    return ((int) (string) $message->body()->substring(-1) % 2) === 0;
+                    return ((int) $message->body()->substring(-1)->toString() % 2) === 0;
                 })
                 ->foreach(function(
                     Message $message,
@@ -492,7 +492,7 @@ class BasicTest extends TestCase
                 ): void {
                     $this->assertSame(
                         'foobar'.($calls * 2),
-                        (string) $message->body()
+                        $message->body()->toString(),
                     );
                     $this->assertFalse($redelivered);
                     $this->assertSame('amq.direct', $exchange);
@@ -541,7 +541,7 @@ class BasicTest extends TestCase
 
         foreach (range(0, 3) as $i) {
             $this->basic->publish(
-                (new Publish(new Generic(new Str('foobar'.$i))))->to('amq.direct')
+                (new Publish(new Generic(Str::of('foobar'.$i))))->to('amq.direct')
             );
         }
 
@@ -564,7 +564,7 @@ class BasicTest extends TestCase
                 ): void {
                     $this->assertSame(
                         'foobar'.$calls,
-                        (string) $message->body()
+                        $message->body()->toString(),
                     );
                     $this->assertFalse($redelivered);
                     $this->assertSame('amq.direct', $exchange);
@@ -606,7 +606,7 @@ class BasicTest extends TestCase
 
         foreach (range(0, 3) as $i) {
             $this->basic->publish(
-                (new Publish(new Generic(new Str('foobar'.$i))))->to('amq.direct')
+                (new Publish(new Generic(Str::of('foobar'.$i))))->to('amq.direct')
             );
         }
 
@@ -629,7 +629,7 @@ class BasicTest extends TestCase
                 ): void {
                     $this->assertSame(
                         'foobar'.$calls,
-                        (string) $message->body()
+                        $message->body()->toString(),
                     );
                     $this->assertFalse($redelivered);
                     $this->assertSame('amq.direct', $exchange);
@@ -681,7 +681,7 @@ class BasicTest extends TestCase
         $this
             ->basic
             ->publish(
-                $publish = (new Publish(new Generic(new Str('foobar'))))->to('amq.direct')
+                $publish = (new Publish(new Generic(Str::of('foobar'))))->to('amq.direct')
             )
             ->publish($publish);
         $called = false;
@@ -701,7 +701,7 @@ class BasicTest extends TestCase
                     &$called
                 ): void {
                     $called = true;
-                    $this->assertSame('foobar', (string) $message->body());
+                    $this->assertSame('foobar', $message->body()->toString());
                     $this->assertFalse($redelivered);
                     $this->assertSame('amq.direct', $exchange);
                     $this->assertSame('', $routingKey);
@@ -729,18 +729,18 @@ class BasicTest extends TestCase
                 new Binding('amq.direct', 'test_get')
             ))
             ->wait('queue.bind-ok');
-        $message = (new Generic(new Str('foobar')))
+        $message = (new Generic(Str::of('foobar')))
             ->withContentType(new ContentType('text', 'plain'))
             ->withContentEncoding(new ContentEncoding('gzip'))
             ->withHeaders(
-                (new Map('string', 'mixed'))
+                Map::of('string', 'mixed')
                     ->put('bits', new Bits(true))
                     ->put('decimal', new Decimal(new Integer(1), new Integer(1)))
-                    ->put('longstr', new LongString(new Str('bar')))
+                    ->put('longstr', new LongString(Str::of('bar')))
                     ->put('array', new Sequence(new Bits(true)))
                     ->put('long', new SignedLongInteger(new Integer(2)))
                     ->put('octet', new SignedOctet(new Integer(4)))
-                    ->put('table', new Table((new Map('string', Value::class))->put(
+                    ->put('table', new Table(Map::of('string', Value::class)(
                         'inner',
                         new Bits(true)
                     )))
@@ -790,7 +790,7 @@ class BasicTest extends TestCase
 
                     $this->assertSame(true, $message->headers()->get('bits')->first());
                     $this->assertSame(0.1, $message->headers()->get('decimal')->value());
-                    $this->assertSame('bar', (string) $message->headers()->get('longstr'));
+                    $this->assertSame('bar', $message->headers()->get('longstr')->toString());
                     $this->assertSame(true, $message->headers()->get('array')->first()->original()->first());
                     $this->assertSame(2, $message->headers()->get('long')->value());
                     $this->assertSame(4, $message->headers()->get('octet')->value());
@@ -818,7 +818,7 @@ class BasicTest extends TestCase
                     $this->assertSame('type', (string) $message->type());
                     $this->assertSame('guest', (string) $message->userId());
                     $this->assertSame('webcrawler', (string) $message->appId());
-                    $this->assertSame('foobar', (string) $message->body());
+                    $this->assertSame('foobar', $message->body()->toString());
                     $this->assertFalse($redelivered);
                     $this->assertSame('amq.direct', $exchange);
                     $this->assertSame('', $routingKey);
@@ -849,7 +849,7 @@ class BasicTest extends TestCase
         $this
             ->basic
             ->publish(
-                $publish = (new Publish(new Generic(new Str('foobar'))))->to('amq.direct')
+                $publish = (new Publish(new Generic(Str::of('foobar'))))->to('amq.direct')
             )
             ->publish($publish);
         $called = false;
@@ -866,7 +866,7 @@ class BasicTest extends TestCase
                     &$called
                 ): void {
                     $called = true;
-                    $this->assertSame('foobar', (string) $message->body());
+                    $this->assertSame('foobar', $message->body()->toString());
                     $this->assertFalse($redelivered);
                     $this->assertSame('amq.direct', $exchange);
                     $this->assertSame('', $routingKey);
@@ -932,7 +932,7 @@ class BasicTest extends TestCase
             ))
             ->wait('queue.bind-ok');
         $this->basic->publish(
-            (new Publish(new Generic(new Str('foobar'))))->to('amq.direct')
+            (new Publish(new Generic(Str::of('foobar'))))->to('amq.direct')
         );
         $called = false;
 
@@ -973,7 +973,7 @@ class BasicTest extends TestCase
             ))
             ->wait('queue.bind-ok');
         $this->basic->publish(
-            (new Publish(new Generic(new Str('foobar'))))->to('amq.direct')
+            (new Publish(new Generic(Str::of('foobar'))))->to('amq.direct')
         );
         $called = false;
 
@@ -1017,7 +1017,7 @@ class BasicTest extends TestCase
             ))
             ->wait('queue.bind-ok');
         $this->basic->publish(
-            (new Publish(new Generic(new Str('foobar'))))->to('amq.direct')
+            (new Publish(new Generic(Str::of('foobar'))))->to('amq.direct')
         );
         $called = false;
 
@@ -1035,7 +1035,7 @@ class BasicTest extends TestCase
         $called = false;
         $this->basic->get(new Get('test_get'))(function($message) use (&$called): void {
             $called = true;
-            $this->assertSame('foobar', (string) $message->body());
+            $this->assertSame('foobar', $message->body()->toString());
         });
         $this->assertTrue($called);
     }
@@ -1045,7 +1045,7 @@ class BasicTest extends TestCase
         $this->assertSame(
             $this->basic,
             $this->basic->publish(
-                new Publish(new Generic(new Str('foobar')))
+                new Publish(new Generic(Str::of('foobar')))
             )
         );
     }
@@ -1069,7 +1069,7 @@ class BasicTest extends TestCase
             ))
             ->wait('queue.bind-ok');
         $this->basic->publish(
-            (new Publish(new Generic(new Str('foobar'))))->to('amq.direct')
+            (new Publish(new Generic(Str::of('foobar'))))->to('amq.direct')
         );
         $frame = $this
             ->connection
@@ -1111,7 +1111,7 @@ class BasicTest extends TestCase
             ))
             ->wait('queue.bind-ok');
         $this->basic->publish(
-            (new Publish(new Generic(new Str('foobar'))))->to('amq.direct')
+            (new Publish(new Generic(Str::of('foobar'))))->to('amq.direct')
         );
         $frame = $this
             ->connection

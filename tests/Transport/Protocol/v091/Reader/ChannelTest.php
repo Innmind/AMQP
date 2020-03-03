@@ -14,10 +14,10 @@ use Innmind\AMQP\{
     Exception\UnknownMethod,
 };
 use Innmind\Math\Algebra\Integer;
-use Innmind\Filesystem\Stream\StringStream;
+use Innmind\Stream\Readable\Stream;
 use Innmind\Immutable\{
     Str,
-    StreamInterface,
+    Sequence,
 };
 use PHPUnit\Framework\TestCase;
 
@@ -32,10 +32,10 @@ class ChannelTest extends TestCase
 
         $stream = $read(
             Methods::get($method),
-            new StringStream(implode('', $arguments))
+            Stream::ofContent(implode('', $arguments))
         );
 
-        $this->assertInstanceOf(StreamInterface::class, $stream);
+        $this->assertInstanceOf(Sequence::class, $stream);
         $this->assertSame(Value::class, (string) $stream->type());
         $this->assertCount(count($arguments), $stream);
 
@@ -50,7 +50,7 @@ class ChannelTest extends TestCase
         $this->expectException(UnknownMethod::class);
         $this->expectExceptionMessage('0,0');
 
-        (new Channel)(new Method(0, 0), new StringStream(''));
+        (new Channel)(new Method(0, 0), Stream::ofContent(''));
     }
 
     public function cases(): array
@@ -72,7 +72,7 @@ class ChannelTest extends TestCase
                 'channel.close',
                 [
                     new UnsignedShortInteger(new Integer(42)),
-                    new ShortString(new Str('foo')),
+                    new ShortString(Str::of('foo')),
                     new UnsignedShortInteger(new Integer(24)),
                     new UnsignedShortInteger(new Integer(66)),
                 ],

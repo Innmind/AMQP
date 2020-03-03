@@ -33,27 +33,27 @@ final class Logger implements Get
             try {
                 $this->logger->debug(
                     'AMQP message received',
-                    ['body' => (string) $message->body()]
+                    ['body' => $message->body()->toString()]
                 );
 
                 $consume($message, ...$args);
             } catch (Reject $e) {
                 $this->logger->warning(
                     'AMQP message rejected',
-                    ['body' => (string) $message->body()]
+                    ['body' => $message->body()->toString()]
                 );
                 throw $e;
             } catch (Requeue $e) {
                 $this->logger->info(
                     'AMQP message requeued',
-                    ['body' => (string) $message->body()]
+                    ['body' => $message->body()->toString()]
                 );
                 throw $e;
             } catch (\Throwable $e) {
                 $this->logger->error(
                     'AMQP message consumption generated an exception',
                     [
-                        'body' => (string) $message->body(),
+                        'body' => $message->body()->toString(),
                         'exception' => \get_class($e),
                     ]
                 );

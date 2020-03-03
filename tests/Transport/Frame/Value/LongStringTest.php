@@ -7,7 +7,7 @@ use Innmind\AMQP\Transport\Frame\{
     Value\LongString,
     Value,
 };
-use Innmind\Filesystem\Stream\StringStream;
+use Innmind\Stream\Readable\Stream;
 use Innmind\Immutable\Str;
 use PHPUnit\Framework\TestCase;
 
@@ -15,7 +15,7 @@ class LongStringTest extends TestCase
 {
     public function testInterface()
     {
-        $this->assertInstanceOf(Value::class, new LongString(new Str('')));
+        $this->assertInstanceOf(Value::class, new LongString(Str::of('')));
     }
 
     /**
@@ -23,7 +23,7 @@ class LongStringTest extends TestCase
      */
     public function testStringCast($string, $expected)
     {
-        $value = new LongString($str = new Str($string));
+        $value = new LongString($str = Str::of($string));
         $this->assertSame($expected, (string) $value);
         $this->assertSame($str, $value->original());
     }
@@ -33,11 +33,11 @@ class LongStringTest extends TestCase
      */
     public function testFromStream($expected, $string)
     {
-        $value = LongString::fromStream(new StringStream($string));
+        $value = LongString::fromStream(Stream::ofContent($string));
 
         $this->assertInstanceOf(LongString::class, $value);
         $this->assertInstanceOf(Str::class, $value->original());
-        $this->assertSame($expected, (string) $value->original());
+        $this->assertSame($expected, $value->original()->toString());
         $this->assertSame($string, (string) $value);
     }
 

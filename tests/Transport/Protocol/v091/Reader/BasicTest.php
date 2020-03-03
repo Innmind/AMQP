@@ -16,10 +16,10 @@ use Innmind\AMQP\{
     Exception\UnknownMethod,
 };
 use Innmind\Math\Algebra\Integer;
-use Innmind\Filesystem\Stream\StringStream;
+use Innmind\Stream\Readable\Stream;
 use Innmind\Immutable\{
     Str,
-    StreamInterface,
+    Sequence,
 };
 use PHPUnit\Framework\TestCase;
 
@@ -34,10 +34,10 @@ class BasicTest extends TestCase
 
         $stream = $read(
             Methods::get($method),
-            new StringStream(implode('', $arguments))
+            Stream::ofContent(implode('', $arguments))
         );
 
-        $this->assertInstanceOf(StreamInterface::class, $stream);
+        $this->assertInstanceOf(Sequence::class, $stream);
         $this->assertSame(Value::class, (string) $stream->type());
         $this->assertCount(count($arguments), $stream);
 
@@ -52,7 +52,7 @@ class BasicTest extends TestCase
         $this->expectException(UnknownMethod::class);
         $this->expectExceptionMessage('0,0');
 
-        (new Basic)(new Method(0, 0), new StringStream(''));
+        (new Basic)(new Method(0, 0), Stream::ofContent(''));
     }
 
     public function cases(): array
@@ -64,29 +64,29 @@ class BasicTest extends TestCase
             ],
             [
                 'basic.consume-ok',
-                [new ShortString(new Str('foo'))],
+                [new ShortString(Str::of('foo'))],
             ],
             [
                 'basic.cancel-ok',
-                [new ShortString(new Str('foo'))],
+                [new ShortString(Str::of('foo'))],
             ],
             [
                 'basic.return',
                 [
                     new UnsignedShortInteger(new Integer(42)),
-                    new ShortString(new Str('foo')),
-                    new ShortString(new Str('bar')),
-                    new ShortString(new Str('baz')),
+                    new ShortString(Str::of('foo')),
+                    new ShortString(Str::of('bar')),
+                    new ShortString(Str::of('baz')),
                 ],
             ],
             [
                 'basic.deliver',
                 [
-                    new ShortString(new Str('foo')),
+                    new ShortString(Str::of('foo')),
                     new UnsignedLongLongInteger(new Integer(42)),
                     new Bits(true),
-                    new ShortString(new Str('bar')),
-                    new ShortString(new Str('baz')),
+                    new ShortString(Str::of('bar')),
+                    new ShortString(Str::of('baz')),
                 ],
             ],
             [
@@ -94,8 +94,8 @@ class BasicTest extends TestCase
                 [
                     new UnsignedLongLongInteger(new Integer(42)),
                     new Bits(true),
-                    new ShortString(new Str('foo')),
-                    new ShortString(new Str('bar')),
+                    new ShortString(Str::of('foo')),
+                    new ShortString(Str::of('bar')),
                     new UnsignedLongInteger(new Integer(24)),
                 ],
             ],

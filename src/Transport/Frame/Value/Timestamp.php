@@ -8,9 +8,9 @@ use Innmind\AMQP\{
     TimeContinuum\Format\Timestamp as TimestampFormat,
 };
 use Innmind\TimeContinuum\{
-    PointInTimeInterface,
-    PointInTime\Earth\PointInTime,
-    Format\ISO8601,
+    PointInTime as PointInTimeInterface,
+    Earth\PointInTime\PointInTime,
+    Earth\Format\ISO8601,
 };
 use Innmind\Math\Algebra\Integer;
 use Innmind\Stream\Readable;
@@ -32,7 +32,7 @@ final class Timestamp implements Value
             ->value();
 
         return new self(new PointInTime(
-            \date((string) new ISO8601, $time)
+            \date((new ISO8601)->toString(), $time)
         ));
     }
 

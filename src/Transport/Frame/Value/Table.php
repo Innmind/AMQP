@@ -12,20 +12,22 @@ use Innmind\Stream\Readable;
 use Innmind\Immutable\{
     Str,
     Sequence as Seq,
-    MapInterface,
     Map,
 };
-use function Innmind\Immutable\assertMap;
+use function Innmind\Immutable\{
+    assertMap,
+    join,
+};
 
 final class Table implements Value
 {
     private ?string $value = null;
-    private MapInterface $original;
+    private Map $original;
 
     /**
-     * @param MapInterface<string, Value> $map
+     * @param Map<string, Value> $map
      */
-    public function __construct(MapInterface $map)
+    public function __construct(Map $map)
     {
         assertMap('string', Value::class, $map, 1);
 
@@ -46,13 +48,13 @@ final class Table implements Value
         $position = $stream->position()->toInt();
         $boundary = $position + $length->value();
 
-        $map = new Map('string', Value::class);
+        $map = Map::of('string', Value::class);
 
         while ($position < $boundary) {
             $key = ShortString::fromStream($stream)->original();
-            $class = Symbols::class((string) $stream->read(1));
+            $class = Symbols::class($stream->read(1)->toString());
 
-            $map = $map->put((string) $key, [$class, 'fromStream']($stream));
+            $map = $map->put($key->toString(), [$class, 'fromStream']($stream));
 
             $position = $stream->position()->toInt();
         }
@@ -61,9 +63,9 @@ final class Table implements Value
     }
 
     /**
-     * @return MapInterface<string, Value>
+     * @return Map<string, Value>
      */
-    public function original(): MapInterface
+    public function original(): Map
     {
         return $this->original;
     }
@@ -74,21 +76,20 @@ final class Table implements Value
             $data = $this
                 ->original
                 ->reduce(
-                    new Seq,
+                    Seq::strings(),
                     static function(Seq $sequence, string $key, Value $value): Seq {
                         return $sequence
-                            ->add(new ShortString(new Str($key)))
+                            ->add((string) new ShortString(Str::of($key)))
                             ->add(Symbols::symbol(\get_class($value)))
-                            ->add($value);
-                    }
-                )
-                ->join('')
-                ->toEncoding('ASCII');
+                            ->add((string) $value);
+                    },
+                );
+            $data = join('', $data)->toEncoding('ASCII');
 
             $this->value = (string) UnsignedLongInteger::of(
                 new Integer($data->length())
             );
-            $this->value .= $data;
+            $this->value .= $data->toString();
         }
 
         return $this->value;
