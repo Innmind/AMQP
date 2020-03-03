@@ -69,7 +69,7 @@ class FrameReaderTest extends TestCase
         $file = tmpfile();
         fwrite(
             $file,
-            (string) Frame::method(
+            Frame::method(
                 new Channel(0),
                 new Method(10, 10), // connection.start
                 new UnsignedOctet(new Integer(0)),
@@ -77,7 +77,7 @@ class FrameReaderTest extends TestCase
                 new Table(Map::of('string', Value::class)),
                 new LongString(Str::of('AMQPLAIN')),
                 new LongString(Str::of('en_US'))
-            )
+            )->toString()
         );
         fseek($file, 0);
         $stream = new Stream($file);
@@ -92,7 +92,7 @@ class FrameReaderTest extends TestCase
         $read = new FrameReader;
 
         $file = tmpfile();
-        $frame = (string) Frame::method(
+        $frame = Frame::method(
             new Channel(0),
             new Method(10, 10), // connection.start
             new UnsignedOctet(new Integer(0)),
@@ -100,7 +100,7 @@ class FrameReaderTest extends TestCase
             new Table(Map::of('string', Value::class)),
             new LongString(Str::of('AMQPLAIN')),
             new LongString(Str::of('en_US'))
-        );
+        )->toString();
         $frame = mb_substr($frame, 0, -1, 'ASCII'); //remove end marker
         $frame .= (new UnsignedOctet(new Integer(0xCD)))->pack();
         fwrite($file, $frame);
@@ -117,10 +117,10 @@ class FrameReaderTest extends TestCase
         $read = new FrameReader;
 
         $file = tmpfile();
-        $frame = (string) Frame::method(
+        $frame = Frame::method(
             new Channel(0),
             new Method(10, 10) // connection.start
-        );
+        )->toString();
         $frame = mb_substr($frame, 0, -2, 'ASCII');
         fwrite($file, $frame);
         fseek($file, 0);
@@ -177,7 +177,7 @@ class FrameReaderTest extends TestCase
             )
             ->get(1);
         $file = tmpfile();
-        fwrite($file, (string) $header);
+        fwrite($file, $header->toString());
         fseek($file, 0);
 
         $frame = (new FrameReader)(new Stream($file), $this->protocol);
@@ -320,10 +320,10 @@ class FrameReaderTest extends TestCase
     public function testReadBody()
     {
         $file = tmpfile();
-        fwrite($file, (string) Frame::body(
+        fwrite($file, Frame::body(
             new Channel(1),
             Str::of('foobar')
-        ));
+        )->toString());
         fseek($file, 0);
 
         $frame = (new FrameReader)(new Stream($file), $this->protocol);
@@ -339,7 +339,7 @@ class FrameReaderTest extends TestCase
     public function testReadHeartbeat()
     {
         $file = tmpfile();
-        fwrite($file, (string) Frame::heartbeat());
+        fwrite($file, Frame::heartbeat()->toString());
         fseek($file, 0);
 
         $frame = (new FrameReader)(new Stream($file), $this->protocol);

@@ -32,7 +32,7 @@ final class Type
         return new self('headers');
     }
 
-    public function __toString(): string
+    public function toString(): string
     {
         return $this->value;
     }

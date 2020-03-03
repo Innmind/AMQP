@@ -203,14 +203,14 @@ final class Basic implements BasicInterface
 
         if ($message->hasContentType()) {
             $properties[] = ShortString::of(
-                Str::of((string) $message->contentType())
+                Str::of($message->contentType()->toString())
             );
             $flagBits |= (1 << 15);
         }
 
         if ($message->hasContentEncoding()) {
             $properties[] = ShortString::of(
-                Str::of((string) $message->contentEncoding())
+                Str::of($message->contentEncoding()->toString())
             );
             $flagBits |= (1 << 14);
         }
@@ -236,14 +236,14 @@ final class Basic implements BasicInterface
 
         if ($message->hasCorrelationId()) {
             $properties[] = ShortString::of(
-                Str::of((string) $message->correlationId())
+                Str::of($message->correlationId()->toString())
             );
             $flagBits |= (1 << 10);
         }
 
         if ($message->hasReplyTo()) {
             $properties[] = ShortString::of(
-                Str::of((string) $message->replyTo())
+                Str::of($message->replyTo()->toString())
             );
             $flagBits |= (1 << 9);
         }
@@ -257,7 +257,7 @@ final class Basic implements BasicInterface
 
         if ($message->hasId()) {
             $properties[] = ShortString::of(
-                Str::of((string) $message->id())
+                Str::of($message->id()->toString())
             );
             $flagBits |= (1 << 7);
         }
@@ -269,21 +269,21 @@ final class Basic implements BasicInterface
 
         if ($message->hasType()) {
             $properties[] = ShortString::of(
-                Str::of((string) $message->type())
+                Str::of($message->type()->toString())
             );
             $flagBits |= (1 << 5);
         }
 
         if ($message->hasUserId()) {
             $properties[] = ShortString::of(
-                Str::of((string) $message->userId())
+                Str::of($message->userId()->toString())
             );
             $flagBits |= (1 << 4);
         }
 
         if ($message->hasAppId()) {
             $properties[] = ShortString::of(
-                Str::of((string) $message->appId())
+                Str::of($message->appId()->toString())
             );
             $flagBits |= (1 << 3);
         }

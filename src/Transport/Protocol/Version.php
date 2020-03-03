@@ -63,7 +63,7 @@ final class Version
         return $this->minor >= $version->minor;
     }
 
-    public function __toString(): string
+    public function toString(): string
     {
         return \sprintf(
             "AMQP\x00%s%s%s",

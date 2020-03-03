@@ -10,6 +10,6 @@ class UserIdTest extends TestCase
 {
     public function testInterface()
     {
-        $this->assertSame('foo', (string) new UserId('foo'));
+        $this->assertSame('foo', (new UserId('foo'))->toString());
     }
 }

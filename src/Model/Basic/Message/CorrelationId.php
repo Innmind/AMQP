@@ -15,7 +15,7 @@ final class CorrelationId
         $this->value = $value;
     }
 
-    public function __toString(): string
+    public function toString(): string
     {
         return $this->value;
     }

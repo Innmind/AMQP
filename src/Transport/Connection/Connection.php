@@ -102,7 +102,7 @@ final class Connection implements ConnectionInterface
             );
         }
 
-        $frame = Str::of((string) $frame)->toEncoding('ASCII');
+        $frame = Str::of($frame->toString())->toEncoding('ASCII');
 
         if (!$this->maxFrameSize->allows($frame->length())) {
             throw new FrameExceedAllowedSize(
@@ -224,7 +224,7 @@ final class Connection implements ConnectionInterface
     private function start(): void
     {
         $this->socket->write(
-            Str::of((string) $this->protocol->version()),
+            Str::of($this->protocol->version()->toString()),
         );
 
         try {

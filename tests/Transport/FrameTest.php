@@ -39,7 +39,7 @@ class FrameTest extends TestCase
         $this->assertSame([$bit, $text], unwrap($frame->values()));
         $this->assertSame(
             chr(1).pack('n', 42).pack('N', 11).pack('n', 10).pack('n', 10).$bit->pack().$text->pack().chr(0xCE),
-            (string) $frame
+            $frame->toString(),
         );
     }
 
@@ -60,7 +60,7 @@ class FrameTest extends TestCase
         $this->assertSame([$value], unwrap($frame->values()));
         $this->assertSame(
             chr(2).pack('n', 42).pack('N', 10).pack('n', 60).pack('n', 0).'foobar'.chr(0xCE),
-            (string) $frame
+            $frame->toString(),
         );
     }
 
@@ -81,7 +81,7 @@ class FrameTest extends TestCase
         $this->assertSame($text, $frame->values()->first()->original());
         $this->assertSame(
             chr(3).pack('n', 42).pack('N', 6).'foobar'.chr(0xCE),
-            (string) $frame
+            $frame->toString(),
         );
     }
 
@@ -98,7 +98,7 @@ class FrameTest extends TestCase
         $this->assertCount(0, $frame->values());
         $this->assertSame(
             chr(8).pack('n', 0).pack('N', 0).chr(0xCE),
-            (string) $frame
+            $frame->toString(),
         );
     }
 }

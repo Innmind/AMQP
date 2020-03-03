@@ -785,8 +785,8 @@ class BasicTest extends TestCase
                     $ts
                 ): void {
                     $called = true;
-                    $this->assertSame('text/plain', (string) $message->contentType());
-                    $this->assertSame('gzip', (string) $message->contentEncoding());
+                    $this->assertSame('text/plain', $message->contentType()->toString());
+                    $this->assertSame('gzip', $message->contentEncoding()->toString());
 
                     $this->assertSame(true, $message->headers()->get('bits')->first());
                     $this->assertSame(0.1, $message->headers()->get('decimal')->value());
@@ -807,17 +807,17 @@ class BasicTest extends TestCase
 
                     $this->assertSame(2, $message->deliveryMode()->toInt());
                     $this->assertSame(5, $message->priority()->toInt());
-                    $this->assertSame('correlation', (string) $message->correlationId());
-                    $this->assertSame('reply', (string) $message->replyTo());
+                    $this->assertSame('correlation', $message->correlationId()->toString());
+                    $this->assertSame('reply', $message->replyTo()->toString());
                     $this->assertSame(10000, $message->expiration()->milliseconds());
-                    $this->assertSame('id', (string) $message->id());
+                    $this->assertSame('id', $message->id()->toString());
                     $this->assertSame(
                         $now->format(new TimestampFormat),
                         $message->timestamp()->format(new TimestampFormat)
                     );
-                    $this->assertSame('type', (string) $message->type());
-                    $this->assertSame('guest', (string) $message->userId());
-                    $this->assertSame('webcrawler', (string) $message->appId());
+                    $this->assertSame('type', $message->type()->toString());
+                    $this->assertSame('guest', $message->userId()->toString());
+                    $this->assertSame('webcrawler', $message->appId()->toString());
                     $this->assertSame('foobar', $message->body()->toString());
                     $this->assertFalse($redelivered);
                     $this->assertSame('amq.direct', $exchange);

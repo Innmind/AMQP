@@ -145,7 +145,7 @@ class ConnectionTest extends TestCase
 
         $this->assertSame(
             "AMQP\x00\x00\x09\x01",
-            (string) $connection->protocol()->version()
+            $connection->protocol()->version()->toString(),
         );
         $this->assertSame(
             $connection,

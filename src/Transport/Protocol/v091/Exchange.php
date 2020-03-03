@@ -39,7 +39,7 @@ final class Exchange implements ExchangeInterface
             Methods::get('exchange.declare'),
             new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
             ShortString::of(Str::of($command->name())),
-            ShortString::of(Str::of((string) $command->type())),
+            ShortString::of(Str::of($command->type()->toString())),
             new Bits(
                 $command->isPassive(),
                 $command->isDurable(),
