@@ -79,16 +79,14 @@ final class Logger implements ConsumerInterface
     /**
      * {@inheritdoc}
      */
-    public function take(int $count): ConsumerInterface
+    public function take(int $count): void
     {
-        $this->consumer = $this->consumer->take($count);
-
-        return $this;
+        $this->consumer->take($count);
     }
 
-    public function filter(callable $predicate): ConsumerInterface
+    public function filter(callable $predicate): void
     {
-        $this->consumer = $this->consumer->filter(function(
+        $this->consumer->filter(function(
             Message $message,
             bool $redelivered,
             string $exchange,
@@ -107,7 +105,5 @@ final class Logger implements ConsumerInterface
 
             return $return;
         });
-
-        return $this;
     }
 }

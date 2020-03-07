@@ -49,7 +49,7 @@ class ProducerTest extends TestCase
                     $publish->routingKey() === '';
             }));
 
-        $this->assertSame($producer, $producer($message));
+        $this->assertNull($producer($message));
     }
 
     public function testSendMessageWithRoutingKey()
@@ -76,6 +76,6 @@ class ProducerTest extends TestCase
                     $publish->routingKey() === 'bar';
             }));
 
-        $this->assertSame($producer, $producer($message, 'bar'));
+        $this->assertNull($producer($message, 'bar'));
     }
 }

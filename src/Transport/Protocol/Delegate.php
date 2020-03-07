@@ -32,7 +32,7 @@ final class Delegate implements Protocol
         return $this->inUse->version();
     }
 
-    public function use(Version $version): Protocol
+    public function use(Version $version): void
     {
         $protocols = $this
             ->protocols
@@ -51,8 +51,6 @@ final class Delegate implements Protocol
         }
 
         $this->inUse = $protocols->first();
-
-        return $this;
     }
 
     /**

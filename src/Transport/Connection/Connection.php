@@ -100,7 +100,7 @@ final class Connection implements ConnectionInterface
         return $this->protocol;
     }
 
-    public function send(Frame $frame): ConnectionInterface
+    public function send(Frame $frame): void
     {
         if (!$this->maxChannels->allows($frame->channel()->toInt())) {
             throw new FrameChannelExceedAllowedChannelNumber(
@@ -119,8 +119,6 @@ final class Connection implements ConnectionInterface
         }
 
         $this->socket->write($frame);
-
-        return $this;
     }
 
     /**
@@ -202,9 +200,8 @@ final class Connection implements ConnectionInterface
             return;
         }
 
-        $this
-            ->send($this->protocol->connection()->close(new Close))
-            ->wait('connection.close-ok');
+        $this->send($this->protocol->connection()->close(new Close));
+        $this->wait('connection.close-ok');
         $this->socket->close();
         $this->closed = true;
     }
@@ -317,10 +314,9 @@ final class Connection implements ConnectionInterface
 
     private function openVHost(): void
     {
-        $this
-            ->send($this->protocol->connection()->open(
-                new Open($this->vhost)
-            ))
-            ->wait('connection.open-ok');
+        $this->send($this->protocol->connection()->open(
+            new Open($this->vhost)
+        ));
+        $this->wait('connection.open-ok');
     }
 }

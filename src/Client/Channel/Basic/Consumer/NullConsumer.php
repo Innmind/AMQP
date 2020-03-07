@@ -18,16 +18,16 @@ final class NullConsumer implements ConsumerInterface
     /**
      * {@inheritdoc}
      */
-    public function take(int $count): ConsumerInterface
+    public function take(int $count): void
     {
-        return $this;
+        // pass
     }
 
     /**
      * {@inheritdoc}
      */
-    public function filter(callable $predicate): ConsumerInterface
+    public function filter(callable $predicate): void
     {
-        return $this;
+        // pass
     }
 }

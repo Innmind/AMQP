@@ -58,8 +58,7 @@ class ConnectionTest extends TestCase
         $this->assertSame($protocol, $connection->protocol());
         $this->assertInstanceOf(MaxFrameSize::class, $connection->maxFrameSize());
         $this->assertSame(131072, $connection->maxFrameSize()->toInt());
-        $this->assertSame(
-            $connection,
+        $this->assertNull(
             $connection->send(
                 $protocol->channel()->open(new Channel(1))
             )
@@ -99,11 +98,8 @@ class ConnectionTest extends TestCase
 
         $this->expectException(UnexpectedFrame::class);
 
-        $connection
-            ->send(
-                $protocol->channel()->open(new Channel(2))
-            )
-            ->wait('connection.open');
+        $connection->send($protocol->channel()->open(new Channel(2)));
+        $connection->wait('connection.open');
     }
 
     public function testUseCorrectProtocolVersion()
@@ -121,13 +117,11 @@ class ConnectionTest extends TestCase
                 return $this->version;
             }
 
-            public function use(Version $version): ProtocolInterface
+            public function use(Version $version): void
             {
                 if (!$version->compatibleWith($this->version)) {
                     throw new VersionNotUsable($version);
                 }
-
-                return $this;
             }
 
             public function read(Method $method, Readable $arguments): Sequence {}
@@ -154,8 +148,7 @@ class ConnectionTest extends TestCase
             "AMQP\x00\x00\x09\x01",
             $connection->protocol()->version()->toString(),
         );
-        $this->assertSame(
-            $connection,
+        $this->assertNull(
             $connection->send(
                 $protocol->channel()->open(new Channel(1))
             )
@@ -177,13 +170,12 @@ class ConnectionTest extends TestCase
         );
 
         try {
-            $connection
-                ->send(Frame::method(
-                    new Channel(0),
-                    new Method(20, 10)
-                    //missing arguments
-                ))
-                ->wait('channel.open-ok');
+            $connection->send(Frame::method(
+                new Channel(0),
+                new Method(20, 10)
+                //missing arguments
+            ));
+            $connection->wait('channel.open-ok');
         } catch (ConnectionClosed $e) {
             $this->assertTrue($connection->closed());
             $this->assertSame('INTERNAL_ERROR', $e->getMessage());

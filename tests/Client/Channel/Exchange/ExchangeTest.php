@@ -47,24 +47,21 @@ class ExchangeTest extends TestCase
             ),
             new Channel(1)
         );
-        $this
-            ->connection
-            ->send(
-                $this->connection->protocol()->channel()->open(new Channel(1))
-            )
-            ->wait('channel.open-ok');
+        $this->connection->send(
+            $this->connection->protocol()->channel()->open(new Channel(1))
+        );
+        $this->connection->wait('channel.open-ok');
     }
 
     public function tearDown(): void
     {
-        $this->connection
-            ->send(
-                $this->connection->protocol()->channel()->close(
-                    new Channel(1),
-                    new Close
-                )
+        $this->connection->send(
+            $this->connection->protocol()->channel()->close(
+                new Channel(1),
+                new Close
             )
-            ->wait('channel.close-ok');
+        );
+        $this->connection->wait('channel.close-ok');
         $this->connection->close();
     }
 
@@ -75,14 +72,12 @@ class ExchangeTest extends TestCase
 
     public function testDeclare()
     {
-        $this->assertSame(
-            $this->exchange,
+        $this->assertNull(
             $this->exchange->declare(
                 Declaration::durable('foo', Type::direct())->dontWait()
             )
         );
-        $this->assertSame(
-            $this->exchange,
+        $this->assertNull(
             $this->exchange->declare(
                 Declaration::durable('bar', Type::direct())
             )
@@ -91,14 +86,12 @@ class ExchangeTest extends TestCase
 
     public function testDelete()
     {
-        $this->assertSame(
-            $this->exchange,
+        $this->assertNull(
             $this->exchange->delete(
                 (new Deletion('foo'))->dontWait()
             )
         );
-        $this->assertSame(
-            $this->exchange,
+        $this->assertNull(
             $this->exchange->delete(
                 new Deletion('bar')
             )

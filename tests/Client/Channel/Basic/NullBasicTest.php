@@ -27,13 +27,13 @@ class NullBasicTest extends TestCase
         $basic = new NullBasic;
 
         $this->assertInstanceOf(Basic::class, $basic);
-        $this->assertSame($basic, $basic->ack(new Ack(1)));
-        $this->assertSame($basic, $basic->cancel(new Cancel('')));
+        $this->assertNull($basic->ack(new Ack(1)));
+        $this->assertNull($basic->cancel(new Cancel('')));
         $this->assertInstanceOf(NullConsumer::class, $basic->consume(new Consume('')));
         $this->assertInstanceOf(GetEmpty::class, $basic->get(new Get('')));
-        $this->assertSame($basic, $basic->publish(new Publish($this->createMock(Message::class))));
-        $this->assertSame($basic, $basic->qos(new Qos(0, 0)));
-        $this->assertSame($basic, $basic->recover(new Recover));
-        $this->assertSame($basic, $basic->reject(new Reject(1)));
+        $this->assertNull($basic->publish(new Publish($this->createMock(Message::class))));
+        $this->assertNull($basic->qos(new Qos(0, 0)));
+        $this->assertNull($basic->recover(new Recover));
+        $this->assertNull($basic->reject(new Reject(1)));
     }
 }

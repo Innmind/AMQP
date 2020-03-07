@@ -24,7 +24,7 @@ interface Consumer
      *
      * This number applies to the number of message received post-filter
      */
-    public function take(int $count): self;
+    public function take(int $count): void;
 
     /**
      * Messages not fulfilling the predicate will be requeued
@@ -41,5 +41,5 @@ interface Consumer
      *
      * @param callable(Message, bool, string, string): bool $predicate
      */
-    public function filter(callable $predicate): self;
+    public function filter(callable $predicate): void;
 }

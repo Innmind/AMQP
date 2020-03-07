@@ -11,13 +11,13 @@ use Innmind\AMQP\{
 
 final class NullExchange implements ExchangeInterface
 {
-    public function declare(Declaration $command): ExchangeInterface
+    public function declare(Declaration $command): void
     {
-        return $this;
+        // pass
     }
 
-    public function delete(Deletion $command): ExchangeInterface
+    public function delete(Deletion $command): void
     {
-        return $this;
+        // pass
     }
 }

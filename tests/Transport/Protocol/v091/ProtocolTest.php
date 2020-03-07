@@ -79,8 +79,8 @@ class ProtocolTest extends TestCase
     {
         $protocol = new Protocol($this->createMock(ArgumentTranslator::class));
 
-        $this->assertSame($protocol, $protocol->use(new Version(0, 9, 0)));
-        $this->assertSame($protocol, $protocol->use(new Version(0, 9, 1)));
+        $this->assertNull($protocol->use(new Version(0, 9, 0)));
+        $this->assertNull($protocol->use(new Version(0, 9, 1)));
     }
 
     public function testReadHeader()

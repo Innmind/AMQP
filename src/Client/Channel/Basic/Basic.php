@@ -34,7 +34,7 @@ final class Basic implements BasicInterface
         $this->read = new MessageReader;
     }
 
-    public function ack(Ack $command): BasicInterface
+    public function ack(Ack $command): void
     {
         $this->connection->send(
             $this->connection->protocol()->basic()->ack(
@@ -42,11 +42,9 @@ final class Basic implements BasicInterface
                 $command
             )
         );
-
-        return $this;
     }
 
-    public function cancel(Cancel $command): BasicInterface
+    public function cancel(Cancel $command): void
     {
         $this->connection->send(
             $this->connection->protocol()->basic()->cancel(
@@ -58,8 +56,6 @@ final class Basic implements BasicInterface
         if ($command->shouldWait()) {
             $this->connection->wait('basic.cancel-ok');
         }
-
-        return $this;
     }
 
     public function consume(Consume $command): Consumer
@@ -90,13 +86,11 @@ final class Basic implements BasicInterface
 
     public function get(GetCommand $command): Get
     {
-        $frame = $this
-            ->connection
-            ->send($this->connection->protocol()->basic()->get(
-                $this->channel,
-                $command
-            ))
-            ->wait('basic.get-ok', 'basic.get-empty');
+        $this->connection->send($this->connection->protocol()->basic()->get(
+            $this->channel,
+            $command
+        ));
+        $frame = $this->connection->wait('basic.get-ok', 'basic.get-empty');
 
         if ($frame->is($this->connection->protocol()->method('basic.get-empty'))) {
             return new Get\GetEmpty;
@@ -127,7 +121,7 @@ final class Basic implements BasicInterface
         );
     }
 
-    public function publish(Publish $command): BasicInterface
+    public function publish(Publish $command): void
     {
         $this
             ->connection
@@ -141,37 +135,27 @@ final class Basic implements BasicInterface
             ->foreach(function(Frame $frame): void {
                 $this->connection->send($frame);
             });
-
-        return $this;
     }
 
-    public function qos(Qos $command): BasicInterface
+    public function qos(Qos $command): void
     {
-        $this
-            ->connection
-            ->send($this->connection->protocol()->basic()->qos(
-                $this->channel,
-                $command
-            ))
-            ->wait('basic.qos-ok');
-
-        return $this;
+        $this->connection->send($this->connection->protocol()->basic()->qos(
+            $this->channel,
+            $command
+        ));
+        $this->connection->wait('basic.qos-ok');
     }
 
-    public function recover(Recover $command): BasicInterface
+    public function recover(Recover $command): void
     {
-        $this
-            ->connection
-            ->send($this->connection->protocol()->basic()->recover(
-                $this->channel,
-                $command
-            ))
-            ->wait('basic.recover-ok');
-
-        return $this;
+        $this->connection->send($this->connection->protocol()->basic()->recover(
+            $this->channel,
+            $command
+        ));
+        $this->connection->wait('basic.recover-ok');
     }
 
-    public function reject(Reject $command): BasicInterface
+    public function reject(Reject $command): void
     {
         $this->connection->send(
             $this->connection->protocol()->basic()->reject(
@@ -179,7 +163,5 @@ final class Basic implements BasicInterface
                 $command
             )
         );
-
-        return $this;
     }
 }

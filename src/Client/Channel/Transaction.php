@@ -5,7 +5,7 @@ namespace Innmind\AMQP\Client\Channel;
 
 interface Transaction
 {
-    public function select(): self;
-    public function commit(): self;
-    public function rollback(): self;
+    public function select(): void;
+    public function commit(): void;
+    public function rollback(): void;
 }

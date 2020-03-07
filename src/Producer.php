@@ -7,5 +7,5 @@ use Innmind\AMQP\Model\Basic\Message;
 
 interface Producer
 {
-    public function __invoke(Message $message, string $routingKey = null): self;
+    public function __invoke(Message $message, string $routingKey = null): void;
 }

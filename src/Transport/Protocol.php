@@ -20,7 +20,7 @@ use Innmind\Immutable\Sequence;
 interface Protocol
 {
     public function version(): Version;
-    public function use(Version $version): self;
+    public function use(Version $version): void;
 
     /**
      * @return Sequence<Value>

@@ -94,23 +94,21 @@ class BasicTest extends TestCase
             ),
             new Channel(1)
         );
-        $this->connection
-            ->send(
-                $this->connection->protocol()->channel()->open(new Channel(1))
-            )
-            ->wait('channel.open-ok');
+        $this->connection->send(
+            $this->connection->protocol()->channel()->open(new Channel(1))
+        );
+        $this->connection->wait('channel.open-ok');
     }
 
     public function tearDown(): void
     {
-        $this->connection
-            ->send(
-                $this->connection->protocol()->channel()->close(
-                    new Channel(1),
-                    new Close
-                )
+        $this->connection->send(
+            $this->connection->protocol()->channel()->close(
+                new Channel(1),
+                new Close
             )
-            ->wait('channel.close-ok');
+        );
+        $this->connection->wait('channel.close-ok');
         $this->connection->close();
     }
 
@@ -121,32 +119,26 @@ class BasicTest extends TestCase
 
     public function testAck()
     {
-        $this
-            ->connection
-            ->send($this->connection->protocol()->queue()->declare(
-                new Channel(1),
-                Declaration::temporary()
-                    ->exclusive()
-                    ->withName('test_ack')
-            ))
-            ->wait('queue.declare-ok');
-        $this
-            ->connection
-            ->send($this->connection->protocol()->queue()->bind(
-                new Channel(1),
-                new Binding('amq.direct', 'test_ack')
-            ))
-            ->wait('queue.bind-ok');
+        $this->connection->send($this->connection->protocol()->queue()->declare(
+            new Channel(1),
+            Declaration::temporary()
+                ->exclusive()
+                ->withName('test_ack')
+        ));
+        $this->connection->wait('queue.declare-ok');
+        $this->connection->send($this->connection->protocol()->queue()->bind(
+            new Channel(1),
+            new Binding('amq.direct', 'test_ack')
+        ));
+        $this->connection->wait('queue.bind-ok');
         $this->basic->publish(
             (new Publish(new Generic(Str::of('foobar'))))->to('amq.direct')
         );
-        $frame = $this
-            ->connection
-            ->send($this->connection->protocol()->basic()->get(
-                new Channel(1),
-                new Get('test_ack')
-            ))
-            ->wait('basic.get-ok');
+        $this->connection->send($this->connection->protocol()->basic()->get(
+            new Channel(1),
+            new Get('test_ack')
+        ));
+        $frame = $this->connection->wait('basic.get-ok');
         $deliveryTag = $frame
             ->values()
             ->first()
@@ -155,33 +147,27 @@ class BasicTest extends TestCase
         $this->connection->wait(); //header
         $this->connection->wait(); //body
 
-        $this->assertSame(
-            $this->basic,
+        $this->assertNull(
             $this->basic->ack(new Ack($deliveryTag))
         );
     }
 
     public function testCancel()
     {
-        $this
-            ->connection
-            ->send($this->connection->protocol()->queue()->declare(
-                new Channel(1),
-                Declaration::temporary()
-                    ->exclusive()
-                    ->withName('test_cancel')
-            ))
-            ->wait('queue.declare-ok');
-        $this
-            ->connection
-            ->send($this->connection->protocol()->basic()->consume(
-                new Channel(1),
-                (new Consume('test_cancel'))->withConsumerTag('test_cancel_tag')
-            ))
-            ->wait('basic.consume-ok');
+        $this->connection->send($this->connection->protocol()->queue()->declare(
+            new Channel(1),
+            Declaration::temporary()
+                ->exclusive()
+                ->withName('test_cancel')
+        ));
+        $this->connection->wait('queue.declare-ok');
+        $this->connection->send($this->connection->protocol()->basic()->consume(
+            new Channel(1),
+            (new Consume('test_cancel'))->withConsumerTag('test_cancel_tag')
+        ));
+        $this->connection->wait('basic.consume-ok');
 
-        $this->assertSame(
-            $this->basic,
+        $this->assertNull(
             $this->basic->cancel(
                 new CancelCommand('test_cancel_tag')
             )
@@ -190,25 +176,20 @@ class BasicTest extends TestCase
 
     public function testCancelWithoutWaiting()
     {
-        $this
-            ->connection
-            ->send($this->connection->protocol()->queue()->declare(
-                new Channel(1),
-                Declaration::temporary()
-                    ->exclusive()
-                    ->withName('test_cancel')
-            ))
-            ->wait('queue.declare-ok');
-        $this
-            ->connection
-            ->send($this->connection->protocol()->basic()->consume(
-                new Channel(1),
-                (new Consume('test_cancel'))->withConsumerTag('test_cancel_tag')
-            ))
-            ->wait('basic.consume-ok');
+        $this->connection->send($this->connection->protocol()->queue()->declare(
+            new Channel(1),
+            Declaration::temporary()
+                ->exclusive()
+                ->withName('test_cancel')
+        ));
+        $this->connection->wait('queue.declare-ok');
+        $this->connection->send($this->connection->protocol()->basic()->consume(
+            new Channel(1),
+            (new Consume('test_cancel'))->withConsumerTag('test_cancel_tag')
+        ));
+        $this->connection->wait('basic.consume-ok');
 
-        $this->assertSame(
-            $this->basic,
+        $this->assertNull(
             $this->basic->cancel(
                 (new CancelCommand('test_cancel_tag'))->dontWait()
             )
@@ -217,22 +198,18 @@ class BasicTest extends TestCase
 
     public function testConsume()
     {
-        $this
-            ->connection
-            ->send($this->connection->protocol()->queue()->declare(
-                new Channel(1),
-                Declaration::temporary()
-                    ->exclusive()
-                    ->withName('test_consume')
-            ))
-            ->wait('queue.declare-ok');
-        $this
-            ->connection
-            ->send($this->connection->protocol()->queue()->bind(
-                new Channel(1),
-                new Binding('amq.direct', 'test_consume')
-            ))
-            ->wait('queue.bind-ok');
+        $this->connection->send($this->connection->protocol()->queue()->declare(
+            new Channel(1),
+            Declaration::temporary()
+                ->exclusive()
+                ->withName('test_consume')
+        ));
+        $this->connection->wait('queue.declare-ok');
+        $this->connection->send($this->connection->protocol()->queue()->bind(
+            new Channel(1),
+            new Binding('amq.direct', 'test_consume')
+        ));
+        $this->connection->wait('queue.bind-ok');
 
         foreach (range(0, 3) as $i) {
             $this->basic->publish(
@@ -286,22 +263,18 @@ class BasicTest extends TestCase
 
     public function testReuseConsumer()
     {
-        $this
-            ->connection
-            ->send($this->connection->protocol()->queue()->declare(
-                new Channel(1),
-                Declaration::temporary()
-                    ->exclusive()
-                    ->withName('test_consume')
-            ))
-            ->wait('queue.declare-ok');
-        $this
-            ->connection
-            ->send($this->connection->protocol()->queue()->bind(
-                new Channel(1),
-                new Binding('amq.direct', 'test_consume')
-            ))
-            ->wait('queue.bind-ok');
+        $this->connection->send($this->connection->protocol()->queue()->declare(
+            new Channel(1),
+            Declaration::temporary()
+                ->exclusive()
+                ->withName('test_consume')
+        ));
+        $this->connection->wait('queue.declare-ok');
+        $this->connection->send($this->connection->protocol()->queue()->bind(
+            new Channel(1),
+            new Binding('amq.direct', 'test_consume')
+        ));
+        $this->connection->wait('queue.bind-ok');
 
         foreach (range(0, 3) as $i) {
             $this->basic->publish(
@@ -311,12 +284,11 @@ class BasicTest extends TestCase
 
 
         $consumer = $this->basic->consume(new Consume('test_consume'));
+        $consumer->take(4);
         $this->assertNull(
-            $consumer
-                ->take(4)
-                ->foreach(function(): void {
-                    //pass
-                })
+            $consumer->foreach(function(): void {
+                //pass
+            })
         );
         $called = false;
         $consumer->foreach(function() use (&$called): void {
@@ -327,22 +299,18 @@ class BasicTest extends TestCase
 
     public function testCancelConsumerOnError()
     {
-        $this
-            ->connection
-            ->send($this->connection->protocol()->queue()->declare(
-                new Channel(1),
-                Declaration::temporary()
-                    ->exclusive()
-                    ->withName('test_consume')
-            ))
-            ->wait('queue.declare-ok');
-        $this
-            ->connection
-            ->send($this->connection->protocol()->queue()->bind(
-                new Channel(1),
-                new Binding('amq.direct', 'test_consume')
-            ))
-            ->wait('queue.bind-ok');
+        $this->connection->send($this->connection->protocol()->queue()->declare(
+            new Channel(1),
+            Declaration::temporary()
+                ->exclusive()
+                ->withName('test_consume')
+        ));
+        $this->connection->wait('queue.declare-ok');
+        $this->connection->send($this->connection->protocol()->queue()->bind(
+            new Channel(1),
+            new Binding('amq.direct', 'test_consume')
+        ));
+        $this->connection->wait('queue.bind-ok');
 
         foreach (range(0, 3) as $i) {
             $this->basic->publish(
@@ -370,22 +338,18 @@ class BasicTest extends TestCase
 
     public function testConsumeSpecifiedAmount()
     {
-        $this
-            ->connection
-            ->send($this->connection->protocol()->queue()->declare(
-                new Channel(1),
-                Declaration::temporary()
-                    ->exclusive()
-                    ->withName('test_consume')
-            ))
-            ->wait('queue.declare-ok');
-        $this
-            ->connection
-            ->send($this->connection->protocol()->queue()->bind(
-                new Channel(1),
-                new Binding('amq.direct', 'test_consume')
-            ))
-            ->wait('queue.bind-ok');
+        $this->connection->send($this->connection->protocol()->queue()->declare(
+            new Channel(1),
+            Declaration::temporary()
+                ->exclusive()
+                ->withName('test_consume')
+        ));
+        $this->connection->wait('queue.declare-ok');
+        $this->connection->send($this->connection->protocol()->queue()->bind(
+            new Channel(1),
+            new Binding('amq.direct', 'test_consume')
+        ));
+        $this->connection->wait('queue.bind-ok');
 
         foreach (range(0, 3) as $i) {
             $this->basic->publish(
@@ -395,27 +359,27 @@ class BasicTest extends TestCase
 
         $calls = 0;
 
+        $consumer = $this
+            ->basic
+            ->consume(
+                new Consume('test_consume')
+            );
+        $consumer->take(2);
         $this->assertNull(
-            $this
-                ->basic
-                ->consume(
-                    new Consume('test_consume')
-                )
-                ->take(2)
-                ->foreach(function(
-                    Message $message,
-                    bool $redelivered,
-                    string $exchange,
-                    string $routingKey
-                ) use (
-                    &$calls
-                ): void {
-                    $this->assertSame('foobar'.$calls, $message->body()->toString());
-                    $this->assertFalse($redelivered);
-                    $this->assertSame('amq.direct', $exchange);
-                    $this->assertSame('', $routingKey);
-                    ++$calls;
-                })
+            $consumer->foreach(function(
+                Message $message,
+                bool $redelivered,
+                string $exchange,
+                string $routingKey
+            ) use (
+                &$calls
+            ): void {
+                $this->assertSame('foobar'.$calls, $message->body()->toString());
+                $this->assertFalse($redelivered);
+                $this->assertSame('amq.direct', $exchange);
+                $this->assertSame('', $routingKey);
+                ++$calls;
+            })
         );
         $this->assertSame(2, $calls);
         $called = false;
@@ -436,22 +400,18 @@ class BasicTest extends TestCase
 
     public function testConsumeWithFilter()
     {
-        $this
-            ->connection
-            ->send($this->connection->protocol()->queue()->declare(
-                new Channel(1),
-                Declaration::temporary()
-                    ->exclusive()
-                    ->withName('test_consume')
-            ))
-            ->wait('queue.declare-ok');
-        $this
-            ->connection
-            ->send($this->connection->protocol()->queue()->bind(
-                new Channel(1),
-                new Binding('amq.direct', 'test_consume')
-            ))
-            ->wait('queue.bind-ok');
+        $this->connection->send($this->connection->protocol()->queue()->declare(
+            new Channel(1),
+            Declaration::temporary()
+                ->exclusive()
+                ->withName('test_consume')
+        ));
+        $this->connection->wait('queue.declare-ok');
+        $this->connection->send($this->connection->protocol()->queue()->bind(
+            new Channel(1),
+            new Binding('amq.direct', 'test_consume')
+        ));
+        $this->connection->wait('queue.bind-ok');
 
         foreach (range(0, 5) as $i) {
             $this->basic->publish(
@@ -462,47 +422,47 @@ class BasicTest extends TestCase
         $calls = 0;
         $filtered = 0;
 
-        $this->assertNull(
-            $this
-                ->basic
-                ->consume(
-                    new Consume('test_consume')
-                )
-                ->take(2)
-                ->filter(function(
-                    Message $message,
-                    bool $redelivered,
-                    string $exchange,
-                    string $routingKey
-                ) use (
-                    &$filtered
-                ): bool {
-                    $this->assertSame('foobar'.$filtered, $message->body()->toString());
-                    $this->assertFalse($redelivered);
-                    $this->assertSame('amq.direct', $exchange);
-                    $this->assertSame('', $routingKey);
-                    ++$filtered;
+        $consumer = $this
+            ->basic
+            ->consume(
+                new Consume('test_consume')
+            );
+        $consumer->take(2);
+        $consumer->filter(function(
+            Message $message,
+            bool $redelivered,
+            string $exchange,
+            string $routingKey
+        ) use (
+            &$filtered
+        ): bool {
+            $this->assertSame('foobar'.$filtered, $message->body()->toString());
+            $this->assertFalse($redelivered);
+            $this->assertSame('amq.direct', $exchange);
+            $this->assertSame('', $routingKey);
+            ++$filtered;
 
-                    return ((int) $message->body()->substring(-1)->toString() % 2) === 0;
-                })
-                ->foreach(function(
-                    Message $message,
-                    bool $redelivered,
-                    string $exchange,
-                    string $routingKey
-                ) use (
-                    &$calls,
-                    &$filtered
-                ): void {
-                    $this->assertSame(
-                        'foobar'.($calls * 2),
-                        $message->body()->toString(),
-                    );
-                    $this->assertFalse($redelivered);
-                    $this->assertSame('amq.direct', $exchange);
-                    $this->assertSame('', $routingKey);
-                    ++$calls;
-                })
+            return ((int) $message->body()->substring(-1)->toString() % 2) === 0;
+        });
+        $this->assertNull(
+            $consumer->foreach(function(
+                Message $message,
+                bool $redelivered,
+                string $exchange,
+                string $routingKey
+            ) use (
+                &$calls,
+                &$filtered
+            ): void {
+                $this->assertSame(
+                    'foobar'.($calls * 2),
+                    $message->body()->toString(),
+                );
+                $this->assertFalse($redelivered);
+                $this->assertSame('amq.direct', $exchange);
+                $this->assertSame('', $routingKey);
+                ++$calls;
+            })
         );
         $this->assertSame(2, $calls);
         $this->assertSame(3, $filtered);
@@ -526,22 +486,18 @@ class BasicTest extends TestCase
 
     public function testRejectInConsume()
     {
-        $this
-            ->connection
-            ->send($this->connection->protocol()->queue()->declare(
-                new Channel(1),
-                Declaration::temporary()
-                    ->exclusive()
-                    ->withName('test_consume')
-            ))
-            ->wait('queue.declare-ok');
-        $this
-            ->connection
-            ->send($this->connection->protocol()->queue()->bind(
-                new Channel(1),
-                new Binding('amq.direct', 'test_consume')
-            ))
-            ->wait('queue.bind-ok');
+        $this->connection->send($this->connection->protocol()->queue()->declare(
+            new Channel(1),
+            Declaration::temporary()
+                ->exclusive()
+                ->withName('test_consume')
+        ));
+        $this->connection->wait('queue.declare-ok');
+        $this->connection->send($this->connection->protocol()->queue()->bind(
+            new Channel(1),
+            new Binding('amq.direct', 'test_consume')
+        ));
+        $this->connection->wait('queue.bind-ok');
 
         foreach (range(0, 3) as $i) {
             $this->basic->publish(
@@ -551,34 +507,34 @@ class BasicTest extends TestCase
 
         $calls = 0;
 
+        $consumer = $this
+            ->basic
+            ->consume(
+                new Consume('test_consume')
+            );
+        $consumer->take(4); //otherwise it will hang forever
         $this->assertNull(
-            $this
-                ->basic
-                ->consume(
-                    new Consume('test_consume')
-                )
-                ->take(4) //otherwise it will hang forever
-                ->foreach(function(
-                    Message $message,
-                    bool $redelivered,
-                    string $exchange,
-                    string $routingKey
-                ) use (
-                    &$calls
-                ): void {
-                    $this->assertSame(
-                        'foobar'.$calls,
-                        $message->body()->toString(),
-                    );
-                    $this->assertFalse($redelivered);
-                    $this->assertSame('amq.direct', $exchange);
-                    $this->assertSame('', $routingKey);
-                    ++$calls;
+            $consumer->foreach(function(
+                Message $message,
+                bool $redelivered,
+                string $exchange,
+                string $routingKey
+            ) use (
+                &$calls
+            ): void {
+                $this->assertSame(
+                    'foobar'.$calls,
+                    $message->body()->toString(),
+                );
+                $this->assertFalse($redelivered);
+                $this->assertSame('amq.direct', $exchange);
+                $this->assertSame('', $routingKey);
+                ++$calls;
 
-                    if ($calls >= 1) {
-                        throw new Reject;
-                    }
-                })
+                if ($calls >= 1) {
+                    throw new Reject;
+                }
+            })
         );
         $this->assertSame(4, $calls);
 
@@ -591,22 +547,18 @@ class BasicTest extends TestCase
 
     public function testRequeueInConsume()
     {
-        $this
-            ->connection
-            ->send($this->connection->protocol()->queue()->declare(
-                new Channel(1),
-                Declaration::temporary()
-                    ->exclusive()
-                    ->withName('test_consume')
-            ))
-            ->wait('queue.declare-ok');
-        $this
-            ->connection
-            ->send($this->connection->protocol()->queue()->bind(
-                new Channel(1),
-                new Binding('amq.direct', 'test_consume')
-            ))
-            ->wait('queue.bind-ok');
+        $this->connection->send($this->connection->protocol()->queue()->declare(
+            new Channel(1),
+            Declaration::temporary()
+                ->exclusive()
+                ->withName('test_consume')
+        ));
+        $this->connection->wait('queue.declare-ok');
+        $this->connection->send($this->connection->protocol()->queue()->bind(
+            new Channel(1),
+            new Binding('amq.direct', 'test_consume')
+        ));
+        $this->connection->wait('queue.bind-ok');
 
         foreach (range(0, 3) as $i) {
             $this->basic->publish(
@@ -616,34 +568,34 @@ class BasicTest extends TestCase
 
         $calls = 0;
 
+        $consumer = $this
+            ->basic
+            ->consume(
+                new Consume('test_consume')
+            );
+        $consumer->take(4); //otherwise it will process all messages ()
         $this->assertNull(
-            $this
-                ->basic
-                ->consume(
-                    new Consume('test_consume')
-                )
-                ->take(4) //otherwise it will process all messages ()
-                ->foreach(function(
-                    Message $message,
-                    bool $redelivered,
-                    string $exchange,
-                    string $routingKey
-                ) use (
-                    &$calls
-                ): void {
-                    $this->assertSame(
-                        'foobar'.$calls,
-                        $message->body()->toString(),
-                    );
-                    $this->assertFalse($redelivered);
-                    $this->assertSame('amq.direct', $exchange);
-                    $this->assertSame('', $routingKey);
-                    ++$calls;
+            $consumer->foreach(function(
+                Message $message,
+                bool $redelivered,
+                string $exchange,
+                string $routingKey
+            ) use (
+                &$calls
+            ): void {
+                $this->assertSame(
+                    'foobar'.$calls,
+                    $message->body()->toString(),
+                );
+                $this->assertFalse($redelivered);
+                $this->assertSame('amq.direct', $exchange);
+                $this->assertSame('', $routingKey);
+                ++$calls;
 
-                    if ($calls > 1) {
-                        throw new Requeue;
-                    }
-                })
+                if ($calls > 1) {
+                    throw new Requeue;
+                }
+            })
         );
         $this->assertSame(4, $calls);
 
@@ -666,28 +618,22 @@ class BasicTest extends TestCase
 
     public function testGet()
     {
-        $this
-            ->connection
-            ->send($this->connection->protocol()->queue()->declare(
-                new Channel(1),
-                Declaration::temporary()
-                    ->exclusive()
-                    ->withName('test_get')
-            ))
-            ->wait('queue.declare-ok');
-        $this
-            ->connection
-            ->send($this->connection->protocol()->queue()->bind(
-                new Channel(1),
-                new Binding('amq.direct', 'test_get')
-            ))
-            ->wait('queue.bind-ok');
-        $this
-            ->basic
-            ->publish(
-                $publish = (new Publish(new Generic(Str::of('foobar'))))->to('amq.direct')
-            )
-            ->publish($publish);
+        $this->connection->send($this->connection->protocol()->queue()->declare(
+            new Channel(1),
+            Declaration::temporary()
+                ->exclusive()
+                ->withName('test_get')
+        ));
+        $this->connection->wait('queue.declare-ok');
+        $this->connection->send($this->connection->protocol()->queue()->bind(
+            new Channel(1),
+            new Binding('amq.direct', 'test_get')
+        ));
+        $this->connection->wait('queue.bind-ok');
+        $this->basic->publish(
+            $publish = (new Publish(new Generic(Str::of('foobar'))))->to('amq.direct')
+        );
+        $this->basic->publish($publish);
         $called = false;
 
         $this->assertNull(
@@ -717,22 +663,18 @@ class BasicTest extends TestCase
 
     public function testGetMessageWithAllProperties()
     {
-        $this
-            ->connection
-            ->send($this->connection->protocol()->queue()->declare(
-                new Channel(1),
-                Declaration::temporary()
-                    ->exclusive()
-                    ->withName('test_get')
-            ))
-            ->wait('queue.declare-ok');
-        $this
-            ->connection
-            ->send($this->connection->protocol()->queue()->bind(
-                new Channel(1),
-                new Binding('amq.direct', 'test_get')
-            ))
-            ->wait('queue.bind-ok');
+        $this->connection->send($this->connection->protocol()->queue()->declare(
+            new Channel(1),
+            Declaration::temporary()
+                ->exclusive()
+                ->withName('test_get')
+        ));
+        $this->connection->wait('queue.declare-ok');
+        $this->connection->send($this->connection->protocol()->queue()->bind(
+            new Channel(1),
+            new Binding('amq.direct', 'test_get')
+        ));
+        $this->connection->wait('queue.bind-ok');
         $message = (new Generic(Str::of('foobar')))
             ->withContentType(new ContentType('text', 'plain'))
             ->withContentEncoding(new ContentEncoding('gzip'))
@@ -766,8 +708,7 @@ class BasicTest extends TestCase
             ->withUserId(new UserId('guest'))
             ->withAppId(new AppId('webcrawler'));
 
-        $this->assertSame(
-            $this->basic,
+        $this->assertNull(
             $this->basic->publish((new Publish($message))->to('amq.direct'))
         );
         $called = false;
@@ -834,28 +775,22 @@ class BasicTest extends TestCase
 
     public function testReuseGet()
     {
-        $this
-            ->connection
-            ->send($this->connection->protocol()->queue()->declare(
-                new Channel(1),
-                Declaration::temporary()
-                    ->exclusive()
-                    ->withName('test_get')
-            ))
-            ->wait('queue.declare-ok');
-        $this
-            ->connection
-            ->send($this->connection->protocol()->queue()->bind(
-                new Channel(1),
-                new Binding('amq.direct', 'test_get')
-            ))
-            ->wait('queue.bind-ok');
-        $this
-            ->basic
-            ->publish(
-                $publish = (new Publish(new Generic(Str::of('foobar'))))->to('amq.direct')
-            )
-            ->publish($publish);
+        $this->connection->send($this->connection->protocol()->queue()->declare(
+            new Channel(1),
+            Declaration::temporary()
+                ->exclusive()
+                ->withName('test_get')
+        ));
+        $this->connection->wait('queue.declare-ok');
+        $this->connection->send($this->connection->protocol()->queue()->bind(
+            new Channel(1),
+            new Binding('amq.direct', 'test_get')
+        ));
+        $this->connection->wait('queue.bind-ok');
+        $this->basic->publish(
+            $publish = (new Publish(new Generic(Str::of('foobar'))))->to('amq.direct')
+        );
+        $this->basic->publish($publish);
         $called = false;
 
         $get = $this->basic->get(new Get('test_get'));
@@ -887,22 +822,18 @@ class BasicTest extends TestCase
 
     public function testGetEmpty()
     {
-        $this
-            ->connection
-            ->send($this->connection->protocol()->queue()->declare(
-                new Channel(1),
-                Declaration::temporary()
-                    ->exclusive()
-                    ->withName('test_get')
-            ))
-            ->wait('queue.declare-ok');
-        $this
-            ->connection
-            ->send($this->connection->protocol()->queue()->bind(
-                new Channel(1),
-                new Binding('amq.direct', 'test_get')
-            ))
-            ->wait('queue.bind-ok');
+        $this->connection->send($this->connection->protocol()->queue()->declare(
+            new Channel(1),
+            Declaration::temporary()
+                ->exclusive()
+                ->withName('test_get')
+        ));
+        $this->connection->wait('queue.declare-ok');
+        $this->connection->send($this->connection->protocol()->queue()->bind(
+            new Channel(1),
+            new Binding('amq.direct', 'test_get')
+        ));
+        $this->connection->wait('queue.bind-ok');
         $called = false;
 
         $this->assertNull(
@@ -919,22 +850,18 @@ class BasicTest extends TestCase
 
     public function testRejectGet()
     {
-        $this
-            ->connection
-            ->send($this->connection->protocol()->queue()->declare(
-                new Channel(1),
-                Declaration::temporary()
-                    ->exclusive()
-                    ->withName('test_get')
-            ))
-            ->wait('queue.declare-ok');
-        $this
-            ->connection
-            ->send($this->connection->protocol()->queue()->bind(
-                new Channel(1),
-                new Binding('amq.direct', 'test_get')
-            ))
-            ->wait('queue.bind-ok');
+        $this->connection->send($this->connection->protocol()->queue()->declare(
+            new Channel(1),
+            Declaration::temporary()
+                ->exclusive()
+                ->withName('test_get')
+        ));
+        $this->connection->wait('queue.declare-ok');
+        $this->connection->send($this->connection->protocol()->queue()->bind(
+            new Channel(1),
+            new Binding('amq.direct', 'test_get')
+        ));
+        $this->connection->wait('queue.bind-ok');
         $this->basic->publish(
             (new Publish(new Generic(Str::of('foobar'))))->to('amq.direct')
         );
@@ -960,22 +887,18 @@ class BasicTest extends TestCase
 
     public function testRejectGetOnError()
     {
-        $this
-            ->connection
-            ->send($this->connection->protocol()->queue()->declare(
-                new Channel(1),
-                Declaration::temporary()
-                    ->exclusive()
-                    ->withName('test_get')
-            ))
-            ->wait('queue.declare-ok');
-        $this
-            ->connection
-            ->send($this->connection->protocol()->queue()->bind(
-                new Channel(1),
-                new Binding('amq.direct', 'test_get')
-            ))
-            ->wait('queue.bind-ok');
+        $this->connection->send($this->connection->protocol()->queue()->declare(
+            new Channel(1),
+            Declaration::temporary()
+                ->exclusive()
+                ->withName('test_get')
+        ));
+        $this->connection->wait('queue.declare-ok');
+        $this->connection->send($this->connection->protocol()->queue()->bind(
+            new Channel(1),
+            new Binding('amq.direct', 'test_get')
+        ));
+        $this->connection->wait('queue.bind-ok');
         $this->basic->publish(
             (new Publish(new Generic(Str::of('foobar'))))->to('amq.direct')
         );
@@ -1004,22 +927,18 @@ class BasicTest extends TestCase
 
     public function testRequeueGet()
     {
-        $this
-            ->connection
-            ->send($this->connection->protocol()->queue()->declare(
-                new Channel(1),
-                Declaration::temporary()
-                    ->exclusive()
-                    ->withName('test_get')
-            ))
-            ->wait('queue.declare-ok');
-        $this
-            ->connection
-            ->send($this->connection->protocol()->queue()->bind(
-                new Channel(1),
-                new Binding('amq.direct', 'test_get')
-            ))
-            ->wait('queue.bind-ok');
+        $this->connection->send($this->connection->protocol()->queue()->declare(
+            new Channel(1),
+            Declaration::temporary()
+                ->exclusive()
+                ->withName('test_get')
+        ));
+        $this->connection->wait('queue.declare-ok');
+        $this->connection->send($this->connection->protocol()->queue()->bind(
+            new Channel(1),
+            new Binding('amq.direct', 'test_get')
+        ));
+        $this->connection->wait('queue.bind-ok');
         $this->basic->publish(
             (new Publish(new Generic(Str::of('foobar'))))->to('amq.direct')
         );
@@ -1046,8 +965,7 @@ class BasicTest extends TestCase
 
     public function testPublish()
     {
-        $this->assertSame(
-            $this->basic,
+        $this->assertNull(
             $this->basic->publish(
                 new Publish(new Generic(Str::of('foobar')))
             )
@@ -1056,32 +974,26 @@ class BasicTest extends TestCase
 
     public function testReject()
     {
-        $this
-            ->connection
-            ->send($this->connection->protocol()->queue()->declare(
-                new Channel(1),
-                Declaration::temporary()
-                    ->exclusive()
-                    ->withName('test_reject')
-            ))
-            ->wait('queue.declare-ok');
-        $this
-            ->connection
-            ->send($this->connection->protocol()->queue()->bind(
-                new Channel(1),
-                new Binding('amq.direct', 'test_reject')
-            ))
-            ->wait('queue.bind-ok');
+        $this->connection->send($this->connection->protocol()->queue()->declare(
+            new Channel(1),
+            Declaration::temporary()
+                ->exclusive()
+                ->withName('test_reject')
+        ));
+        $this->connection->wait('queue.declare-ok');
+        $this->connection->send($this->connection->protocol()->queue()->bind(
+            new Channel(1),
+            new Binding('amq.direct', 'test_reject')
+        ));
+        $this->connection->wait('queue.bind-ok');
         $this->basic->publish(
             (new Publish(new Generic(Str::of('foobar'))))->to('amq.direct')
         );
-        $frame = $this
-            ->connection
-            ->send($this->connection->protocol()->basic()->get(
-                new Channel(1),
-                new Get('test_reject')
-            ))
-            ->wait('basic.get-ok');
+        $this->connection->send($this->connection->protocol()->basic()->get(
+            new Channel(1),
+            new Get('test_reject')
+        ));
+        $frame = $this->connection->wait('basic.get-ok');
         $deliveryTag = $frame
             ->values()
             ->first()
@@ -1090,40 +1002,33 @@ class BasicTest extends TestCase
         $this->connection->wait(); //header
         $this->connection->wait(); //body
 
-        $this->assertSame(
-            $this->basic,
+        $this->assertNull(
             $this->basic->reject(new RejectCommand($deliveryTag))
         );
     }
 
     public function testRequeue()
     {
-        $this
-            ->connection
-            ->send($this->connection->protocol()->queue()->declare(
-                new Channel(1),
-                Declaration::temporary()
-                    ->exclusive()
-                    ->withName('test_requeue')
-            ))
-            ->wait('queue.declare-ok');
-        $this
-            ->connection
-            ->send($this->connection->protocol()->queue()->bind(
-                new Channel(1),
-                new Binding('amq.direct', 'test_requeue')
-            ))
-            ->wait('queue.bind-ok');
+        $this->connection->send($this->connection->protocol()->queue()->declare(
+            new Channel(1),
+            Declaration::temporary()
+                ->exclusive()
+                ->withName('test_requeue')
+        ));
+        $this->connection->wait('queue.declare-ok');
+        $this->connection->send($this->connection->protocol()->queue()->bind(
+            new Channel(1),
+            new Binding('amq.direct', 'test_requeue')
+        ));
+        $this->connection->wait('queue.bind-ok');
         $this->basic->publish(
             (new Publish(new Generic(Str::of('foobar'))))->to('amq.direct')
         );
-        $frame = $this
-            ->connection
-            ->send($this->connection->protocol()->basic()->get(
-                new Channel(1),
-                new Get('test_requeue')
-            ))
-            ->wait('basic.get-ok');
+        $this->connection->send($this->connection->protocol()->basic()->get(
+            new Channel(1),
+            new Get('test_requeue')
+        ));
+        $frame = $this->connection->wait('basic.get-ok');
         $deliveryTag = $frame
             ->values()
             ->first()
@@ -1132,8 +1037,7 @@ class BasicTest extends TestCase
         $this->connection->wait(); //header
         $this->connection->wait(); //body
 
-        $this->assertSame(
-            $this->basic,
+        $this->assertNull(
             $this->basic->reject(RejectCommand::requeue($deliveryTag))
         );
     }
@@ -1142,12 +1046,10 @@ class BasicTest extends TestCase
     {
         //only prefectch count can be tested as prefetch size is not implemented
         //by rabbitmq
-        $this->assertSame(
-            $this->basic,
+        $this->assertNull(
             $this->basic->qos(new Qos(0, 50))
         );
-        $this->assertSame(
-            $this->basic,
+        $this->assertNull(
             $this->basic->qos(Qos::global(0, 50))
         );
     }

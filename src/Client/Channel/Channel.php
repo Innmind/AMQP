@@ -25,9 +25,8 @@ final class Channel implements ChannelInterfce
         $this->connection = $connection;
         $this->number = $number;
 
-        $connection
-            ->send($connection->protocol()->channel()->open($number))
-            ->wait('channel.open-ok');
+        $connection->send($connection->protocol()->channel()->open($number));
+        $connection->wait('channel.open-ok');
 
         $this->exchange = new Exchange\Exchange($connection, $number);
         $this->queue = new Queue\Queue($connection, $number);
@@ -66,13 +65,11 @@ final class Channel implements ChannelInterfce
             return;
         }
 
-        $this
-            ->connection
-            ->send($this->connection->protocol()->channel()->close(
-                $this->number,
-                new Close
-            ))
-            ->wait('channel.close-ok');
+        $this->connection->send($this->connection->protocol()->channel()->close(
+            $this->number,
+            new Close
+        ));
+        $this->connection->wait('channel.close-ok');
         $this->closed = true;
     }
 }

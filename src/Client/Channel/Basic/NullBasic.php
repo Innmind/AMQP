@@ -18,14 +18,14 @@ use Innmind\AMQP\{
 
 final class NullBasic implements BasicInterface
 {
-    public function ack(Ack $command): BasicInterface
+    public function ack(Ack $command): void
     {
-        return $this;
+        // pass
     }
 
-    public function cancel(Cancel $command): BasicInterface
+    public function cancel(Cancel $command): void
     {
-        return $this;
+        // pass
     }
 
     public function consume(Consume $command): Consumer
@@ -38,23 +38,23 @@ final class NullBasic implements BasicInterface
         return new Get\GetEmpty;
     }
 
-    public function publish(Publish $command): BasicInterface
+    public function publish(Publish $command): void
     {
-        return $this;
+        // pass
     }
 
-    public function qos(Qos $command): BasicInterface
+    public function qos(Qos $command): void
     {
-        return $this;
+        // pass
     }
 
-    public function recover(Recover $command): BasicInterface
+    public function recover(Recover $command): void
     {
-        return $this;
+        // pass
     }
 
-    public function reject(Reject $command): BasicInterface
+    public function reject(Reject $command): void
     {
-        return $this;
+        // pass
     }
 }

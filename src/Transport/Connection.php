@@ -20,7 +20,7 @@ interface Connection
      * @throws FrameChannelExceedAllowedChannelNumber
      * @throws FrameExceedAllowedSize
      */
-    public function send(Frame $frame): self;
+    public function send(Frame $frame): void;
 
     /**
      * @throws ExpectedMethodFrame When expecting a method frame but another type is received

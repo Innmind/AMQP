@@ -137,21 +137,17 @@ final class Consumer implements ConsumerInterface
     /**
      * {@inheritdoc}
      */
-    public function take(int $count): ConsumerInterface
+    public function take(int $count): void
     {
         $this->take = $count;
-
-        return $this;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function filter(callable $predicate): ConsumerInterface
+    public function filter(callable $predicate): void
     {
         $this->predicate = \Closure::fromCallable($predicate);
-
-        return $this;
     }
 
     private function shouldConsume(): bool

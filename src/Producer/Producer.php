@@ -21,7 +21,7 @@ final class Producer implements ProducerInterface
         $this->exchange = $exchange;
     }
 
-    public function __invoke(Message $message, string $routingKey = null): ProducerInterface
+    public function __invoke(Message $message, string $routingKey = null): void
     {
         $this
             ->client
@@ -32,7 +32,5 @@ final class Producer implements ProducerInterface
                     ->to($this->exchange)
                     ->withRoutingKey($routingKey ?? '')
             );
-
-        return $this;
     }
 }

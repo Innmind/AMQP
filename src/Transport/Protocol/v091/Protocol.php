@@ -56,13 +56,11 @@ final class Protocol implements ProtocolInterface
         return $this->version;
     }
 
-    public function use(Version $version): ProtocolInterface
+    public function use(Version $version): void
     {
         if (!$version->compatibleWith($this->version)) {
             throw new VersionNotUsable($version);
         }
-
-        return $this;
     }
 
     /**

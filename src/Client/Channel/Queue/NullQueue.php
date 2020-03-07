@@ -30,14 +30,14 @@ final class NullQueue implements QueueInterface
         return null;
     }
 
-    public function bind(Binding $command): QueueInterface
+    public function bind(Binding $command): void
     {
-        return $this;
+        // pass
     }
 
-    public function unbind(Unbinding $command): QueueInterface
+    public function unbind(Unbinding $command): void
     {
-        return $this;
+        // pass
     }
 
     public function purge(Purge $command): ?PurgeOk

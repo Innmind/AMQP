@@ -39,7 +39,7 @@ class LoggerTest extends TestCase
             ->method('take')
             ->with(42);
 
-        $this->assertSame($consumer, $consumer->take(42));
+        $this->assertNull($consumer->take(42));
     }
 
     public function testFilter()
@@ -70,13 +70,11 @@ class LoggerTest extends TestCase
                     }
                 }
 
-                public function take(int $number): Consumer {}
+                public function take(int $number): void {}
 
-                public function filter(callable $predicate): Consumer
+                public function filter(callable $predicate): void
                 {
                     $this->predicate = $predicate;
-
-                    return $this;
                 }
             },
             $logger = $this->createMock(LoggerInterface::class)
@@ -90,11 +88,10 @@ class LoggerTest extends TestCase
             );
 
         $filter = false;
-        $consumer
-            ->filter(function() use (&$filter): bool {
-                return $filter = !$filter;
-            })
-            ->foreach(function(){});
+        $consumer->filter(function() use (&$filter): bool {
+            return $filter = !$filter;
+        });
+        $consumer->foreach(function(){});
     }
 
     public function testLogMessageReceived()
@@ -118,8 +115,8 @@ class LoggerTest extends TestCase
                     $consume($this->message, false, '', '');
                 }
 
-                public function take(int $number): Consumer {}
-                public function filter(callable $predicate): Consumer {}
+                public function take(int $number): void {}
+                public function filter(callable $predicate): void {}
             },
             $logger = $this->createMock(LoggerInterface::class)
         );
@@ -159,8 +156,8 @@ class LoggerTest extends TestCase
                     }
                 }
 
-                public function take(int $number): Consumer {}
-                public function filter(callable $predicate): Consumer {}
+                public function take(int $number): void {}
+                public function filter(callable $predicate): void {}
             },
             $logger = $this->createMock(LoggerInterface::class)
         );
@@ -202,8 +199,8 @@ class LoggerTest extends TestCase
                     }
                 }
 
-                public function take(int $number): Consumer {}
-                public function filter(callable $predicate): Consumer {}
+                public function take(int $number): void {}
+                public function filter(callable $predicate): void {}
             },
             $logger = $this->createMock(LoggerInterface::class)
         );
@@ -245,8 +242,8 @@ class LoggerTest extends TestCase
                     }
                 }
 
-                public function take(int $number): Consumer {}
-                public function filter(callable $predicate): Consumer {}
+                public function take(int $number): void {}
+                public function filter(callable $predicate): void {}
             },
             $logger = $this->createMock(LoggerInterface::class)
         );
@@ -288,8 +285,8 @@ class LoggerTest extends TestCase
                     }
                 }
 
-                public function take(int $number): Consumer {}
-                public function filter(callable $predicate): Consumer {}
+                public function take(int $number): void {}
+                public function filter(callable $predicate): void {}
             },
             $logger = $this->createMock(LoggerInterface::class)
         );

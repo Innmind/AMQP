@@ -33,7 +33,7 @@ final class Logger implements ConnectionInterface
     /**
      * {@inheritdoc}
      */
-    public function send(Frame $frame): ConnectionInterface
+    public function send(Frame $frame): void
     {
         $this->logger->debug(
             'AMQP frame about to be sent',
@@ -46,8 +46,6 @@ final class Logger implements ConnectionInterface
 
         $this->connection->send($frame);
         $this->logger->debug('AMQP frame sent', ['uuid' => $uuid]);
-
-        return $this;
     }
 
     /**

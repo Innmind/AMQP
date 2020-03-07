@@ -59,9 +59,9 @@ final class Lazy implements ConnectionInterface
     /**
      * {@inheritdoc}
      */
-    public function send(Frame $frame): ConnectionInterface
+    public function send(Frame $frame): void
     {
-        return $this->connection()->send($frame);
+        $this->connection()->send($frame);
     }
 
     /**

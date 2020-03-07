@@ -80,7 +80,7 @@ final class Queue implements QueueInterface
         ));
     }
 
-    public function bind(Binding $command): QueueInterface
+    public function bind(Binding $command): void
     {
         $this->connection->send(
             $this->connection->protocol()->queue()->bind(
@@ -92,21 +92,15 @@ final class Queue implements QueueInterface
         if ($command->shouldWait()) {
             $this->connection->wait('queue.bind-ok');
         }
-
-        return $this;
     }
 
-    public function unbind(Unbinding $command): QueueInterface
+    public function unbind(Unbinding $command): void
     {
-        $this
-            ->connection
-            ->send($this->connection->protocol()->queue()->unbind(
-                $this->channel,
-                $command
-            ))
-            ->wait('queue.unbind-ok');
-
-        return $this;
+        $this->connection->send($this->connection->protocol()->queue()->unbind(
+            $this->channel,
+            $command
+        ));
+        $this->connection->wait('queue.unbind-ok');
     }
 
     public function purge(Purge $command): ?PurgeOk

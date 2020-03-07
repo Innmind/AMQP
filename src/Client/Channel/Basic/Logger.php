@@ -28,18 +28,14 @@ final class Logger implements BasicInterface
         $this->logger = $logger;
     }
 
-    public function ack(Ack $command): BasicInterface
+    public function ack(Ack $command): void
     {
         $this->basic->ack($command);
-
-        return $this;
     }
 
-    public function cancel(Cancel $command): BasicInterface
+    public function cancel(Cancel $command): void
     {
         $this->basic->cancel($command);
-
-        return $this;
     }
 
     public function consume(Consume $command): Consumer
@@ -58,31 +54,23 @@ final class Logger implements BasicInterface
         );
     }
 
-    public function publish(Publish $command): BasicInterface
+    public function publish(Publish $command): void
     {
         $this->basic->publish($command);
-
-        return $this;
     }
 
-    public function qos(Qos $command): BasicInterface
+    public function qos(Qos $command): void
     {
         $this->basic->qos($command);
-
-        return $this;
     }
 
-    public function recover(Recover $command): BasicInterface
+    public function recover(Recover $command): void
     {
         $this->basic->recover($command);
-
-        return $this;
     }
 
-    public function reject(Reject $command): BasicInterface
+    public function reject(Reject $command): void
     {
         $this->basic->reject($command);
-
-        return $this;
     }
 }
