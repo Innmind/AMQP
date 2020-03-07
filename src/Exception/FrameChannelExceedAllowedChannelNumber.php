@@ -10,12 +10,12 @@ use Innmind\AMQP\{
 
 final class FrameChannelExceedAllowedChannelNumber extends LogicException
 {
-    public function __construct(Channel $channel, MaxChannels $max)
+    public function __construct(int $channel, MaxChannels $max)
     {
         parent::__construct(\sprintf(
             'Max channel id can be %s but got %s',
             $max->toInt(),
-            $channel->toInt(),
+            $channel,
         ));
     }
 }

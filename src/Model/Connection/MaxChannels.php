@@ -3,7 +3,10 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Model\Connection;
 
-use Innmind\AMQP\Exception\DomainException;
+use Innmind\AMQP\Exception\{
+    DomainException,
+    FrameChannelExceedAllowedChannelNumber,
+};
 
 final class MaxChannels
 {
@@ -25,6 +28,16 @@ final class MaxChannels
         }
 
         return $channel <= $this->value;
+    }
+
+    /**
+     * @throws FrameChannelExceedAllowedChannelNumber
+     */
+    public function verify(int $channel): void
+    {
+        if (!$this->allows($channel)) {
+            throw new FrameChannelExceedAllowedChannelNumber($channel, $this);
+        }
     }
 
     public function toInt(): int

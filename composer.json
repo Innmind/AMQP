@@ -39,7 +39,8 @@
         "phpunit/phpunit": "~8.0",
         "psr/log": "^1.0",
         "innmind/cli": "~2.0",
-        "vimeo/psalm": "^3.9"
+        "vimeo/psalm": "^3.9",
+        "innmind/black-box": "^4.2"
     },
     "suggest": {
         "psr/log": "To log what's happening through the connection",

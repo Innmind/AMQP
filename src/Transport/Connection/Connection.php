@@ -19,8 +19,6 @@ use Innmind\AMQP\{
     Model\Connection\Close,
     Model\Connection\MaxChannels,
     Model\Connection\MaxFrameSize,
-    Exception\FrameChannelExceedAllowedChannelNumber,
-    Exception\FrameExceedAllowedSize,
     Exception\UnexpectedFrame,
     Exception\NoFrameDetected,
     Exception\ConnectionClosed,
@@ -102,22 +100,11 @@ final class Connection implements ConnectionInterface
 
     public function send(Frame $frame): void
     {
-        if (!$this->maxChannels->allows($frame->channel()->toInt())) {
-            throw new FrameChannelExceedAllowedChannelNumber(
-                $frame->channel(),
-                $this->maxChannels,
-            );
-        }
+        $this->maxChannels->verify($frame->channel()->toInt());
 
         $frame = Str::of($frame->toString())->toEncoding('ASCII');
 
-        if (!$this->maxFrameSize->allows($frame->length())) {
-            throw new FrameExceedAllowedSize(
-                $frame->length(),
-                $this->maxFrameSize,
-            );
-        }
-
+        $this->maxFrameSize->verify($frame->length());
         $this->socket->write($frame);
     }
 
