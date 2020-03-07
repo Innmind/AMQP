@@ -40,7 +40,7 @@ $start = microtime(true);
 $count = 0;
 
 $consumer->foreach(static function($message) use (&$count): void {
-    if ((string) $message->body() === 'quit') {
+    if ($message->body()->toString() === 'quit') {
         throw new Cancel;
     }
 
