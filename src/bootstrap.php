@@ -103,7 +103,7 @@ function bootstrap(): array
         'producers' => static function(Set $exchanges): callable {
             /** @var Set<Exchange\Declaration> $exchanges */
             return static function(Client $client) use ($exchanges): Producers {
-                return Producers::fromDeclarations($client, ...unwrap($exchanges));
+                return Producers::of($client, ...unwrap($exchanges));
             };
         },
     ];

@@ -44,7 +44,7 @@ final class Type
         return self::$heartbeat ?? self::$heartbeat = new self(self::HEARTBEAT);
     }
 
-    public static function fromInt(int $value): self
+    public static function of(int $value): self
     {
         switch ($value) {
             case self::METHOD:

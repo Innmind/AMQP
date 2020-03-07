@@ -27,7 +27,7 @@ final class Producers
         );
     }
 
-    public static function fromDeclarations(Client $client, Declaration ...$exchanges): self
+    public static function of(Client $client, Declaration ...$exchanges): self
     {
         $exchanges = Sequence::of(Declaration::class, ...$exchanges)->mapTo(
             'string',

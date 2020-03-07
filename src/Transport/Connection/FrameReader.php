@@ -31,7 +31,7 @@ final class FrameReader
         $octet = UnsignedOctet::unpack($stream);
 
         try {
-            $type = Type::fromInt($octet->original()->value());
+            $type = Type::of($octet->original()->value());
         } catch (UnknownFrameType $e) {
             throw new NoFrameDetected(Stream::ofContent(
                 $stream->read()->prepend($octet->pack())->toString(),
