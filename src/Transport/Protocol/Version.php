@@ -14,7 +14,7 @@ final class Version
     public function __construct(int $major, int $minor, int $fix)
     {
         if (\min($major, $minor, $fix) < 0) {
-            throw new DomainException;
+            throw new DomainException("$major.$minor.$fix");
         }
 
         $this->major = $major;

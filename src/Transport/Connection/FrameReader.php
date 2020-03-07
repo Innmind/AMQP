@@ -52,7 +52,7 @@ final class FrameReader
             ) &&
             $payload->length() < 4
         ) {
-            throw new PayloadTooShort;
+            throw new PayloadTooShort((string) $payload->length());
         }
 
         $end = UnsignedOctet::unpack($stream)->original()->value();
@@ -99,7 +99,7 @@ final class FrameReader
                 return Frame::heartbeat();
 
             default:
-                throw new LogicException; // if reached then there's an implementation error
+                throw new LogicException((string) $type->toInt()); // if reached then there's an implementation error
         }
     }
 }

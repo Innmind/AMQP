@@ -13,7 +13,7 @@ final class Method
     public function __construct(int $class, int $method)
     {
         if ($class < 0 || $method < 0) {
-            throw new DomainException;
+            throw new DomainException("$class,$method");
         }
 
         $this->class = $class;

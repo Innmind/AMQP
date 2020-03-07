@@ -12,7 +12,7 @@ final class MaxFrameSize
     public function __construct(int $value)
     {
         if ($value < 0 || ($value !== 0 && $value < 9)) {
-            throw new DomainException;
+            throw new DomainException((string) $value);
         }
 
         $this->value = $value;

@@ -22,7 +22,7 @@ final class ContentType
             $mediaType = new MediaType($topLevel, $subType);
             $this->value = $topLevel.'/'.$subType;
         } catch (Exception $e) {
-            throw new DomainException;
+            throw new DomainException($topLevel.'/'.$subType);
         }
     }
 

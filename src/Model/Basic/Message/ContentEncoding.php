@@ -16,7 +16,7 @@ final class ContentEncoding
     public function __construct(string $value)
     {
         if (!Str::of($value)->matches('~^[\w\-]+$~')) {
-            throw new DomainException;
+            throw new DomainException($value);
         }
 
         $this->value = $value;
