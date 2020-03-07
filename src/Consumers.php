@@ -13,13 +13,10 @@ final class Consumers
     private Map $consumers;
 
     /**
-     * @param Map<string, callable(Message, bool, string, string): void>|null $consumers
+     * @param Map<string, callable(Message, bool, string, string): void> $consumers
      */
-    public function __construct(Map $consumers = null)
+    public function __construct(Map $consumers)
     {
-        /** @var Map<string, callable(Message, bool, string, string): void> */
-        $consumers ??= Map::of('string', 'callable');
-
         assertMap('string', 'callable', $consumers, 1);
 
         $this->consumers = $consumers;

@@ -27,8 +27,8 @@ class GetTest extends TestCase
             Command::class,
             new Get(
                 $this->createMock(Client::class),
-                new Consumers
-            )
+                new Consumers(Map::of('string', 'callable')),
+            ),
         );
     }
 
@@ -44,7 +44,7 @@ USAGE;
             $expected,
             (new Get(
                 $this->createMock(Client::class),
-                new Consumers
+                new Consumers(Map::of('string', 'callable')),
             ))->toString(),
         );
     }

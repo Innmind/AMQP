@@ -21,13 +21,6 @@ class ConsumersTest extends TestCase
         $this->assertSame($expected, $consumers->get('foo'));
     }
 
-    public function testMapIsOptional()
-    {
-        $consumers = new Consumers;
-
-        $this->assertFalse($consumers->contains('foo'));
-    }
-
     public function testThrowWhenInvaliMapKey()
     {
         $this->expectException(\TypeError::class);

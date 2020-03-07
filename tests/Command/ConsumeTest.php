@@ -27,8 +27,8 @@ class ConsumeTest extends TestCase
             Command::class,
             new Consume(
                 $this->createMock(Client::class),
-                new Consumers
-            )
+                new Consumers(Map::of('string', 'callable')),
+            ),
         );
     }
 
@@ -44,7 +44,7 @@ USAGE;
             $expected,
             (new Consume(
                 $this->createMock(Client::class),
-                new Consumers
+                new Consumers(Map::of('string', 'callable')),
             ))->toString(),
         );
     }
