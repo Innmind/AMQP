@@ -20,7 +20,6 @@ final class SignedOctet implements Value
 {
     private static ?Set $definitionSet = null;
 
-    private ?string $value = null;
     private Integer $original;
 
     public function __construct(Integer $octet)
@@ -50,7 +49,7 @@ final class SignedOctet implements Value
 
     public function pack(): string
     {
-        return $this->value ?? $this->value = \pack('c', $this->original->value());
+        return \pack('c', $this->original->value());
     }
 
     public static function definitionSet(): Set

@@ -13,7 +13,6 @@ use Innmind\Immutable\Str;
  */
 final class ShortString implements Value
 {
-    private ?string $value = null;
     private Str $original;
 
     public function __construct(Str $string)
@@ -42,7 +41,7 @@ final class ShortString implements Value
 
     public function pack(): string
     {
-        return $this->value ?? $this->value = (new UnsignedOctet(
+        return (new UnsignedOctet(
             new Integer($this->original->toEncoding('ASCII')->length()),
         ))->pack().$this->original->toString();
     }

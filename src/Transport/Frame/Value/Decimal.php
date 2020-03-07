@@ -19,7 +19,6 @@ final class Decimal implements Value
 {
     private static ?NaturalNumbers $definitionSet = null;
 
-    private ?string $string = null;
     private Integer $value;
     private Integer $scale;
     private Number $original;
@@ -56,7 +55,7 @@ final class Decimal implements Value
 
     public function pack(): string
     {
-        return $this->string ?? $this->string = (new UnsignedOctet($this->scale))->pack().(new SignedLongInteger($this->value))->pack();
+        return (new UnsignedOctet($this->scale))->pack().(new SignedLongInteger($this->value))->pack();
     }
 
     public static function definitionSet(): Set

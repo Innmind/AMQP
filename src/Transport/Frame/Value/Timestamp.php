@@ -20,7 +20,6 @@ use Innmind\Stream\Readable;
  */
 final class Timestamp implements Value
 {
-    private ?string $value = null;
     private PointInTimeInterface $original;
 
     public function __construct(PointInTimeInterface $point)
@@ -46,7 +45,7 @@ final class Timestamp implements Value
 
     public function pack(): string
     {
-        return $this->value ?? $this->value = (new UnsignedLongLongInteger(
+        return (new UnsignedLongLongInteger(
             new Integer((int) $this->original->format(new TimestampFormat)),
         ))->pack();
     }

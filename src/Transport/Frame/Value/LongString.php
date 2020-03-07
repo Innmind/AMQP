@@ -13,7 +13,6 @@ use Innmind\Immutable\Str;
  */
 final class LongString implements Value
 {
-    private ?string $value = null;
     private Str $original;
 
     public function __construct(Str $string)
@@ -42,7 +41,7 @@ final class LongString implements Value
 
     public function pack(): string
     {
-        return $this->value ?? $this->value = (new UnsignedLongInteger(
+        return (new UnsignedLongInteger(
             new Integer($this->original->toEncoding('ASCII')->length())
         ))->pack().$this->original->toString();
     }

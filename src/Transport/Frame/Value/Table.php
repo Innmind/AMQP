@@ -24,7 +24,6 @@ use function Innmind\Immutable\{
  */
 final class Table implements Value
 {
-    private ?string $value = null;
     /** @var Map<string, Value> */
     private Map $original;
 
@@ -79,24 +78,21 @@ final class Table implements Value
 
     public function pack(): string
     {
-        if (\is_null($this->value)) {
-            /** @var Seq<string> */
-            $data = $this->original->toSequenceOf(
-                'string',
-                static function(string $key, Value $value): \Generator {
-                    yield (new ShortString(Str::of($key)))->pack();
-                    yield Symbols::symbol(\get_class($value));
-                    yield $value->pack();
-                },
-            );
-            $data = join('', $data)->toEncoding('ASCII');
+        /** @var Seq<string> */
+        $data = $this->original->toSequenceOf(
+            'string',
+            static function(string $key, Value $value): \Generator {
+                yield (new ShortString(Str::of($key)))->pack();
+                yield Symbols::symbol(\get_class($value));
+                yield $value->pack();
+            },
+        );
+        $data = join('', $data)->toEncoding('ASCII');
 
-            $this->value = UnsignedLongInteger::of(
-                new Integer($data->length()),
-            )->pack();
-            $this->value .= $data->toString();
-        }
+        $value = UnsignedLongInteger::of(
+            new Integer($data->length()),
+        )->pack();
 
-        return $this->value;
+        return $value .= $data->toString();
     }
 }

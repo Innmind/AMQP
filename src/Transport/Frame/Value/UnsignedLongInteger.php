@@ -18,7 +18,6 @@ final class UnsignedLongInteger implements Value
 {
     private static ?Set $definitionSet = null;
 
-    private ?string $value = null;
     private Integer $original;
 
     public function __construct(Integer $value)
@@ -48,7 +47,7 @@ final class UnsignedLongInteger implements Value
 
     public function pack(): string
     {
-        return $this->value ?? $this->value = \pack('N', $this->original->value());
+        return \pack('N', $this->original->value());
     }
 
     public static function definitionSet(): Set

@@ -19,7 +19,6 @@ use function Innmind\Immutable\join;
  */
 final class Sequence implements Value
 {
-    private ?string $value = null;
     /** @var Seq<Value> */
     private Seq $original;
 
@@ -69,22 +68,19 @@ final class Sequence implements Value
 
     public function pack(): string
     {
-        if (\is_null($this->value)) {
-            /** @var Seq<string> */
-            $data = $this->original->toSequenceOf(
-                'string',
-                static function(Value $value): \Generator {
-                    yield Symbols::symbol(\get_class($value));
-                    yield $value->pack();
-                },
-            );
-            $data = join('', $data)->toEncoding('ASCII');
-            $this->value = (new UnsignedLongInteger(
-                new Integer($data->length()),
-            ))->pack();
-            $this->value .= $data->toString();
-        }
+        /** @var Seq<string> */
+        $data = $this->original->toSequenceOf(
+            'string',
+            static function(Value $value): \Generator {
+                yield Symbols::symbol(\get_class($value));
+                yield $value->pack();
+            },
+        );
+        $data = join('', $data)->toEncoding('ASCII');
+        $value = (new UnsignedLongInteger(
+            new Integer($data->length()),
+        ))->pack();
 
-        return $this->value;
+        return $value .= $data->toString();
     }
 }

@@ -16,7 +16,6 @@ use function Innmind\Immutable\unwrap;
  */
 final class Bits implements Value
 {
-    private ?string $value = null;
     /** @var Seq<bool> */
     private Seq $original;
 
@@ -59,17 +58,13 @@ final class Bits implements Value
 
     public function pack(): string
     {
-        if (\is_null($this->value)) {
-            $value = 0;
+        $value = 0;
 
-            foreach (unwrap($this->original) as $i => $bit) {
-                $bit = (int) $bit;
-                $value |= $bit << $i;
-            }
-
-            $this->value = \chr($value);
+        foreach (unwrap($this->original) as $i => $bit) {
+            $bit = (int) $bit;
+            $value |= $bit << $i;
         }
 
-        return $this->value;
+        return \chr($value);
     }
 }

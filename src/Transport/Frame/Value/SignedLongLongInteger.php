@@ -12,7 +12,6 @@ use Innmind\Stream\Readable;
  */
 final class SignedLongLongInteger implements Value
 {
-    private ?string $value = null;
     private Integer $original;
 
     public function __construct(Integer $value)
@@ -35,6 +34,6 @@ final class SignedLongLongInteger implements Value
 
     public function pack(): string
     {
-        return $this->value ?? $this->value = \pack('q', $this->original->value());
+        return \pack('q', $this->original->value());
     }
 }
