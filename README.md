@@ -28,10 +28,10 @@ use Innmind\AMQP\{
     Model\Queue\Declaration as Queue,
     Model\Queue\Binding,
     Model\Basic\Message\Generic as Message,
-    Model\Basic\Publish
+    Model\Basic\Publish,
 };
 use Innmind\Socket\Internet\Transport;
-use Innmind\TimeContinuum\ElapsedPeriod;
+use Innmind\TimeContinuum\Earth\ElapsedPeriod;
 use Innmind\OperatingSystem\Factory;
 use Innmind\Url\Url;
 use Innmind\Immutable\Str;
@@ -40,36 +40,37 @@ $os = Factory::build();
 $amqp = bootstrap();
 $client = $amqp['client']['basic'](
     Transport::tcp(),
-    Url::fromString('amqp://guest:guest@localhost:5672/'),
-    new ElapsedPeriod(1000), //timeout
+    Url::of('amqp://guest:guest@localhost:5672/'),
+    new ElapsedPeriod(1000), // timeout
     $os->clock(),
     $os->process(),
-    $os->remote()
+    $os->remote(),
+    $os->sockets(),
 );
 $client
     ->channel()
     ->exchange()
     ->declare(
-        Exchange::durable('crawler', Type::direct())
+        Exchange::durable('crawler', Type::direct()),
     );
 $client
     ->channel()
     ->queue()
     ->declare(
-        Queue::durable('parser')
+        Queue::durable('parser'),
     );
 $client
     ->channel()
     ->queue()
     ->bind(
-        new Binding('crawler', 'parser')
+        new Binding('crawler', 'parser'),
     );
-$message = new Message(new Str('http://github.com/'));
+$message = new Message(Str::of('http://github.com/'));
 $client
     ->channel()
     ->basic()
     ->publish(
-        (new Publish($message))->to('crawler')
+        Publish::a($message)->to('crawler'),
     );
 ```
 
@@ -83,38 +84,38 @@ use Innminq\AMQP\{
     Model\Basic\Consume,
     Exception\Reject,
     Exception\Requeue,
-    Exception\Cancel
+    Exception\Cancel,
 };
 
 $client
     ->channel()
     ->basic()
     ->get(new Get('parser'))(static function(Message $message): void {
-        echo $message->body(); //will print "http://github.com/"
-    }); //consume only one message
-//or
-$client
+        echo $message->body()->toString(); // will print "http://github.com/"
+    }); // consume only one message
+// or
+$consumers = $client
     ->channel()
     ->basic()
-    ->consume(new Consume('crawler'))
-    ->take(42) //consume only 42 messages, if omitted it will run as long the connection is opened
-    ->filter(static function(Message $message): bool {
-        return $message->body()->matches('~^https://~'); //only use this when server routing is no longer enough
-    })
-    ->foreach(static function(Message $message): void {
-        doStuff($message->body());
+    ->consume(new Consume('crawler'));
+$consumer->take(42); // consume only 42 messages, if omitted it will run as long the connection is opened
+$consumer->filter(static function(Message $message): bool {
+    return $message->body()->matches('~^https://~'); // only use this when server routing is no longer enough
+});
+$consumer->foreach(static function(Message $message): void {
+    doStuff($message->body());
 
-        throw new Reject; //to reject the message
-        throw new Requeue; //put the message back in the queue so it can be redelivered
-        throw new Cancel; //instruct to stop receiving messages
-    });
+    throw new Reject; // to reject the message
+    throw new Requeue; // put the message back in the queue so it can be redelivered
+    throw new Cancel; // instruct to stop receiving messages
+});
 ```
 
 `Reject` and `Requeue` can also be used in the `get` callback.
 
 Feel free to look at the client interfaces to explore all capabilities.
 
-**Note**: all the calls to `$client->channel()` always return the same instance, meaning it's the same AMQP channel. The default implementation is one channel per PHP process, this is done to keep the code simple (otherwise it's harder to root received frames to the wished code).
+**Note**: all the calls to `$client->channel()` always return the same instance, meaning it's the same AMQP channel. The default implementation is one channel per PHP process, this is done to keep the code simple (otherwise it's harder to route received frames to the wished code).
 
 Once you're finished making calls you can simply call `$client->close()` that will perform a graceful shutdown by closing all the channels then the AMQP connection and in the end the socket.
 
@@ -137,8 +138,8 @@ By default no activity is logged when using this library, but you have 2 strateg
 ```php
 use Psr\Log\LoggerInterface;
 
-$amqp = bootstrap(/* instance of LoggerInterface */);
-$client = $amqp['client']['logger'];
+$amqp = bootstrap();
+$client = $amqp['client']['logger']($baseClient, /* instance of LoggerInterface */);
 ```
 
 By decorating the connection it will log every sent and received frames, do this if you want to know what's sent through the wire. By decorating the client it will log every received messages and if they've been rejected or requeued; explicit cancel calls (via the exception) and errors thrown during message consumption will be as well.
