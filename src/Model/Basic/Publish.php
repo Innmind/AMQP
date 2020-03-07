@@ -16,6 +16,11 @@ final class Publish
         $this->message = $message;
     }
 
+    public static function a(Message $message): self
+    {
+        return new self($message);
+    }
+
     public function to(string $exchange): self
     {
         $self = clone $this;

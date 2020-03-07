@@ -99,7 +99,7 @@ final class Declaration
     public function withArgument(string $key, $value): self
     {
         $self = clone $this;
-        $self->arguments = $self->arguments->put($key, $value);
+        $self->arguments = ($self->arguments)($key, $value);
 
         return $self;
     }

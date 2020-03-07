@@ -13,7 +13,7 @@ final class VersionNotUsable extends RuntimeException
             '%s.%s.%s',
             $version->major(),
             $version->minor(),
-            $version->fix()
+            $version->fix(),
         ));
     }
 }

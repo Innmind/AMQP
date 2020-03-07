@@ -32,7 +32,7 @@ final class Sequence implements Value
             return $value instanceof Text;
         });
 
-        if ($texts->size() > 0) {
+        if (!$texts->empty()) {
             throw new UnboundedTextCannotBeWrapped;
         }
 
@@ -71,19 +71,16 @@ final class Sequence implements Value
     {
         if (\is_null($this->value)) {
             /** @var Seq<string> */
-            $data = $this
-                ->original
-                ->reduce(
-                    Seq::strings(),
-                    static function(Seq $carry, Value $value): Seq {
-                        return $carry
-                            ->add(Symbols::symbol(\get_class($value)))
-                            ->add($value->pack());
-                    }
-                );
+            $data = $this->original->toSequenceOf(
+                'string',
+                static function(Value $value): \Generator {
+                    yield Symbols::symbol(\get_class($value));
+                    yield $value->pack();
+                },
+            );
             $data = join('', $data)->toEncoding('ASCII');
             $this->value = (new UnsignedLongInteger(
-                new Integer($data->length())
+                new Integer($data->length()),
             ))->pack();
             $this->value .= $data->toString();
         }

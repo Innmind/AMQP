@@ -42,7 +42,7 @@ final class Logger implements BasicInterface
     {
         return new Consumer\Logger(
             $this->basic->consume($command),
-            $this->logger
+            $this->logger,
         );
     }
 
@@ -50,7 +50,7 @@ final class Logger implements BasicInterface
     {
         return new Get\Logger(
             $this->basic->get($command),
-            $this->logger
+            $this->logger,
         );
     }
 

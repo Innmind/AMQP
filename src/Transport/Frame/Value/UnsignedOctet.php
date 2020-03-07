@@ -62,7 +62,7 @@ final class UnsignedOctet implements Value
     {
         return self::$definitionSet ?? self::$definitionSet = Range::inclusive(
             new Integer(0),
-            new Integer(255)
+            new Integer(255),
         );
     }
 }

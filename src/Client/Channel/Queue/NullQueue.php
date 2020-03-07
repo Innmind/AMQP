@@ -17,9 +17,6 @@ use Innmind\AMQP\{
 
 final class NullQueue implements QueueInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     public function declare(Declaration $command): ?DeclareOk
     {
         return null;

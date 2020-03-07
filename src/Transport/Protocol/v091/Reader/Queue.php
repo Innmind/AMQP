@@ -53,33 +53,33 @@ final class Queue
     private function declareOk(): ChunkArguments
     {
         return new ChunkArguments(
-            ShortString::class, //queue
-            UnsignedLongInteger::class, //message count
-            UnsignedLongInteger::class //consumer count
+            ShortString::class, // queue
+            UnsignedLongInteger::class, // message count
+            UnsignedLongInteger::class, // consumer count
         );
     }
 
     private function bindOk(): ChunkArguments
     {
-        return new ChunkArguments; //no arguments
+        return new ChunkArguments; // no arguments
     }
 
     private function unbindOk(): ChunkArguments
     {
-        return new ChunkArguments; //no arguments
+        return new ChunkArguments; // no arguments
     }
 
     private function purgeOk(): ChunkArguments
     {
         return new ChunkArguments(
-            UnsignedLongInteger::class //message count
+            UnsignedLongInteger::class, // message count
         );
     }
 
     private function deleteOk(): ChunkArguments
     {
         return new ChunkArguments(
-            UnsignedLongInteger::class //message count
+            UnsignedLongInteger::class, // message count
         );
     }
 }

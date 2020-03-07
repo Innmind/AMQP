@@ -35,7 +35,7 @@ final class Timestamp implements Value
             ->value();
 
         return new self(new PointInTime(
-            \date((new ISO8601)->toString(), $time)
+            \date((new ISO8601)->toString(), $time),
         ));
     }
 
@@ -47,7 +47,7 @@ final class Timestamp implements Value
     public function pack(): string
     {
         return $this->value ?? $this->value = (new UnsignedLongLongInteger(
-            new Integer((int) $this->original->format(new TimestampFormat))
+            new Integer((int) $this->original->format(new TimestampFormat)),
         ))->pack();
     }
 }

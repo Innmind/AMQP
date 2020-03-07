@@ -18,14 +18,12 @@ final class Producers
     public function __construct(Client $client, string ...$exchanges)
     {
         /** @var Map<string, Producer> */
-        $this->producers = Sequence::strings(...$exchanges)->reduce(
-            Map::of('string', Producer::class),
-            static function(Map $producers, string $exchange) use ($client): Map {
-                return $producers->put(
-                    $exchange,
-                    new Producer\Producer($client, $exchange)
-                );
-            }
+        $this->producers = Sequence::strings(...$exchanges)->toMapOf(
+            'string',
+            Producer::class,
+            static function(string $exchange) use ($client): \Generator {
+                yield $exchange => new Producer\Producer($client, $exchange);
+            },
         );
     }
 

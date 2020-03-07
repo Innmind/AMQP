@@ -60,7 +60,7 @@ final class UnsignedLongInteger implements Value
     {
         return self::$definitionSet ?? self::$definitionSet = Range::inclusive(
             new Integer(0),
-            new Integer(4294967295)
+            new Integer(4294967295),
         );
     }
 }

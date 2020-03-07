@@ -60,7 +60,7 @@ final class UnsignedShortInteger implements Value
     {
         return self::$definitionSet ?? self::$definitionSet = Range::inclusive(
             new Integer(0),
-            new Integer(65535)
+            new Integer(65535),
         );
     }
 }

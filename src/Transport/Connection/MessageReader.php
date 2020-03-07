@@ -51,7 +51,7 @@ final class MessageReader
             $payload = $payload->append(
                 $value
                     ->original()
-                    ->toString()
+                    ->toString(),
             );
         }
 
@@ -63,13 +63,13 @@ final class MessageReader
         if ($flagBits & (1 << 15)) {
             /** @var Value\ShortString */
             $value = $properties->first();
-            [$topLevel, $subType] = explode(
+            [$topLevel, $subType] = \explode(
                 '/',
                 $value->original()->toString(),
             );
             $message = $message->withContentType(new ContentType(
                 $topLevel,
-                $subType
+                $subType,
             ));
             $properties = $properties->drop(1);
         }
@@ -89,14 +89,12 @@ final class MessageReader
             /** @var Map<string, mixed> */
             $headers = $value
                 ->original()
-                ->reduce(
-                    Map::of('string', 'mixed'),
-                    static function(Map $carry, string $key, Value $value): Map {
-                        return $carry->put(
-                            $key,
-                            $value->original()
-                        );
-                    }
+                ->toMapOf(
+                    'string',
+                    'mixed',
+                    static function(string $key, Value $value): \Generator {
+                        yield $key => $value->original();
+                    },
                 );
             $message = $message->withHeaders($headers);
             $properties = $properties->drop(1);
@@ -107,7 +105,7 @@ final class MessageReader
             $value = $properties->first();
             $message = $message->withDeliveryMode(
                 $value->original()->value() === DeliveryMode::persistent()->toInt() ?
-                    DeliveryMode::persistent() : DeliveryMode::nonPersistent()
+                    DeliveryMode::persistent() : DeliveryMode::nonPersistent(),
             );
             $properties = $properties->drop(1);
         }
@@ -116,7 +114,7 @@ final class MessageReader
             /** @var Value\UnsignedOctet */
             $value = $properties->first();
             $message = $message->withPriority(new Priority(
-                $value->original()->value()
+                $value->original()->value(),
             ));
             $properties = $properties->drop(1);
         }
@@ -161,7 +159,7 @@ final class MessageReader
             /** @var Value\Timestamp */
             $value = $properties->first();
             $message = $message->withTimestamp(
-                $value->original()
+                $value->original(),
             );
             $properties = $properties->drop(1);
         }

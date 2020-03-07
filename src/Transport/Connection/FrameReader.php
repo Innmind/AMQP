@@ -34,12 +34,12 @@ final class FrameReader
             $type = Type::fromInt($octet->original()->value());
         } catch (UnknownFrameType $e) {
             throw new NoFrameDetected(Stream::ofContent(
-                $stream->read()->prepend($octet->pack())->toString()
+                $stream->read()->prepend($octet->pack())->toString(),
             ));
         }
 
         $channel = new Channel(
-            UnsignedShortInteger::unpack($stream)->original()->value()
+            UnsignedShortInteger::unpack($stream)->original()->value(),
         );
         $payload = $stream
             ->read(UnsignedLongInteger::unpack($stream)->original()->value())
@@ -71,7 +71,7 @@ final class FrameReader
                         ->value(),
                     UnsignedShortInteger::unpack($payload)
                         ->original()
-                        ->value()
+                        ->value(),
                 );
 
                 return Frame::method(
@@ -99,7 +99,7 @@ final class FrameReader
                 return Frame::heartbeat();
 
             default:
-                throw new LogicException; //if reached then there's an implementation error
+                throw new LogicException; // if reached then there's an implementation error
         }
     }
 }

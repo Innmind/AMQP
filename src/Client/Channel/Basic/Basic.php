@@ -39,8 +39,8 @@ final class Basic implements BasicInterface
         $this->connection->send(
             $this->connection->protocol()->basic()->ack(
                 $this->channel,
-                $command
-            )
+                $command,
+            ),
         );
     }
 
@@ -49,8 +49,8 @@ final class Basic implements BasicInterface
         $this->connection->send(
             $this->connection->protocol()->basic()->cancel(
                 $this->channel,
-                $command
-            )
+                $command,
+            ),
         );
 
         if ($command->shouldWait()) {
@@ -63,8 +63,8 @@ final class Basic implements BasicInterface
         $this->connection->send(
             $this->connection->protocol()->basic()->consume(
                 $this->channel,
-                $command
-            )
+                $command,
+            ),
         );
 
         if ($command->shouldWait()) {
@@ -80,7 +80,7 @@ final class Basic implements BasicInterface
             $this->connection,
             $command,
             $this->channel,
-            $consumerTag
+            $consumerTag,
         );
     }
 
@@ -88,7 +88,7 @@ final class Basic implements BasicInterface
     {
         $this->connection->send($this->connection->protocol()->basic()->get(
             $this->channel,
-            $command
+            $command,
         ));
         $frame = $this->connection->wait('basic.get-ok', 'basic.get-empty');
 
@@ -130,7 +130,7 @@ final class Basic implements BasicInterface
             ->publish(
                 $this->channel,
                 $command,
-                $this->connection->maxFrameSize()
+                $this->connection->maxFrameSize(),
             )
             ->foreach(function(Frame $frame): void {
                 $this->connection->send($frame);
@@ -141,7 +141,7 @@ final class Basic implements BasicInterface
     {
         $this->connection->send($this->connection->protocol()->basic()->qos(
             $this->channel,
-            $command
+            $command,
         ));
         $this->connection->wait('basic.qos-ok');
     }
@@ -150,7 +150,7 @@ final class Basic implements BasicInterface
     {
         $this->connection->send($this->connection->protocol()->basic()->recover(
             $this->channel,
-            $command
+            $command,
         ));
         $this->connection->wait('basic.recover-ok');
     }
@@ -160,8 +160,8 @@ final class Basic implements BasicInterface
         $this->connection->send(
             $this->connection->protocol()->basic()->reject(
                 $this->channel,
-                $command
-            )
+                $command,
+            ),
         );
     }
 }

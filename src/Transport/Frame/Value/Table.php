@@ -39,7 +39,7 @@ final class Table implements Value
             return $value instanceof Text;
         });
 
-        if ($texts->size() > 0) {
+        if (!$texts->empty()) {
             throw new UnboundedTextCannotBeWrapped;
         }
 
@@ -61,7 +61,7 @@ final class Table implements Value
             /** @var Value */
             $value = [$class, 'unpack']($stream);
 
-            $map = $map->put($key->toString(), $value);
+            $map = ($map)($key->toString(), $value);
 
             $position = $stream->position()->toInt();
         }
@@ -81,21 +81,18 @@ final class Table implements Value
     {
         if (\is_null($this->value)) {
             /** @var Seq<string> */
-            $data = $this
-                ->original
-                ->reduce(
-                    Seq::strings(),
-                    static function(Seq $sequence, string $key, Value $value): Seq {
-                        return $sequence
-                            ->add((new ShortString(Str::of($key)))->pack())
-                            ->add(Symbols::symbol(\get_class($value)))
-                            ->add($value->pack());
-                    },
-                );
+            $data = $this->original->toSequenceOf(
+                'string',
+                static function(string $key, Value $value): \Generator {
+                    yield (new ShortString(Str::of($key)))->pack();
+                    yield Symbols::symbol(\get_class($value));
+                    yield $value->pack();
+                },
+            );
             $data = join('', $data)->toEncoding('ASCII');
 
             $this->value = UnsignedLongInteger::of(
-                new Integer($data->length())
+                new Integer($data->length()),
             )->pack();
             $this->value .= $data->toString();
         }

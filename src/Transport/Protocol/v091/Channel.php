@@ -26,7 +26,7 @@ final class Channel implements ChannelInterface
         return Frame::method(
             $channel,
             Methods::get('channel.open'),
-            new ShortString(Str::of('')) //out of band (reserved)
+            new ShortString(Str::of('')), // out of band (reserved)
         );
     }
 
@@ -35,7 +35,7 @@ final class Channel implements ChannelInterface
         return Frame::method(
             $channel,
             Methods::get('channel.flow'),
-            new Bits($command->active())
+            new Bits($command->active()),
         );
     }
 
@@ -44,7 +44,7 @@ final class Channel implements ChannelInterface
         return Frame::method(
             $channel,
             Methods::get('channel.flow-ok'),
-            new Bits($command->active())
+            new Bits($command->active()),
         );
     }
 
@@ -69,7 +69,7 @@ final class Channel implements ChannelInterface
             UnsignedShortInteger::of(new Integer($replyCode)),
             ShortString::of(Str::of($replyText)),
             UnsignedShortInteger::of(new Integer($method->class())),
-            UnsignedShortInteger::of(new Integer($method->method()))
+            UnsignedShortInteger::of(new Integer($method->method())),
         );
     }
 
@@ -77,7 +77,7 @@ final class Channel implements ChannelInterface
     {
         return Frame::method(
             $channel,
-            Methods::get('channel.close-ok')
+            Methods::get('channel.close-ok'),
         );
     }
 }

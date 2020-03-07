@@ -23,7 +23,7 @@ final class Logger implements ClientInterface
     {
         return new Channel\Logger(
             $this->client->channel(),
-            $this->logger
+            $this->logger,
         );
     }
 

@@ -60,9 +60,6 @@ final class Locked implements Message
         return $this->message->hasHeaders();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function headers(): Map
     {
         return $this->message->headers();

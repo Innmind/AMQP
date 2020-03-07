@@ -36,7 +36,6 @@ final class Channel
                 $chunk = $this->flowOk();
                 break;
 
-
             case Methods::get('channel.close')->equals($method):
                 $chunk = $this->close();
                 break;
@@ -54,30 +53,30 @@ final class Channel
 
     private function openOk(): ChunkArguments
     {
-        return new ChunkArguments; //no arguments
+        return new ChunkArguments; // no arguments
     }
 
     private function flow(): ChunkArguments
     {
         return new ChunkArguments(
-            Bits::class //active
+            Bits::class, // active
         );
     }
 
     private function flowOk(): ChunkArguments
     {
         return new ChunkArguments(
-            Bits::class //active
+            Bits::class, // active
         );
     }
 
     private function close(): ChunkArguments
     {
         return new ChunkArguments(
-            UnsignedShortInteger::class, //reply code
-            ShortString::class, //reply text
-            UnsignedShortInteger::class, //failing class id
-            UnsignedShortInteger::class //failing method id
+            UnsignedShortInteger::class, // reply code
+            ShortString::class, // reply text
+            UnsignedShortInteger::class, // failing class id
+            UnsignedShortInteger::class, // failing method id
         );
     }
 

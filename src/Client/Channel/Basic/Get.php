@@ -16,7 +16,7 @@ interface Get
      * - string $routingKey
      * - int $messageCount
      *
-     * @param callable(Message, bool, string, string, int) $consume
+     * @param callable(Message, bool, string, string, int): void $consume
      */
     public function __invoke(callable $consume): void;
 }

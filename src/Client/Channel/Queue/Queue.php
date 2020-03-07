@@ -35,8 +35,8 @@ final class Queue implements QueueInterface
         $this->connection->send(
             $this->connection->protocol()->queue()->declare(
                 $this->channel,
-                $command
-            )
+                $command,
+            ),
         );
 
         if (!$command->shouldWait()) {
@@ -54,7 +54,7 @@ final class Queue implements QueueInterface
         return new DeclareOk(
             $name->original()->toString(),
             new Count($message->original()->value()),
-            new Count($consumer->original()->value())
+            new Count($consumer->original()->value()),
         );
     }
 
@@ -63,8 +63,8 @@ final class Queue implements QueueInterface
         $this->connection->send(
             $this->connection->protocol()->queue()->delete(
                 $this->channel,
-                $command
-            )
+                $command,
+            ),
         );
 
         if (!$command->shouldWait()) {
@@ -76,7 +76,7 @@ final class Queue implements QueueInterface
         $message = $frame->values()->first();
 
         return new DeleteOk(new Count(
-            $message->original()->value()
+            $message->original()->value(),
         ));
     }
 
@@ -85,8 +85,8 @@ final class Queue implements QueueInterface
         $this->connection->send(
             $this->connection->protocol()->queue()->bind(
                 $this->channel,
-                $command
-            )
+                $command,
+            ),
         );
 
         if ($command->shouldWait()) {
@@ -98,7 +98,7 @@ final class Queue implements QueueInterface
     {
         $this->connection->send($this->connection->protocol()->queue()->unbind(
             $this->channel,
-            $command
+            $command,
         ));
         $this->connection->wait('queue.unbind-ok');
     }
@@ -108,8 +108,8 @@ final class Queue implements QueueInterface
         $this->connection->send(
             $this->connection->protocol()->queue()->purge(
                 $this->channel,
-                $command
-            )
+                $command,
+            ),
         );
 
         if (!$command->shouldWait()) {
@@ -121,7 +121,7 @@ final class Queue implements QueueInterface
         $message = $frame->values()->first();
 
         return new PurgeOk(new Count(
-            $message->original()->value()
+            $message->original()->value(),
         ));
     }
 }

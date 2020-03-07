@@ -46,24 +46,18 @@ final class Delegate implements Protocol
                 }
             });
 
-        if ($protocols->size() === 0) {
+        if ($protocols->empty()) {
             throw new VersionNotUsable($version);
         }
 
         $this->inUse = $protocols->first();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function read(Method $method, Readable $arguments): Sequence
     {
         return $this->inUse->read($method, $arguments);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function readHeader(Readable $arguments): Sequence
     {
         return $this->inUse->readHeader($arguments);

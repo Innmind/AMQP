@@ -30,9 +30,6 @@ final class Logger implements ConnectionInterface
         return $this->connection->protocol();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function send(Frame $frame): void
     {
         $this->logger->debug(
@@ -41,16 +38,13 @@ final class Logger implements ConnectionInterface
                 'type' => $frame->type()->toInt(),
                 'channel' => $frame->channel()->toInt(),
                 'uuid' => $uuid = Uuid::uuid4()->toString(),
-            ]
+            ],
         );
 
         $this->connection->send($frame);
         $this->logger->debug('AMQP frame sent', ['uuid' => $uuid]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function wait(string ...$names): Frame
     {
         $this->logger->debug('Waiting for AMQP frame', ['names' => $names]);
@@ -60,7 +54,7 @@ final class Logger implements ConnectionInterface
             [
                 'type' => $frame->type()->toInt(),
                 'channel' => $frame->channel()->toInt(),
-            ]
+            ],
         );
 
         return $frame;

@@ -60,7 +60,7 @@ final class SignedLongInteger implements Value
     {
         return self::$definitionSet ?? self::$definitionSet = Range::inclusive(
             new Integer(-2147483648),
-            new Integer(2147483647)
+            new Integer(2147483647),
         );
     }
 }

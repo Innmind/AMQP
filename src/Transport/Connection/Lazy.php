@@ -56,17 +56,11 @@ final class Lazy implements ConnectionInterface
         return $this->connection()->protocol();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function send(Frame $frame): void
     {
         $this->connection()->send($frame);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function wait(string ...$names): Frame
     {
         return $this->connection()->wait(...$names);
@@ -109,7 +103,7 @@ final class Lazy implements ConnectionInterface
             throw new ConnectionClosed;
         }
 
-        return $this->connection ?? $this->connection = new Connection(
+        return $this->connection ??= new Connection(
             $this->transport,
             $this->server,
             $this->protocol,

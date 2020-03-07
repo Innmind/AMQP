@@ -27,8 +27,8 @@ final class Exchange implements ExchangeInterface
         $this->connection->send(
             $this->connection->protocol()->exchange()->declare(
                 $this->channel,
-                $command
-            )
+                $command,
+            ),
         );
 
         if ($command->shouldWait()) {
@@ -41,8 +41,8 @@ final class Exchange implements ExchangeInterface
         $this->connection->send(
             $this->connection->protocol()->exchange()->delete(
                 $this->channel,
-                $command
-            )
+                $command,
+            ),
         );
 
         if ($command->shouldWait()) {

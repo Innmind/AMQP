@@ -42,7 +42,7 @@ final class Methods
          * @psalm-suppress InvalidArgument
          * @var Map<string, Method>
          */
-        return self::$all ?? self::$all = Map::of('string', Method::class)
+        return self::$all ??= Map::of('string', Method::class)
             ->put('connection.start', new Method(10, 10))
             ->put('connection.start-ok', new Method(10, 11))
             ->put('connection.secure', new Method(10, 20))
@@ -107,7 +107,7 @@ final class Methods
          * @psalm-suppress InvalidArgument
          * @var Map<int, string>
          */
-        return self::$classes ?? self::$classes = Map::of('int', 'string')
+        return self::$classes ??= Map::of('int', 'string')
             ->put(10, 'connection')
             ->put(20, 'channel')
             ->put(40, 'exchange')

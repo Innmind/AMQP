@@ -12,7 +12,7 @@ final class UnknownMethod extends LogicException
         parent::__construct(\sprintf(
             '%s,%s',
             $method->class(),
-            $method->method()
+            $method->method(),
         ));
     }
 }

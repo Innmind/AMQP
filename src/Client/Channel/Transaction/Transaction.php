@@ -23,7 +23,7 @@ final class Transaction implements TransactionInterface
     public function select(): void
     {
         $this->connection->send($this->connection->protocol()->transaction()->select(
-            $this->channel
+            $this->channel,
         ));
         $this->connection->wait('tx.select-ok');
     }
@@ -31,7 +31,7 @@ final class Transaction implements TransactionInterface
     public function commit(): void
     {
         $this->connection->send($this->connection->protocol()->transaction()->commit(
-            $this->channel
+            $this->channel,
         ));
         $this->connection->wait('tx.commit-ok');
     }
@@ -39,7 +39,7 @@ final class Transaction implements TransactionInterface
     public function rollback(): void
     {
         $this->connection->send($this->connection->protocol()->transaction()->rollback(
-            $this->channel
+            $this->channel,
         ));
         $this->connection->wait('tx.rollback-ok');
     }

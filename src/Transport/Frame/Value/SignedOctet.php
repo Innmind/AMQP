@@ -62,7 +62,7 @@ final class SignedOctet implements Value
     {
         return self::$definitionSet ?? self::$definitionSet = Range::inclusive(
             new Integer(-128),
-            new Integer(127)
+            new Integer(127),
         );
     }
 }

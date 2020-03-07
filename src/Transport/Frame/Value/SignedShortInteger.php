@@ -60,7 +60,7 @@ final class SignedShortInteger implements Value
     {
         return self::$definitionSet ?? self::$definitionSet = Range::inclusive(
             new Integer(-32768),
-            new Integer(32767)
+            new Integer(32767),
         );
     }
 }

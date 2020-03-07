@@ -67,7 +67,7 @@ final class Channel implements ChannelInterfce
 
         $this->connection->send($this->connection->protocol()->channel()->close(
             $this->number,
-            new Close
+            new Close,
         ));
         $this->connection->wait('channel.close-ok');
         $this->closed = true;

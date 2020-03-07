@@ -37,7 +37,7 @@ final class Client implements ClientInterface
 
         $channel = new Channel\Channel(
             $this->connection,
-            new Number($this->channel++)
+            new Number($this->channel++),
         );
         $this->channels = ($this->channels)($pid, $channel);
 

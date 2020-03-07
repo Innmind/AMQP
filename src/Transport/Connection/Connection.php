@@ -105,7 +105,7 @@ final class Connection implements ConnectionInterface
         if (!$this->maxChannels->allows($frame->channel()->toInt())) {
             throw new FrameChannelExceedAllowedChannelNumber(
                 $frame->channel(),
-                $this->maxChannels
+                $this->maxChannels,
             );
         }
 
@@ -114,16 +114,13 @@ final class Connection implements ConnectionInterface
         if (!$this->maxFrameSize->allows($frame->length())) {
             throw new FrameExceedAllowedSize(
                 $frame->length(),
-                $this->maxFrameSize
+                $this->maxFrameSize,
             );
         }
 
         $this->socket->write($frame);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function wait(string ...$names): Frame
     {
         do {
@@ -153,7 +150,7 @@ final class Connection implements ConnectionInterface
         }
 
         if ($frame->type() !== Type::method()) {
-            //someone must have forgot a wait() call
+            // someone must have forgot a wait() call
             throw new ExpectedMethodFrame($frame->type());
         }
 
@@ -181,8 +178,8 @@ final class Connection implements ConnectionInterface
                 $code->original()->value(),
                 new Method(
                     $class->original()->value(),
-                    $method->original()->value()
-                )
+                    $method->original()->value(),
+                ),
             );
         }
 
@@ -258,7 +255,7 @@ final class Connection implements ConnectionInterface
                     UnsignedOctet::unpack($content)->original()->value(),
                 ),
             );
-            //socket rebuilt as the server close the connection on version mismatch
+            // socket rebuilt as the server close the connection on version mismatch
             $this->buildSocket();
             $this->start();
 
@@ -268,8 +265,8 @@ final class Connection implements ConnectionInterface
         $this->send($this->protocol->connection()->startOk(
             new StartOk(
                 $this->authority->userInformation()->user(),
-                $this->authority->userInformation()->password()
-            )
+                $this->authority->userInformation()->password(),
+            ),
         ));
     }
 
@@ -281,8 +278,8 @@ final class Connection implements ConnectionInterface
             $this->send($this->protocol->connection()->secureOk(
                 new SecureOk(
                     $this->authority->userInformation()->user(),
-                    $this->authority->userInformation()->password()
-                )
+                    $this->authority->userInformation()->password(),
+                ),
             ));
             $frame = $this->wait('connection.tune');
         }
@@ -290,32 +287,32 @@ final class Connection implements ConnectionInterface
         /** @var Value\UnsignedShortInteger */
         $maxChannels = $frame->values()->get(0);
         $this->maxChannels = new MaxChannels(
-            $maxChannels->original()->value()
+            $maxChannels->original()->value(),
         );
         /** @var Value\UnsignedLongInteger */
         $maxFrameSize = $frame->values()->get(1);
         $this->maxFrameSize = new MaxFrameSize(
-            $maxFrameSize->original()->value()
+            $maxFrameSize->original()->value(),
         );
         /** @var Value\UnsignedShortInteger */
         $heartbeat = $frame->values()->get(2);
         $this->heartbeat = new Earth\ElapsedPeriod(
-            $heartbeat->original()->value()
+            $heartbeat->original()->value(),
         );
         $this->watch = $this->sockets->watch($this->heartbeat)->forRead($this->socket);
         $this->send($this->protocol->connection()->tuneOk(
             new TuneOk(
                 $this->maxChannels,
                 $this->maxFrameSize,
-                $this->heartbeat
-            )
+                $this->heartbeat,
+            ),
         ));
     }
 
     private function openVHost(): void
     {
         $this->send($this->protocol->connection()->open(
-            new Open($this->vhost)
+            new Open($this->vhost),
         ));
         $this->wait('connection.open-ok');
     }

@@ -47,7 +47,7 @@ final class SignalAware implements ClientInterface
         };
 
         $this->signals->listen(Signal::hangup(), static function() {
-            //do nothing so it can run in background
+            // do nothing so it can run in background
         });
         $this->signals->listen(Signal::interrupt(), $softClose);
         $this->signals->listen(Signal::abort(), $softClose);

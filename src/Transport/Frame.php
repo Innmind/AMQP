@@ -51,13 +51,12 @@ final class Frame
             new UnsignedShortInteger(new Integer($channel->toInt())),
             new UnsignedLongInteger(new Integer($payload->length())),
             new Text($payload),
+            new UnsignedOctet(new Integer(self::end())),
         );
-        $frame = $frame
-            ->add(new UnsignedOctet(new Integer(self::end())))
-            ->mapTo(
-                'string',
-                static fn(Value $value): string => $value->pack(),
-            );
+        $frame = $frame->mapTo(
+            'string',
+            static fn(Value $value): string => $value->pack(),
+        );
         $this->string = join('', $frame)->toString();
     }
 
@@ -71,18 +70,10 @@ final class Frame
             $channel,
             new UnsignedShortInteger(new Integer($method->class())),
             new UnsignedShortInteger(new Integer($method->method())),
-            ...$values
+            ...$values,
         );
         $self->method = $method;
-        /** @var Sequence<Value> */
-        $values = Sequence::of(Value::class, ...$values);
-        /** @var Sequence<Value> */
-        $self->values = $values->reduce(
-            $self->values,
-            static function(Sequence $sequence, Value $value): Sequence {
-                return $sequence->add($value);
-            }
-        );
+        $self->values = Sequence::of(Value::class, ...$values);
 
         return $self;
     }
@@ -96,18 +87,10 @@ final class Frame
             Type::header(),
             $channel,
             new UnsignedShortInteger(new Integer($class)),
-            new UnsignedShortInteger(new Integer(0)), //weight
-            ...$values
+            new UnsignedShortInteger(new Integer(0)), // weight
+            ...$values,
         );
-        /** @var Sequence<Value> */
-        $values = Sequence::of(Value::class, ...$values);
-        /** @var Sequence<Value> */
-        $self->values = $values->reduce(
-            $self->values,
-            static function(Sequence $sequence, Value $value): Sequence {
-                return $sequence->add($value);
-            }
-        );
+        $self->values = Sequence::of(Value::class, ...$values);
 
         return $self;
     }
@@ -117,9 +100,10 @@ final class Frame
         $self = new self(
             Type::body(),
             $channel,
-            $value = new Text($payload)
+            $value = new Text($payload),
         );
-        $self->values = $self->values->add($value);
+        /** @var Sequence<Value> */
+        $self->values = Sequence::of(Value::class, $value);
 
         return $self;
     }
@@ -128,7 +112,7 @@ final class Frame
     {
         return new self(
             Type::heartbeat(),
-            new Channel(0)
+            new Channel(0),
         );
     }
 

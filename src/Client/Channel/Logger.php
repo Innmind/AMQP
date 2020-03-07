@@ -18,7 +18,7 @@ final class Logger implements ChannelInterface
         $this->channel = $channel;
         $this->basic = new Basic\Logger(
             $channel->basic(),
-            $logger
+            $logger,
         );
     }
 

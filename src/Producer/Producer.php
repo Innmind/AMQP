@@ -28,7 +28,7 @@ final class Producer implements ProducerInterface
             ->channel()
             ->basic()
             ->publish(
-                (new Publish($message))
+                Publish::a($message)
                     ->to($this->exchange)
                     ->withRoutingKey($routingKey ?? '')
             );

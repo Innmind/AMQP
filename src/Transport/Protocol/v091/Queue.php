@@ -46,16 +46,16 @@ final class Queue implements QueueInterface
         return Frame::method(
             $channel,
             Methods::get('queue.declare'),
-            new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
+            new UnsignedShortInteger(new Integer(0)), // ticket (reserved)
             ShortString::of(Str::of($name)),
             new Bits(
                 $command->isPassive(),
                 $command->isDurable(),
                 $command->isExclusive(),
                 $command->isAutoDeleted(),
-                !$command->shouldWait()
+                !$command->shouldWait(),
             ),
-            $this->translate($command->arguments())
+            $this->translate($command->arguments()),
         );
     }
 
@@ -64,13 +64,13 @@ final class Queue implements QueueInterface
         return Frame::method(
             $channel,
             Methods::get('queue.delete'),
-            new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
+            new UnsignedShortInteger(new Integer(0)), // ticket (reserved)
             ShortString::of(Str::of($command->name())),
             new Bits(
                 $command->onlyIfUnused(),
                 $command->onlyIfEmpty(),
-                !$command->shouldWait()
-            )
+                !$command->shouldWait(),
+            ),
         );
     }
 
@@ -79,12 +79,12 @@ final class Queue implements QueueInterface
         return Frame::method(
             $channel,
             Methods::get('queue.bind'),
-            new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
+            new UnsignedShortInteger(new Integer(0)), // ticket (reserved)
             ShortString::of(Str::of($command->queue())),
             ShortString::of(Str::of($command->exchange())),
             ShortString::of(Str::of($command->routingKey())),
             new Bits(!$command->shouldWait()),
-            $this->translate($command->arguments())
+            $this->translate($command->arguments()),
         );
     }
 
@@ -93,11 +93,11 @@ final class Queue implements QueueInterface
         return Frame::method(
             $channel,
             Methods::get('queue.unbind'),
-            new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
+            new UnsignedShortInteger(new Integer(0)), // ticket (reserved)
             ShortString::of(Str::of($command->queue())),
             ShortString::of(Str::of($command->exchange())),
             ShortString::of(Str::of($command->routingKey())),
-            $this->translate($command->arguments())
+            $this->translate($command->arguments()),
         );
     }
 
@@ -106,9 +106,9 @@ final class Queue implements QueueInterface
         return Frame::method(
             $channel,
             Methods::get('queue.purge'),
-            new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
+            new UnsignedShortInteger(new Integer(0)), // ticket (reserved)
             ShortString::of(Str::of($command->name())),
-            new Bits(!$command->shouldWait())
+            new Bits(!$command->shouldWait()),
         );
     }
 
@@ -118,14 +118,12 @@ final class Queue implements QueueInterface
     private function translate(Map $arguments): Table
     {
         /** @var Map<string, Value> */
-        $table = $arguments->reduce(
-            Map::of('string', Value::class),
-            function(Map $carry, string $key, $value): Map {
-                return $carry->put(
-                    $key,
-                    ($this->translate)($value)
-                );
-            }
+        $table = $arguments->toMapOf(
+            'string',
+            Value::class,
+            function(string $key, $value): \Generator {
+                yield $key => ($this->translate)($value);
+            },
         );
 
         return new Table($table);

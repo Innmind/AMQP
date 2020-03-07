@@ -52,7 +52,7 @@ final class Basic implements BasicInterface
             $channel,
             Methods::get('basic.ack'),
             UnsignedLongLongInteger::of(new Integer($command->deliveryTag())),
-            new Bits($command->isMultiple())
+            new Bits($command->isMultiple()),
         );
     }
 
@@ -62,7 +62,7 @@ final class Basic implements BasicInterface
             $channel,
             Methods::get('basic.cancel'),
             ShortString::of(Str::of($command->consumerTag())),
-            new Bits(!$command->shouldWait())
+            new Bits(!$command->shouldWait()),
         );
     }
 
@@ -77,16 +77,16 @@ final class Basic implements BasicInterface
         return Frame::method(
             $channel,
             Methods::get('basic.consume'),
-            new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
+            new UnsignedShortInteger(new Integer(0)), // ticket (reserved)
             ShortString::of(Str::of($command->queue())),
             ShortString::of(Str::of($consumerTag)),
             new Bits(
                 !$command->isLocal(),
                 $command->shouldAutoAcknowledge(),
                 $command->isExclusive(),
-                !$command->shouldWait()
+                !$command->shouldWait(),
             ),
-            $this->arguments($command->arguments())
+            $this->arguments($command->arguments()),
         );
     }
 
@@ -95,15 +95,12 @@ final class Basic implements BasicInterface
         return Frame::method(
             $channel,
             Methods::get('basic.get'),
-            new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
+            new UnsignedShortInteger(new Integer(0)), // ticket (reserved)
             ShortString::of(Str::of($command->queue())),
             new Bits($command->shouldAutoAcknowledge())
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function publish(
         FrameChannel $channel,
         Publish $command,
@@ -115,7 +112,7 @@ final class Basic implements BasicInterface
             Frame::method(
                 $channel,
                 Methods::get('basic.publish'),
-                new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
+                new UnsignedShortInteger(new Integer(0)), // ticket (reserved)
                 ShortString::of(Str::of($command->exchange())),
                 ShortString::of(Str::of($command->routingKey())),
                 new Bits(
@@ -133,7 +130,7 @@ final class Basic implements BasicInterface
             )
         );
 
-        //the "-8" is due to the content frame extra informations (type, channel and end flag)
+        // the "-8" is due to the content frame extra informations (type, channel and end flag)
         $chunk = $maxFrameSize->isLimited() ? ($maxFrameSize->toInt() - 8) : $command->message()->body()->length();
 
         if ($chunk === 0) {
@@ -141,16 +138,16 @@ final class Basic implements BasicInterface
         }
 
         /** @var Sequence<Frame> */
-        return $command
+        $payloadFrames = $command
             ->message()
             ->body()
             ->chunk($chunk)
-            ->reduce(
-                $frames,
-                static function(Sequence $frames, Str $chunk) use ($channel): Sequence {
-                    return $frames->add(Frame::body($channel, $chunk));
-                }
+            ->mapTo(
+                Frame::class,
+                static fn(Str $chunk): Frame => Frame::body($channel, $chunk),
             );
+
+        return $frames->append($payloadFrames);
     }
 
     public function qos(FrameChannel $channel, Qos $command): Frame
@@ -186,14 +183,12 @@ final class Basic implements BasicInterface
     private function arguments(Map $arguments): Table
     {
         /** @var Map<string, Value> */
-        $table = $arguments->reduce(
-            Map::of('string', Value::class),
-            function(Map $carry, string $key, $value): Map {
-                return $carry->put(
-                    $key,
-                    ($this->translate)($value)
-                );
-            }
+        $table = $arguments->toMapOf(
+            'string',
+            Value::class,
+            function(string $key, $value): \Generator {
+                yield $key => ($this->translate)($value);
+            },
         );
 
         return new Table($table);

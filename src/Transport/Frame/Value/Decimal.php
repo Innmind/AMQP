@@ -29,7 +29,7 @@ final class Decimal implements Value
         $this->scale = $scale;
         $this->value = $value;
         $this->original = $value->divideBy(
-            (new Integer(10))->power($scale)
+            (new Integer(10))->power($scale),
         );
     }
 

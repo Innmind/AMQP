@@ -19,16 +19,13 @@ final class Delegate implements ArgumentTranslator
         $this->translators = $translators;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function __invoke($value): Value
     {
         foreach ($this->translators as $translate) {
             try {
                 return $translate($value);
             } catch (ValueNotTranslatable $e) {
-                //pass
+                // pass
             }
         }
 

@@ -28,29 +28,25 @@ final class Bits implements Value
 
     public static function unpack(Readable $stream): self
     {
-        return new self(
-            ...unwrap($stream
-                ->read(1)
-                ->toEncoding('ASCII')
-                ->chunk()
-                ->reduce(
-                    Seq::of('int'),
-                    static function(Seq $bits, Str $bit): Seq {
-                        return Str::of(\decbin(\ord($bit->toString())))
-                            ->chunk()
-                            ->reduce(
-                                $bits,
-                                static function(Seq $bits, Str $bit): Seq {
-                                    return $bits->add((int) $bit->toString());
-                                }
-                            );
+        /** @var Seq<bool> */
+        $bits = $stream
+            ->read(1)
+            ->toEncoding('ASCII')
+            ->chunk()
+            ->toSequenceOf(
+                'bool',
+                static function(Str $bits): \Generator {
+                    $bits = Str::of(\decbin(\ord($bits->toString())));
+                    $bitsAsStrings = unwrap($bits->chunk());
+
+                    foreach ($bitsAsStrings as $bit) {
+                        yield (bool) (int) $bit->toString();
                     }
-                )
-                ->mapTo('bool', static function(int $bit): bool {
-                    return (bool) $bit;
-                })
-                ->reverse()),
-        );
+                },
+            )
+            ->reverse();
+
+        return new self(...unwrap($bits));
     }
 
     /**

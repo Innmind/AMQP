@@ -67,62 +67,62 @@ final class Basic
 
     private function qosOk(): ChunkArguments
     {
-        return new ChunkArguments; //no arguments
+        return new ChunkArguments; // no arguments
     }
 
     private function consumeOk(): ChunkArguments
     {
         return new ChunkArguments(
-            ShortString::class //consumer tag
+            ShortString::class, // consumer tag
         );
     }
 
     private function cancelOk(): ChunkArguments
     {
         return new ChunkArguments(
-            ShortString::class //consumer tag
+            ShortString::class, // consumer tag
         );
     }
 
     private function return(): ChunkArguments
     {
         return new ChunkArguments(
-            UnsignedShortInteger::class, //reply code
-            ShortString::class, //reply text
-            ShortString::class, //exchange
-            ShortString::class //routing key
+            UnsignedShortInteger::class, // reply code
+            ShortString::class, // reply text
+            ShortString::class, // exchange
+            ShortString::class, // routing key
         );
     }
 
     private function deliver(): ChunkArguments
     {
         return new ChunkArguments(
-            ShortString::class, //consumer tag
-            UnsignedLongLongInteger::class, //delivery tag
-            Bits::class, //redelivered
-            ShortString::class, //exchange
-            ShortString::class //routing key
+            ShortString::class, // consumer tag
+            UnsignedLongLongInteger::class, // delivery tag
+            Bits::class, // redelivered
+            ShortString::class, // exchange
+            ShortString::class, // routing key
         );
     }
 
     private function getOk(): ChunkArguments
     {
         return new ChunkArguments(
-            UnsignedLongLongInteger::class, //delivery tag
-            Bits::class, //redelivered
-            ShortString::class, //exchange
-            ShortString::class, //routing key
-            UnsignedLongInteger::class //message count
+            UnsignedLongLongInteger::class, // delivery tag
+            Bits::class, // redelivered
+            ShortString::class, // exchange
+            ShortString::class, // routing key
+            UnsignedLongInteger::class, // message count
         );
     }
 
     private function getEmpty(): ChunkArguments
     {
-        return new ChunkArguments; //no arguments
+        return new ChunkArguments; // no arguments
     }
 
     private function recoverOk(): ChunkArguments
     {
-        return new ChunkArguments; //no arguments
+        return new ChunkArguments; // no arguments
     }
 }

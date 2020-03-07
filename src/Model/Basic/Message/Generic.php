@@ -84,9 +84,6 @@ final class Generic implements Message
         return $this->headers->size() > 0;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function headers(): Map
     {
         return $this->headers;

@@ -37,28 +37,26 @@ final class Exchange implements ExchangeInterface
         /** @var Map<string, Value> */
         $arguments = $command
             ->arguments()
-            ->reduce(
-                Map::of('string', Value::class),
-                function(Map $carry, string $key, $value): Map {
-                    return $carry->put(
-                        $key,
-                        ($this->translate)($value)
-                    );
-                }
+            ->toMapOf(
+                'string',
+                Value::class,
+                function(string $key, $value): \Generator {
+                    yield $key => ($this->translate)($value);
+                },
             );
 
         return Frame::method(
             $channel,
             Methods::get('exchange.declare'),
-            new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
+            new UnsignedShortInteger(new Integer(0)), // ticket (reserved)
             ShortString::of(Str::of($command->name())),
             ShortString::of(Str::of($command->type()->toString())),
             new Bits(
                 $command->isPassive(),
                 $command->isDurable(),
-                $command->isAutoDeleted(), //reserved
-                false, //internal (reserved)
-                !$command->shouldWait()
+                $command->isAutoDeleted(), // reserved
+                false, // internal (reserved)
+                !$command->shouldWait(),
             ),
             new Table($arguments),
         );
@@ -69,12 +67,12 @@ final class Exchange implements ExchangeInterface
         return Frame::method(
             $channel,
             Methods::get('exchange.delete'),
-            new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
+            new UnsignedShortInteger(new Integer(0)), // ticket (reserved)
             ShortString::of(Str::of($command->name())),
             new Bits(
                 $command->onlyIfUnused(),
-                !$command->shouldWait()
-            )
+                !$command->shouldWait(),
+            ),
         );
     }
 }

@@ -45,14 +45,9 @@ final class Consumer implements ConsumerInterface
         $this->channel = $channel;
         $this->consumerTag = $consumerTag;
         $this->read = new MessageReader;
-        $this->predicate = static function(): bool {
-            return true; //by default consume all messages
-        };
+        $this->predicate = static fn(): bool => true; // by default consume all messages
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function foreach(callable $consume): void
     {
         if ($this->canceled) {
@@ -87,7 +82,7 @@ final class Consumer implements ConsumerInterface
                         $deliveryTag,
                         $redelivered,
                         $exchange,
-                        $routingKey
+                        $routingKey,
                     );
                 }
 
@@ -95,23 +90,23 @@ final class Consumer implements ConsumerInterface
                     $message,
                     $redelivered,
                     $exchange,
-                    $routingKey
+                    $routingKey,
                 );
 
                 if (!$toProcess) {
                     throw new Requeue;
                 }
 
-                //flag before the consume call as the "take" applies to the number
-                //of messages that match the predicate and the number of
-                //successfully consumed messages
+                // flag before the consume call as the "take" applies to the number
+                // of messages that match the predicate and the number of
+                // successfully consumed messages
                 $this->flagConsumed();
 
                 $consume(
                     $message,
                     $redelivered,
                     $exchange,
-                    $routingKey
+                    $routingKey,
                 );
 
                 $this->ack($deliveryTag);
@@ -134,17 +129,11 @@ final class Consumer implements ConsumerInterface
         $this->cancel();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function take(int $count): void
     {
         $this->take = $count;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function filter(callable $predicate): void
     {
         $this->predicate = \Closure::fromCallable($predicate);
@@ -181,8 +170,8 @@ final class Consumer implements ConsumerInterface
         $this->connection->send(
             $this->connection->protocol()->basic()->ack(
                 $this->channel,
-                new Ack($deliveryTag)
-            )
+                new Ack($deliveryTag),
+            ),
         );
     }
 
@@ -191,8 +180,8 @@ final class Consumer implements ConsumerInterface
         $this->connection->send(
             $this->connection->protocol()->basic()->reject(
                 $this->channel,
-                new RejectCommand($deliveryTag)
-            )
+                new RejectCommand($deliveryTag),
+            ),
         );
     }
 
@@ -201,8 +190,8 @@ final class Consumer implements ConsumerInterface
         $this->connection->send(
             $this->connection->protocol()->basic()->reject(
                 $this->channel,
-                RejectCommand::requeue($deliveryTag)
-            )
+                RejectCommand::requeue($deliveryTag),
+            ),
         );
     }
 
@@ -223,7 +212,7 @@ final class Consumer implements ConsumerInterface
 
         $this->connection->send($this->connection->protocol()->basic()->cancel(
             $this->channel,
-            new CancelCommand($this->consumerTag)
+            new CancelCommand($this->consumerTag),
         ));
 
         $deliver = $this->connection->protocol()->method('basic.deliver');
@@ -236,7 +225,7 @@ final class Consumer implements ConsumerInterface
                 $frame->type() === Type::method() &&
                 $frame->is($deliver)
             ) {
-                //requeue all the messages sent right before the cancel method
+                // requeue all the messages sent right before the cancel method
                 $message = ($this->read)($this->connection);
                 /** @var Value\UnsignedLongLongInteger */
                 $deliveryTag = $frame->values()->get(1);
