@@ -18,6 +18,16 @@ final class Priority
         $this->value = $value;
     }
 
+    public static function lowest(): self
+    {
+        return new self(0);
+    }
+
+    public static function highest(): self
+    {
+        return new self(9);
+    }
+
     public function toInt(): int
     {
         return $this->value;

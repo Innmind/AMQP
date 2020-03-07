@@ -33,6 +33,14 @@ class PriorityTest extends TestCase
         new Priority(10);
     }
 
+    public function testTheHigherTheValueTheHigherThePriority()
+    {
+        $this->assertInstanceOf(Priority::class, Priority::lowest());
+        $this->assertInstanceOf(Priority::class, Priority::highest());
+        $this->assertSame(0, Priority::lowest()->toInt());
+        $this->assertSame(9, Priority::highest()->toInt());
+    }
+
     public function priorities(): array
     {
         return [
