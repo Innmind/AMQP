@@ -5,6 +5,7 @@ namespace Innmind\AMQP\Transport;
 
 use Innmind\AMQP\Transport\{
     Frame\Method,
+    Frame\Value,
     Protocol\Version,
     Protocol\Connection,
     Protocol\Channel,

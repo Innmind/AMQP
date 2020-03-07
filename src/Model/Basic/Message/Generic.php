@@ -18,6 +18,7 @@ final class Generic implements Message
 {
     private ?ContentType $contentType = null;
     private ?ContentEncoding $contentEncoding = null;
+    /** @var Map<string, mixed> */
     private Map $headers;
     private ?DeliveryMode $deliveryMode = null;
     private ?Priority $priority = null;
@@ -34,6 +35,7 @@ final class Generic implements Message
     public function __construct(Str $body)
     {
         $this->body = $body->toEncoding('ASCII');
+        /** @var Map<string, mixed> */
         $this->headers = Map::of('string', 'mixed');
     }
 
@@ -42,8 +44,10 @@ final class Generic implements Message
         return $this->contentType instanceof ContentType;
     }
 
+    /** @psalm-suppress InvalidNullableReturnType */
     public function contentType(): ContentType
     {
+        /** @psalm-suppress NullableReturnStatement */
         return $this->contentType;
     }
 
@@ -60,8 +64,10 @@ final class Generic implements Message
         return $this->contentEncoding instanceof ContentEncoding;
     }
 
+    /** @psalm-suppress InvalidNullableReturnType */
     public function contentEncoding(): ContentEncoding
     {
+        /** @psalm-suppress NullableReturnStatement */
         return $this->contentEncoding;
     }
 
@@ -101,8 +107,10 @@ final class Generic implements Message
         return $this->deliveryMode instanceof DeliveryMode;
     }
 
+    /** @psalm-suppress InvalidNullableReturnType */
     public function deliveryMode(): DeliveryMode
     {
+        /** @psalm-suppress NullableReturnStatement */
         return $this->deliveryMode;
     }
 
@@ -119,8 +127,10 @@ final class Generic implements Message
         return $this->priority instanceof Priority;
     }
 
+    /** @psalm-suppress InvalidNullableReturnType */
     public function priority(): Priority
     {
+        /** @psalm-suppress NullableReturnStatement */
         return $this->priority;
     }
 
@@ -137,8 +147,10 @@ final class Generic implements Message
         return $this->correlationId instanceof CorrelationId;
     }
 
+    /** @psalm-suppress InvalidNullableReturnType */
     public function correlationId(): CorrelationId
     {
+        /** @psalm-suppress NullableReturnStatement */
         return $this->correlationId;
     }
 
@@ -155,8 +167,10 @@ final class Generic implements Message
         return $this->replyTo instanceof ReplyTo;
     }
 
+    /** @psalm-suppress InvalidNullableReturnType */
     public function replyTo(): ReplyTo
     {
+        /** @psalm-suppress NullableReturnStatement */
         return $this->replyTo;
     }
 
@@ -173,8 +187,10 @@ final class Generic implements Message
         return $this->expiration instanceof ElapsedPeriod;
     }
 
+    /** @psalm-suppress InvalidNullableReturnType */
     public function expiration(): ElapsedPeriod
     {
+        /** @psalm-suppress NullableReturnStatement */
         return $this->expiration;
     }
 
@@ -191,8 +207,10 @@ final class Generic implements Message
         return $this->id instanceof Id;
     }
 
+    /** @psalm-suppress InvalidNullableReturnType */
     public function id(): Id
     {
+        /** @psalm-suppress NullableReturnStatement */
         return $this->id;
     }
 
@@ -209,8 +227,10 @@ final class Generic implements Message
         return $this->timestamp instanceof PointInTime;
     }
 
+    /** @psalm-suppress InvalidNullableReturnType */
     public function timestamp(): PointInTime
     {
+        /** @psalm-suppress NullableReturnStatement */
         return $this->timestamp;
     }
 
@@ -227,8 +247,10 @@ final class Generic implements Message
         return $this->type instanceof Type;
     }
 
+    /** @psalm-suppress InvalidNullableReturnType */
     public function type(): Type
     {
+        /** @psalm-suppress NullableReturnStatement */
         return $this->type;
     }
 
@@ -245,8 +267,10 @@ final class Generic implements Message
         return $this->userId instanceof UserId;
     }
 
+    /** @psalm-suppress InvalidNullableReturnType */
     public function userId(): UserId
     {
+        /** @psalm-suppress NullableReturnStatement */
         return $this->userId;
     }
 
@@ -263,8 +287,10 @@ final class Generic implements Message
         return $this->appId instanceof AppId;
     }
 
+    /** @psalm-suppress InvalidNullableReturnType */
     public function appId(): AppId
     {
+        /** @psalm-suppress NullableReturnStatement */
         return $this->appId;
     }
 

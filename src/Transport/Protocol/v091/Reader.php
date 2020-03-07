@@ -5,6 +5,7 @@ namespace Innmind\AMQP\Transport\Protocol\v091;
 
 use Innmind\AMQP\Transport\{
     Frame\Method,
+    Frame\Value,
     Protocol\v091\Reader\Connection,
     Protocol\v091\Reader\Channel,
     Protocol\v091\Reader\Exchange,
@@ -39,6 +40,7 @@ final class Reader
      */
     public function __invoke(Method $method, Readable $arguments): Sequence
     {
+        /** @var Sequence<Value> */
         return ($this->{Methods::class($method)})($method, $arguments);
     }
 }

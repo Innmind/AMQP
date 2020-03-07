@@ -8,6 +8,9 @@ use Innmind\Math\Algebra\Integer;
 use Innmind\Stream\Readable;
 use Innmind\Immutable\Str;
 
+/**
+ * @implements Value<Str>
+ */
 final class LongString implements Value
 {
     private ?string $value = null;
@@ -25,7 +28,7 @@ final class LongString implements Value
         return new self($string);
     }
 
-    public static function unpack(Readable $stream): Value
+    public static function unpack(Readable $stream): self
     {
         $length = UnsignedLongInteger::unpack($stream)->original();
 

@@ -10,6 +10,7 @@ final class Unbinding
     private string $exchange;
     private string $queue;
     private string $routingKey;
+    /** @var Map<string, mixed> */
     private Map $arguments;
 
     public function __construct(string $exchange, string $queue, string $routingKey = '')
@@ -17,9 +18,13 @@ final class Unbinding
         $this->exchange = $exchange;
         $this->queue = $queue;
         $this->routingKey = $routingKey;
+        /** @var Map<string, mixed> */
         $this->arguments = Map::of('string', 'mixed');
     }
 
+    /**
+     * @param mixed $value
+     */
     public function withArgument(string $key, $value): self
     {
         $self = clone $this;

@@ -30,14 +30,21 @@ final class Logger implements ConsumerInterface
      */
     public function foreach(callable $consume): void
     {
-        $this->consumer->foreach(function(Message $message, ...$args) use ($consume): void {
+        $this->consumer->foreach(function(
+            Message $message,
+            bool $redelivered,
+            string $exchange,
+            string $routingKey
+        ) use (
+            $consume
+        ): void {
             try {
                 $this->logger->debug(
                     'AMQP message received',
                     ['body' => $message->body()->toString()]
                 );
 
-                $consume($message, ...$args);
+                $consume($message, $redelivered, $exchange, $routingKey);
             } catch (Reject $e) {
                 $this->logger->warning(
                     'AMQP message rejected',
@@ -79,13 +86,17 @@ final class Logger implements ConsumerInterface
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function filter(callable $predicate): ConsumerInterface
     {
-        $this->consumer = $this->consumer->filter(function(Message $message, ...$args) use ($predicate): bool {
-            $return = $predicate($message, ...$args);
+        $this->consumer = $this->consumer->filter(function(
+            Message $message,
+            bool $redelivered,
+            string $exchange,
+            string $routingKey
+        ) use (
+            $predicate
+        ): bool {
+            $return = $predicate($message, $redelivered, $exchange, $routingKey);
 
             if (!$return) {
                 $this->logger->info(

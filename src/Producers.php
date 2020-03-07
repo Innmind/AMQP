@@ -12,10 +12,12 @@ use function Innmind\Immutable\unwrap;
 
 final class Producers
 {
+    /** @var Map<string, Producer> */
     private Map $producers;
 
     public function __construct(Client $client, string ...$exchanges)
     {
+        /** @var Map<string, Producer> */
         $this->producers = Sequence::strings(...$exchanges)->reduce(
             Map::of('string', Producer::class),
             static function(Map $producers, string $exchange) use ($client): Map {

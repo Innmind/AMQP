@@ -18,10 +18,12 @@ final class Declaration
     private bool $autoDelete = false;
     private bool $exclusive = false;
     private bool $wait = true;
+    /** @var Map<string, mixed> */
     private Map $arguments;
 
     private function __construct()
     {
+        /** @var Map<string, mixed> */
         $this->arguments = Map::of('string', 'mixed');
     }
 
@@ -144,6 +146,9 @@ final class Declaration
         return $self;
     }
 
+    /**
+     * @param mixed $value
+     */
     public function withArgument(string $key, $value): self
     {
         $self = clone $this;
@@ -157,8 +162,10 @@ final class Declaration
         return !\is_string($this->name);
     }
 
+    /** @psalm-suppress InvalidNullableReturnType */
     public function name(): string
     {
+        /** @psalm-suppress NullableReturnStatement */
         return $this->name;
     }
 

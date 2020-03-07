@@ -13,13 +13,15 @@ use Innmind\Immutable\Sequence;
 
 final class Delegate implements Protocol
 {
+    /** @var Sequence<Protocol> */
     private Sequence $protocols;
     private Protocol $inUse;
 
     public function __construct(Protocol $first, Protocol ...$protocols)
     {
-        $protocols = Sequence::of(Protocol::class, $first, ...$protocols)->sort(static function(Protocol $a, Protocol $b): bool {
-            return $b->version()->higherThan($a->version());
+        /** @var Sequence<Protocol> */
+        $protocols = Sequence::of(Protocol::class, $first, ...$protocols)->sort(static function(Protocol $a, Protocol $b): int {
+            return (int) $b->version()->higherThan($a->version());
         });
         $this->inUse = $protocols->first();
         $this->protocols = $protocols;

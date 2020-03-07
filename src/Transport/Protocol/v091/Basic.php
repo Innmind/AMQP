@@ -109,6 +109,7 @@ final class Basic implements BasicInterface
         Publish $command,
         MaxFrameSize $maxFrameSize
     ): Sequence {
+        /** @var Sequence<Frame> */
         $frames = Sequence::of(
             Frame::class,
             Frame::method(
@@ -139,6 +140,7 @@ final class Basic implements BasicInterface
             return $frames;
         }
 
+        /** @var Sequence<Frame> */
         return $command
             ->message()
             ->body()
@@ -183,19 +185,23 @@ final class Basic implements BasicInterface
 
     private function arguments(Map $arguments): Table
     {
-        return new Table(
-            $arguments->reduce(
-                Map::of('string', Value::class),
-                function(Map $carry, string $key, $value): Map {
-                    return $carry->put(
-                        $key,
-                        ($this->translate)($value)
-                    );
-                }
-            )
+        /** @var Map<string, Value> */
+        $table = $arguments->reduce(
+            Map::of('string', Value::class),
+            function(Map $carry, string $key, $value): Map {
+                return $carry->put(
+                    $key,
+                    ($this->translate)($value)
+                );
+            }
         );
+
+        return new Table($table);
     }
 
+    /**
+     * @return list<Value>
+     */
     private function serializeProperties(Message $message): array
     {
         $properties = [];

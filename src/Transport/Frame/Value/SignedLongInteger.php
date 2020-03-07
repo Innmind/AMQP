@@ -14,6 +14,9 @@ use Innmind\Math\{
 };
 use Innmind\Stream\Readable;
 
+/**
+ * @implements Value<Integer>
+ */
 final class SignedLongInteger implements Value
 {
     private static ?Set $definitionSet = null;
@@ -35,8 +38,9 @@ final class SignedLongInteger implements Value
         return new self($value);
     }
 
-    public static function unpack(Readable $stream): Value
+    public static function unpack(Readable $stream): self
     {
+        /** @var int $value */
         [, $value] = \unpack('l', $stream->read(4)->toString());
 
         return new self(new Integer($value));

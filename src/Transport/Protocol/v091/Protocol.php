@@ -78,12 +78,10 @@ final class Protocol implements ProtocolInterface
      */
     public function readHeader(Readable $payload): Sequence
     {
-        $chunk = new ChunkArguments(
-            UnsignedLongLongInteger::class,
-            UnsignedShortInteger::class
-        );
-        [$bodySize, $flags] = unwrap($chunk($payload));
+        $bodySize = UnsignedLongLongInteger::unpack($payload);
+        $flags = UnsignedShortInteger::unpack($payload);
 
+        /** @var int */
         $flagBits = $flags->original()->value();
         $toChunk = [];
 
@@ -139,7 +137,10 @@ final class Protocol implements ProtocolInterface
             $toChunk[] = ShortString::class; //app id
         }
 
-        return Sequence::of(Value::class, $bodySize, $flags)->append(
+        /** @var Sequence<Value> */
+        $values = Sequence::of(Value::class, $bodySize, $flags);
+
+        return $values->append(
             (new ChunkArguments(...$toChunk))($payload),
         );
     }

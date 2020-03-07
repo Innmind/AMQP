@@ -9,8 +9,12 @@ use Innmind\Immutable\Sequence;
 
 final class ChunkArguments
 {
+    /** @var list<class-string<Value>> */
     private array $types;
 
+    /**
+     * @param list<class-string<Value>> $types
+     */
     public function __construct(string ...$types)
     {
         $this->types = $types;
@@ -21,10 +25,13 @@ final class ChunkArguments
      */
     public function __invoke(Readable $arguments): Sequence
     {
+        /** @var Sequence<Value> */
         $sequence = Sequence::of(Value::class);
 
         foreach ($this->types as $type) {
-            $sequence = ($sequence)([$type, 'unpack']($arguments));
+            /** @var Value */
+            $value = [$type, 'unpack']($arguments);
+            $sequence = ($sequence)($value);
         }
 
         return $sequence;

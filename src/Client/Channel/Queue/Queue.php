@@ -16,6 +16,7 @@ use Innmind\AMQP\{
     Model\Count,
     Transport\Connection,
     Transport\Frame\Channel,
+    Transport\Frame\Value,
 };
 
 final class Queue implements QueueInterface
@@ -43,11 +44,17 @@ final class Queue implements QueueInterface
         }
 
         $frame = $this->connection->wait('queue.declare-ok');
+        /** @var Value\ShortString */
+        $name = $frame->values()->get(0);
+        /** @var Value\UnsignedLongInteger */
+        $message = $frame->values()->get(1);
+        /** @var Value\UnsignedLongInteger */
+        $consumer = $frame->values()->get(2);
 
         return new DeclareOk(
-            $frame->values()->get(0)->original()->toString(),
-            new Count($frame->values()->get(1)->original()->value()),
-            new Count($frame->values()->get(2)->original()->value())
+            $name->original()->toString(),
+            new Count($message->original()->value()),
+            new Count($consumer->original()->value())
         );
     }
 
@@ -65,9 +72,11 @@ final class Queue implements QueueInterface
         }
 
         $frame = $this->connection->wait('queue.delete-ok');
+        /** @var Value\UnsignedLongInteger */
+        $message = $frame->values()->first();
 
         return new DeleteOk(new Count(
-            $frame->values()->first()->original()->value()
+            $message->original()->value()
         ));
     }
 
@@ -114,9 +123,11 @@ final class Queue implements QueueInterface
         }
 
         $frame = $this->connection->wait('queue.purge-ok');
+        /** @var Value\UnsignedLongInteger */
+        $message = $frame->values()->first();
 
         return new PurgeOk(new Count(
-            $frame->values()->first()->original()->value()
+            $message->original()->value()
         ));
     }
 }

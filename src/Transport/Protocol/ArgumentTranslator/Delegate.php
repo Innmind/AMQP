@@ -11,6 +11,7 @@ use Innmind\AMQP\{
 
 final class Delegate implements ArgumentTranslator
 {
+    /** @var list<ArgumentTranslator> */
     private array $translators;
 
     public function __construct(ArgumentTranslator ...$translators)

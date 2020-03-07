@@ -22,8 +22,10 @@ final class ConnectionClosed extends RuntimeException
         return $this->cause instanceof Method && !$this->cause->equals(new Method(0, 0));
     }
 
+    /** @psalm-suppress InvalidNullableReturnType */
     public function cause(): Method
     {
+        /** @psalm-suppress NullableReturnStatement */
         return $this->cause;
     }
 }

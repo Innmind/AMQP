@@ -66,7 +66,7 @@ class LoggerTest extends TestCase
                 public function foreach(callable $consume): void
                 {
                     foreach (range(0, 1) as $i) {
-                        ($this->predicate)(($this->message)($i));
+                        ($this->predicate)(($this->message)($i), false, '', '');
                     }
                 }
 
@@ -115,7 +115,7 @@ class LoggerTest extends TestCase
 
                 public function foreach(callable $consume): void
                 {
-                    $consume($this->message);
+                    $consume($this->message, false, '', '');
                 }
 
                 public function take(int $number): Consumer {}
@@ -153,7 +153,7 @@ class LoggerTest extends TestCase
                 public function foreach(callable $consume): void
                 {
                     try {
-                        $consume($this->message);
+                        $consume($this->message, false, '', '');
                     } catch (Reject $e) {
                         //pass
                     }
@@ -196,7 +196,7 @@ class LoggerTest extends TestCase
                 public function foreach(callable $consume): void
                 {
                     try {
-                        $consume($this->message);
+                        $consume($this->message, false, '', '');
                     } catch (Requeue $e) {
                         //pass
                     }
@@ -239,7 +239,7 @@ class LoggerTest extends TestCase
                 public function foreach(callable $consume): void
                 {
                     try {
-                        $consume($this->message);
+                        $consume($this->message, false, '', '');
                     } catch (Cancel $e) {
                         //pass
                     }
@@ -282,7 +282,7 @@ class LoggerTest extends TestCase
                 public function foreach(callable $consume): void
                 {
                     try {
-                        $consume($this->message);
+                        $consume($this->message, false, '', '');
                     } catch (\RuntimeException $e) {
                         //pass
                     }

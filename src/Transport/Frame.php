@@ -25,6 +25,7 @@ final class Frame
     private Type $type;
     private Channel $channel;
     private ?Method $method = null;
+    /** @var Sequence<Value> */
     private Sequence $values;
     private string $string;
 
@@ -35,6 +36,7 @@ final class Frame
     ) {
         $this->type = $type;
         $this->channel = $channel;
+        /** @var Sequence<Value> */
         $this->values = Sequence::of(Value::class);
 
         $values = Sequence::of(Value::class, ...$values)->mapTo(
@@ -72,7 +74,10 @@ final class Frame
             ...$values
         );
         $self->method = $method;
-        $self->values = Sequence::of(Value::class, ...$values)->reduce(
+        /** @var Sequence<Value> */
+        $values = Sequence::of(Value::class, ...$values);
+        /** @var Sequence<Value> */
+        $self->values = $values->reduce(
             $self->values,
             static function(Sequence $sequence, Value $value): Sequence {
                 return $sequence->add($value);
@@ -94,7 +99,10 @@ final class Frame
             new UnsignedShortInteger(new Integer(0)), //weight
             ...$values
         );
-        $self->values = Sequence::of(Value::class, ...$values)->reduce(
+        /** @var Sequence<Value> */
+        $values = Sequence::of(Value::class, ...$values);
+        /** @var Sequence<Value> */
+        $self->values = $values->reduce(
             $self->values,
             static function(Sequence $sequence, Value $value): Sequence {
                 return $sequence->add($value);
@@ -140,7 +148,7 @@ final class Frame
             return false;
         }
 
-        return $this->method->equals($method);
+        return $this->method && $this->method->equals($method);
     }
 
     /**

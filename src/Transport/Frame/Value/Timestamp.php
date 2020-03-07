@@ -15,6 +15,9 @@ use Innmind\TimeContinuum\{
 use Innmind\Math\Algebra\Integer;
 use Innmind\Stream\Readable;
 
+/**
+ * @implements Value<PointInTimeInterface>
+ */
 final class Timestamp implements Value
 {
     private ?string $value = null;
@@ -25,7 +28,7 @@ final class Timestamp implements Value
         $this->original = $point;
     }
 
-    public static function unpack(Readable $stream): Value
+    public static function unpack(Readable $stream): self
     {
         $time = UnsignedLongLongInteger::unpack($stream)
             ->original()

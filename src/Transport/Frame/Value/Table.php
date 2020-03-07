@@ -19,9 +19,13 @@ use function Innmind\Immutable\{
     join,
 };
 
+/**
+ * @implements Value<Map<string, Value>>
+ */
 final class Table implements Value
 {
     private ?string $value = null;
+    /** @var Map<string, Value> */
     private Map $original;
 
     /**
@@ -42,19 +46,22 @@ final class Table implements Value
         $this->original = $map;
     }
 
-    public static function unpack(Readable $stream): Value
+    public static function unpack(Readable $stream): self
     {
         $length = UnsignedLongInteger::unpack($stream)->original();
         $position = $stream->position()->toInt();
         $boundary = $position + $length->value();
 
+        /** @var Map<string, Value> */
         $map = Map::of('string', Value::class);
 
         while ($position < $boundary) {
             $key = ShortString::unpack($stream)->original();
             $class = Symbols::class($stream->read(1)->toString());
+            /** @var Value */
+            $value = [$class, 'unpack']($stream);
 
-            $map = $map->put($key->toString(), [$class, 'unpack']($stream));
+            $map = $map->put($key->toString(), $value);
 
             $position = $stream->position()->toInt();
         }
@@ -73,6 +80,7 @@ final class Table implements Value
     public function pack(): string
     {
         if (\is_null($this->value)) {
+            /** @var Seq<string> */
             $data = $this
                 ->original
                 ->reduce(

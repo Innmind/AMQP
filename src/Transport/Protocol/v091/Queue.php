@@ -117,16 +117,17 @@ final class Queue implements QueueInterface
      */
     private function translate(Map $arguments): Table
     {
-        return new Table(
-            $arguments->reduce(
-                Map::of('string', Value::class),
-                function(Map $carry, string $key, $value): Map {
-                    return $carry->put(
-                        $key,
-                        ($this->translate)($value)
-                    );
-                }
-            )
+        /** @var Map<string, Value> */
+        $table = $arguments->reduce(
+            Map::of('string', Value::class),
+            function(Map $carry, string $key, $value): Map {
+                return $carry->put(
+                    $key,
+                    ($this->translate)($value)
+                );
+            }
         );
+
+        return new Table($table);
     }
 }

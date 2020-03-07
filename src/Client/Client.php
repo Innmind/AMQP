@@ -15,6 +15,7 @@ final class Client implements ClientInterface
 {
     private Connection $connection;
     private CurrentProcess $process;
+    /** @var Map<int, Channel> */
     private Map $channels;
     private int $channel = 1;
 
@@ -22,6 +23,7 @@ final class Client implements ClientInterface
     {
         $this->connection = $connection;
         $this->process = $process;
+        /** @var Map<int, Channel> */
         $this->channels = Map::of('int', Channel::class);
     }
 

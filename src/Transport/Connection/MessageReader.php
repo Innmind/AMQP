@@ -30,24 +30,26 @@ final class MessageReader
     public function __invoke(ConnectionInterface $connection): Message
     {
         $header = $connection->wait();
-        $bodySize = $header
-            ->values()
-            ->first()
+        /** @var Value\UnsignedLongLongInteger */
+        $value = $header->values()->first();
+        $bodySize = $value
             ->original()
             ->value();
-        $flagBits = $header
-            ->values()
-            ->get(1)
+        /** @var Value\UnsignedShortInteger */
+        $value = $header->values()->get(1);
+        $flagBits = $value
             ->original()
             ->value();
         $payload = Str::of('');
 
         while ($payload->length() !== $bodySize) {
+            /** @var Value\Text */
+            $value = $connection
+                ->wait()
+                ->values()
+                ->first();
             $payload = $payload->append(
-                $connection
-                    ->wait()
-                    ->values()
-                    ->first()
+                $value
                     ->original()
                     ->toString()
             );
@@ -59,9 +61,11 @@ final class MessageReader
             ->drop(2);
 
         if ($flagBits & (1 << 15)) {
+            /** @var Value\ShortString */
+            $value = $properties->first();
             [$topLevel, $subType] = explode(
                 '/',
-                $properties->first()->original()->toString(),
+                $value->original()->toString(),
             );
             $message = $message->withContentType(new ContentType(
                 $topLevel,
@@ -71,97 +75,120 @@ final class MessageReader
         }
 
         if ($flagBits & (1 << 14)) {
+            /** @var Value\ShortString */
+            $value = $properties->first();
             $message = $message->withContentEncoding(new ContentEncoding(
-                $properties->first()->original()->toString(),
+                $value->original()->toString(),
             ));
             $properties = $properties->drop(1);
         }
 
         if ($flagBits & (1 << 13)) {
-            $message = $message->withHeaders(
-                $properties
-                    ->first()
-                    ->original()
-                    ->reduce(
-                        Map::of('string', 'mixed'),
-                        static function(Map $carry, string $key, Value $value): Map {
-                            return $carry->put(
-                                $key,
-                                $value->original()
-                            );
-                        }
-                    )
-            );
+            /** @var Value\Table */
+            $value = $properties->first();
+            /** @var Map<string, mixed> */
+            $headers = $value
+                ->original()
+                ->reduce(
+                    Map::of('string', 'mixed'),
+                    static function(Map $carry, string $key, Value $value): Map {
+                        return $carry->put(
+                            $key,
+                            $value->original()
+                        );
+                    }
+                );
+            $message = $message->withHeaders($headers);
             $properties = $properties->drop(1);
         }
 
         if ($flagBits & (1 << 12)) {
+            /** @var Value\UnsignedOctet */
+            $value = $properties->first();
             $message = $message->withDeliveryMode(
-                $properties->first()->original()->value() === DeliveryMode::persistent()->toInt() ?
+                $value->original()->value() === DeliveryMode::persistent()->toInt() ?
                     DeliveryMode::persistent() : DeliveryMode::nonPersistent()
             );
             $properties = $properties->drop(1);
         }
 
         if ($flagBits & (1 << 11)) {
+            /** @var Value\UnsignedOctet */
+            $value = $properties->first();
             $message = $message->withPriority(new Priority(
-                $properties->first()->original()->value()
+                $value->original()->value()
             ));
             $properties = $properties->drop(1);
         }
 
         if ($flagBits & (1 << 10)) {
+            /** @var Value\ShortString */
+            $value = $properties->first();
             $message = $message->withCorrelationId(new CorrelationId(
-                $properties->first()->original()->toString(),
+                $value->original()->toString(),
             ));
             $properties = $properties->drop(1);
         }
 
         if ($flagBits & (1 << 9)) {
+            /** @var Value\ShortString */
+            $value = $properties->first();
             $message = $message->withReplyTo(new ReplyTo(
-                $properties->first()->original()->toString(),
+                $value->original()->toString(),
             ));
             $properties = $properties->drop(1);
         }
 
         if ($flagBits & (1 << 8)) {
+            /** @var Value\ShortString */
+            $value = $properties->first();
             $message = $message->withExpiration(new ElapsedPeriod(
-                (int) $properties->first()->original()->toString(),
+                (int) $value->original()->toString(),
             ));
             $properties = $properties->drop(1);
         }
 
         if ($flagBits & (1 << 7)) {
+            /** @var Value\ShortString */
+            $value = $properties->first();
             $message = $message->withId(new Id(
-                $properties->first()->original()->toString(),
+                $value->original()->toString(),
             ));
             $properties = $properties->drop(1);
         }
 
         if ($flagBits & (1 << 6)) {
+            /** @var Value\Timestamp */
+            $value = $properties->first();
             $message = $message->withTimestamp(
-                $properties->first()->original()
+                $value->original()
             );
             $properties = $properties->drop(1);
         }
 
         if ($flagBits & (1 << 5)) {
+            /** @var Value\ShortString */
+            $value = $properties->first();
             $message = $message->withType(new Type(
-                $properties->first()->original()->toString(),
+                $value->original()->toString(),
             ));
             $properties = $properties->drop(1);
         }
 
         if ($flagBits & (1 << 4)) {
+            /** @var Value\ShortString */
+            $value = $properties->first();
             $message = $message->withUserId(new UserId(
-                $properties->first()->original()->toString(),
+                $value->original()->toString(),
             ));
             $properties = $properties->drop(1);
         }
 
         if ($flagBits & (1 << 3)) {
+            /** @var Value\ShortString */
+            $value = $properties->first();
             $message = $message->withAppId(new AppId(
-                $properties->first()->original()->toString(),
+                $value->original()->toString(),
             ));
             $properties = $properties->drop(1);
         }

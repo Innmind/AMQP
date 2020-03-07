@@ -5,6 +5,7 @@ namespace Innmind\AMQP\Transport\Protocol\v091\Reader;
 
 use Innmind\AMQP\{
     Transport\Frame\Method,
+    Transport\Frame\Value,
     Transport\Frame\Visitor\ChunkArguments,
     Transport\Protocol\v091\Methods,
     Exception\UnknownMethod,

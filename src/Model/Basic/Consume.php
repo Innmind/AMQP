@@ -14,11 +14,13 @@ final class Consume
     private bool $ack = true;
     private bool $exclusive = false;
     private bool $wait = true;
+    /** @var Map<string, mixed> */
     private Map $arguments;
 
     public function __construct(string $queue)
     {
         $this->queue = $queue;
+        /** @var Map<string, mixed> */
         $this->arguments = Map::of('string', 'mixed');
     }
 
@@ -112,6 +114,9 @@ final class Consume
         return $self;
     }
 
+    /**
+     * @param mixed $value
+     */
     public function withArgument(string $key, $value): self
     {
         $self = clone $this;
@@ -130,8 +135,10 @@ final class Consume
         return !\is_string($this->consumerTag);
     }
 
+    /** @psalm-suppress InvalidNullableReturnType */
     public function consumerTag(): string
     {
+        /** @psalm-suppress NullableReturnStatement */
         return $this->consumerTag;
     }
 

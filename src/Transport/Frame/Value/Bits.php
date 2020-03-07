@@ -11,17 +11,22 @@ use Innmind\Immutable\{
 };
 use function Innmind\Immutable\unwrap;
 
+/**
+ * @implements Value<Seq<bool>>
+ */
 final class Bits implements Value
 {
     private ?string $value = null;
+    /** @var Seq<bool> */
     private Seq $original;
 
     public function __construct(bool $first, bool ...$bits)
     {
+        /** @var Seq<bool> */
         $this->original = Seq::of('bool', $first, ...$bits);
     }
 
-    public static function unpack(Readable $stream): Value
+    public static function unpack(Readable $stream): self
     {
         return new self(
             ...unwrap($stream

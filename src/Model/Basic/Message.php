@@ -39,6 +39,10 @@ interface Message
      * @return Map<string, mixed>
      */
     public function headers(): Map;
+
+    /**
+     * @param Map<string, mixed> $headers
+     */
     public function withHeaders(Map $headers): self;
     public function hasDeliveryMode(): bool;
     public function deliveryMode(): DeliveryMode;

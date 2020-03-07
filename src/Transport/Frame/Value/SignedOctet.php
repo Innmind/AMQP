@@ -16,6 +16,8 @@ use Innmind\Stream\Readable;
 
 /**
  * Same as shortshort
+ *
+ * @implements Value<Integer>
  */
 final class SignedOctet implements Value
 {
@@ -38,8 +40,9 @@ final class SignedOctet implements Value
         return new self($value);
     }
 
-    public static function unpack(Readable $stream): Value
+    public static function unpack(Readable $stream): self
     {
+        /** @var int $value */
         [, $value] = \unpack('c', $stream->read(1)->toString());
 
         return new self(new Integer($value));

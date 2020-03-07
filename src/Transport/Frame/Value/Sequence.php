@@ -14,14 +14,18 @@ use function Innmind\Immutable\join;
 
 /**
  * It's an array, but "array" is a reserved keyword in PHP
+ *
+ * @implements Value<Seq<Value>>
  */
 final class Sequence implements Value
 {
     private ?string $value = null;
+    /** @var Seq<Value> */
     private Seq $original;
 
     public function __construct(Value ...$values)
     {
+        /** @var Seq<Value> */
         $values = Seq::of(Value::class, ...$values);
 
         $texts = $values->filter(static function(Value $value): bool {
@@ -35,17 +39,20 @@ final class Sequence implements Value
         $this->original = $values;
     }
 
-    public static function unpack(Readable $stream): Value
+    public static function unpack(Readable $stream): self
     {
         $length = UnsignedLongInteger::unpack($stream)->original();
         $position = $stream->position()->toInt();
         $boundary = $position + $length->value();
 
+        /** @var list<Value> */
         $values = [];
 
         while ($position < $boundary) {
             $class = Symbols::class($stream->read(1)->toString());
-            $values[] = [$class, 'unpack']($stream);
+            /** @var Value */
+            $value = [$class, 'unpack']($stream);
+            $values[] = $value;
             $position = $stream->position()->toInt();
         }
 
@@ -63,6 +70,7 @@ final class Sequence implements Value
     public function pack(): string
     {
         if (\is_null($this->value)) {
+            /** @var Seq<string> */
             $data = $this
                 ->original
                 ->reduce(

@@ -34,13 +34,17 @@ final class Close
         return \is_int($this->replyCode);
     }
 
+    /** @psalm-suppress InvalidNullableReturnType */
     public function replyCode(): int
     {
+        /** @psalm-suppress NullableReturnStatement */
         return $this->replyCode;
     }
 
+    /** @psalm-suppress InvalidNullableReturnType */
     public function replyText(): string
     {
+        /** @psalm-suppress NullableReturnStatement */
         return $this->replyText;
     }
 
@@ -49,8 +53,10 @@ final class Close
         return \is_string($this->cause);
     }
 
+    /** @psalm-suppress InvalidNullableReturnType */
     public function cause(): string
     {
+        /** @psalm-suppress NullableReturnStatement */
         return $this->cause;
     }
 }

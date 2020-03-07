@@ -5,6 +5,9 @@ namespace Innmind\AMQP\Transport\Frame;
 
 use Innmind\Stream\Readable;
 
+/**
+ * @template T
+ */
 interface Value
 {
     public static function unpack(Readable $stream): self;
@@ -12,7 +15,7 @@ interface Value
     /**
      * Original value
      *
-     * @return mixed
+     * @return T
      */
     public function original();
     public function pack(): string;

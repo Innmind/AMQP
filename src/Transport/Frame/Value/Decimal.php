@@ -12,7 +12,9 @@ use Innmind\Math\{
 };
 use Innmind\Stream\Readable;
 
-
+/**
+ * @implements Value<Number>
+ */
 final class Decimal implements Value
 {
     private static ?NaturalNumbers $definitionSet = null;
@@ -39,7 +41,7 @@ final class Decimal implements Value
         return new self($value, $scale);
     }
 
-    public static function unpack(Readable $stream): Value
+    public static function unpack(Readable $stream): self
     {
         $scale = UnsignedOctet::unpack($stream)->original();
         $value = SignedLongInteger::unpack($stream)->original();

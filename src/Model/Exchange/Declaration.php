@@ -14,12 +14,14 @@ final class Declaration
     private bool $durable = false;
     private bool $autoDelete = false;
     private bool $wait = true;
+    /** @var Map<string, mixed> */
     private Map $arguments;
 
     private function __construct(string $name, Type $type)
     {
         $this->name = $name;
         $this->type = $type;
+        /** @var Map<string, mixed> */
         $this->arguments = Map::of('string', 'mixed');
     }
 
@@ -91,6 +93,9 @@ final class Declaration
         return $self;
     }
 
+    /**
+     * @param mixed $value
+     */
     public function withArgument(string $key, $value): self
     {
         $self = clone $this;

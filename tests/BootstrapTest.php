@@ -41,7 +41,8 @@ class BootstrapTest extends TestCase
 {
     public function testBootstrap()
     {
-        $services = bootstrap($this->createMock(LoggerInterface::class));
+        $log = $this->createMock(LoggerInterface::class);
+        $services = bootstrap();
 
         $fluent = $services['client']['fluent'];
         $logger = $services['client']['logger'];
@@ -56,6 +57,7 @@ class BootstrapTest extends TestCase
             $this->createMock(CurrentProcess::class),
             $this->createMock(Remote::class),
             $this->createMock(Sockets::class),
+            $log,
         );
 
         $this->assertIsCallable($services['client']['basic']);
@@ -75,7 +77,7 @@ class BootstrapTest extends TestCase
         );
         $this->assertInstanceOf(
             Logger::class,
-            $logger($basic)
+            $logger($basic, $log)
         );
         $this->assertInstanceOf(
             SignalAware::class,

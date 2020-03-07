@@ -6,6 +6,9 @@ namespace Innmind\AMQP\Transport\Frame\Value;
 use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\Stream\Readable;
 
+/**
+ * @implements Value<void>
+ */
 final class VoidValue implements Value
 {
     public static function unpack(Readable $stream): Value

@@ -10,6 +10,7 @@ use Innmind\AMQP\{
     Transport\Protocol\Version,
     Transport\Frame\Type,
     Transport\Frame\Method,
+    Transport\Frame\Value,
     Transport\Frame\Value\UnsignedOctet,
     Model\Connection\StartOk,
     Model\Connection\SecureOk,
@@ -27,7 +28,7 @@ use Innmind\AMQP\{
 };
 use Innmind\Socket\{
     Internet\Transport,
-    Client\Internet as Socket,
+    Client as Socket,
 };
 use Innmind\Stream\Watch;
 use Innmind\Url\{
@@ -168,12 +169,21 @@ final class Connection implements ConnectionInterface
             $this->send($this->protocol->connection()->closeOk());
             $this->closed = true;
 
+            /** @var Value\ShortString */
+            $message = $frame->values()->get(1);
+            /** @var Value\UnsignedShortInteger */
+            $code = $frame->values()->get(0);
+            /** @var Value\UnsignedShortInteger */
+            $class = $frame->values()->get(2);
+            /** @var Value\UnsignedShortInteger */
+            $method = $frame->values()->get(3);
+
             throw ConnectionClosed::byServer(
-                $frame->values()->get(1)->original()->toString(),
-                $frame->values()->get(0)->original()->value(),
+                $message->original()->toString(),
+                $code->original()->value(),
                 new Method(
-                    $frame->values()->get(2)->original()->value(),
-                    $frame->values()->get(3)->original()->value()
+                    $class->original()->value(),
+                    $method->original()->value()
                 )
             );
         }
@@ -280,14 +290,20 @@ final class Connection implements ConnectionInterface
             $frame = $this->wait('connection.tune');
         }
 
+        /** @var Value\UnsignedShortInteger */
+        $maxChannels = $frame->values()->get(0);
         $this->maxChannels = new MaxChannels(
-            $frame->values()->get(0)->original()->value()
+            $maxChannels->original()->value()
         );
+        /** @var Value\UnsignedLongInteger */
+        $maxFrameSize = $frame->values()->get(1);
         $this->maxFrameSize = new MaxFrameSize(
-            $frame->values()->get(1)->original()->value()
+            $maxFrameSize->original()->value()
         );
+        /** @var Value\UnsignedShortInteger */
+        $heartbeat = $frame->values()->get(2);
         $this->heartbeat = new Earth\ElapsedPeriod(
-            $frame->values()->get(2)->original()->value()
+            $heartbeat->original()->value()
         );
         $this->watch = $this->sockets->watch($this->heartbeat)->forRead($this->socket);
         $this->send($this->protocol->connection()->tuneOk(

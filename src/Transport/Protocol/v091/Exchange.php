@@ -34,6 +34,19 @@ final class Exchange implements ExchangeInterface
 
     public function declare(FrameChannel $channel, Declaration $command): Frame
     {
+        /** @var Map<string, Value> */
+        $arguments = $command
+            ->arguments()
+            ->reduce(
+                Map::of('string', Value::class),
+                function(Map $carry, string $key, $value): Map {
+                    return $carry->put(
+                        $key,
+                        ($this->translate)($value)
+                    );
+                }
+            );
+
         return Frame::method(
             $channel,
             Methods::get('exchange.declare'),
@@ -47,19 +60,7 @@ final class Exchange implements ExchangeInterface
                 false, //internal (reserved)
                 !$command->shouldWait()
             ),
-            new Table(
-                $command
-                    ->arguments()
-                    ->reduce(
-                        Map::of('string', Value::class),
-                        function(Map $carry, string $key, $value): Map {
-                            return $carry->put(
-                                $key,
-                                ($this->translate)($value)
-                            );
-                        }
-                    )
-            )
+            new Table($arguments),
         );
     }
 

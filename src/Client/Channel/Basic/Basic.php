@@ -18,6 +18,7 @@ use Innmind\AMQP\{
     Transport\Connection\MessageReader,
     Transport\Frame,
     Transport\Frame\Channel,
+    Transport\Frame\Value,
 };
 
 final class Basic implements BasicInterface
@@ -72,7 +73,9 @@ final class Basic implements BasicInterface
 
         if ($command->shouldWait()) {
             $frame = $this->connection->wait('basic.consume-ok');
-            $consumerTag = $frame->values()->first()->original()->toString();
+            /** @var Value\ShortString */
+            $consumerTag = $frame->values()->first();
+            $consumerTag = $consumerTag->original()->toString();
         } else {
             $consumerTag = $command->consumerTag();
         }
@@ -100,17 +103,27 @@ final class Basic implements BasicInterface
         }
 
         $message = ($this->read)($this->connection);
+        /** @var Value\UnsignedLongLongInteger */
+        $deliveryTag = $frame->values()->first();
+        /** @var Value\Bits */
+        $redelivered = $frame->values()->get(1);
+        /** @var Value\ShortString */
+        $exchange = $frame->values()->get(2);
+        /** @var Value\ShortString */
+        $routingKey = $frame->values()->get(3);
+        /** @var Value\UnsignedLongInteger */
+        $messageCount = $frame->values()->get(4);
 
         return new Get\GetOk(
             $this->connection,
             $this->channel,
             $command,
             new Locked($message),
-            $frame->values()->first()->original()->value(), //deliveryTag
-            $frame->values()->get(1)->original()->first(), //redelivered
-            $frame->values()->get(2)->original()->toString(), //exchange
-            $frame->values()->get(3)->original()->toString(), //routingKey
-            $frame->values()->get(4)->original()->value() //messageCount
+            $deliveryTag->original()->value(),
+            $redelivered->original()->first(),
+            $exchange->original()->toString(),
+            $routingKey->original()->toString(),
+            $messageCount->original()->value(),
         );
     }
 

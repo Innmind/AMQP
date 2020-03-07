@@ -3,7 +3,14 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport;
 
-use Innmind\AMQP\Model\Connection\MaxFrameSize;
+use Innmind\AMQP\{
+    Model\Connection\MaxFrameSize,
+    Exception\ExpectedMethodFrame,
+    Exception\ConnectionClosed,
+    Exception\UnexpectedFrame,
+    Exception\FrameChannelExceedAllowedChannelNumber,
+    Exception\FrameExceedAllowedSize,
+};
 
 interface Connection
 {

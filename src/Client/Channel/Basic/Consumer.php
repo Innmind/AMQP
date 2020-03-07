@@ -3,6 +3,8 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Client\Channel\Basic;
 
+use Innmind\AMQP\Model\Basic\Message;
+
 interface Consumer
 {
     /**
@@ -12,6 +14,8 @@ interface Consumer
      * - bool $redelivered
      * - string $exchange
      * - string $routingKey
+     *
+     * @param callable(Message, bool, string, string): void $consume
      */
     public function foreach(callable $consume): void;
 
@@ -34,6 +38,8 @@ interface Consumer
      * - bool $redelivered
      * - string $exchange
      * - string $routingKey
+     *
+     * @param callable(Message, bool, string, string): bool $predicate
      */
     public function filter(callable $predicate): self;
 }

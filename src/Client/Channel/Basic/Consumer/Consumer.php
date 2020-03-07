@@ -9,11 +9,13 @@ use Innmind\AMQP\{
     Model\Basic\Ack,
     Model\Basic\Reject as RejectCommand,
     Model\Basic\Cancel as CancelCommand,
+    Model\Basic\Message,
     Model\Basic\Message\Locked,
     Transport\Connection,
     Transport\Connection\MessageReader,
     Transport\Frame\Channel,
     Transport\Frame\Type,
+    Transport\Frame\Value,
     Exception\MessageFromAnotherConsumerReceived,
     Exception\Requeue,
     Exception\Reject,
@@ -28,6 +30,7 @@ final class Consumer implements ConsumerInterface
     private string $consumerTag;
     private MessageReader $read;
     private ?int $take = null;
+    /** @var \Closure(Message, bool, string, string): bool */
     private \Closure $predicate;
     private bool $canceled = false;
 
@@ -57,16 +60,26 @@ final class Consumer implements ConsumerInterface
         }
 
         while ($this->shouldConsume()) {
-            try {
-                $frame = $this->connection->wait('basic.deliver');
-                $message = ($this->read)($this->connection);
-                $message = new Locked($message);
-                $consumerTag = $frame->values()->first()->original()->toString();
-                $deliveryTag = $frame->values()->get(1)->original()->value();
-                $redelivered = $frame->values()->get(2)->original()->first();
-                $exchange = $frame->values()->get(3)->original()->toString();
-                $routingKey = $frame->values()->get(4)->original()->toString();
+            $frame = $this->connection->wait('basic.deliver');
+            $message = ($this->read)($this->connection);
+            $message = new Locked($message);
+            /** @var Value\ShortString */
+            $consumerTag = $frame->values()->first();
+            $consumerTag = $consumerTag->original()->toString();
+            /** @var Value\UnsignedLongLongInteger */
+            $deliveryTag = $frame->values()->get(1);
+            $deliveryTag = $deliveryTag->original()->value();
+            /** @var Value\Bits */
+            $redelivered = $frame->values()->get(2);
+            $redelivered = $redelivered->original()->first();
+            /** @var Value\ShortString */
+            $exchange = $frame->values()->get(3);
+            $exchange = $exchange->original()->toString();
+            /** @var Value\ShortString */
+            $routingKey = $frame->values()->get(4);
+            $routingKey = $routingKey->original()->toString();
 
+            try {
                 if ($this->consumerTag !== $consumerTag) {
                     throw new MessageFromAnotherConsumerReceived(
                         $message,
@@ -136,7 +149,7 @@ final class Consumer implements ConsumerInterface
      */
     public function filter(callable $predicate): ConsumerInterface
     {
-        $this->predicate = $predicate;
+        $this->predicate = \Closure::fromCallable($predicate);
 
         return $this;
     }
@@ -229,7 +242,9 @@ final class Consumer implements ConsumerInterface
             ) {
                 //requeue all the messages sent right before the cancel method
                 $message = ($this->read)($this->connection);
-                $this->requeue($frame->values()->get(1)->original()->value());
+                /** @var Value\UnsignedLongLongInteger */
+                $deliveryTag = $frame->values()->get(1);
+                $this->requeue($deliveryTag->original()->value());
             }
         } while (!$frame->is($expected));
 

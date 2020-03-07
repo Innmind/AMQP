@@ -6,6 +6,7 @@ namespace Innmind\AMQP\Transport\Protocol\v091\Reader;
 use Innmind\AMQP\{
     Transport\Frame\Method,
     Transport\Frame\Visitor\ChunkArguments,
+    Transport\Frame\Value,
     Transport\Frame\Value\LongString,
     Transport\Frame\Value\ShortString,
     Transport\Frame\Value\Table,

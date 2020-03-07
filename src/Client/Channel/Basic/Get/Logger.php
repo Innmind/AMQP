@@ -29,14 +29,14 @@ final class Logger implements Get
      */
     public function __invoke(callable $consume): void
     {
-        ($this->get)(function(Message $message, ...$args) use ($consume): void {
+        ($this->get)(function(Message $message, bool $redelivered, string $exchange, string $routingKey, int $messageCount) use ($consume): void {
             try {
                 $this->logger->debug(
                     'AMQP message received',
                     ['body' => $message->body()->toString()]
                 );
 
-                $consume($message, ...$args);
+                $consume($message, $redelivered, $exchange, $routingKey, $messageCount);
             } catch (Reject $e) {
                 $this->logger->warning(
                     'AMQP message rejected',

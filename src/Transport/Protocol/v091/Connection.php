@@ -36,6 +36,7 @@ final class Connection implements ConnectionInterface
 {
     public function startOk(StartOk $command): Frame
     {
+        /** @psalm-suppress InvalidArgument */
         $clientProperties = new Table(
             Map::of('string', Value::class)
                 ('product', new LongString(Str::of('InnmindAMQP')))
@@ -134,8 +135,10 @@ final class Connection implements ConnectionInterface
 
     private function response(User $user, Password $password): LongString
     {
+        /** @var Map<string, Value> */
+        $arguments = Map::of('string', Value::class);
         $response = new Table(
-            Map::of('string', Value::class)
+            $arguments
                 ('LOGIN', LongString::of(Str::of($user->toString())))
                 ('PASSWORD', LongString::of(Str::of($password->toString())))
         );
