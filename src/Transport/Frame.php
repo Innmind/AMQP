@@ -39,25 +39,23 @@ final class Frame
         /** @var Sequence<Value> */
         $this->values = Sequence::of(Value::class);
 
-        $values = Sequence::of(Value::class, ...$values)->mapTo(
-            'string',
+        $values = \array_map(
             static fn(Value $value): string => $value->pack(),
+            $values,
         );
-        $payload = join('', $values)->toEncoding('ASCII');
+        $payload = Str::of(\implode('', $values))->toEncoding('ASCII');
 
-        $frame = Sequence::of(
-            Value::class,
-            new UnsignedOctet(new Integer($type->toInt())),
-            new UnsignedShortInteger(new Integer($channel->toInt())),
-            new UnsignedLongInteger(new Integer($payload->length())),
-            new Text($payload),
-            new UnsignedOctet(new Integer(self::end())),
-        );
-        $frame = $frame->mapTo(
-            'string',
+        $frame = \array_map(
             static fn(Value $value): string => $value->pack(),
+            [
+                new UnsignedOctet(new Integer($type->toInt())),
+                new UnsignedShortInteger(new Integer($channel->toInt())),
+                new UnsignedLongInteger(new Integer($payload->length())),
+                new Text($payload),
+                new UnsignedOctet(new Integer(self::end())),
+            ],
         );
-        $this->string = join('', $frame)->toString();
+        $this->string = \implode('', $frame);
     }
 
     public static function method(
