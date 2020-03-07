@@ -1,10 +1,8 @@
 # AMQP
 
-| `develop` |
-|-----------|
-| [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/Innmind/AMQP/badges/quality-score.png?b=develop)](https://scrutinizer-ci.com/g/Innmind/AMQP/?branch=develop) |
-| [![Code Coverage](https://scrutinizer-ci.com/g/Innmind/AMQP/badges/coverage.png?b=develop)](https://scrutinizer-ci.com/g/Innmind/AMQP/?branch=develop) |
-| [![Build Status](https://scrutinizer-ci.com/g/Innmind/AMQP/badges/build.png?b=develop)](https://scrutinizer-ci.com/g/Innmind/AMQP/build-status/develop) |
+[![Build Status](https://github.com/Innmind/AMQP/workflows/CI/badge.svg)](https://github.com/Innmind/AMQP/actions?query=workflow%3ACI)
+[![codecov](https://codecov.io/gh/Innmind/AMQP/branch/develop/graph/badge.svg)](https://codecov.io/gh/Innmind/AMQP)
+[![Type Coverage](https://shepherd.dev/github/Innmind/AMQP/coverage.svg)](https://shepherd.dev/github/Innmind/AMQP)
 
 This is an AMQP client implementing the version `0.9` of the protocol. Even though the `1.0` is out it's not implemented (yet?) as RabbitMQ is still on 0.9 (despite that the code has been structured so it can be easy to create this implementation).
 
