@@ -6,8 +6,8 @@ namespace Tests\Innmind\AMQP\Transport\Frame\Value;
 use Innmind\AMQP\{
     Transport\Frame\Value\ShortString,
     Transport\Frame\Value,
-    Exception\OutOfRangeValue,
 };
+use Innmind\Math\Exception\OutOfDefinitionSet;
 use Innmind\Stream\Readable\Stream;
 use Innmind\Immutable\Str;
 use PHPUnit\Framework\TestCase;
@@ -43,7 +43,7 @@ class ShortStringTest extends TestCase
 
     public function testThrowWhenTooLongString()
     {
-        $this->expectException(OutOfRangeValue::class);
+        $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('256 ∉ [0;255]');
 
         ShortString::of(Str::of(\str_repeat('a', 256)));

@@ -6,9 +6,11 @@ namespace Tests\Innmind\AMQP\Transport\Frame\Value;
 use Innmind\AMQP\{
     Transport\Frame\Value\SignedShortInteger,
     Transport\Frame\Value,
-    Exception\OutOfRangeValue,
 };
-use Innmind\Math\Algebra\Integer;
+use Innmind\Math\{
+    Algebra\Integer,
+    Exception\OutOfDefinitionSet,
+};
 use Innmind\Stream\Readable\Stream;
 use PHPUnit\Framework\TestCase;
 
@@ -46,7 +48,7 @@ class SignedShortIntegerTest extends TestCase
 
     public function testThrowWhenIntegerTooHigh()
     {
-        $this->expectException(OutOfRangeValue::class);
+        $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('32768 ∉ [-32768;32767]');
 
         SignedShortInteger::of(new Integer(32768));
@@ -54,7 +56,7 @@ class SignedShortIntegerTest extends TestCase
 
     public function testThrowWhenIntegerTooLow()
     {
-        $this->expectException(OutOfRangeValue::class);
+        $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('-32769 ∉ [-32768;32767]');
 
         SignedShortInteger::of(new Integer(-32769));

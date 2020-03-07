@@ -6,9 +6,11 @@ namespace Tests\Innmind\AMQP\Transport\Frame\Value;
 use Innmind\AMQP\{
     Transport\Frame\Value\UnsignedLongLongInteger,
     Transport\Frame\Value,
-    Exception\OutOfRangeValue,
 };
-use Innmind\Math\Algebra\Integer;
+use Innmind\Math\{
+    Algebra\Integer,
+    Exception\OutOfDefinitionSet,
+};
 use Innmind\Stream\Readable\Stream;
 use PHPUnit\Framework\TestCase;
 
@@ -24,7 +26,7 @@ class UnsignedLongLongIntegerTest extends TestCase
 
     public function testThrowWhenIntegerTooLow()
     {
-        $this->expectException(OutOfRangeValue::class);
+        $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('-1 ∉ [0;+∞]');
 
         UnsignedLongLongInteger::of(new Integer(-1));

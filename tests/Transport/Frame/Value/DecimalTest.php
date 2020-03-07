@@ -6,11 +6,11 @@ namespace Tests\Innmind\AMQP\Transport\Frame\Value;
 use Innmind\AMQP\{
     Transport\Frame\Value\Decimal,
     Transport\Frame\Value,
-    Exception\OutOfRangeValue,
 };
-use Innmind\Math\Algebra\{
-    Number,
-    Integer,
+use Innmind\Math\{
+    Algebra\Number,
+    Algebra\Integer,
+    Exception\OutOfDefinitionSet,
 };
 use Innmind\Stream\Readable\Stream;
 use Innmind\Immutable\StreamInterface;
@@ -52,7 +52,7 @@ class DecimalTest extends TestCase
 
     public function testThrowWhenValueTooHigh()
     {
-        $this->expectException(OutOfRangeValue::class);
+        $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('2147483648 ∉ [-2147483648;2147483647]');
 
         Decimal::of(new Integer(2147483648), new Integer(0));
@@ -60,7 +60,7 @@ class DecimalTest extends TestCase
 
     public function testThrowWhenValueTooLow()
     {
-        $this->expectException(OutOfRangeValue::class);
+        $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('-2147483649 ∉ [-2147483648;2147483647]');
 
         Decimal::of(new Integer(-2147483649), new Integer(0));
@@ -68,7 +68,7 @@ class DecimalTest extends TestCase
 
     public function testThrowWhenScaleTooHigh()
     {
-        $this->expectException(OutOfRangeValue::class);
+        $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('256 ∉ [0;255]');
 
         Decimal::of(new Integer(1), new Integer(256));
@@ -76,7 +76,7 @@ class DecimalTest extends TestCase
 
     public function testThrowWhenScaleTooLow()
     {
-        $this->expectException(OutOfRangeValue::class);
+        $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('-1 ∉ [0;255]');
 
         Decimal::of(new Integer(1), new Integer(-1));

@@ -3,10 +3,7 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport\Frame\Value;
 
-use Innmind\AMQP\{
-    Transport\Frame\Value,
-    Exception\OutOfRangeValue,
-};
+use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\Math\{
     Algebra\Integer,
     Algebra\Number\Infinite,
@@ -32,9 +29,7 @@ final class UnsignedLongLongInteger implements Value
 
     public static function of(Integer $value): self
     {
-        if (!self::definitionSet()->contains($value)) {
-            throw new OutOfRangeValue($value, self::definitionSet());
-        }
+        self::definitionSet()->accept($value);
 
         return new self($value);
     }

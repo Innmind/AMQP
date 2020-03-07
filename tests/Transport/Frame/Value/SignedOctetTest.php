@@ -6,9 +6,11 @@ namespace Tests\Innmind\AMQP\Transport\Frame\Value;
 use Innmind\AMQP\{
     Transport\Frame\Value\SignedOctet,
     Transport\Frame\Value,
-    Exception\OutOfRangeValue,
 };
-use Innmind\Math\Algebra\Integer;
+use Innmind\Math\{
+    Algebra\Integer,
+    Exception\OutOfDefinitionSet,
+};
 use Innmind\Stream\Readable\Stream;
 use PHPUnit\Framework\TestCase;
 
@@ -43,7 +45,7 @@ class SignedOctetTest extends TestCase
 
     public function testThrowWhenStringTooHigh()
     {
-        $this->expectException(OutOfRangeValue::class);
+        $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('128 ∉ [-128;127]');
 
         SignedOctet::of(new Integer(128));
@@ -51,7 +53,7 @@ class SignedOctetTest extends TestCase
 
     public function testThrowWhenStringTooLow()
     {
-        $this->expectException(OutOfRangeValue::class);
+        $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('-129 ∉ [-128;127]');
 
         SignedOctet::of(new Integer(-129));
