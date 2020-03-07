@@ -9,46 +9,49 @@ use Innmind\AMQP\{
 };
 use Innmind\Math\Algebra\Integer;
 use Innmind\Stream\Readable;
-use Innmind\Immutable\{
-    Sequence as Seq,
-    StreamInterface,
-    Stream,
-};
+use Innmind\Immutable\Sequence as Seq;
+use function Innmind\Immutable\join;
 
 /**
  * It's an array, but "array" is a reserved keyword in PHP
+ *
+ * @implements Value<Seq<Value>>
  */
 final class Sequence implements Value
 {
-    private $value;
-    private $original;
+    /** @var Seq<Value> */
+    private Seq $original;
 
     public function __construct(Value ...$values)
     {
-        $values = Stream::of(Value::class, ...$values);
+        /** @var Seq<Value> */
+        $values = Seq::of(Value::class, ...$values);
 
         $texts = $values->filter(static function(Value $value): bool {
             return $value instanceof Text;
         });
 
-        if ($texts->size() > 0) {
+        if (!$texts->empty()) {
             throw new UnboundedTextCannotBeWrapped;
         }
 
         $this->original = $values;
     }
 
-    public static function fromStream(Readable $stream): Value
+    public static function unpack(Readable $stream): self
     {
-        $length = UnsignedLongInteger::fromStream($stream)->original();
+        $length = UnsignedLongInteger::unpack($stream)->original();
         $position = $stream->position()->toInt();
         $boundary = $position + $length->value();
 
+        /** @var list<Value> */
         $values = [];
 
         while ($position < $boundary) {
-            $class = Symbols::class((string) $stream->read(1));
-            $values[] = [$class, 'fromStream']($stream);
+            $class = Symbols::class($stream->read(1)->toString());
+            /** @var Value */
+            $value = [$class, 'unpack']($stream);
+            $values[] = $value;
             $position = $stream->position()->toInt();
         }
 
@@ -56,34 +59,28 @@ final class Sequence implements Value
     }
 
     /**
-     * @return StreamInterface<Value>
+     * @return Seq<Value>
      */
-    public function original(): StreamInterface
+    public function original(): Seq
     {
         return $this->original;
     }
 
-    public function __toString(): string
+    public function pack(): string
     {
-        if (\is_null($this->value)) {
-            $data = $this
-                ->original
-                ->reduce(
-                    new Seq,
-                    static function(Seq $carry, Value $value): Seq {
-                        return $carry
-                            ->add(Symbols::symbol(\get_class($value)))
-                            ->add($value);
-                    }
-                )
-                ->join('')
-                ->toEncoding('ASCII');
-            $this->value = (string) new UnsignedLongInteger(
-                new Integer($data->length())
-            );
-            $this->value .= $data;
-        }
+        /** @var Seq<string> */
+        $data = $this->original->toSequenceOf(
+            'string',
+            static function(Value $value): \Generator {
+                yield Symbols::symbol(\get_class($value));
+                yield $value->pack();
+            },
+        );
+        $data = join('', $data)->toEncoding('ASCII');
+        $value = (new UnsignedLongInteger(
+            new Integer($data->length()),
+        ))->pack();
 
-        return $this->value;
+        return $value .= $data->toString();
     }
 }

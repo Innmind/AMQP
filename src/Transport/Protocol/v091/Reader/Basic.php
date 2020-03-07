@@ -6,6 +6,7 @@ namespace Innmind\AMQP\Transport\Protocol\v091\Reader;
 use Innmind\AMQP\{
     Transport\Frame\Method,
     Transport\Frame\Visitor\ChunkArguments,
+    Transport\Frame\Value,
     Transport\Frame\Value\Bits,
     Transport\Frame\Value\ShortString,
     Transport\Frame\Value\UnsignedLongInteger,
@@ -15,14 +16,14 @@ use Innmind\AMQP\{
     Exception\UnknownMethod,
 };
 use Innmind\Stream\Readable;
-use Innmind\Immutable\StreamInterface;
+use Innmind\Immutable\Sequence;
 
 final class Basic
 {
     /**
-     * @return StreamInterface<Value>
+     * @return Sequence<Value>
      */
-    public function __invoke(Method $method, Readable $arguments): StreamInterface
+    public function __invoke(Method $method, Readable $arguments): Sequence
     {
         switch (true) {
             case Methods::get('basic.qos-ok')->equals($method):
@@ -66,62 +67,62 @@ final class Basic
 
     private function qosOk(): ChunkArguments
     {
-        return new ChunkArguments; //no arguments
+        return new ChunkArguments; // no arguments
     }
 
     private function consumeOk(): ChunkArguments
     {
         return new ChunkArguments(
-            ShortString::class //consumer tag
+            ShortString::class, // consumer tag
         );
     }
 
     private function cancelOk(): ChunkArguments
     {
         return new ChunkArguments(
-            ShortString::class //consumer tag
+            ShortString::class, // consumer tag
         );
     }
 
     private function return(): ChunkArguments
     {
         return new ChunkArguments(
-            UnsignedShortInteger::class, //reply code
-            ShortString::class, //reply text
-            ShortString::class, //exchange
-            ShortString::class //routing key
+            UnsignedShortInteger::class, // reply code
+            ShortString::class, // reply text
+            ShortString::class, // exchange
+            ShortString::class, // routing key
         );
     }
 
     private function deliver(): ChunkArguments
     {
         return new ChunkArguments(
-            ShortString::class, //consumer tag
-            UnsignedLongLongInteger::class, //delivery tag
-            Bits::class, //redelivered
-            ShortString::class, //exchange
-            ShortString::class //routing key
+            ShortString::class, // consumer tag
+            UnsignedLongLongInteger::class, // delivery tag
+            Bits::class, // redelivered
+            ShortString::class, // exchange
+            ShortString::class, // routing key
         );
     }
 
     private function getOk(): ChunkArguments
     {
         return new ChunkArguments(
-            UnsignedLongLongInteger::class, //delivery tag
-            Bits::class, //redelivered
-            ShortString::class, //exchange
-            ShortString::class, //routing key
-            UnsignedLongInteger::class //message count
+            UnsignedLongLongInteger::class, // delivery tag
+            Bits::class, // redelivered
+            ShortString::class, // exchange
+            ShortString::class, // routing key
+            UnsignedLongInteger::class, // message count
         );
     }
 
     private function getEmpty(): ChunkArguments
     {
-        return new ChunkArguments; //no arguments
+        return new ChunkArguments; // no arguments
     }
 
     private function recoverOk(): ChunkArguments
     {
-        return new ChunkArguments; //no arguments
+        return new ChunkArguments; // no arguments
     }
 }

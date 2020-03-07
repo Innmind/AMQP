@@ -33,15 +33,13 @@ use Innmind\AMQP\{
 use Innmind\Math\Algebra\Integer;
 use Innmind\Immutable\{
     Str,
-    MapInterface,
     Map,
-    StreamInterface,
-    Stream,
+    Sequence,
 };
 
 final class Basic implements BasicInterface
 {
-    private $translate;
+    private ArgumentTranslator $translate;
 
     public function __construct(ArgumentTranslator $translator)
     {
@@ -54,7 +52,7 @@ final class Basic implements BasicInterface
             $channel,
             Methods::get('basic.ack'),
             UnsignedLongLongInteger::of(new Integer($command->deliveryTag())),
-            new Bits($command->isMultiple())
+            new Bits($command->isMultiple()),
         );
     }
 
@@ -63,8 +61,8 @@ final class Basic implements BasicInterface
         return Frame::method(
             $channel,
             Methods::get('basic.cancel'),
-            ShortString::of(new Str($command->consumerTag())),
-            new Bits(!$command->shouldWait())
+            ShortString::of(Str::of($command->consumerTag())),
+            new Bits(!$command->shouldWait()),
         );
     }
 
@@ -79,16 +77,16 @@ final class Basic implements BasicInterface
         return Frame::method(
             $channel,
             Methods::get('basic.consume'),
-            new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
-            ShortString::of(new Str($command->queue())),
-            ShortString::of(new Str($consumerTag)),
+            new UnsignedShortInteger(new Integer(0)), // ticket (reserved)
+            ShortString::of(Str::of($command->queue())),
+            ShortString::of(Str::of($consumerTag)),
             new Bits(
                 !$command->isLocal(),
                 $command->shouldAutoAcknowledge(),
                 $command->isExclusive(),
-                !$command->shouldWait()
+                !$command->shouldWait(),
             ),
-            $this->arguments($command->arguments())
+            $this->arguments($command->arguments()),
         );
     }
 
@@ -97,28 +95,26 @@ final class Basic implements BasicInterface
         return Frame::method(
             $channel,
             Methods::get('basic.get'),
-            new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
-            ShortString::of(new Str($command->queue())),
+            new UnsignedShortInteger(new Integer(0)), // ticket (reserved)
+            ShortString::of(Str::of($command->queue())),
             new Bits($command->shouldAutoAcknowledge())
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function publish(
         FrameChannel $channel,
         Publish $command,
         MaxFrameSize $maxFrameSize
-    ): StreamInterface {
-        $frames = Stream::of(
+    ): Sequence {
+        /** @var Sequence<Frame> */
+        $frames = Sequence::of(
             Frame::class,
             Frame::method(
                 $channel,
                 Methods::get('basic.publish'),
-                new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
-                ShortString::of(new Str($command->exchange())),
-                ShortString::of(new Str($command->routingKey())),
+                new UnsignedShortInteger(new Integer(0)), // ticket (reserved)
+                ShortString::of(Str::of($command->exchange())),
+                ShortString::of(Str::of($command->routingKey())),
                 new Bits(
                     $command->mandatory(),
                     $command->immediate()
@@ -134,19 +130,24 @@ final class Basic implements BasicInterface
             )
         );
 
-        //the "-8" is due to the content frame extra informations (type, channel and end flag)
+        // the "-8" is due to the content frame extra informations (type, channel and end flag)
         $chunk = $maxFrameSize->isLimited() ? ($maxFrameSize->toInt() - 8) : $command->message()->body()->length();
 
-        return $command
+        if ($chunk === 0) {
+            return $frames;
+        }
+
+        /** @var Sequence<Frame> */
+        $payloadFrames = $command
             ->message()
             ->body()
             ->chunk($chunk)
-            ->reduce(
-                $frames,
-                static function(Stream $frames, Str $chunk) use ($channel): Stream {
-                    return $frames->add(Frame::body($channel, $chunk));
-                }
+            ->mapTo(
+                Frame::class,
+                static fn(Str $chunk): Frame => Frame::body($channel, $chunk),
             );
+
+        return $frames->append($payloadFrames);
     }
 
     public function qos(FrameChannel $channel, Qos $command): Frame
@@ -179,21 +180,23 @@ final class Basic implements BasicInterface
         );
     }
 
-    private function arguments(MapInterface $arguments): Table
+    private function arguments(Map $arguments): Table
     {
-        return new Table(
-            $arguments->reduce(
-                new Map('string', Value::class),
-                function(Map $carry, string $key, $value): Map {
-                    return $carry->put(
-                        $key,
-                        ($this->translate)($value)
-                    );
-                }
-            )
+        /** @var Map<string, Value> */
+        $table = $arguments->toMapOf(
+            'string',
+            Value::class,
+            function(string $key, $value): \Generator {
+                yield $key => ($this->translate)($value);
+            },
         );
+
+        return new Table($table);
     }
 
+    /**
+     * @return list<Value>
+     */
     private function serializeProperties(Message $message): array
     {
         $properties = [];
@@ -201,14 +204,14 @@ final class Basic implements BasicInterface
 
         if ($message->hasContentType()) {
             $properties[] = ShortString::of(
-                new Str((string) $message->contentType())
+                Str::of($message->contentType()->toString())
             );
             $flagBits |= (1 << 15);
         }
 
         if ($message->hasContentEncoding()) {
             $properties[] = ShortString::of(
-                new Str((string) $message->contentEncoding())
+                Str::of($message->contentEncoding()->toString())
             );
             $flagBits |= (1 << 14);
         }
@@ -234,28 +237,28 @@ final class Basic implements BasicInterface
 
         if ($message->hasCorrelationId()) {
             $properties[] = ShortString::of(
-                new Str((string) $message->correlationId())
+                Str::of($message->correlationId()->toString())
             );
             $flagBits |= (1 << 10);
         }
 
         if ($message->hasReplyTo()) {
             $properties[] = ShortString::of(
-                new Str((string) $message->replyTo())
+                Str::of($message->replyTo()->toString())
             );
             $flagBits |= (1 << 9);
         }
 
         if ($message->hasExpiration()) {
             $properties[] = ShortString::of(
-                new Str((string) $message->expiration()->milliseconds())
+                Str::of((string) $message->expiration()->milliseconds())
             );
             $flagBits |= (1 << 8);
         }
 
         if ($message->hasId()) {
             $properties[] = ShortString::of(
-                new Str((string) $message->id())
+                Str::of($message->id()->toString())
             );
             $flagBits |= (1 << 7);
         }
@@ -267,21 +270,21 @@ final class Basic implements BasicInterface
 
         if ($message->hasType()) {
             $properties[] = ShortString::of(
-                new Str((string) $message->type())
+                Str::of($message->type()->toString())
             );
             $flagBits |= (1 << 5);
         }
 
         if ($message->hasUserId()) {
             $properties[] = ShortString::of(
-                new Str((string) $message->userId())
+                Str::of($message->userId()->toString())
             );
             $flagBits |= (1 << 4);
         }
 
         if ($message->hasAppId()) {
             $properties[] = ShortString::of(
-                new Str((string) $message->appId())
+                Str::of($message->appId()->toString())
             );
             $flagBits |= (1 << 3);
         }

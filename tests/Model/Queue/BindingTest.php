@@ -4,7 +4,7 @@ declare(strict_types = 1);
 namespace Tests\Innmind\AMQP\Model\Queue;
 
 use Innmind\AMQP\Model\Queue\Binding;
-use Innmind\Immutable\MapInterface;
+use Innmind\Immutable\Map;
 use PHPUnit\Framework\TestCase;
 
 class BindingTest extends TestCase
@@ -17,7 +17,7 @@ class BindingTest extends TestCase
         $this->assertSame('bar', $command->queue());
         $this->assertSame('baz', $command->routingKey());
         $this->assertTrue($command->shouldWait());
-        $this->assertInstanceOf(MapInterface::class, $command->arguments());
+        $this->assertInstanceOf(Map::class, $command->arguments());
         $this->assertSame('string', (string) $command->arguments()->keyType());
         $this->assertSame('mixed', (string) $command->arguments()->valueType());
         $this->assertCount(0, $command->arguments());

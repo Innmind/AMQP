@@ -23,13 +23,12 @@ use Innmind\AMQP\{
 use Innmind\Math\Algebra\Integer;
 use Innmind\Immutable\{
     Str,
-    MapInterface,
     Map,
 };
 
 final class Queue implements QueueInterface
 {
-    private $translate;
+    private ArgumentTranslator $translate;
 
     public function __construct(ArgumentTranslator $translator)
     {
@@ -47,16 +46,16 @@ final class Queue implements QueueInterface
         return Frame::method(
             $channel,
             Methods::get('queue.declare'),
-            new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
-            ShortString::of(new Str($name)),
+            new UnsignedShortInteger(new Integer(0)), // ticket (reserved)
+            ShortString::of(Str::of($name)),
             new Bits(
                 $command->isPassive(),
                 $command->isDurable(),
                 $command->isExclusive(),
                 $command->isAutoDeleted(),
-                !$command->shouldWait()
+                !$command->shouldWait(),
             ),
-            $this->translate($command->arguments())
+            $this->translate($command->arguments()),
         );
     }
 
@@ -65,13 +64,13 @@ final class Queue implements QueueInterface
         return Frame::method(
             $channel,
             Methods::get('queue.delete'),
-            new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
-            ShortString::of(new Str($command->name())),
+            new UnsignedShortInteger(new Integer(0)), // ticket (reserved)
+            ShortString::of(Str::of($command->name())),
             new Bits(
                 $command->onlyIfUnused(),
                 $command->onlyIfEmpty(),
-                !$command->shouldWait()
-            )
+                !$command->shouldWait(),
+            ),
         );
     }
 
@@ -80,12 +79,12 @@ final class Queue implements QueueInterface
         return Frame::method(
             $channel,
             Methods::get('queue.bind'),
-            new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
-            ShortString::of(new Str($command->queue())),
-            ShortString::of(new Str($command->exchange())),
-            ShortString::of(new Str($command->routingKey())),
+            new UnsignedShortInteger(new Integer(0)), // ticket (reserved)
+            ShortString::of(Str::of($command->queue())),
+            ShortString::of(Str::of($command->exchange())),
+            ShortString::of(Str::of($command->routingKey())),
             new Bits(!$command->shouldWait()),
-            $this->translate($command->arguments())
+            $this->translate($command->arguments()),
         );
     }
 
@@ -94,11 +93,11 @@ final class Queue implements QueueInterface
         return Frame::method(
             $channel,
             Methods::get('queue.unbind'),
-            new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
-            ShortString::of(new Str($command->queue())),
-            ShortString::of(new Str($command->exchange())),
-            ShortString::of(new Str($command->routingKey())),
-            $this->translate($command->arguments())
+            new UnsignedShortInteger(new Integer(0)), // ticket (reserved)
+            ShortString::of(Str::of($command->queue())),
+            ShortString::of(Str::of($command->exchange())),
+            ShortString::of(Str::of($command->routingKey())),
+            $this->translate($command->arguments()),
         );
     }
 
@@ -107,27 +106,26 @@ final class Queue implements QueueInterface
         return Frame::method(
             $channel,
             Methods::get('queue.purge'),
-            new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
-            ShortString::of(new Str($command->name())),
-            new Bits(!$command->shouldWait())
+            new UnsignedShortInteger(new Integer(0)), // ticket (reserved)
+            ShortString::of(Str::of($command->name())),
+            new Bits(!$command->shouldWait()),
         );
     }
 
     /**
-     * @param MapInterface<string, mixed> $arguments
+     * @param Map<string, mixed> $arguments
      */
-    private function translate(MapInterface $arguments): Table
+    private function translate(Map $arguments): Table
     {
-        return new Table(
-            $arguments->reduce(
-                new Map('string', Value::class),
-                function(Map $carry, string $key, $value): Map {
-                    return $carry->put(
-                        $key,
-                        ($this->translate)($value)
-                    );
-                }
-            )
+        /** @var Map<string, Value> */
+        $table = $arguments->toMapOf(
+            'string',
+            Value::class,
+            function(string $key, $value): \Generator {
+                yield $key => ($this->translate)($value);
+            },
         );
+
+        return new Table($table);
     }
 }

@@ -7,18 +7,18 @@ use Innmind\AMQP\Client\Channel\Transaction as TransactionInterface;
 
 final class NullTransaction implements TransactionInterface
 {
-    public function select(): TransactionInterface
+    public function select(): void
     {
-        return $this;
+        // pass
     }
 
-    public function commit(): TransactionInterface
+    public function commit(): void
     {
-        return $this;
+        // pass
     }
 
-    public function rollback(): TransactionInterface
+    public function rollback(): void
     {
-        return $this;
+        // pass
     }
 }

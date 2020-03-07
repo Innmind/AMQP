@@ -6,9 +6,9 @@ namespace Tests\Innmind\AMQP\Transport\Frame\Value;
 use Innmind\AMQP\{
     Transport\Frame\Value\ShortString,
     Transport\Frame\Value,
-    Exception\OutOfRangeValue,
 };
-use Innmind\Filesystem\Stream\StringStream;
+use Innmind\Math\Exception\OutOfDefinitionSet;
+use Innmind\Stream\Readable\Stream;
 use Innmind\Immutable\Str;
 use PHPUnit\Framework\TestCase;
 
@@ -16,7 +16,7 @@ class ShortStringTest extends TestCase
 {
     public function testInterface()
     {
-        $this->assertInstanceOf(Value::class, new ShortString(new Str('')));
+        $this->assertInstanceOf(Value::class, new ShortString(Str::of('')));
     }
 
     /**
@@ -24,8 +24,8 @@ class ShortStringTest extends TestCase
      */
     public function testStringCast($string, $expected)
     {
-        $value = new ShortString($str = new Str($string));
-        $this->assertSame($expected, (string) $value);
+        $value = new ShortString($str = Str::of($string));
+        $this->assertSame($expected, $value->pack());
         $this->assertSame($str, $value->original());
     }
 
@@ -34,19 +34,19 @@ class ShortStringTest extends TestCase
      */
     public function testFromStream($expected, $string)
     {
-        $value = ShortString::fromStream(new StringStream($string));
+        $value = ShortString::unpack(Stream::ofContent($string));
 
         $this->assertInstanceOf(ShortString::class, $value);
-        $this->assertSame($expected, (string) $value->original());
-        $this->assertSame($string, (string) $value);
+        $this->assertSame($expected, $value->original()->toString());
+        $this->assertSame($string, $value->pack());
     }
 
     public function testThrowWhenTooLongString()
     {
-        $this->expectException(OutOfRangeValue::class);
+        $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('256 ∉ [0;255]');
 
-        ShortString::of(new Str(\str_repeat('a', 256)));
+        ShortString::of(Str::of(\str_repeat('a', 256)));
     }
 
     public function cases(): array

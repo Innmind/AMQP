@@ -17,7 +17,7 @@ use Innmind\AMQP\{
     Exception\VersionNotUsable,
 };
 use Innmind\Stream\Readable;
-use Innmind\Immutable\StreamInterface;
+use Innmind\Immutable\Sequence;
 use PHPUnit\Framework\TestCase;
 
 class DelegateTest extends TestCase
@@ -47,7 +47,7 @@ class DelegateTest extends TestCase
         $third = $this->protocol(new Version(1, 0, 0));
         $protocol = new Delegate($first, $second, $third);
 
-        $this->assertSame($protocol, $protocol->use(new Version(0, 9, 0)));
+        $this->assertNull($protocol->use(new Version(0, 9, 0)));
         $this->assertSame($expected, $protocol->version());
     }
 
@@ -66,17 +66,15 @@ class DelegateTest extends TestCase
                 return $this->version;
             }
 
-            public function use(Version $version): Protocol
+            public function use(Version $version): void
             {
                 if (!$version->compatibleWith($this->version)) {
                     throw new VersionNotUsable($version);
                 }
-
-                return $this;
             }
 
-            public function read(Method $method, Readable $arguments): StreamInterface {}
-            public function readHeader(Readable $arguments): StreamInterface {}
+            public function read(Method $method, Readable $arguments): Sequence {}
+            public function readHeader(Readable $arguments): Sequence {}
             public function method(string $name): Method {}
             public function connection(): Connection {}
             public function channel(): Channel {}

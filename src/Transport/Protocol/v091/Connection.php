@@ -23,8 +23,8 @@ use Innmind\AMQP\{
     Transport\Frame\Value\UnsignedLongInteger,
 };
 use Innmind\Url\Authority\UserInformation\{
-    UserInterface,
-    PasswordInterface,
+    User,
+    Password,
 };
 use Innmind\Math\Algebra\Integer;
 use Innmind\Immutable\{
@@ -36,13 +36,14 @@ final class Connection implements ConnectionInterface
 {
     public function startOk(StartOk $command): Frame
     {
+        /** @psalm-suppress InvalidArgument */
         $clientProperties = new Table(
             Map::of('string', Value::class)
-                ('product', new LongString(new Str('InnmindAMQP')))
-                ('platform', new LongString(new Str('PHP')))
-                ('version', new LongString(new Str('1.0')))
-                ('information', new LongString(new Str('')))
-                ('copyright', new LongString(new Str('')))
+                ('product', new LongString(Str::of('InnmindAMQP')))
+                ('platform', new LongString(Str::of('PHP')))
+                ('version', new LongString(Str::of('1.0')))
+                ('information', new LongString(Str::of('')))
+                ('copyright', new LongString(Str::of('')))
                 (
                     'capabilities',
                     new Table(
@@ -51,18 +52,18 @@ final class Connection implements ConnectionInterface
                             ('publisher_confirms', new Bits(true))
                             ('consumer_cancel_notify', new Bits(true))
                             ('exchange_exchange_bindings', new Bits(true))
-                            ('connection.blocked', new Bits(true))
-                    )
-                )
+                            ('connection.blocked', new Bits(true)),
+                    ),
+                ),
         );
 
         return Frame::method(
             new Channel(0),
             Methods::get('connection.start-ok'),
             $clientProperties,
-            new ShortString(new Str('AMQPLAIN')), //mechanism
+            new ShortString(Str::of('AMQPLAIN')), // mechanism
             $this->response($command->user(), $command->password()),
-            new ShortString(new Str('en_US')) //locale
+            new ShortString(Str::of('en_US')), // locale
         );
     }
 
@@ -71,7 +72,7 @@ final class Connection implements ConnectionInterface
         return Frame::method(
             new Channel(0),
             Methods::get('connection.secure-ok'),
-            $this->response($command->user(), $command->password())
+            $this->response($command->user(), $command->password()),
         );
     }
 
@@ -83,8 +84,8 @@ final class Connection implements ConnectionInterface
             UnsignedShortInteger::of(new Integer($command->maxChannels())),
             UnsignedLongInteger::of(new Integer($command->maxFrameSize())),
             UnsignedShortInteger::of(new Integer(
-                (int) ($command->heartbeat()->milliseconds() / 1000)
-            ))
+                (int) ($command->heartbeat()->milliseconds() / 1000),
+            )),
         );
     }
 
@@ -93,9 +94,9 @@ final class Connection implements ConnectionInterface
         return Frame::method(
             new Channel(0),
             Methods::get('connection.open'),
-            ShortString::of(new Str((string) $command->virtualHost())),
-            new ShortString(new Str('')), //capabilities (reserved)
-            new Bits(false) //insist (reserved)
+            ShortString::of(Str::of($command->virtualHost()->toString())),
+            new ShortString(Str::of('')), // capabilities (reserved)
+            new Bits(false), // insist (reserved)
         );
     }
 
@@ -118,9 +119,9 @@ final class Connection implements ConnectionInterface
             new Channel(0),
             Methods::get('connection.close'),
             UnsignedShortInteger::of(new Integer($replyCode)),
-            ShortString::of(new Str($replyText)),
+            ShortString::of(Str::of($replyText)),
             UnsignedShortInteger::of(new Integer($method->class())),
-            UnsignedShortInteger::of(new Integer($method->method()))
+            UnsignedShortInteger::of(new Integer($method->method())),
         );
     }
 
@@ -128,20 +129,22 @@ final class Connection implements ConnectionInterface
     {
         return Frame::method(
             new Channel(0),
-            Methods::get('connection.close-ok')
+            Methods::get('connection.close-ok'),
         );
     }
 
-    private function response(UserInterface $user, PasswordInterface $password): LongString
+    private function response(User $user, Password $password): LongString
     {
+        /** @var Map<string, Value> */
+        $arguments = Map::of('string', Value::class);
         $response = new Table(
-            Map::of('string', Value::class)
-                ('LOGIN', LongString::of(new Str((string) $user)))
-                ('PASSWORD', LongString::of(new Str((string) $password)))
+            $arguments
+                ('LOGIN', LongString::of(Str::of($user->toString())))
+                ('PASSWORD', LongString::of(Str::of($password->toString()))),
         );
-        $response = Str::of((string) $response)
+        $response = Str::of($response->pack())
             ->toEncoding('ASCII')
-            ->substring(4); //skip the encoded table length integer
+            ->substring(4); // skip the encoded table length integer
 
         return new LongString($response);
     }

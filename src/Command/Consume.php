@@ -18,8 +18,8 @@ use Innmind\CLI\{
 
 final class Consume implements Command
 {
-    private $client;
-    private $consumers;
+    private Client $client;
+    private Consumers $consumers;
 
     public function __construct(Client $client, Consumers $consumers)
     {
@@ -52,7 +52,7 @@ final class Consume implements Command
         }
     }
 
-    public function __toString(): string
+    public function toString(): string
     {
         return <<<USAGE
 innmind:amqp:consume queue [number] [prefetch]

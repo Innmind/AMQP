@@ -8,17 +8,17 @@ use Innmind\AMQP\{
     Exception\MessageLocked,
 };
 use Innmind\TimeContinuum\{
-    PointInTimeInterface,
+    PointInTime,
     ElapsedPeriod,
 };
 use Innmind\Immutable\{
-    MapInterface,
+    Map,
     Str,
 };
 
 final class Locked implements Message
 {
-    private $message;
+    private Message $message;
 
     public function __construct(Message $message)
     {
@@ -60,15 +60,12 @@ final class Locked implements Message
         return $this->message->hasHeaders();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function headers(): MapInterface
+    public function headers(): Map
     {
         return $this->message->headers();
     }
 
-    public function withHeaders(MapInterface $headers): Message
+    public function withHeaders(Map $headers): Message
     {
         throw new MessageLocked;
     }
@@ -168,12 +165,12 @@ final class Locked implements Message
         return $this->message->hasTimestamp();
     }
 
-    public function timestamp(): PointInTimeInterface
+    public function timestamp(): PointInTime
     {
         return $this->message->timestamp();
     }
 
-    public function withTimestamp(PointInTimeInterface $timestamp): Message
+    public function withTimestamp(PointInTime $timestamp): Message
     {
         throw new MessageLocked;
     }

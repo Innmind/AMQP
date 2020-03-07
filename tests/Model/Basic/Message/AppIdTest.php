@@ -10,6 +10,6 @@ class AppIdTest extends TestCase
 {
     public function testInterface()
     {
-        $this->assertSame('foo', (string) new AppId('foo'));
+        $this->assertSame('foo', (new AppId('foo'))->toString());
     }
 }

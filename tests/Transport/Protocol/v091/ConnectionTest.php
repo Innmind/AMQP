@@ -23,7 +23,7 @@ use Innmind\AMQP\{
     Model\Connection\MaxChannels,
     Model\Connection\MaxFrameSize,
 };
-use Innmind\TimeContinuum\ElapsedPeriod;
+use Innmind\TimeContinuum\Earth\ElapsedPeriod;
 use Innmind\Url\{
     Authority\UserInformation\User,
     Authority\UserInformation\Password,
@@ -42,8 +42,8 @@ class ConnectionTest extends TestCase
     {
         $frame = (new Connection)->startOk(
             new StartOk(
-                new User('foo'),
-                new Password('bar')
+                User::of('foo'),
+                Password::of('bar')
             )
         );
 
@@ -56,23 +56,23 @@ class ConnectionTest extends TestCase
         $this->assertCount(6, $frame->values()->get(0)->original());
         $this->assertSame(
             'InnmindAMQP',
-            (string) $frame->values()->get(0)->original()->get('product')->original()
+            $frame->values()->get(0)->original()->get('product')->original()->toString(),
         );
         $this->assertSame(
             'PHP',
-            (string) $frame->values()->get(0)->original()->get('platform')->original()
+            $frame->values()->get(0)->original()->get('platform')->original()->toString(),
         );
         $this->assertSame(
             '1.0',
-            (string) $frame->values()->get(0)->original()->get('version')->original()
+            $frame->values()->get(0)->original()->get('version')->original()->toString(),
         );
         $this->assertSame(
             '',
-            (string) $frame->values()->get(0)->original()->get('information')->original()
+            $frame->values()->get(0)->original()->get('information')->original()->toString(),
         );
         $this->assertSame(
             '',
-            (string) $frame->values()->get(0)->original()->get('copyright')->original()
+            $frame->values()->get(0)->original()->get('copyright')->original()->toString(),
         );
         $this->assertCount(
             5,
@@ -134,22 +134,22 @@ class ConnectionTest extends TestCase
                 ->first()
         );
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(1));
-        $this->assertSame('AMQPLAIN', (string) $frame->values()->get(1)->original());
+        $this->assertSame('AMQPLAIN', $frame->values()->get(1)->original()->toString());
         $this->assertInstanceOf(LongString::class, $frame->values()->get(2));
         $this->assertSame(
             chr(5).'LOGINS'.pack('N', 3).'foo'.chr(8).'PASSWORDS'.pack('N', 3).'bar',
-            (string) $frame->values()->get(2)->original()
+            $frame->values()->get(2)->original()->toString(),
         );
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(3));
-        $this->assertSame('en_US', (string) $frame->values()->get(3)->original());
+        $this->assertSame('en_US', $frame->values()->get(3)->original()->toString());
     }
 
     public function testSecureOk()
     {
         $frame = (new Connection)->secureOk(
             new SecureOk(
-                new User('foo'),
-                new Password('bar')
+                User::of('foo'),
+                Password::of('bar')
             )
         );
 
@@ -161,7 +161,7 @@ class ConnectionTest extends TestCase
         $this->assertInstanceOf(LongString::class, $frame->values()->get(0));
         $this->assertSame(
             chr(5).'LOGINS'.pack('N', 3).'foo'.chr(8).'PASSWORDS'.pack('N', 3).'bar',
-            (string) $frame->values()->get(0)->original()
+            $frame->values()->get(0)->original()->toString(),
         );
     }
 
@@ -200,7 +200,7 @@ class ConnectionTest extends TestCase
     public function testOpen()
     {
         $frame = (new Connection)->open(
-            new Open(new Path('/'))
+            new Open(Path::of('/'))
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -212,12 +212,12 @@ class ConnectionTest extends TestCase
             ShortString::class,
             $frame->values()->get(0)
         );
-        $this->assertSame('/', (string) $frame->values()->get(0)->original());
+        $this->assertSame('/', $frame->values()->get(0)->original()->toString());
         $this->assertInstanceOf(
             ShortString::class,
             $frame->values()->get(1)
         );
-        $this->assertSame('', (string) $frame->values()->get(1)->original());
+        $this->assertSame('', $frame->values()->get(1)->original()->toString());
         $this->assertInstanceOf(
             Bits::class,
             $frame->values()->get(2)
@@ -245,7 +245,7 @@ class ConnectionTest extends TestCase
             ShortString::class,
             $frame->values()->get(1)
         );
-        $this->assertSame('', (string) $frame->values()->get(1)->original());
+        $this->assertSame('', $frame->values()->get(1)->original()->toString());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
             $frame->values()->get(2)
@@ -262,7 +262,7 @@ class ConnectionTest extends TestCase
         );
 
         $this->assertSame(1,  $frame->values()->get(0)->original()->value());
-        $this->assertSame('foo', (string) $frame->values()->get(1)->original());
+        $this->assertSame('foo', $frame->values()->get(1)->original()->toString());
         $this->assertSame(10, $frame->values()->get(2)->original()->value());
         $this->assertSame(50, $frame->values()->get(3)->original()->value());
     }

@@ -3,25 +3,24 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Model\Queue;
 
-use Innmind\Immutable\{
-    MapInterface,
-    Map,
-};
+use Innmind\Immutable\Map;
 
 final class Binding
 {
-    private $exchange;
-    private $queue;
-    private $routingKey;
-    private $wait = true;
-    private $arguments;
+    private string $exchange;
+    private string $queue;
+    private string $routingKey;
+    private bool $wait = true;
+    /** @var Map<string, mixed> */
+    private Map $arguments;
 
     public function __construct(string $exchange, string $queue, string $routingKey = '')
     {
         $this->exchange = $exchange;
         $this->queue = $queue;
         $this->routingKey = $routingKey;
-        $this->arguments = new Map('string', 'mixed');
+        /** @var Map<string, mixed> */
+        $this->arguments = Map::of('string', 'mixed');
     }
 
     /**
@@ -46,10 +45,13 @@ final class Binding
         return $self;
     }
 
+    /**
+     * @param mixed $value
+     */
     public function withArgument(string $key, $value): self
     {
         $self = clone $this;
-        $self->arguments = $self->arguments->put($key, $value);
+        $self->arguments = ($self->arguments)($key, $value);
 
         return $self;
     }
@@ -75,9 +77,9 @@ final class Binding
     }
 
     /**
-     * @return MapInterface<string, mixed>
+     * @return Map<string, mixed>
      */
-    public function arguments(): MapInterface
+    public function arguments(): Map
     {
         return $this->arguments;
     }

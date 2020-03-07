@@ -13,8 +13,8 @@ use Psr\Log\LoggerInterface;
 
 final class Logger implements Get
 {
-    private $get;
-    private $logger;
+    private Get $get;
+    private LoggerInterface $logger;
 
     public function __construct(
         Get $get,
@@ -24,39 +24,39 @@ final class Logger implements Get
         $this->logger = $logger;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function __invoke(callable $consume): void
     {
-        ($this->get)(function(Message $message, ...$args) use ($consume): void {
+        ($this->get)(function(Message $message, bool $redelivered, string $exchange, string $routingKey, int $messageCount) use ($consume): void {
             try {
                 $this->logger->debug(
                     'AMQP message received',
-                    ['body' => (string) $message->body()]
+                    ['body' => $message->body()->toString()],
                 );
 
-                $consume($message, ...$args);
+                $consume($message, $redelivered, $exchange, $routingKey, $messageCount);
             } catch (Reject $e) {
                 $this->logger->warning(
                     'AMQP message rejected',
-                    ['body' => (string) $message->body()]
+                    ['body' => $message->body()->toString()],
                 );
+
                 throw $e;
             } catch (Requeue $e) {
                 $this->logger->info(
                     'AMQP message requeued',
-                    ['body' => (string) $message->body()]
+                    ['body' => $message->body()->toString()],
                 );
+
                 throw $e;
             } catch (\Throwable $e) {
                 $this->logger->error(
                     'AMQP message consumption generated an exception',
                     [
-                        'body' => (string) $message->body(),
+                        'body' => $message->body()->toString(),
                         'exception' => \get_class($e),
-                    ]
+                    ],
                 );
+
                 throw $e;
             }
         });

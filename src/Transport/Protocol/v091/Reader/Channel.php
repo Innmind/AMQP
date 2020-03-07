@@ -6,6 +6,7 @@ namespace Innmind\AMQP\Transport\Protocol\v091\Reader;
 use Innmind\AMQP\{
     Transport\Frame\Method,
     Transport\Frame\Visitor\ChunkArguments,
+    Transport\Frame\Value,
     Transport\Frame\Value\Bits,
     Transport\Frame\Value\ShortString,
     Transport\Frame\Value\UnsignedShortInteger,
@@ -13,14 +14,14 @@ use Innmind\AMQP\{
     Exception\UnknownMethod,
 };
 use Innmind\Stream\Readable;
-use Innmind\Immutable\StreamInterface;
+use Innmind\Immutable\Sequence;
 
 final class Channel
 {
     /**
-     * @return StreamInterface<Value>
+     * @return Sequence<Value>
      */
-    public function __invoke(Method $method, Readable $arguments): StreamInterface
+    public function __invoke(Method $method, Readable $arguments): Sequence
     {
         switch (true) {
             case Methods::get('channel.open-ok')->equals($method):
@@ -34,7 +35,6 @@ final class Channel
             case Methods::get('channel.flow-ok')->equals($method):
                 $chunk = $this->flowOk();
                 break;
-
 
             case Methods::get('channel.close')->equals($method):
                 $chunk = $this->close();
@@ -53,30 +53,30 @@ final class Channel
 
     private function openOk(): ChunkArguments
     {
-        return new ChunkArguments; //no arguments
+        return new ChunkArguments; // no arguments
     }
 
     private function flow(): ChunkArguments
     {
         return new ChunkArguments(
-            Bits::class //active
+            Bits::class, // active
         );
     }
 
     private function flowOk(): ChunkArguments
     {
         return new ChunkArguments(
-            Bits::class //active
+            Bits::class, // active
         );
     }
 
     private function close(): ChunkArguments
     {
         return new ChunkArguments(
-            UnsignedShortInteger::class, //reply code
-            ShortString::class, //reply text
-            UnsignedShortInteger::class, //failing class id
-            UnsignedShortInteger::class //failing method id
+            UnsignedShortInteger::class, // reply code
+            ShortString::class, // reply text
+            UnsignedShortInteger::class, // failing class id
+            UnsignedShortInteger::class, // failing method id
         );
     }
 

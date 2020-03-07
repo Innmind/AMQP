@@ -9,20 +9,19 @@ use Innmind\AMQP\{
     Exception\VersionNotUsable,
 };
 use Innmind\Stream\Readable;
-use Innmind\Immutable\{
-    Sequence,
-    StreamInterface,
-};
+use Innmind\Immutable\Sequence;
 
 final class Delegate implements Protocol
 {
-    private $protocols;
-    private $inUse;
+    /** @var Sequence<Protocol> */
+    private Sequence $protocols;
+    private Protocol $inUse;
 
     public function __construct(Protocol $first, Protocol ...$protocols)
     {
-        $protocols = Sequence::of($first, ...$protocols)->sort(static function(Protocol $a, Protocol $b): bool {
-            return $b->version()->higherThan($a->version());
+        /** @var Sequence<Protocol> */
+        $protocols = Sequence::of(Protocol::class, $first, ...$protocols)->sort(static function(Protocol $a, Protocol $b): int {
+            return (int) $b->version()->higherThan($a->version());
         });
         $this->inUse = $protocols->first();
         $this->protocols = $protocols;
@@ -33,7 +32,7 @@ final class Delegate implements Protocol
         return $this->inUse->version();
     }
 
-    public function use(Version $version): Protocol
+    public function use(Version $version): void
     {
         $protocols = $this
             ->protocols
@@ -47,27 +46,19 @@ final class Delegate implements Protocol
                 }
             });
 
-        if ($protocols->size() === 0) {
+        if ($protocols->empty()) {
             throw new VersionNotUsable($version);
         }
 
         $this->inUse = $protocols->first();
-
-        return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function read(Method $method, Readable $arguments): StreamInterface
+    public function read(Method $method, Readable $arguments): Sequence
     {
         return $this->inUse->read($method, $arguments);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function readHeader(Readable $arguments): StreamInterface
+    public function readHeader(Readable $arguments): Sequence
     {
         return $this->inUse->readHeader($arguments);
     }

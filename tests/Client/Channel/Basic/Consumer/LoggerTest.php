@@ -39,7 +39,7 @@ class LoggerTest extends TestCase
             ->method('take')
             ->with(42);
 
-        $this->assertSame($consumer, $consumer->take(42));
+        $this->assertNull($consumer->take(42));
     }
 
     public function testFilter()
@@ -48,7 +48,7 @@ class LoggerTest extends TestCase
             $message = $this->createMock(Message::class);
             $message
                 ->method('body')
-                ->willReturn(new Str('foobar'.$i));
+                ->willReturn(Str::of('foobar'.$i));
 
             return $message;
         };
@@ -66,17 +66,15 @@ class LoggerTest extends TestCase
                 public function foreach(callable $consume): void
                 {
                     foreach (range(0, 1) as $i) {
-                        ($this->predicate)(($this->message)($i));
+                        ($this->predicate)(($this->message)($i), false, '', '');
                     }
                 }
 
-                public function take(int $number): Consumer {}
+                public function take(int $number): void {}
 
-                public function filter(callable $predicate): Consumer
+                public function filter(callable $predicate): void
                 {
                     $this->predicate = $predicate;
-
-                    return $this;
                 }
             },
             $logger = $this->createMock(LoggerInterface::class)
@@ -90,11 +88,10 @@ class LoggerTest extends TestCase
             );
 
         $filter = false;
-        $consumer
-            ->filter(function() use (&$filter): bool {
-                return $filter = !$filter;
-            })
-            ->foreach(function(){});
+        $consumer->filter(function() use (&$filter): bool {
+            return $filter = !$filter;
+        });
+        $consumer->foreach(function(){});
     }
 
     public function testLogMessageReceived()
@@ -102,7 +99,7 @@ class LoggerTest extends TestCase
         $message = $this->createMock(Message::class);
         $message
             ->method('body')
-            ->willReturn(new Str('foobar'));
+            ->willReturn(Str::of('foobar'));
 
         $consumer = new Logger(
             new class($message) implements Consumer {
@@ -115,11 +112,11 @@ class LoggerTest extends TestCase
 
                 public function foreach(callable $consume): void
                 {
-                    $consume($this->message);
+                    $consume($this->message, false, '', '');
                 }
 
-                public function take(int $number): Consumer {}
-                public function filter(callable $predicate): Consumer {}
+                public function take(int $number): void {}
+                public function filter(callable $predicate): void {}
             },
             $logger = $this->createMock(LoggerInterface::class)
         );
@@ -139,7 +136,7 @@ class LoggerTest extends TestCase
         $message = $this->createMock(Message::class);
         $message
             ->method('body')
-            ->willReturn(new Str('foobar'));
+            ->willReturn(Str::of('foobar'));
 
         $consumer = new Logger(
             new class($message) implements Consumer {
@@ -153,14 +150,14 @@ class LoggerTest extends TestCase
                 public function foreach(callable $consume): void
                 {
                     try {
-                        $consume($this->message);
+                        $consume($this->message, false, '', '');
                     } catch (Reject $e) {
                         //pass
                     }
                 }
 
-                public function take(int $number): Consumer {}
-                public function filter(callable $predicate): Consumer {}
+                public function take(int $number): void {}
+                public function filter(callable $predicate): void {}
             },
             $logger = $this->createMock(LoggerInterface::class)
         );
@@ -182,7 +179,7 @@ class LoggerTest extends TestCase
         $message = $this->createMock(Message::class);
         $message
             ->method('body')
-            ->willReturn(new Str('foobar'));
+            ->willReturn(Str::of('foobar'));
 
         $consumer = new Logger(
             new class($message) implements Consumer {
@@ -196,14 +193,14 @@ class LoggerTest extends TestCase
                 public function foreach(callable $consume): void
                 {
                     try {
-                        $consume($this->message);
+                        $consume($this->message, false, '', '');
                     } catch (Requeue $e) {
                         //pass
                     }
                 }
 
-                public function take(int $number): Consumer {}
-                public function filter(callable $predicate): Consumer {}
+                public function take(int $number): void {}
+                public function filter(callable $predicate): void {}
             },
             $logger = $this->createMock(LoggerInterface::class)
         );
@@ -225,7 +222,7 @@ class LoggerTest extends TestCase
         $message = $this->createMock(Message::class);
         $message
             ->method('body')
-            ->willReturn(new Str('foobar'));
+            ->willReturn(Str::of('foobar'));
 
         $consumer = new Logger(
             new class($message) implements Consumer {
@@ -239,14 +236,14 @@ class LoggerTest extends TestCase
                 public function foreach(callable $consume): void
                 {
                     try {
-                        $consume($this->message);
+                        $consume($this->message, false, '', '');
                     } catch (Cancel $e) {
                         //pass
                     }
                 }
 
-                public function take(int $number): Consumer {}
-                public function filter(callable $predicate): Consumer {}
+                public function take(int $number): void {}
+                public function filter(callable $predicate): void {}
             },
             $logger = $this->createMock(LoggerInterface::class)
         );
@@ -268,7 +265,7 @@ class LoggerTest extends TestCase
         $message = $this->createMock(Message::class);
         $message
             ->method('body')
-            ->willReturn(new Str('foobar'));
+            ->willReturn(Str::of('foobar'));
 
         $consumer = new Logger(
             new class($message) implements Consumer {
@@ -282,14 +279,14 @@ class LoggerTest extends TestCase
                 public function foreach(callable $consume): void
                 {
                     try {
-                        $consume($this->message);
+                        $consume($this->message, false, '', '');
                     } catch (\RuntimeException $e) {
                         //pass
                     }
                 }
 
-                public function take(int $number): Consumer {}
-                public function filter(callable $predicate): Consumer {}
+                public function take(int $number): void {}
+                public function filter(callable $predicate): void {}
             },
             $logger = $this->createMock(LoggerInterface::class)
         );

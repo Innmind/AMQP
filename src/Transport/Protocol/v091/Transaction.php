@@ -19,7 +19,7 @@ final class Transaction implements TransactionInterface
     {
         return Frame::method(
             $channel,
-            Methods::get('tx.select')
+            Methods::get('tx.select'),
         );
     }
 
@@ -27,7 +27,7 @@ final class Transaction implements TransactionInterface
     {
         return Frame::method(
             $channel,
-            Methods::get('tx.commit')
+            Methods::get('tx.commit'),
         );
     }
 
@@ -35,7 +35,7 @@ final class Transaction implements TransactionInterface
     {
         return Frame::method(
             $channel,
-            Methods::get('tx.rollback')
+            Methods::get('tx.rollback'),
         );
     }
 }

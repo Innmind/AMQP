@@ -12,20 +12,25 @@ use Innmind\Stream\Readable;
 use Innmind\Immutable\{
     Str,
     Sequence as Seq,
-    MapInterface,
     Map,
 };
-use function Innmind\Immutable\assertMap;
+use function Innmind\Immutable\{
+    assertMap,
+    join,
+};
 
+/**
+ * @implements Value<Map<string, Value>>
+ */
 final class Table implements Value
 {
-    private $value;
-    private $original;
+    /** @var Map<string, Value> */
+    private Map $original;
 
     /**
-     * @param MapInterface<string, Value> $map
+     * @param Map<string, Value> $map
      */
-    public function __construct(MapInterface $map)
+    public function __construct(Map $map)
     {
         assertMap('string', Value::class, $map, 1);
 
@@ -33,26 +38,29 @@ final class Table implements Value
             return $value instanceof Text;
         });
 
-        if ($texts->size() > 0) {
+        if (!$texts->empty()) {
             throw new UnboundedTextCannotBeWrapped;
         }
 
         $this->original = $map;
     }
 
-    public static function fromStream(Readable $stream): Value
+    public static function unpack(Readable $stream): self
     {
-        $length = UnsignedLongInteger::fromStream($stream)->original();
+        $length = UnsignedLongInteger::unpack($stream)->original();
         $position = $stream->position()->toInt();
         $boundary = $position + $length->value();
 
-        $map = new Map('string', Value::class);
+        /** @var Map<string, Value> */
+        $map = Map::of('string', Value::class);
 
         while ($position < $boundary) {
-            $key = ShortString::fromStream($stream)->original();
-            $class = Symbols::class((string) $stream->read(1));
+            $key = ShortString::unpack($stream)->original();
+            $class = Symbols::class($stream->read(1)->toString());
+            /** @var Value */
+            $value = [$class, 'unpack']($stream);
 
-            $map = $map->put((string) $key, [$class, 'fromStream']($stream));
+            $map = ($map)($key->toString(), $value);
 
             $position = $stream->position()->toInt();
         }
@@ -61,36 +69,30 @@ final class Table implements Value
     }
 
     /**
-     * @return MapInterface<string, Value>
+     * @return Map<string, Value>
      */
-    public function original(): MapInterface
+    public function original(): Map
     {
         return $this->original;
     }
 
-    public function __toString(): string
+    public function pack(): string
     {
-        if (\is_null($this->value)) {
-            $data = $this
-                ->original
-                ->reduce(
-                    new Seq,
-                    static function(Seq $sequence, string $key, Value $value): Seq {
-                        return $sequence
-                            ->add(new ShortString(new Str($key)))
-                            ->add(Symbols::symbol(\get_class($value)))
-                            ->add($value);
-                    }
-                )
-                ->join('')
-                ->toEncoding('ASCII');
+        /** @var Seq<string> */
+        $data = $this->original->toSequenceOf(
+            'string',
+            static function(string $key, Value $value): \Generator {
+                yield (new ShortString(Str::of($key)))->pack();
+                yield Symbols::symbol(\get_class($value));
+                yield $value->pack();
+            },
+        );
+        $data = join('', $data)->toEncoding('ASCII');
 
-            $this->value = (string) UnsignedLongInteger::of(
-                new Integer($data->length())
-            );
-            $this->value .= $data;
-        }
+        $value = UnsignedLongInteger::of(
+            new Integer($data->length()),
+        )->pack();
 
-        return $this->value;
+        return $value .= $data->toString();
     }
 }

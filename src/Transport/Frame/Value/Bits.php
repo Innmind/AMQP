@@ -6,70 +6,65 @@ namespace Innmind\AMQP\Transport\Frame\Value;
 use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\Stream\Readable;
 use Innmind\Immutable\{
-    StreamInterface,
-    Stream,
     Str,
     Sequence as Seq,
 };
+use function Innmind\Immutable\unwrap;
 
+/**
+ * @implements Value<Seq<bool>>
+ */
 final class Bits implements Value
 {
-    private $value;
-    private $original;
+    /** @var Seq<bool> */
+    private Seq $original;
 
     public function __construct(bool $first, bool ...$bits)
     {
-        $this->original = Stream::of('bool', $first, ...$bits);
+        /** @var Seq<bool> */
+        $this->original = Seq::of('bool', $first, ...$bits);
     }
 
-    public static function fromStream(Readable $stream): Value
+    public static function unpack(Readable $stream): self
     {
-        return new self(
-            ...$stream
-                ->read(1)
-                ->toEncoding('ASCII')
-                ->chunk()
-                ->reduce(
-                    new Seq,
-                    static function(Seq $bits, Str $bit): Seq {
-                        return (new Str(\decbin(\ord((string) $bit))))
-                            ->chunk()
-                            ->reduce(
-                                $bits,
-                                static function(Seq $bits, Str $bit): Seq {
-                                    return $bits->add((int) (string) $bit);
-                                }
-                            );
+        /** @var Seq<bool> */
+        $bits = $stream
+            ->read(1)
+            ->toEncoding('ASCII')
+            ->chunk()
+            ->toSequenceOf(
+                'bool',
+                static function(Str $bits): \Generator {
+                    $bits = Str::of(\decbin(\ord($bits->toString())));
+                    $bitsAsStrings = unwrap($bits->chunk());
+
+                    foreach ($bitsAsStrings as $bit) {
+                        yield (bool) (int) $bit->toString();
                     }
-                )
-                ->map(static function(int $bit): bool {
-                    return (bool) $bit;
-                })
-                ->reverse()
-        );
+                },
+            )
+            ->reverse();
+
+        return new self(...unwrap($bits));
     }
 
     /**
-     * @return StreamInterface<bool>
+     * @return Seq<bool>
      */
-    public function original(): StreamInterface
+    public function original(): Seq
     {
         return $this->original;
     }
 
-    public function __toString(): string
+    public function pack(): string
     {
-        if (\is_null($this->value)) {
-            $value = 0;
+        $value = 0;
 
-            foreach ($this->original as $i => $bit) {
-                $bit = (int) $bit;
-                $value |= $bit << $i;
-            }
-
-            $this->value = \chr($value);
+        foreach (unwrap($this->original) as $i => $bit) {
+            $bit = (int) $bit;
+            $value |= $bit << $i;
         }
 
-        return $this->value;
+        return \chr($value);
     }
 }

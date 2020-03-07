@@ -16,18 +16,18 @@ use Innmind\AMQP\Transport\Frame\{
 use Innmind\Math\Algebra\Integer;
 use Innmind\Immutable\{
     Sequence,
-    StreamInterface,
-    Stream,
     Str,
 };
+use function Innmind\Immutable\join;
 
 final class Frame
 {
-    private $type;
-    private $channel;
-    private $method;
-    private $values;
-    private $string;
+    private Type $type;
+    private Channel $channel;
+    private ?Method $method = null;
+    /** @var Sequence<Value> */
+    private Sequence $values;
+    private string $string;
 
     private function __construct(
         Type $type,
@@ -36,20 +36,26 @@ final class Frame
     ) {
         $this->type = $type;
         $this->channel = $channel;
-        $this->values = new Stream(Value::class);
+        /** @var Sequence<Value> */
+        $this->values = Sequence::of(Value::class);
 
-        $values = new Sequence(...$values);
-        $payload = $values->join('')->toEncoding('ASCII');
-
-        $frame = new Sequence(
-            new UnsignedOctet(new Integer($type->toInt())),
-            new UnsignedShortInteger(new Integer($channel->toInt())),
-            new UnsignedLongInteger(new Integer($payload->length())),
-            $payload
+        $values = \array_map(
+            static fn(Value $value): string => $value->pack(),
+            $values,
         );
-        $this->string = (string) $frame
-            ->add(new UnsignedOctet(new Integer(self::end())))
-            ->join('');
+        $payload = Str::of(\implode('', $values))->toEncoding('ASCII');
+
+        $frame = \array_map(
+            static fn(Value $value): string => $value->pack(),
+            [
+                new UnsignedOctet(new Integer($type->toInt())),
+                new UnsignedShortInteger(new Integer($channel->toInt())),
+                new UnsignedLongInteger(new Integer($payload->length())),
+                new Text($payload),
+                new UnsignedOctet(new Integer(self::end())),
+            ],
+        );
+        $this->string = \implode('', $frame);
     }
 
     public static function method(
@@ -62,15 +68,10 @@ final class Frame
             $channel,
             new UnsignedShortInteger(new Integer($method->class())),
             new UnsignedShortInteger(new Integer($method->method())),
-            ...$values
+            ...$values,
         );
         $self->method = $method;
-        $self->values = Sequence::of(...$values)->reduce(
-            $self->values,
-            static function(Stream $stream, Value $value): Stream {
-                return $stream->add($value);
-            }
-        );
+        $self->values = Sequence::of(Value::class, ...$values);
 
         return $self;
     }
@@ -84,15 +85,10 @@ final class Frame
             Type::header(),
             $channel,
             new UnsignedShortInteger(new Integer($class)),
-            new UnsignedShortInteger(new Integer(0)), //weight
-            ...$values
+            new UnsignedShortInteger(new Integer(0)), // weight
+            ...$values,
         );
-        $self->values = Sequence::of(...$values)->reduce(
-            $self->values,
-            static function(Stream $stream, Value $value): Stream {
-                return $stream->add($value);
-            }
-        );
+        $self->values = Sequence::of(Value::class, ...$values);
 
         return $self;
     }
@@ -102,9 +98,10 @@ final class Frame
         $self = new self(
             Type::body(),
             $channel,
-            $value = new Text($payload)
+            $value = new Text($payload),
         );
-        $self->values = $self->values->add($value);
+        /** @var Sequence<Value> */
+        $self->values = Sequence::of(Value::class, $value);
 
         return $self;
     }
@@ -113,7 +110,7 @@ final class Frame
     {
         return new self(
             Type::heartbeat(),
-            new Channel(0)
+            new Channel(0),
         );
     }
 
@@ -133,18 +130,18 @@ final class Frame
             return false;
         }
 
-        return $this->method->equals($method);
+        return $this->method && $this->method->equals($method);
     }
 
     /**
-     * @return StreamInterface<Value>
+     * @return Sequence<Value>
      */
-    public function values(): StreamInterface
+    public function values(): Sequence
     {
         return $this->values;
     }
 
-    public function __toString(): string
+    public function toString(): string
     {
         return $this->string;
     }

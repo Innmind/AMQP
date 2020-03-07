@@ -10,6 +10,7 @@ use Innmind\AMQP\{
     Transport\Protocol\Version,
     Transport\Frame\Type,
     Transport\Frame\Method,
+    Transport\Frame\Value,
     Transport\Frame\Value\UnsignedOctet,
     Model\Connection\StartOk,
     Model\Connection\SecureOk,
@@ -18,8 +19,6 @@ use Innmind\AMQP\{
     Model\Connection\Close,
     Model\Connection\MaxChannels,
     Model\Connection\MaxFrameSize,
-    Exception\FrameChannelExceedAllowedChannelNumber,
-    Exception\FrameExceedAllowedSize,
     Exception\UnexpectedFrame,
     Exception\NoFrameDetected,
     Exception\ConnectionClosed,
@@ -27,46 +26,54 @@ use Innmind\AMQP\{
 };
 use Innmind\Socket\{
     Internet\Transport,
-    Client\Internet as Socket,
+    Client as Socket,
 };
-use Innmind\Stream\Select;
+use Innmind\Stream\Watch;
 use Innmind\Url\{
-    UrlInterface,
-    Authority\NullUserInformation,
+    Url,
+    Path,
+    Authority,
 };
 use Innmind\TimeContinuum\{
     ElapsedPeriod,
-    TimeContinuumInterface,
+    Clock,
+    PointInTime,
+    Earth,
 };
-use Innmind\OperatingSystem\Remote;
+use Innmind\OperatingSystem\{
+    Remote,
+    Sockets,
+};
 use Innmind\Immutable\Str;
 
 final class Connection implements ConnectionInterface
 {
-    private $transport;
-    private $authority;
-    private $vhost;
-    private $protocol;
-    private $socket;
-    private $timeout;
-    private $remote;
-    private $select;
-    private $read;
-    private $closed = true;
-    private $opening = true;
-    private $maxChannels;
-    private $maxFrameSize;
-    private $heartbeat;
-    private $clock;
-    private $lastReceivedData;
+    private Transport $transport;
+    private Authority $authority;
+    private Path $vhost;
+    private Protocol $protocol;
+    private Socket $socket;
+    private ElapsedPeriod $timeout;
+    private Remote $remote;
+    private Sockets $sockets;
+    private Watch $watch;
+    private FrameReader $read;
+    private bool $closed = true;
+    private bool $opening = true;
+    private MaxChannels $maxChannels;
+    private MaxFrameSize $maxFrameSize;
+    private ElapsedPeriod $heartbeat;
+    private Clock $clock;
+    private PointInTime $lastReceivedData;
 
     public function __construct(
         Transport $transport,
-        UrlInterface $server,
+        Url $server,
         Protocol $protocol,
         ElapsedPeriod $timeout,
-        TimeContinuumInterface $clock,
-        Remote $remote
+        Clock $clock,
+        Remote $remote,
+        Sockets $sockets
     ) {
         $this->transport = $transport;
         $this->authority = $server->authority();
@@ -74,6 +81,7 @@ final class Connection implements ConnectionInterface
         $this->protocol = $protocol;
         $this->timeout = $timeout;
         $this->remote = $remote;
+        $this->sockets = $sockets;
         $this->buildSocket();
         $this->read = new FrameReader;
         $this->maxChannels = new MaxChannels(0);
@@ -90,32 +98,16 @@ final class Connection implements ConnectionInterface
         return $this->protocol;
     }
 
-    public function send(Frame $frame): ConnectionInterface
+    public function send(Frame $frame): void
     {
-        if (!$this->maxChannels->allows($frame->channel()->toInt())) {
-            throw new FrameChannelExceedAllowedChannelNumber(
-                $frame->channel(),
-                $this->maxChannels
-            );
-        }
+        $this->maxChannels->verify($frame->channel()->toInt());
 
-        $frame = Str::of((string) $frame)->toEncoding('ASCII');
+        $frame = Str::of($frame->toString())->toEncoding('ASCII');
 
-        if (!$this->maxFrameSize->allows($frame->length())) {
-            throw new FrameExceedAllowedSize(
-                $frame->length(),
-                $this->maxFrameSize
-            );
-        }
-
+        $this->maxFrameSize->verify($frame->length());
         $this->socket->write($frame);
-
-        return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function wait(string ...$names): Frame
     {
         do {
@@ -130,8 +122,8 @@ final class Connection implements ConnectionInterface
                 $this->send(Frame::heartbeat());
             }
 
-            $streams = ($this->select)();
-        } while (!$streams->get('read')->contains($this->socket));
+            $ready = ($this->watch)();
+        } while (!$ready->toRead()->contains($this->socket));
 
         $frame = ($this->read)($this->socket, $this->protocol);
         $this->lastReceivedData = $this->clock->now();
@@ -145,7 +137,7 @@ final class Connection implements ConnectionInterface
         }
 
         if ($frame->type() !== Type::method()) {
-            //someone must have forgot a wait() call
+            // someone must have forgot a wait() call
             throw new ExpectedMethodFrame($frame->type());
         }
 
@@ -159,13 +151,22 @@ final class Connection implements ConnectionInterface
             $this->send($this->protocol->connection()->closeOk());
             $this->closed = true;
 
+            /** @var Value\ShortString */
+            $message = $frame->values()->get(1);
+            /** @var Value\UnsignedShortInteger */
+            $code = $frame->values()->get(0);
+            /** @var Value\UnsignedShortInteger */
+            $class = $frame->values()->get(2);
+            /** @var Value\UnsignedShortInteger */
+            $method = $frame->values()->get(3);
+
             throw ConnectionClosed::byServer(
-                (string) $frame->values()->get(1)->original(),
-                $frame->values()->get(0)->original()->value(),
+                $message->original()->toString(),
+                $code->original()->value(),
                 new Method(
-                    $frame->values()->get(2)->original()->value(),
-                    $frame->values()->get(3)->original()->value()
-                )
+                    $class->original()->value(),
+                    $method->original()->value(),
+                ),
             );
         }
 
@@ -183,9 +184,8 @@ final class Connection implements ConnectionInterface
             return;
         }
 
-        $this
-            ->send($this->protocol->connection()->close(new Close))
-            ->wait('connection.close-ok');
+        $this->send($this->protocol->connection()->close(new Close));
+        $this->wait('connection.close-ok');
         $this->socket->close();
         $this->closed = true;
     }
@@ -199,9 +199,9 @@ final class Connection implements ConnectionInterface
     {
         $this->socket = $this->remote->socket(
             $this->transport,
-            $this->authority->withUserInformation(new NullUserInformation)
+            $this->authority->withoutUserInformation(),
         );
-        $this->select = (new Select($this->timeout))->forRead($this->socket);
+        $this->watch = $this->sockets->watch($this->timeout)->forRead($this->socket);
     }
 
     private function open(): void
@@ -221,7 +221,7 @@ final class Connection implements ConnectionInterface
     private function start(): void
     {
         $this->socket->write(
-            new Str((string) $this->protocol->version())
+            Str::of($this->protocol->version()->toString()),
         );
 
         try {
@@ -229,7 +229,7 @@ final class Connection implements ConnectionInterface
         } catch (NoFrameDetected $e) {
             $content = $e->content();
 
-            if ((string) $content->read(4) !== 'AMQP') {
+            if ($content->read(4)->toString() !== 'AMQP') {
                 throw $e;
             }
 
@@ -237,12 +237,12 @@ final class Connection implements ConnectionInterface
 
             $this->protocol->use(
                 new Version(
-                    UnsignedOctet::fromStream($content)->original()->value(),
-                    UnsignedOctet::fromStream($content)->original()->value(),
-                    UnsignedOctet::fromStream($content)->original()->value()
-                )
+                    UnsignedOctet::unpack($content)->original()->value(),
+                    UnsignedOctet::unpack($content)->original()->value(),
+                    UnsignedOctet::unpack($content)->original()->value(),
+                ),
             );
-            //socket rebuilt as the server close the connection on version mismatch
+            // socket rebuilt as the server close the connection on version mismatch
             $this->buildSocket();
             $this->start();
 
@@ -252,8 +252,8 @@ final class Connection implements ConnectionInterface
         $this->send($this->protocol->connection()->startOk(
             new StartOk(
                 $this->authority->userInformation()->user(),
-                $this->authority->userInformation()->password()
-            )
+                $this->authority->userInformation()->password(),
+            ),
         ));
     }
 
@@ -265,37 +265,42 @@ final class Connection implements ConnectionInterface
             $this->send($this->protocol->connection()->secureOk(
                 new SecureOk(
                     $this->authority->userInformation()->user(),
-                    $this->authority->userInformation()->password()
-                )
+                    $this->authority->userInformation()->password(),
+                ),
             ));
             $frame = $this->wait('connection.tune');
         }
 
+        /** @var Value\UnsignedShortInteger */
+        $maxChannels = $frame->values()->get(0);
         $this->maxChannels = new MaxChannels(
-            $frame->values()->get(0)->original()->value()
+            $maxChannels->original()->value(),
         );
+        /** @var Value\UnsignedLongInteger */
+        $maxFrameSize = $frame->values()->get(1);
         $this->maxFrameSize = new MaxFrameSize(
-            $frame->values()->get(1)->original()->value()
+            $maxFrameSize->original()->value(),
         );
-        $this->heartbeat = new ElapsedPeriod(
-            $frame->values()->get(2)->original()->value()
+        /** @var Value\UnsignedShortInteger */
+        $heartbeat = $frame->values()->get(2);
+        $this->heartbeat = new Earth\ElapsedPeriod(
+            $heartbeat->original()->value(),
         );
-        $this->select = (new Select($this->heartbeat))->forRead($this->socket);
+        $this->watch = $this->sockets->watch($this->heartbeat)->forRead($this->socket);
         $this->send($this->protocol->connection()->tuneOk(
             new TuneOk(
                 $this->maxChannels,
                 $this->maxFrameSize,
-                $this->heartbeat
-            )
+                $this->heartbeat,
+            ),
         ));
     }
 
     private function openVHost(): void
     {
-        $this
-            ->send($this->protocol->connection()->open(
-                new Open($this->vhost)
-            ))
-            ->wait('connection.open-ok');
+        $this->send($this->protocol->connection()->open(
+            new Open($this->vhost),
+        ));
+        $this->wait('connection.open-ok');
     }
 }

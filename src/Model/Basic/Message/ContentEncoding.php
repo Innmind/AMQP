@@ -11,18 +11,18 @@ use Innmind\Immutable\Str;
  */
 final class ContentEncoding
 {
-    private $value;
+    private string $value;
 
     public function __construct(string $value)
     {
         if (!Str::of($value)->matches('~^[\w\-]+$~')) {
-            throw new DomainException;
+            throw new DomainException($value);
         }
 
         $this->value = $value;
     }
 
-    public function __toString(): string
+    public function toString(): string
     {
         return $this->value;
     }

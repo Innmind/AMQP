@@ -3,20 +3,20 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP;
 
-use Innmind\Immutable\{
-    MapInterface,
-    Map,
-};
+use Innmind\AMQP\Model\Basic\Message;
+use Innmind\Immutable\Map;
 use function Innmind\Immutable\assertMap;
 
 final class Consumers
 {
-    private $consumers;
+    /** @var Map<string, callable(Message, bool, string, string): void> */
+    private Map $consumers;
 
-    public function __construct(MapInterface $consumers = null)
+    /**
+     * @param Map<string, callable(Message, bool, string, string): void> $consumers
+     */
+    public function __construct(Map $consumers)
     {
-        $consumers = $consumers ?? new Map('string', 'callable');
-
         assertMap('string', 'callable', $consumers, 1);
 
         $this->consumers = $consumers;
@@ -27,6 +27,9 @@ final class Consumers
         return $this->consumers->contains($queue);
     }
 
+    /**
+     * @return callable(Message, bool, string, string): void
+     */
     public function get(string $queue): callable
     {
         return $this->consumers->get($queue);

@@ -7,8 +7,9 @@ use Innmind\AMQP\Transport\Frame\{
     Value\Bits,
     Value,
 };
-use Innmind\Filesystem\Stream\StringStream;
-use Innmind\Immutable\StreamInterface;
+use Innmind\Stream\Readable\Stream;
+use Innmind\Immutable\Sequence;
+use function Innmind\Immutable\unwrap;
 use PHPUnit\Framework\TestCase;
 
 class BitsTest extends TestCase
@@ -24,10 +25,10 @@ class BitsTest extends TestCase
     public function testStringCast($bits, $expected)
     {
         $value = new Bits(...$bits);
-        $this->assertSame($expected, (string) $value);
-        $this->assertInstanceOf(StreamInterface::class, $value->original());
+        $this->assertSame($expected, $value->pack());
+        $this->assertInstanceOf(Sequence::class, $value->original());
         $this->assertSame('bool', (string) $value->original()->type());
-        $this->assertSame($bits, $value->original()->toPrimitive());
+        $this->assertSame($bits, unwrap($value->original()));
     }
 
     /**
@@ -35,11 +36,11 @@ class BitsTest extends TestCase
      */
     public function testFromStream($expected, $string)
     {
-        $value = Bits::fromStream(new StringStream($string));
+        $value = Bits::unpack(Stream::ofContent($string));
 
         $this->assertInstanceOf(Bits::class, $value);
-        $this->assertSame($expected, $value->original()->toPrimitive());
-        $this->assertSame($string, (string) $value);
+        $this->assertSame($expected, unwrap($value->original()));
+        $this->assertSame($string, $value->pack());
     }
 
     public function cases(): array

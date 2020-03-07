@@ -11,23 +11,21 @@ use Innmind\AMQP\{
 
 final class Delegate implements ArgumentTranslator
 {
-    private $translators;
+    /** @var list<ArgumentTranslator> */
+    private array $translators;
 
     public function __construct(ArgumentTranslator ...$translators)
     {
         $this->translators = $translators;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function __invoke($value): Value
     {
         foreach ($this->translators as $translate) {
             try {
                 return $translate($value);
             } catch (ValueNotTranslatable $e) {
-                //pass
+                // pass
             }
         }
 

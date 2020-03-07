@@ -21,7 +21,7 @@ interface Queue
      */
     public function declare(Declaration $command): ?DeclareOk;
     public function delete(Deletion $command): ?DeleteOk;
-    public function bind(Binding $command): self;
-    public function unbind(Unbinding $command): self;
+    public function bind(Binding $command): void;
+    public function unbind(Unbinding $command): void;
     public function purge(Purge $command): ?PurgeOk;
 }

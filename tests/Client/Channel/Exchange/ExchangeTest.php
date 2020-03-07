@@ -16,12 +16,15 @@ use Innmind\AMQP\{
     Model\Channel\Close,
 };
 use Innmind\Socket\Internet\Transport;
-use Innmind\TimeContinuum\{
+use Innmind\TimeContinuum\Earth\{
     ElapsedPeriod,
-    TimeContinuum\Earth,
+    Clock,
 };
 use Innmind\Url\Url;
-use Innmind\OperatingSystem\Remote;
+use Innmind\OperatingSystem\{
+    Remote,
+    Sockets,
+};
 use Innmind\Server\Control\Server;
 use PHPUnit\Framework\TestCase;
 
@@ -35,32 +38,30 @@ class ExchangeTest extends TestCase
         $this->exchange = new Exchange(
             $this->connection = new Connection(
                 Transport::tcp(),
-                Url::fromString('//guest:guest@localhost:5672/'),
+                Url::of('//guest:guest@localhost:5672/'),
                 new Protocol($this->createMock(ArgumentTranslator::class)),
                 new ElapsedPeriod(1000),
-                new Earth,
-                new Remote\Generic($this->createMock(Server::class))
+                new Clock,
+                new Remote\Generic($this->createMock(Server::class)),
+                new Sockets\Unix,
             ),
             new Channel(1)
         );
-        $this
-            ->connection
-            ->send(
-                $this->connection->protocol()->channel()->open(new Channel(1))
-            )
-            ->wait('channel.open-ok');
+        $this->connection->send(
+            $this->connection->protocol()->channel()->open(new Channel(1))
+        );
+        $this->connection->wait('channel.open-ok');
     }
 
     public function tearDown(): void
     {
-        $this->connection
-            ->send(
-                $this->connection->protocol()->channel()->close(
-                    new Channel(1),
-                    new Close
-                )
+        $this->connection->send(
+            $this->connection->protocol()->channel()->close(
+                new Channel(1),
+                new Close
             )
-            ->wait('channel.close-ok');
+        );
+        $this->connection->wait('channel.close-ok');
         $this->connection->close();
     }
 
@@ -71,14 +72,12 @@ class ExchangeTest extends TestCase
 
     public function testDeclare()
     {
-        $this->assertSame(
-            $this->exchange,
+        $this->assertNull(
             $this->exchange->declare(
                 Declaration::durable('foo', Type::direct())->dontWait()
             )
         );
-        $this->assertSame(
-            $this->exchange,
+        $this->assertNull(
             $this->exchange->declare(
                 Declaration::durable('bar', Type::direct())
             )
@@ -87,14 +86,12 @@ class ExchangeTest extends TestCase
 
     public function testDelete()
     {
-        $this->assertSame(
-            $this->exchange,
+        $this->assertNull(
             $this->exchange->delete(
                 (new Deletion('foo'))->dontWait()
             )
         );
-        $this->assertSame(
-            $this->exchange,
+        $this->assertNull(
             $this->exchange->delete(
                 new Deletion('bar')
             )

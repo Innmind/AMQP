@@ -34,7 +34,7 @@ class VersionTest extends TestCase
 
     public function testStringCast()
     {
-        $this->assertSame("AMQP\x00\x00\x09\x01", (string) new Version(0, 9, 1));
+        $this->assertSame("AMQP\x00\x00\x09\x01", (new Version(0, 9, 1))->toString());
     }
 
     public function testHigherThan()

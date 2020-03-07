@@ -7,12 +7,12 @@ use Innmind\AMQP\Exception\DomainException;
 
 final class Count
 {
-    private $value;
+    private int $value;
 
     public function __construct(int $value)
     {
         if ($value < 0) {
-            throw new DomainException;
+            throw new DomainException((string) $value);
         }
 
         $this->value = $value;

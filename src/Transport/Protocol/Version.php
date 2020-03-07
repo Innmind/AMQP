@@ -7,14 +7,14 @@ use Innmind\AMQP\Exception\DomainException;
 
 final class Version
 {
-    private $major;
-    private $minor;
-    private $fix;
+    private int $major;
+    private int $minor;
+    private int $fix;
 
     public function __construct(int $major, int $minor, int $fix)
     {
         if (\min($major, $minor, $fix) < 0) {
-            throw new DomainException;
+            throw new DomainException("$major.$minor.$fix");
         }
 
         $this->major = $major;
@@ -63,7 +63,7 @@ final class Version
         return $this->minor >= $version->minor;
     }
 
-    public function __toString(): string
+    public function toString(): string
     {
         return \sprintf(
             "AMQP\x00%s%s%s",

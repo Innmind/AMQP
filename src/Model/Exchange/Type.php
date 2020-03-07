@@ -5,7 +5,7 @@ namespace Innmind\AMQP\Model\Exchange;
 
 final class Type
 {
-    private $value;
+    private string $value;
 
     public function __construct(string $value)
     {
@@ -32,7 +32,7 @@ final class Type
         return new self('headers');
     }
 
-    public function __toString(): string
+    public function toString(): string
     {
         return $this->value;
     }

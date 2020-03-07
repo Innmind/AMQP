@@ -7,9 +7,9 @@ use Innmind\AMQP\Model\Count;
 
 final class DeclareOk
 {
-    private $name;
-    private $message;
-    private $consumer;
+    private string $name;
+    private Count $message;
+    private Count $consumer;
 
     public function __construct(string $name, Count $message, Count $consumer)
     {

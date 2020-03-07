@@ -13,7 +13,7 @@ class ContentEncodingTest extends TestCase
 {
     public function testInterface()
     {
-        $this->assertSame('gzip', (string) new ContentEncoding('gzip'));
+        $this->assertSame('gzip', (new ContentEncoding('gzip'))->toString());
     }
 
     public function testThrowWhenInvalidContentEncoding()

@@ -3,10 +3,7 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport\Frame\Value;
 
-use Innmind\AMQP\{
-    Transport\Frame\Value,
-    Exception\OutOfRangeValue,
-};
+use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\Math\{
     Algebra\Integer,
     Algebra\Number\Infinite,
@@ -15,12 +12,14 @@ use Innmind\Math\{
 };
 use Innmind\Stream\Readable;
 
+/**
+ * @implements Value<Integer>
+ */
 final class UnsignedLongLongInteger implements Value
 {
-    private static $definitionSet;
+    private static ?Set $definitionSet = null;
 
-    private $value;
-    private $original;
+    private Integer $original;
 
     public function __construct(Integer $value)
     {
@@ -29,16 +28,15 @@ final class UnsignedLongLongInteger implements Value
 
     public static function of(Integer $value): self
     {
-        if (!self::definitionSet()->contains($value)) {
-            throw new OutOfRangeValue($value, self::definitionSet());
-        }
+        self::definitionSet()->accept($value);
 
         return new self($value);
     }
 
-    public static function fromStream(Readable $stream): Value
+    public static function unpack(Readable $stream): self
     {
-        [, $value] = \unpack('J', (string) $stream->read(8));
+        /** @var int $value */
+        [, $value] = \unpack('J', $stream->read(8)->toString());
 
         return new self(new Integer($value));
     }
@@ -48,16 +46,16 @@ final class UnsignedLongLongInteger implements Value
         return $this->original;
     }
 
-    public function __toString(): string
+    public function pack(): string
     {
-        return $this->value ?? $this->value = \pack('J', $this->original->value());
+        return \pack('J', $this->original->value());
     }
 
     public static function definitionSet(): Set
     {
         return self::$definitionSet ?? self::$definitionSet = Range::inclusive(
             new Integer(0),
-            Infinite::positive()
+            Infinite::positive(),
         );
     }
 }

@@ -13,10 +13,10 @@ use Innmind\AMQP\{
     Exception\UnknownMethod,
 };
 use Innmind\Math\Algebra\Integer;
-use Innmind\Filesystem\Stream\StringStream;
+use Innmind\Stream\Readable\Stream;
 use Innmind\Immutable\{
     Str,
-    StreamInterface,
+    Sequence,
 };
 use PHPUnit\Framework\TestCase;
 
@@ -29,18 +29,24 @@ class QueueTest extends TestCase
     {
         $read = new Queue;
 
+        $args = '';
+
+        foreach ($arguments as $arg) {
+            $args .= $arg->pack();
+        }
+
         $stream = $read(
             Methods::get($method),
-            new StringStream(implode('', $arguments))
+            Stream::ofContent($args),
         );
 
-        $this->assertInstanceOf(StreamInterface::class, $stream);
+        $this->assertInstanceOf(Sequence::class, $stream);
         $this->assertSame(Value::class, (string) $stream->type());
         $this->assertCount(count($arguments), $stream);
 
         foreach ($arguments as $i => $argument) {
             $this->assertInstanceOf(get_class($argument), $stream->get($i));
-            $this->assertSame((string) $argument, (string) $stream->get($i));
+            $this->assertSame($argument->pack(), $stream->get($i)->pack());
         }
     }
 
@@ -49,7 +55,7 @@ class QueueTest extends TestCase
         $this->expectException(UnknownMethod::class);
         $this->expectExceptionMessage('0,0');
 
-        (new Queue)(new Method(0, 0), new StringStream(''));
+        (new Queue)(new Method(0, 0), Stream::ofContent(''));
     }
 
     public function cases(): array
@@ -58,7 +64,7 @@ class QueueTest extends TestCase
             [
                 'queue.declare-ok',
                 [
-                    new ShortString(new Str('foo')),
+                    new ShortString(Str::of('foo')),
                     new UnsignedLongInteger(new Integer(42)),
                     new UnsignedLongInteger(new Integer(24)),
                 ],

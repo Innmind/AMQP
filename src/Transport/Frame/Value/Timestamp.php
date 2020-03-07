@@ -8,31 +8,33 @@ use Innmind\AMQP\{
     TimeContinuum\Format\Timestamp as TimestampFormat,
 };
 use Innmind\TimeContinuum\{
-    PointInTimeInterface,
-    PointInTime\Earth\PointInTime,
-    Format\ISO8601,
+    PointInTime as PointInTimeInterface,
+    Earth\PointInTime\PointInTime,
+    Earth\Format\ISO8601,
 };
 use Innmind\Math\Algebra\Integer;
 use Innmind\Stream\Readable;
 
+/**
+ * @implements Value<PointInTimeInterface>
+ */
 final class Timestamp implements Value
 {
-    private $value;
-    private $original;
+    private PointInTimeInterface $original;
 
     public function __construct(PointInTimeInterface $point)
     {
         $this->original = $point;
     }
 
-    public static function fromStream(Readable $stream): Value
+    public static function unpack(Readable $stream): self
     {
-        $time = UnsignedLongLongInteger::fromStream($stream)
+        $time = UnsignedLongLongInteger::unpack($stream)
             ->original()
             ->value();
 
         return new self(new PointInTime(
-            \date((string) new ISO8601, $time)
+            \date((new ISO8601)->toString(), $time),
         ));
     }
 
@@ -41,10 +43,10 @@ final class Timestamp implements Value
         return $this->original;
     }
 
-    public function __toString(): string
+    public function pack(): string
     {
-        return $this->value ?? $this->value = (string) new UnsignedLongLongInteger(
-            new Integer((int) $this->original->format(new TimestampFormat))
-        );
+        return (new UnsignedLongLongInteger(
+            new Integer((int) $this->original->format(new TimestampFormat)),
+        ))->pack();
     }
 }

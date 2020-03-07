@@ -12,8 +12,8 @@ class ConsumersTest extends TestCase
     public function testInterface()
     {
         $consumers = new Consumers(
-            (new Map('string', 'callable'))
-                ->put('foo', $expected = function(){})
+            Map::of('string', 'callable')
+                ('foo', $expected = function(){})
         );
 
         $this->assertTrue($consumers->contains('foo'));
@@ -21,26 +21,19 @@ class ConsumersTest extends TestCase
         $this->assertSame($expected, $consumers->get('foo'));
     }
 
-    public function testMapIsOptional()
-    {
-        $consumers = new Consumers;
-
-        $this->assertFalse($consumers->contains('foo'));
-    }
-
     public function testThrowWhenInvaliMapKey()
     {
         $this->expectException(\TypeError::class);
-        $this->expectExceptionMessage('Argument 1 must be of type MapInterface<string, callable>');
+        $this->expectExceptionMessage('Argument 1 must be of type Map<string, callable>');
 
-        new Consumers(new Map('int', 'callable'));
+        new Consumers(Map::of('int', 'callable'));
     }
 
     public function testThrowWhenInvaliMapValue()
     {
         $this->expectException(\TypeError::class);
-        $this->expectExceptionMessage('Argument 1 must be of type MapInterface<string, callable>');
+        $this->expectExceptionMessage('Argument 1 must be of type Map<string, callable>');
 
-        new Consumers(new Map('string', 'string'));
+        new Consumers(Map::of('string', 'string'));
     }
 }

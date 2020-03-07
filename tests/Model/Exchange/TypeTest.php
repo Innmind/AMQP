@@ -10,7 +10,7 @@ class TypeTest extends TestCase
 {
     public function testInterface()
     {
-        $this->assertSame('foo', (string) new Type('foo'));
+        $this->assertSame('foo', (new Type('foo'))->toString());
     }
 
     public function testDirect()
@@ -18,7 +18,7 @@ class TypeTest extends TestCase
         $type = Type::direct();
 
         $this->assertInstanceOf(Type::class, $type);
-        $this->assertSame('direct', (string) $type);
+        $this->assertSame('direct', $type->toString());
     }
 
     public function testFanout()
@@ -26,7 +26,7 @@ class TypeTest extends TestCase
         $type = Type::fanout();
 
         $this->assertInstanceOf(Type::class, $type);
-        $this->assertSame('fanout', (string) $type);
+        $this->assertSame('fanout', $type->toString());
     }
 
     public function testTopic()
@@ -34,7 +34,7 @@ class TypeTest extends TestCase
         $type = Type::topic();
 
         $this->assertInstanceOf(Type::class, $type);
-        $this->assertSame('topic', (string) $type);
+        $this->assertSame('topic', $type->toString());
     }
 
     public function testHeaders()
@@ -42,6 +42,6 @@ class TypeTest extends TestCase
         $type = Type::headers();
 
         $this->assertInstanceOf(Type::class, $type);
-        $this->assertSame('headers', (string) $type);
+        $this->assertSame('headers', $type->toString());
     }
 }

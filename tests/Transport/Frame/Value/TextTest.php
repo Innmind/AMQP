@@ -7,7 +7,7 @@ use Innmind\AMQP\Transport\Frame\{
     Value\Text,
     Value,
 };
-use Innmind\Filesystem\Stream\StringStream;
+use Innmind\Stream\Readable\Stream;
 use Innmind\Immutable\Str;
 use PHPUnit\Framework\TestCase;
 
@@ -15,7 +15,7 @@ class TextTest extends TestCase
 {
     public function testInterface()
     {
-        $this->assertInstanceOf(Value::class, new Text(new Str('')));
+        $this->assertInstanceOf(Value::class, new Text(Str::of('')));
     }
 
     /**
@@ -23,8 +23,8 @@ class TextTest extends TestCase
      */
     public function testStringCast($string, $expected)
     {
-        $value = new Text($str = new Str($string));
-        $this->assertSame($expected, (string) $value);
+        $value = new Text($str = Str::of($string));
+        $this->assertSame($expected, $value->pack());
         $this->assertSame($str, $value->original());
     }
 
@@ -33,11 +33,11 @@ class TextTest extends TestCase
      */
     public function testFromStream($expected, $string)
     {
-        $value = Text::fromStream(new StringStream($string));
+        $value = Text::unpack(Stream::ofContent($string));
 
         $this->assertInstanceOf(Text::class, $value);
-        $this->assertSame((string) $string, (string) $value->original());
-        $this->assertSame($expected, (string) $value);
+        $this->assertSame($string, $value->original()->toString());
+        $this->assertSame($expected, $value->pack());
     }
 
     public function cases(): array

@@ -5,8 +5,8 @@ namespace Innmind\AMQP\Model\Basic;
 
 final class Get
 {
-    private $queue;
-    private $ack = true;
+    private string $queue;
+    private bool $ack = true;
 
     public function __construct(string $queue)
     {

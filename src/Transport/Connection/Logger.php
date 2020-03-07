@@ -14,8 +14,8 @@ use Psr\Log\LoggerInterface;
 
 final class Logger implements ConnectionInterface
 {
-    private $connection;
-    private $logger;
+    private ConnectionInterface $connection;
+    private LoggerInterface $logger;
 
     public function __construct(
         ConnectionInterface $connection,
@@ -30,29 +30,21 @@ final class Logger implements ConnectionInterface
         return $this->connection->protocol();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function send(Frame $frame): ConnectionInterface
+    public function send(Frame $frame): void
     {
         $this->logger->debug(
             'AMQP frame about to be sent',
             [
                 'type' => $frame->type()->toInt(),
                 'channel' => $frame->channel()->toInt(),
-                'uuid' => $uuid = (string) Uuid::uuid4(),
-            ]
+                'uuid' => $uuid = Uuid::uuid4()->toString(),
+            ],
         );
 
         $this->connection->send($frame);
         $this->logger->debug('AMQP frame sent', ['uuid' => $uuid]);
-
-        return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function wait(string ...$names): Frame
     {
         $this->logger->debug('Waiting for AMQP frame', ['names' => $names]);
@@ -62,7 +54,7 @@ final class Logger implements ConnectionInterface
             [
                 'type' => $frame->type()->toInt(),
                 'channel' => $frame->channel()->toInt(),
-            ]
+            ],
         );
 
         return $frame;

@@ -42,15 +42,16 @@ use Innmind\AMQP\{
     Model\Connection\MaxFrameSize,
 };
 use Innmind\Math\Algebra\Integer;
-use Innmind\TimeContinuum\{
-    PointInTime\Earth\Now,
+use Innmind\TimeContinuum\Earth\{
+    PointInTime\Now,
     ElapsedPeriod,
 };
 use Innmind\Immutable\{
     Str,
-    StreamInterface,
+    Sequence,
     Map,
 };
+use function Innmind\Immutable\unwrap;
 use PHPUnit\Framework\TestCase;
 
 class BasicTest extends TestCase
@@ -111,7 +112,7 @@ class BasicTest extends TestCase
         $this->assertTrue($frame->is(new Method(60, 30)));
         $this->assertCount(2, $frame->values());
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(0));
-        $this->assertSame('consumer', (string) $frame->values()->get(0)->original());
+        $this->assertSame('consumer', $frame->values()->get(0)->original()->toString());
         $this->assertInstanceOf(Bits::class, $frame->values()->get(1));
         $this->assertFalse($frame->values()->get(1)->original()->first());
 
@@ -159,13 +160,13 @@ class BasicTest extends TestCase
         );
         $this->assertSame(0, $frame->values()->get(0)->original()->value());
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(1));
-        $this->assertSame('queue', (string) $frame->values()->get(1)->original());
+        $this->assertSame('queue', $frame->values()->get(1)->original()->toString());
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(2));
-        $this->assertSame('', (string) $frame->values()->get(2)->original());
+        $this->assertSame('', $frame->values()->get(2)->original()->toString());
         $this->assertInstanceOf(Bits::class, $frame->values()->get(3));
         $this->assertSame(
             [false, false, false, false],
-            $frame->values()->get(3)->original()->toPrimitive()
+            unwrap($frame->values()->get(3)->original())
         );
         $this->assertInstanceOf(Table::class, $frame->values()->get(4));
         $this->assertCount(2, $frame->values()->get(4)->original());
@@ -177,7 +178,7 @@ class BasicTest extends TestCase
             (new Consume('queue'))->withConsumerTag('tag')
         );
 
-        $this->assertSame('tag', (string) $frame->values()->get(2)->original());
+        $this->assertSame('tag', $frame->values()->get(2)->original()->toString());
 
         $frame = $this->basic->consume(
             $channel = new Channel(1),
@@ -186,7 +187,7 @@ class BasicTest extends TestCase
 
         $this->assertSame(
             [true, false, false, false],
-            $frame->values()->get(3)->original()->toPrimitive()
+            unwrap($frame->values()->get(3)->original())
         );
 
         $frame = $this->basic->consume(
@@ -196,7 +197,7 @@ class BasicTest extends TestCase
 
         $this->assertSame(
             [false, true, false, false],
-            $frame->values()->get(3)->original()->toPrimitive()
+            unwrap($frame->values()->get(3)->original())
         );
 
         $frame = $this->basic->consume(
@@ -206,7 +207,7 @@ class BasicTest extends TestCase
 
         $this->assertSame(
             [false, false, true, false],
-            $frame->values()->get(3)->original()->toPrimitive()
+            unwrap($frame->values()->get(3)->original())
         );
 
         $frame = $this->basic->consume(
@@ -218,7 +219,7 @@ class BasicTest extends TestCase
 
         $this->assertSame(
             [false, false, false, true],
-            $frame->values()->get(3)->original()->toPrimitive()
+            unwrap($frame->values()->get(3)->original())
         );
     }
 
@@ -240,7 +241,7 @@ class BasicTest extends TestCase
         );
         $this->assertSame(0, $frame->values()->get(0)->original()->value());
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(1));
-        $this->assertSame('queue', (string) $frame->values()->get(1)->original());
+        $this->assertSame('queue', $frame->values()->get(1)->original()->toString());
         $this->assertInstanceOf(Bits::class, $frame->values()->get(2));
         $this->assertFalse($frame->values()->get(2)->original()->first());
 
@@ -256,11 +257,11 @@ class BasicTest extends TestCase
     {
         $frames = $this->basic->publish(
             $channel = new Channel(1),
-            new Publish(new Generic(new Str('foobar'))),
+            new Publish(new Generic(Str::of('foobar'))),
             new MaxFrameSize(0)
         );
 
-        $this->assertInstanceOf(StreamInterface::class, $frames);
+        $this->assertInstanceOf(Sequence::class, $frames);
         $this->assertSame(Frame::class, (string) $frames->type());
         $this->assertCount(3, $frames);
 
@@ -275,13 +276,13 @@ class BasicTest extends TestCase
         );
         $this->assertSame(0, $frame->values()->get(0)->original()->value());
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(1));
-        $this->assertSame('', (string) $frame->values()->get(1)->original());
+        $this->assertSame('', $frame->values()->get(1)->original()->toString());
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(2));
-        $this->assertSame('', (string) $frame->values()->get(2)->original());
+        $this->assertSame('', $frame->values()->get(2)->original()->toString());
         $this->assertInstanceOf(Bits::class, $frame->values()->get(3));
         $this->assertSame(
             [false, false],
-            $frame->values()->get(3)->original()->toPrimitive()
+            unwrap($frame->values()->get(3)->original())
         );
 
         $frame = $frames->get(1);
@@ -304,7 +305,7 @@ class BasicTest extends TestCase
         $this->assertSame($channel, $frame->channel());
         $this->assertSame(
             'foobar',
-            (string) $frame->values()->first()->original()
+            $frame->values()->first()->original()->toString(),
         );
     }
 
@@ -312,11 +313,11 @@ class BasicTest extends TestCase
     {
         $frames = $this->basic->publish(
             $channel = new Channel(1),
-            new Publish(new Generic(new Str('foobar'))),
+            new Publish(new Generic(Str::of('foobar'))),
             new MaxFrameSize(11)
         );
 
-        $this->assertInstanceOf(StreamInterface::class, $frames);
+        $this->assertInstanceOf(Sequence::class, $frames);
         $this->assertSame(Frame::class, (string) $frames->type());
         $this->assertCount(4, $frames);
 
@@ -328,7 +329,7 @@ class BasicTest extends TestCase
         $this->assertSame($channel, $frame->channel());
         $this->assertSame(
             'foo',
-            (string) $frame->values()->first()->original()
+            $frame->values()->first()->original()->toString(),
         );
 
         $frame = $frames->last();
@@ -336,7 +337,7 @@ class BasicTest extends TestCase
         $this->assertSame($channel, $frame->channel());
         $this->assertSame(
             'bar',
-            (string) $frame->values()->first()->original()
+            $frame->values()->first()->original()->toString(),
         );
     }
 
@@ -347,12 +348,12 @@ class BasicTest extends TestCase
         $frames = $basic->publish(
             $channel = new Channel(1),
             new Publish(
-                (new Generic(new Str('foobar')))
+                (new Generic(Str::of('foobar')))
                     ->withContentType(new ContentType('application', 'json'))
                     ->withContentEncoding(new ContentEncoding('gzip'))
                     ->withHeaders(
-                        (new Map('string', 'mixed'))
-                            ->put('foo', new ShortString(new Str('bar')))
+                        Map::of('string', 'mixed')
+                            ('foo', new ShortString(Str::of('bar')))
                     )
                     ->withDeliveryMode(DeliveryMode::persistent())
                     ->withPriority(new Priority(5))
@@ -368,7 +369,7 @@ class BasicTest extends TestCase
             new MaxFrameSize(0)
         );
 
-        $this->assertInstanceOf(StreamInterface::class, $frames);
+        $this->assertInstanceOf(Sequence::class, $frames);
         $this->assertSame(Frame::class, (string) $frames->type());
         $this->assertCount(3, $frames);
 
@@ -406,7 +407,7 @@ class BasicTest extends TestCase
         );
         $this->assertSame(
             'application/json',
-            (string) $frame->values()->get(2)->original()
+            $frame->values()->get(2)->original()->toString(),
         );
         $this->assertInstanceOf(
             ShortString::class,
@@ -414,7 +415,7 @@ class BasicTest extends TestCase
         );
         $this->assertSame(
             'gzip',
-            (string) $frame->values()->get(3)->original()
+            $frame->values()->get(3)->original()->toString(),
         );
         $this->assertInstanceOf(
             Table::class,
@@ -423,7 +424,7 @@ class BasicTest extends TestCase
         $this->assertCount(1, $frame->values()->get(4)->original());
         $this->assertSame(
             'bar',
-            (string) $frame->values()->get(4)->original()->get('foo')->original()
+            $frame->values()->get(4)->original()->get('foo')->original()->toString(),
         );
         $this->assertInstanceOf(
             UnsignedOctet::class,
@@ -441,7 +442,7 @@ class BasicTest extends TestCase
         );
         $this->assertSame(
             'correlation',
-            (string) $frame->values()->get(7)->original()
+            $frame->values()->get(7)->original()->toString(),
         );
         $this->assertInstanceOf(
             ShortString::class,
@@ -449,7 +450,7 @@ class BasicTest extends TestCase
         );
         $this->assertSame(
             'reply',
-            (string) $frame->values()->get(8)->original()
+            $frame->values()->get(8)->original()->toString(),
         );
         $this->assertInstanceOf(
             ShortString::class,
@@ -457,7 +458,7 @@ class BasicTest extends TestCase
         );
         $this->assertSame(
             '1000',
-            (string) $frame->values()->get(9)->original()
+            $frame->values()->get(9)->original()->toString(),
         );
         $this->assertInstanceOf(
             ShortString::class,
@@ -465,7 +466,7 @@ class BasicTest extends TestCase
         );
         $this->assertSame(
             'id',
-            (string) $frame->values()->get(10)->original()
+            $frame->values()->get(10)->original()->toString(),
         );
         $this->assertInstanceOf(
             Timestamp::class,
@@ -478,7 +479,7 @@ class BasicTest extends TestCase
         );
         $this->assertSame(
             'type',
-            (string) $frame->values()->get(12)->original()
+            $frame->values()->get(12)->original()->toString(),
         );
         $this->assertInstanceOf(
             ShortString::class,
@@ -486,7 +487,7 @@ class BasicTest extends TestCase
         );
         $this->assertSame(
             'guest',
-            (string) $frame->values()->get(13)->original()
+            $frame->values()->get(13)->original()->toString(),
         );
         $this->assertInstanceOf(
             ShortString::class,
@@ -494,7 +495,7 @@ class BasicTest extends TestCase
         );
         $this->assertSame(
             'webcrawler',
-            (string) $frame->values()->get(14)->original()
+            $frame->values()->get(14)->original()->toString(),
         );
     }
 
@@ -502,38 +503,38 @@ class BasicTest extends TestCase
     {
         $frames = $this->basic->publish(
             $channel = new Channel(1),
-            (new Publish(new Generic(new Str(''))))->to('foo'),
+            (new Publish(new Generic(Str::of(''))))->to('foo'),
             new MaxFrameSize(0)
         );
 
         $frame = $frames->first();
-        $this->assertSame('foo', (string) $frame->values()->get(1)->original());
+        $this->assertSame('foo', $frame->values()->get(1)->original()->toString());
     }
 
     public function testPublishWithRoutingKey()
     {
         $frames = $this->basic->publish(
             $channel = new Channel(1),
-            (new Publish(new Generic(new Str(''))))->withRoutingKey('foo'),
+            (new Publish(new Generic(Str::of(''))))->withRoutingKey('foo'),
             new MaxFrameSize(0)
         );
 
         $frame = $frames->first();
-        $this->assertSame('foo', (string) $frame->values()->get(2)->original());
+        $this->assertSame('foo', $frame->values()->get(2)->original()->toString());
     }
 
     public function testMandatoryPublish()
     {
         $frames = $this->basic->publish(
             $channel = new Channel(1),
-            (new Publish(new Generic(new Str(''))))->flagAsMandatory(),
+            (new Publish(new Generic(Str::of(''))))->flagAsMandatory(),
             new MaxFrameSize(0)
         );
 
         $frame = $frames->first();
         $this->assertSame(
             [true, false],
-            $frame->values()->get(3)->original()->toPrimitive()
+            unwrap($frame->values()->get(3)->original())
         );
     }
 
@@ -541,14 +542,14 @@ class BasicTest extends TestCase
     {
         $frames = $this->basic->publish(
             $channel = new Channel(1),
-            (new Publish(new Generic(new Str(''))))->flagAsImmediate(),
+            (new Publish(new Generic(Str::of(''))))->flagAsImmediate(),
             new MaxFrameSize(0)
         );
 
         $frame = $frames->first();
         $this->assertSame(
             [false, true],
-            $frame->values()->get(3)->original()->toPrimitive()
+            unwrap($frame->values()->get(3)->original())
         );
     }
 

@@ -5,31 +5,35 @@ namespace Innmind\AMQP\Transport\Frame\Visitor;
 
 use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\Stream\Readable;
-use Innmind\Immutable\{
-    StreamInterface,
-    Stream,
-};
+use Innmind\Immutable\Sequence;
 
 final class ChunkArguments
 {
-    private $types;
+    /** @var list<class-string<Value>> */
+    private array $types;
 
+    /**
+     * @param list<class-string<Value>> $types
+     */
     public function __construct(string ...$types)
     {
         $this->types = $types;
     }
 
     /**
-     * @return StreamInterface<Value>
+     * @return Sequence<Value>
      */
-    public function __invoke(Readable $arguments): StreamInterface
+    public function __invoke(Readable $arguments): Sequence
     {
-        $stream = new Stream(Value::class);
+        /** @var Sequence<Value> */
+        $sequence = Sequence::of(Value::class);
 
         foreach ($this->types as $type) {
-            $stream = $stream->add([$type, 'fromStream']($arguments));
+            /** @var Value */
+            $value = [$type, 'unpack']($arguments);
+            $sequence = ($sequence)($value);
         }
 
-        return $stream;
+        return $sequence;
     }
 }

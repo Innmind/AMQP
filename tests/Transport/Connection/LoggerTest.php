@@ -74,7 +74,7 @@ class LoggerTest extends TestCase
                 })
             );
 
-        $this->assertSame($connection, $connection->send($frame));
+        $this->assertNull($connection->send($frame));
     }
 
     public function testWait()

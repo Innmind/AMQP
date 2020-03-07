@@ -10,6 +10,6 @@ use Innmind\AMQP\Model\Exchange\{
 
 interface Exchange
 {
-    public function declare(Declaration $command): self;
-    public function delete(Deletion $command): self;
+    public function declare(Declaration $command): void;
+    public function delete(Deletion $command): void;
 }

@@ -7,8 +7,8 @@ use Innmind\AMQP\Client as ClientInterface;
 
 final class Fluent implements ClientInterface
 {
-    private $client;
-    private $closed = false;
+    private ClientInterface $client;
+    private bool $closed = false;
 
     public function __construct(ClientInterface $client)
     {

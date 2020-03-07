@@ -3,7 +3,14 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport;
 
-use Innmind\AMQP\Model\Connection\MaxFrameSize;
+use Innmind\AMQP\{
+    Model\Connection\MaxFrameSize,
+    Exception\ExpectedMethodFrame,
+    Exception\ConnectionClosed,
+    Exception\UnexpectedFrame,
+    Exception\FrameChannelExceedAllowedChannelNumber,
+    Exception\FrameExceedAllowedSize,
+};
 
 interface Connection
 {
@@ -13,7 +20,7 @@ interface Connection
      * @throws FrameChannelExceedAllowedChannelNumber
      * @throws FrameExceedAllowedSize
      */
-    public function send(Frame $frame): self;
+    public function send(Frame $frame): void;
 
     /**
      * @throws ExpectedMethodFrame When expecting a method frame but another type is received

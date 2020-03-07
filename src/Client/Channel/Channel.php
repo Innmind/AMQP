@@ -12,22 +12,21 @@ use Innmind\AMQP\{
 
 final class Channel implements ChannelInterfce
 {
-    private $connection;
-    private $number;
-    private $exchange;
-    private $queue;
-    private $basic;
-    private $transaction;
-    private $closed = false;
+    private Connection $connection;
+    private Number $number;
+    private Exchange $exchange;
+    private Queue $queue;
+    private Basic $basic;
+    private Transaction $transaction;
+    private bool $closed = false;
 
     public function __construct(Connection $connection, Number $number)
     {
         $this->connection = $connection;
         $this->number = $number;
 
-        $connection
-            ->send($connection->protocol()->channel()->open($number))
-            ->wait('channel.open-ok');
+        $connection->send($connection->protocol()->channel()->open($number));
+        $connection->wait('channel.open-ok');
 
         $this->exchange = new Exchange\Exchange($connection, $number);
         $this->queue = new Queue\Queue($connection, $number);
@@ -66,13 +65,11 @@ final class Channel implements ChannelInterfce
             return;
         }
 
-        $this
-            ->connection
-            ->send($this->connection->protocol()->channel()->close(
-                $this->number,
-                new Close
-            ))
-            ->wait('channel.close-ok');
+        $this->connection->send($this->connection->protocol()->channel()->close(
+            $this->number,
+            new Close,
+        ));
+        $this->connection->wait('channel.close-ok');
         $this->closed = true;
     }
 }

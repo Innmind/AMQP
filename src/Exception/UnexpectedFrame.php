@@ -7,13 +7,13 @@ use Innmind\AMQP\Transport\Frame;
 
 final class UnexpectedFrame extends RuntimeException
 {
-    private $frame;
+    private Frame $frame;
 
     public function __construct(Frame $frame, string ...$names)
     {
-        parent::__construct(sprintf(
+        parent::__construct(\sprintf(
             'Expected %s',
-            \implode(' or ', $names)
+            \implode(' or ', $names),
         ));
         $this->frame = $frame;
     }

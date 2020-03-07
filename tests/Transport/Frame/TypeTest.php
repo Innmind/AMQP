@@ -28,7 +28,7 @@ class TypeTest extends TestCase
      */
     public function testFromInt($type, $expected)
     {
-        $this->assertSame(Type::$expected(), Type::fromInt($type));
+        $this->assertSame(Type::$expected(), Type::of($type));
     }
 
     public function testThrowWhenUnknownType()
@@ -36,7 +36,7 @@ class TypeTest extends TestCase
         $this->expectException(UnknownFrameType::class);
         $this->expectExceptionMessage('4');
 
-        Type::fromInt(4);
+        Type::of(4);
     }
 
     public function cases(): array

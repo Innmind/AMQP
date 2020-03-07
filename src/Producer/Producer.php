@@ -9,10 +9,11 @@ use Innmind\AMQP\{
     Model\Basic\Publish,
     Model\Basic\Message,
 };
+
 final class Producer implements ProducerInterface
 {
-    private $client;
-    private $exchange;
+    private Client $client;
+    private string $exchange;
 
     public function __construct(Client $client, string $exchange)
     {
@@ -20,18 +21,16 @@ final class Producer implements ProducerInterface
         $this->exchange = $exchange;
     }
 
-    public function __invoke(Message $message, string $routingKey = null): ProducerInterface
+    public function __invoke(Message $message, string $routingKey = null): void
     {
         $this
             ->client
             ->channel()
             ->basic()
             ->publish(
-                (new Publish($message))
+                Publish::a($message)
                     ->to($this->exchange)
                     ->withRoutingKey($routingKey ?? '')
             );
-
-        return $this;
     }
 }

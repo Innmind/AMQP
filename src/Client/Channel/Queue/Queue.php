@@ -16,12 +16,13 @@ use Innmind\AMQP\{
     Model\Count,
     Transport\Connection,
     Transport\Frame\Channel,
+    Transport\Frame\Value,
 };
 
 final class Queue implements QueueInterface
 {
-    private $connection;
-    private $channel;
+    private Connection $connection;
+    private Channel $channel;
 
     public function __construct(Connection $connection, Channel $channel)
     {
@@ -34,8 +35,8 @@ final class Queue implements QueueInterface
         $this->connection->send(
             $this->connection->protocol()->queue()->declare(
                 $this->channel,
-                $command
-            )
+                $command,
+            ),
         );
 
         if (!$command->shouldWait()) {
@@ -43,11 +44,17 @@ final class Queue implements QueueInterface
         }
 
         $frame = $this->connection->wait('queue.declare-ok');
+        /** @var Value\ShortString */
+        $name = $frame->values()->get(0);
+        /** @var Value\UnsignedLongInteger */
+        $message = $frame->values()->get(1);
+        /** @var Value\UnsignedLongInteger */
+        $consumer = $frame->values()->get(2);
 
         return new DeclareOk(
-            (string) $frame->values()->get(0)->original(),
-            new Count($frame->values()->get(1)->original()->value()),
-            new Count($frame->values()->get(2)->original()->value())
+            $name->original()->toString(),
+            new Count($message->original()->value()),
+            new Count($consumer->original()->value()),
         );
     }
 
@@ -56,8 +63,8 @@ final class Queue implements QueueInterface
         $this->connection->send(
             $this->connection->protocol()->queue()->delete(
                 $this->channel,
-                $command
-            )
+                $command,
+            ),
         );
 
         if (!$command->shouldWait()) {
@@ -65,39 +72,35 @@ final class Queue implements QueueInterface
         }
 
         $frame = $this->connection->wait('queue.delete-ok');
+        /** @var Value\UnsignedLongInteger */
+        $message = $frame->values()->first();
 
         return new DeleteOk(new Count(
-            $frame->values()->first()->original()->value()
+            $message->original()->value(),
         ));
     }
 
-    public function bind(Binding $command): QueueInterface
+    public function bind(Binding $command): void
     {
         $this->connection->send(
             $this->connection->protocol()->queue()->bind(
                 $this->channel,
-                $command
-            )
+                $command,
+            ),
         );
 
         if ($command->shouldWait()) {
             $this->connection->wait('queue.bind-ok');
         }
-
-        return $this;
     }
 
-    public function unbind(Unbinding $command): QueueInterface
+    public function unbind(Unbinding $command): void
     {
-        $this
-            ->connection
-            ->send($this->connection->protocol()->queue()->unbind(
-                $this->channel,
-                $command
-            ))
-            ->wait('queue.unbind-ok');
-
-        return $this;
+        $this->connection->send($this->connection->protocol()->queue()->unbind(
+            $this->channel,
+            $command,
+        ));
+        $this->connection->wait('queue.unbind-ok');
     }
 
     public function purge(Purge $command): ?PurgeOk
@@ -105,8 +108,8 @@ final class Queue implements QueueInterface
         $this->connection->send(
             $this->connection->protocol()->queue()->purge(
                 $this->channel,
-                $command
-            )
+                $command,
+            ),
         );
 
         if (!$command->shouldWait()) {
@@ -114,9 +117,11 @@ final class Queue implements QueueInterface
         }
 
         $frame = $this->connection->wait('queue.purge-ok');
+        /** @var Value\UnsignedLongInteger */
+        $message = $frame->values()->first();
 
         return new PurgeOk(new Count(
-            $frame->values()->first()->original()->value()
+            $message->original()->value(),
         ));
     }
 }

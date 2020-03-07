@@ -16,12 +16,15 @@ use Innmind\AMQP\{
     Transport\Frame\Channel as Number,
 };
 use Innmind\Socket\Internet\Transport;
-use Innmind\TimeContinuum\{
+use Innmind\TimeContinuum\Earth\{
     ElapsedPeriod,
-    TimeContinuum\Earth,
+    Clock,
 };
 use Innmind\Url\Url;
-use Innmind\OperatingSystem\Remote;
+use Innmind\OperatingSystem\{
+    Remote,
+    Sockets,
+};
 use Innmind\Server\Control\Server;
 use PHPUnit\Framework\TestCase;
 
@@ -35,11 +38,12 @@ class ChannelTest extends TestCase
         $this->channel = new Channel(
             $this->connection = new Connection(
                 Transport::tcp(),
-                Url::fromString('//guest:guest@localhost:5672/'),
+                Url::of('//guest:guest@localhost:5672/'),
                 new Protocol(new ValueTranslator),
                 new ElapsedPeriod(1000),
-                new Earth,
-                new Remote\Generic($this->createMock(Server::class))
+                new Clock,
+                new Remote\Generic($this->createMock(Server::class)),
+                new Sockets\Unix,
             ),
             new Number(1)
         );

@@ -24,6 +24,14 @@ class PublishTest extends TestCase
         $this->assertFalse($command->immediate());
     }
 
+    public function testA()
+    {
+        $command = Publish::a($message = $this->createMock(Message::class));
+
+        $this->assertInstanceOf(Publish::class, $command);
+        $this->assertSame($message, $command->message());
+    }
+
     public function testTo()
     {
         $command = new Publish($this->createMock(Message::class));

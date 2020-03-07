@@ -38,7 +38,7 @@ class ChannelTest extends TestCase
         $this->assertTrue($frame->is(new Method(20, 10)));
         $this->assertCount(1, $frame->values());
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(0));
-        $this->assertSame('', (string) $frame->values()->get(0)->original());
+        $this->assertSame('', $frame->values()->get(0)->original()->toString());
     }
 
     public function testFlow()
@@ -105,7 +105,7 @@ class ChannelTest extends TestCase
         );
         $this->assertSame(0, $frame->values()->get(0)->original()->value());
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(1));
-        $this->assertSame('', (string) $frame->values()->get(1)->original());
+        $this->assertSame('', $frame->values()->get(1)->original()->toString());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
             $frame->values()->get(2)
@@ -123,7 +123,7 @@ class ChannelTest extends TestCase
         );
 
         $this->assertSame(1, $frame->values()->get(0)->original()->value());
-        $this->assertSame('foo', (string) $frame->values()->get(1)->original());
+        $this->assertSame('foo', $frame->values()->get(1)->original()->toString());
         $this->assertSame(20, $frame->values()->get(2)->original()->value());
         $this->assertSame(40, $frame->values()->get(3)->original()->value());
     }

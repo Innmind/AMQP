@@ -8,10 +8,12 @@ use Innmind\Math\Algebra\Integer;
 use Innmind\Stream\Readable;
 use Innmind\Immutable\Str;
 
+/**
+ * @implements Value<Str>
+ */
 final class LongString implements Value
 {
-    private $value;
-    private $original;
+    private Str $original;
 
     public function __construct(Str $string)
     {
@@ -25,9 +27,9 @@ final class LongString implements Value
         return new self($string);
     }
 
-    public static function fromStream(Readable $stream): Value
+    public static function unpack(Readable $stream): self
     {
-        $length = UnsignedLongInteger::fromStream($stream)->original();
+        $length = UnsignedLongInteger::unpack($stream)->original();
 
         return new self($stream->read($length->value()));
     }
@@ -37,10 +39,10 @@ final class LongString implements Value
         return $this->original;
     }
 
-    public function __toString(): string
+    public function pack(): string
     {
-        return $this->value ?? $this->value = new UnsignedLongInteger(
+        return (new UnsignedLongInteger(
             new Integer($this->original->toEncoding('ASCII')->length())
-        ).$this->original;
+        ))->pack().$this->original->toString();
     }
 }

@@ -5,8 +5,8 @@ namespace Innmind\AMQP\Model\Basic;
 
 final class Reject
 {
-    private $deliveryTag;
-    private $requeue = false;
+    private int $deliveryTag;
+    private bool $requeue = false;
 
     public function __construct(int $deliveryTag)
     {

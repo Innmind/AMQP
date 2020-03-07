@@ -18,14 +18,14 @@ use Innmind\AMQP\{
     Transport\Connection\MessageReader,
     Transport\Frame,
     Transport\Frame\Channel,
+    Transport\Frame\Value,
 };
-use Innmind\TimeContinuum\ElapsedPeriod;
 
 final class Basic implements BasicInterface
 {
-    private $connection;
-    private $channel;
-    private $read;
+    private Connection $connection;
+    private Channel $channel;
+    private MessageReader $read;
 
     public function __construct(Connection $connection, Channel $channel)
     {
@@ -34,32 +34,28 @@ final class Basic implements BasicInterface
         $this->read = new MessageReader;
     }
 
-    public function ack(Ack $command): BasicInterface
+    public function ack(Ack $command): void
     {
         $this->connection->send(
             $this->connection->protocol()->basic()->ack(
                 $this->channel,
-                $command
-            )
+                $command,
+            ),
         );
-
-        return $this;
     }
 
-    public function cancel(Cancel $command): BasicInterface
+    public function cancel(Cancel $command): void
     {
         $this->connection->send(
             $this->connection->protocol()->basic()->cancel(
                 $this->channel,
-                $command
-            )
+                $command,
+            ),
         );
 
         if ($command->shouldWait()) {
             $this->connection->wait('basic.cancel-ok');
         }
-
-        return $this;
     }
 
     public function consume(Consume $command): Consumer
@@ -67,13 +63,15 @@ final class Basic implements BasicInterface
         $this->connection->send(
             $this->connection->protocol()->basic()->consume(
                 $this->channel,
-                $command
-            )
+                $command,
+            ),
         );
 
         if ($command->shouldWait()) {
             $frame = $this->connection->wait('basic.consume-ok');
-            $consumerTag = (string) $frame->values()->first()->original();
+            /** @var Value\ShortString */
+            $consumerTag = $frame->values()->first();
+            $consumerTag = $consumerTag->original()->toString();
         } else {
             $consumerTag = $command->consumerTag();
         }
@@ -82,40 +80,48 @@ final class Basic implements BasicInterface
             $this->connection,
             $command,
             $this->channel,
-            $consumerTag
+            $consumerTag,
         );
     }
 
     public function get(GetCommand $command): Get
     {
-        $frame = $this
-            ->connection
-            ->send($this->connection->protocol()->basic()->get(
-                $this->channel,
-                $command
-            ))
-            ->wait('basic.get-ok', 'basic.get-empty');
+        $this->connection->send($this->connection->protocol()->basic()->get(
+            $this->channel,
+            $command,
+        ));
+        $frame = $this->connection->wait('basic.get-ok', 'basic.get-empty');
 
         if ($frame->is($this->connection->protocol()->method('basic.get-empty'))) {
             return new Get\GetEmpty;
         }
 
         $message = ($this->read)($this->connection);
+        /** @var Value\UnsignedLongLongInteger */
+        $deliveryTag = $frame->values()->first();
+        /** @var Value\Bits */
+        $redelivered = $frame->values()->get(1);
+        /** @var Value\ShortString */
+        $exchange = $frame->values()->get(2);
+        /** @var Value\ShortString */
+        $routingKey = $frame->values()->get(3);
+        /** @var Value\UnsignedLongInteger */
+        $messageCount = $frame->values()->get(4);
 
         return new Get\GetOk(
             $this->connection,
             $this->channel,
             $command,
             new Locked($message),
-            $frame->values()->first()->original()->value(), //deliveryTag
-            $frame->values()->get(1)->original()->first(), //redelivered
-            (string) $frame->values()->get(2)->original(), //exchange
-            (string) $frame->values()->get(3)->original(), //routingKey
-            $frame->values()->get(4)->original()->value() //messageCount
+            $deliveryTag->original()->value(),
+            $redelivered->original()->first(),
+            $exchange->original()->toString(),
+            $routingKey->original()->toString(),
+            $messageCount->original()->value(),
         );
     }
 
-    public function publish(Publish $command): BasicInterface
+    public function publish(Publish $command): void
     {
         $this
             ->connection
@@ -124,50 +130,38 @@ final class Basic implements BasicInterface
             ->publish(
                 $this->channel,
                 $command,
-                $this->connection->maxFrameSize()
+                $this->connection->maxFrameSize(),
             )
             ->foreach(function(Frame $frame): void {
                 $this->connection->send($frame);
             });
-
-        return $this;
     }
 
-    public function qos(Qos $command): BasicInterface
+    public function qos(Qos $command): void
     {
-        $this
-            ->connection
-            ->send($this->connection->protocol()->basic()->qos(
-                $this->channel,
-                $command
-            ))
-            ->wait('basic.qos-ok');
-
-        return $this;
+        $this->connection->send($this->connection->protocol()->basic()->qos(
+            $this->channel,
+            $command,
+        ));
+        $this->connection->wait('basic.qos-ok');
     }
 
-    public function recover(Recover $command): BasicInterface
+    public function recover(Recover $command): void
     {
-        $this
-            ->connection
-            ->send($this->connection->protocol()->basic()->recover(
-                $this->channel,
-                $command
-            ))
-            ->wait('basic.recover-ok');
-
-        return $this;
+        $this->connection->send($this->connection->protocol()->basic()->recover(
+            $this->channel,
+            $command,
+        ));
+        $this->connection->wait('basic.recover-ok');
     }
 
-    public function reject(Reject $command): BasicInterface
+    public function reject(Reject $command): void
     {
         $this->connection->send(
             $this->connection->protocol()->basic()->reject(
                 $this->channel,
-                $command
-            )
+                $command,
+            ),
         );
-
-        return $this;
     }
 }

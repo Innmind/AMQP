@@ -19,6 +19,7 @@ use Innmind\AMQP\{
     Model\Exchange\Type,
 };
 use Innmind\Math\Algebra\Integer;
+use function Innmind\Immutable\unwrap;
 use PHPUnit\Framework\TestCase;
 
 class ExchangeTest extends TestCase
@@ -74,13 +75,13 @@ class ExchangeTest extends TestCase
         );
         $this->assertSame(0, $frame->values()->get(0)->original()->value());
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(1));
-        $this->assertSame('foo', (string) $frame->values()->get(1)->original());
+        $this->assertSame('foo', $frame->values()->get(1)->original()->toString());
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(2));
-        $this->assertSame('direct', (string) $frame->values()->get(2)->original());
+        $this->assertSame('direct', $frame->values()->get(2)->original()->toString());
         $this->assertInstanceOf(Bits::class, $frame->values()->get(3));
         $this->assertSame(
             [true, false, false, false, false],
-            $frame->values()->get(3)->original()->toPrimitive()
+            unwrap($frame->values()->get(3)->original())
         );
         $this->assertInstanceOf(Table::class, $frame->values()->get(4));
         $this->assertCount(2, $frame->values()->get(4)->original());
@@ -94,7 +95,7 @@ class ExchangeTest extends TestCase
 
         $this->assertSame(
             [false, true, false, false, false],
-            $frame->values()->get(3)->original()->toPrimitive()
+            unwrap($frame->values()->get(3)->original())
         );
 
         $frame = $this->exchange->declare(
@@ -104,7 +105,7 @@ class ExchangeTest extends TestCase
 
         $this->assertSame(
             [false, false, false, false, false],
-            $frame->values()->get(3)->original()->toPrimitive()
+            unwrap($frame->values()->get(3)->original())
         );
 
         $frame = $this->exchange->declare(
@@ -114,7 +115,7 @@ class ExchangeTest extends TestCase
 
         $this->assertSame(
             [false, false, true, false, false],
-            $frame->values()->get(3)->original()->toPrimitive()
+            unwrap($frame->values()->get(3)->original())
         );
 
         $frame = $this->exchange->declare(
@@ -124,7 +125,7 @@ class ExchangeTest extends TestCase
 
         $this->assertSame(
             [false, false, true, false, true],
-            $frame->values()->get(3)->original()->toPrimitive()
+            unwrap($frame->values()->get(3)->original())
         );
     }
 
@@ -146,11 +147,11 @@ class ExchangeTest extends TestCase
         );
         $this->assertSame(0, $frame->values()->get(0)->original()->value());
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(1));
-        $this->assertSame('foo', (string) $frame->values()->get(1)->original());
+        $this->assertSame('foo', $frame->values()->get(1)->original()->toString());
         $this->assertInstanceOf(Bits::class, $frame->values()->get(2));
         $this->assertSame(
             [false, false],
-            $frame->values()->get(2)->original()->toPrimitive()
+            unwrap($frame->values()->get(2)->original())
         );
 
         $frame = $this->exchange->delete(
@@ -160,7 +161,7 @@ class ExchangeTest extends TestCase
 
         $this->assertSame(
             [true, false],
-            $frame->values()->get(2)->original()->toPrimitive()
+            unwrap($frame->values()->get(2)->original())
         );
 
         $frame = $this->exchange->delete(
@@ -170,7 +171,7 @@ class ExchangeTest extends TestCase
 
         $this->assertSame(
             [false, true],
-            $frame->values()->get(2)->original()->toPrimitive()
+            unwrap($frame->values()->get(2)->original())
         );
     }
 }

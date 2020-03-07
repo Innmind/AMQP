@@ -14,8 +14,8 @@ use Psr\Log\LoggerInterface;
 
 final class Logger implements ConsumerInterface
 {
-    private $consumer;
-    private $logger;
+    private ConsumerInterface $consumer;
+    private LoggerInterface $logger;
 
     public function __construct(
         ConsumerInterface $consumer,
@@ -25,78 +25,83 @@ final class Logger implements ConsumerInterface
         $this->logger = $logger;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function foreach(callable $consume): void
     {
-        $this->consumer->foreach(function(Message $message, ...$args) use ($consume): void {
+        $this->consumer->foreach(function(
+            Message $message,
+            bool $redelivered,
+            string $exchange,
+            string $routingKey
+        ) use (
+            $consume
+        ): void {
             try {
                 $this->logger->debug(
                     'AMQP message received',
-                    ['body' => (string) $message->body()]
+                    ['body' => $message->body()->toString()],
                 );
 
-                $consume($message, ...$args);
+                $consume($message, $redelivered, $exchange, $routingKey);
             } catch (Reject $e) {
                 $this->logger->warning(
                     'AMQP message rejected',
-                    ['body' => (string) $message->body()]
+                    ['body' => $message->body()->toString()],
                 );
+
                 throw $e;
             } catch (Requeue $e) {
                 $this->logger->info(
                     'AMQP message requeued',
-                    ['body' => (string) $message->body()]
+                    ['body' => $message->body()->toString()],
                 );
+
                 throw $e;
             } catch (Cancel $e) {
                 $this->logger->warning(
                     'AMQP consumer canceled',
-                    ['body' => (string) $message->body()]
+                    ['body' => $message->body()->toString()],
                 );
+
                 throw $e;
             } catch (\Throwable $e) {
                 $this->logger->error(
                     'AMQP message consumption generated an exception',
                     [
-                        'body' => (string) $message->body(),
+                        'body' => $message->body()->toString(),
                         'exception' => \get_class($e),
-                    ]
+                    ],
                 );
+
                 throw $e;
             }
         });
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function take(int $count): ConsumerInterface
+    public function take(int $count): void
     {
-        $this->consumer = $this->consumer->take($count);
-
-        return $this;
+        $this->consumer->take($count);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function filter(callable $predicate): ConsumerInterface
+    public function filter(callable $predicate): void
     {
-        $this->consumer = $this->consumer->filter(function(Message $message, ...$args) use ($predicate): bool {
-            $return = $predicate($message, ...$args);
+        $this->consumer->filter(function(
+            Message $message,
+            bool $redelivered,
+            string $exchange,
+            string $routingKey
+        ) use (
+            $predicate
+        ): bool {
+            $return = $predicate($message, $redelivered, $exchange, $routingKey);
 
             if (!$return) {
                 $this->logger->info(
                     'AMQP message was filtered',
-                    ['body' => (string) $message->body()]
+                    ['body' => $message->body()->toString()],
                 );
             }
 
             return $return;
         });
-
-        return $this;
     }
 }

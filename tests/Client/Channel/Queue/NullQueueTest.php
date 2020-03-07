@@ -23,8 +23,8 @@ class NullQueueTest extends TestCase
         $this->assertInstanceOf(Queue::class, $queue);
         $this->assertNull($queue->declare(Declaration::passive('')));
         $this->assertNull($queue->delete(new Deletion('')));
-        $this->assertSame($queue, $queue->bind(new Binding('', '')));
-        $this->assertSame($queue, $queue->unbind(new Unbinding('', '')));
+        $this->assertNull($queue->bind(new Binding('', '')));
+        $this->assertNull($queue->unbind(new Unbinding('', '')));
         $this->assertNull($queue->purge(new Purge('')));
     }
 }

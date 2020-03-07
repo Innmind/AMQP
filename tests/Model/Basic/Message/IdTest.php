@@ -10,6 +10,6 @@ class IdTest extends TestCase
 {
     public function testInterface()
     {
-        $this->assertSame('foo', (string) new Id('foo'));
+        $this->assertSame('foo', (new Id('foo'))->toString());
     }
 }

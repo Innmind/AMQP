@@ -4,26 +4,25 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Model\Exchange;
 
 use Innmind\AMQP\Exception\NotWaitingPassiveDeclarationDoesNothing;
-use Innmind\Immutable\{
-    MapInterface,
-    Map,
-};
+use Innmind\Immutable\Map;
 
 final class Declaration
 {
-    private $name;
-    private $type;
-    private $passive = false;
-    private $durable = false;
-    private $autoDelete = false;
-    private $wait = true;
-    private $arguments;
+    private string $name;
+    private Type $type;
+    private bool $passive = false;
+    private bool $durable = false;
+    private bool $autoDelete = false;
+    private bool $wait = true;
+    /** @var Map<string, mixed> */
+    private Map $arguments;
 
     private function __construct(string $name, Type $type)
     {
         $this->name = $name;
         $this->type = $type;
-        $this->arguments = new Map('string', 'mixed');
+        /** @var Map<string, mixed> */
+        $this->arguments = Map::of('string', 'mixed');
     }
 
     /**
@@ -94,10 +93,13 @@ final class Declaration
         return $self;
     }
 
+    /**
+     * @param mixed $value
+     */
     public function withArgument(string $key, $value): self
     {
         $self = clone $this;
-        $self->arguments = $self->arguments->put($key, $value);
+        $self->arguments = ($self->arguments)($key, $value);
 
         return $self;
     }
@@ -133,9 +135,9 @@ final class Declaration
     }
 
     /**
-     * @return MapInterface<string, mixed>
+     * @return Map<string, mixed>
      */
-    public function arguments(): MapInterface
+    public function arguments(): Map
     {
         return $this->arguments;
     }

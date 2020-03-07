@@ -15,12 +15,15 @@ use Innmind\Socket\Internet\Transport;
 use Innmind\OperatingSystem\{
     CurrentProcess,
     Remote,
+    Sockets,
 };
-use Innmind\Server\Control\Server;
-use Innmind\Server\Status\Server\Process\Pid;
-use Innmind\TimeContinuum\{
+use Innmind\Server\Control\{
+    Server,
+    Server\Process\Pid,
+};
+use Innmind\TimeContinuum\Earth\{
     ElapsedPeriod,
-    TimeContinuum\Earth,
+    Clock,
 };
 use Innmind\Url\Url;
 use PHPUnit\Framework\TestCase;
@@ -36,11 +39,12 @@ class ClientTest extends TestCase
         $this->client = new Client(
             $this->connection = new Connection(
                 Transport::tcp(),
-                Url::fromString('//guest:guest@localhost:5672/'),
+                Url::of('//guest:guest@localhost:5672/'),
                 new Protocol(new ValueTranslator),
                 new ElapsedPeriod(1000),
-                new Earth,
-                new Remote\Generic($this->createMock(Server::class))
+                new Clock,
+                new Remote\Generic($this->createMock(Server::class)),
+                new Sockets\Unix,
             ),
             $this->process = $this->createMock(CurrentProcess::class)
         );

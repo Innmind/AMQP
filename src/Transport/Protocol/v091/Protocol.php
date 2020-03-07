@@ -25,21 +25,19 @@ use Innmind\AMQP\{
     Exception\VersionNotUsable,
 };
 use Innmind\Stream\Readable;
-use Innmind\Immutable\{
-    StreamInterface,
-    Stream,
-};
+use Innmind\Immutable\Sequence;
+use function Innmind\Immutable\unwrap;
 
 final class Protocol implements ProtocolInterface
 {
-    private $version;
-    private $read;
-    private $connection;
-    private $channel;
-    private $exchange;
-    private $queue;
-    private $basic;
-    private $transaction;
+    private Version $version;
+    private Reader $read;
+    private Connection $connection;
+    private Channel $channel;
+    private Exchange $exchange;
+    private Queue $queue;
+    private Basic $basic;
+    private Transaction $transaction;
 
     public function __construct(ArgumentTranslator $translator)
     {
@@ -58,94 +56,84 @@ final class Protocol implements ProtocolInterface
         return $this->version;
     }
 
-    public function use(Version $version): ProtocolInterface
+    public function use(Version $version): void
     {
         if (!$version->compatibleWith($this->version)) {
             throw new VersionNotUsable($version);
         }
-
-        return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function read(Method $method, Readable $arguments): StreamInterface
+    public function read(Method $method, Readable $arguments): Sequence
     {
         return ($this->read)($method, $arguments);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function readHeader(Readable $payload): StreamInterface
+    public function readHeader(Readable $payload): Sequence
     {
-        $chunk = new ChunkArguments(
-            UnsignedLongLongInteger::class,
-            UnsignedShortInteger::class
-        );
-        [$bodySize, $flags] = $chunk($payload);
+        $bodySize = UnsignedLongLongInteger::unpack($payload);
+        $flags = UnsignedShortInteger::unpack($payload);
 
+        /** @var int */
         $flagBits = $flags->original()->value();
         $toChunk = [];
 
         if ($flagBits & (1 << 15)) {
-            $toChunk[] = ShortString::class; //content type
+            $toChunk[] = ShortString::class; // content type
         }
 
         if ($flagBits & (1 << 14)) {
-            $toChunk[] = ShortString::class; //content encoding
+            $toChunk[] = ShortString::class; // content encoding
         }
 
         if ($flagBits & (1 << 13)) {
-            $toChunk[] = Table::class; //headers
+            $toChunk[] = Table::class; // headers
         }
 
         if ($flagBits & (1 << 12)) {
-            $toChunk[] = UnsignedOctet::class; //delivery mode
+            $toChunk[] = UnsignedOctet::class; // delivery mode
         }
 
         if ($flagBits & (1 << 11)) {
-            $toChunk[] = UnsignedOctet::class; //priority
+            $toChunk[] = UnsignedOctet::class; // priority
         }
 
         if ($flagBits & (1 << 10)) {
-            $toChunk[] = ShortString::class; //correlation id
+            $toChunk[] = ShortString::class; // correlation id
         }
 
         if ($flagBits & (1 << 9)) {
-            $toChunk[] = ShortString::class; //reply to
+            $toChunk[] = ShortString::class; // reply to
         }
 
         if ($flagBits & (1 << 8)) {
-            $toChunk[] = ShortString::class; //expiration
+            $toChunk[] = ShortString::class; // expiration
         }
 
         if ($flagBits & (1 << 7)) {
-            $toChunk[] = ShortString::class; //id
+            $toChunk[] = ShortString::class; // id
         }
 
         if ($flagBits & (1 << 6)) {
-            $toChunk[] = Timestamp::class; //timestamp
+            $toChunk[] = Timestamp::class; // timestamp
         }
 
         if ($flagBits & (1 << 5)) {
-            $toChunk[] = ShortString::class; //type
+            $toChunk[] = ShortString::class; // type
         }
 
         if ($flagBits & (1 << 4)) {
-            $toChunk[] = ShortString::class; //user id
+            $toChunk[] = ShortString::class; // user id
         }
 
         if ($flagBits & (1 << 3)) {
-            $toChunk[] = ShortString::class; //app id
+            $toChunk[] = ShortString::class; // app id
         }
 
-        return Stream::of(
-            Value::class,
-            $bodySize,
-            $flags,
-            ...(new ChunkArguments(...$toChunk))($payload)
+        /** @var Sequence<Value> */
+        $values = Sequence::of(Value::class, $bodySize, $flags);
+
+        return $values->append(
+            (new ChunkArguments(...$toChunk))($payload),
         );
     }
 

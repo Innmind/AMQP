@@ -7,19 +7,22 @@ use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\Math\Algebra\Integer;
 use Innmind\Stream\Readable;
 
+/**
+ * @implements Value<Integer>
+ */
 final class SignedLongLongInteger implements Value
 {
-    private $value;
-    private $original;
+    private Integer $original;
 
     public function __construct(Integer $value)
     {
         $this->original = $value;
     }
 
-    public static function fromStream(Readable $stream): Value
+    public static function unpack(Readable $stream): self
     {
-        [, $value] = \unpack('q', (string) $stream->read(8));
+        /** @var int $value */
+        [, $value] = \unpack('q', $stream->read(8)->toString());
 
         return new self(new Integer($value));
     }
@@ -29,8 +32,8 @@ final class SignedLongLongInteger implements Value
         return $this->original;
     }
 
-    public function __toString(): string
+    public function pack(): string
     {
-        return $this->value ?? $this->value = \pack('q', $this->original->value());
+        return \pack('q', $this->original->value());
     }
 }

@@ -9,10 +9,10 @@ final class FrameExceedAllowedSize extends LogicException
 {
     public function __construct(int $size, MaxFrameSize $max)
     {
-        parent::__construct(sprintf(
+        parent::__construct(\sprintf(
             'Max frame size can be %s but got %s',
             $max->toInt(),
-            $size
+            $size,
         ));
     }
 }

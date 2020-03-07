@@ -7,7 +7,7 @@ use Innmind\AMQP\Client\Channel as ChannelInterface;
 
 final class Fluent implements ChannelInterface
 {
-    private $channel;
+    private ChannelInterface $channel;
 
     public function __construct(ChannelInterface $channel)
     {

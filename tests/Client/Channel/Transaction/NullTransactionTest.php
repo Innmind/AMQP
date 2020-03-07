@@ -16,8 +16,8 @@ class NullTransactionTest extends TestCase
         $tx = new NullTransaction;
 
         $this->assertInstanceOf(Transaction::class, $tx);
-        $this->assertSame($tx, $tx->select());
-        $this->assertSame($tx, $tx->commit());
-        $this->assertSame($tx, $tx->rollback());
+        $this->assertNull($tx->select());
+        $this->assertNull($tx->commit());
+        $this->assertNull($tx->rollback());
     }
 }

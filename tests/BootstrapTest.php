@@ -24,10 +24,11 @@ use Innmind\OperatingSystem\{
     CurrentProcess,
     CurrentProcess\Signals,
     Remote,
+    Sockets,
 };
 use Innmind\TimeContinuum\{
-    TimeContinuumInterface,
-    ElapsedPeriod,
+    Clock,
+    Earth\ElapsedPeriod,
 };
 use Innmind\Immutable\{
     Set,
@@ -40,7 +41,8 @@ class BootstrapTest extends TestCase
 {
     public function testBootstrap()
     {
-        $services = bootstrap($this->createMock(LoggerInterface::class));
+        $log = $this->createMock(LoggerInterface::class);
+        $services = bootstrap();
 
         $fluent = $services['client']['fluent'];
         $logger = $services['client']['logger'];
@@ -49,11 +51,13 @@ class BootstrapTest extends TestCase
 
         $basic = $services['client']['basic'](
             Transport::tcp(),
-            Url::fromString('amqp://localhost'),
+            Url::of('amqp://localhost'),
             new ElapsedPeriod(60000),
-            $this->createMock(TimeContinuumInterface::class),
+            $this->createMock(Clock::class),
             $this->createMock(CurrentProcess::class),
-            $this->createMock(Remote::class)
+            $this->createMock(Remote::class),
+            $this->createMock(Sockets::class),
+            $log,
         );
 
         $this->assertIsCallable($services['client']['basic']);
@@ -73,7 +77,7 @@ class BootstrapTest extends TestCase
         );
         $this->assertInstanceOf(
             Logger::class,
-            $logger($basic)
+            $logger($basic, $log)
         );
         $this->assertInstanceOf(
             SignalAware::class,
@@ -98,7 +102,7 @@ class BootstrapTest extends TestCase
             Purge::class,
             $purge($basic)
         );
-        $consumers = new Map('string', 'callable');
+        $consumers = Map::of('string', 'callable');
         $this->assertIsCallable($get($consumers));
         $this->assertIsCallable($consume($consumers));
         $this->assertInstanceOf(

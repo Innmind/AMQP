@@ -10,10 +10,10 @@ use Innmind\AMQP\{
     Transport\Frame\Value,
     Exception\UnknownMethod,
 };
-use Innmind\Filesystem\Stream\StringStream;
+use Innmind\Stream\Readable\Stream;
 use Innmind\Immutable\{
     Str,
-    StreamInterface,
+    Sequence,
 };
 use PHPUnit\Framework\TestCase;
 
@@ -28,10 +28,10 @@ class TransactionTest extends TestCase
 
         $stream = $read(
             Methods::get($method),
-            new StringStream(implode('', $arguments))
+            Stream::ofContent(implode('', $arguments))
         );
 
-        $this->assertInstanceOf(StreamInterface::class, $stream);
+        $this->assertInstanceOf(Sequence::class, $stream);
         $this->assertSame(Value::class, (string) $stream->type());
         $this->assertCount(count($arguments), $stream);
 
@@ -46,7 +46,7 @@ class TransactionTest extends TestCase
         $this->expectException(UnknownMethod::class);
         $this->expectExceptionMessage('0,0');
 
-        (new Transaction)(new Method(0, 0), new StringStream(''));
+        (new Transaction)(new Method(0, 0), Stream::ofContent(''));
     }
 
     public function cases(): array

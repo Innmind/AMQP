@@ -34,6 +34,6 @@ final class NullChannel implements ChannelInterface
 
     public function close(): void
     {
-        //pass
+        // pass
     }
 }

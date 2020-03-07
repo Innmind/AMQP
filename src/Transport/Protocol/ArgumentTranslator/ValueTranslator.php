@@ -11,9 +11,6 @@ use Innmind\AMQP\{
 
 final class ValueTranslator implements ArgumentTranslator
 {
-    /**
-     * {@inheritdoc}
-     */
     public function __invoke($value): Value
     {
         if (!$value instanceof Value) {

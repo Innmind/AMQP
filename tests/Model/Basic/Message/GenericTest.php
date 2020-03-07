@@ -18,11 +18,10 @@ use Innmind\AMQP\Model\Basic\{
     Message\UserId,
 };
 use Innmind\TimeContinuum\{
-    PointInTimeInterface,
-    ElapsedPeriod,
+    PointInTime,
+    Earth\ElapsedPeriod,
 };
 use Innmind\Immutable\{
-    MapInterface,
     Map,
     Str,
 };
@@ -32,13 +31,13 @@ class GenericTest extends TestCase
 {
     public function testInterface()
     {
-        $message = new Generic(new Str('foo'));
+        $message = new Generic(Str::of('foo'));
 
         $this->assertInstanceOf(Message::class, $message);
         $this->assertFalse($message->hasContentType());
         $this->assertFalse($message->hasContentEncoding());
         $this->assertFalse($message->hasHeaders());
-        $this->assertInstanceOf(MapInterface::class, $message->headers());
+        $this->assertInstanceOf(Map::class, $message->headers());
         $this->assertSame('string', (string) $message->headers()->keyType());
         $this->assertSame('mixed', (string) $message->headers()->valueType());
         $this->assertFalse($message->hasDeliveryMode());
@@ -52,13 +51,13 @@ class GenericTest extends TestCase
         $this->assertFalse($message->hasUserId());
         $this->assertFalse($message->hasAppId());
         $this->assertInstanceOf(Str::class, $message->body());
-        $this->assertSame('foo', (string) $message->body());
-        $this->assertSame('ASCII', (string) $message->body()->encoding());
+        $this->assertSame('foo', $message->body()->toString());
+        $this->assertSame('ASCII', $message->body()->encoding()->toString());
     }
 
     public function testContentType()
     {
-        $message = new Generic(new Str(''));
+        $message = new Generic(Str::of(''));
         $message2 = $message->withContentType(
             $expected = new ContentType('text', 'plain')
         );
@@ -72,7 +71,7 @@ class GenericTest extends TestCase
 
     public function testContentEncoding()
     {
-        $message = new Generic(new Str(''));
+        $message = new Generic(Str::of(''));
         $message2 = $message->withContentEncoding(
             $expected = new ContentEncoding('gzip')
         );
@@ -86,10 +85,10 @@ class GenericTest extends TestCase
 
     public function testHeaders()
     {
-        $message = new Generic(new Str(''));
+        $message = new Generic(Str::of(''));
         $message2 = $message->withHeaders(
-            $expected = (new Map('string', 'mixed'))
-                ->put('foo', 'bar')
+            $expected = Map::of('string', 'mixed')
+                ('foo', 'bar')
         );
 
         $this->assertInstanceOf(Message::class, $message2);
@@ -102,14 +101,14 @@ class GenericTest extends TestCase
     public function testThrowWhenInvalidHeaderMap()
     {
         $this->expectException(\TypeError::class);
-        $this->expectExceptionMessage('Argument 1 must be of type MapInterface<string, mixed>');
+        $this->expectExceptionMessage('Argument 1 must be of type Map<string, mixed>');
 
-        (new Generic(new Str('')))->withHeaders(new Map('string', 'string'));
+        (new Generic(Str::of('')))->withHeaders(Map::of('string', 'string'));
     }
 
     public function testDeliveryMode()
     {
-        $message = new Generic(new Str(''));
+        $message = new Generic(Str::of(''));
         $message2 = $message->withDeliveryMode(
             $expected = DeliveryMode::persistent()
         );
@@ -123,7 +122,7 @@ class GenericTest extends TestCase
 
     public function testPriority()
     {
-        $message = new Generic(new Str(''));
+        $message = new Generic(Str::of(''));
         $message2 = $message->withPriority(
             $expected = new Priority(0)
         );
@@ -137,7 +136,7 @@ class GenericTest extends TestCase
 
     public function testCorrelationId()
     {
-        $message = new Generic(new Str(''));
+        $message = new Generic(Str::of(''));
         $message2 = $message->withCorrelationId(
             $expected = new CorrelationId('foo')
         );
@@ -151,7 +150,7 @@ class GenericTest extends TestCase
 
     public function testReplyTo()
     {
-        $message = new Generic(new Str(''));
+        $message = new Generic(Str::of(''));
         $message2 = $message->withReplyTo(
             $expected = new ReplyTo('foo')
         );
@@ -165,7 +164,7 @@ class GenericTest extends TestCase
 
     public function testExpiration()
     {
-        $message = new Generic(new Str(''));
+        $message = new Generic(Str::of(''));
         $message2 = $message->withExpiration(
             $expected = new ElapsedPeriod(1000)
         );
@@ -179,7 +178,7 @@ class GenericTest extends TestCase
 
     public function testId()
     {
-        $message = new Generic(new Str(''));
+        $message = new Generic(Str::of(''));
         $message2 = $message->withId(
             $expected = new Id('foo')
         );
@@ -193,9 +192,9 @@ class GenericTest extends TestCase
 
     public function testTimestamp()
     {
-        $message = new Generic(new Str(''));
+        $message = new Generic(Str::of(''));
         $message2 = $message->withTimestamp(
-            $expected = $this->createMock(PointInTimeInterface::class)
+            $expected = $this->createMock(PointInTime::class)
         );
 
         $this->assertInstanceOf(Message::class, $message2);
@@ -207,7 +206,7 @@ class GenericTest extends TestCase
 
     public function testType()
     {
-        $message = new Generic(new Str(''));
+        $message = new Generic(Str::of(''));
         $message2 = $message->withType(
             $expected = new Type('foo')
         );
@@ -221,7 +220,7 @@ class GenericTest extends TestCase
 
     public function testUserId()
     {
-        $message = new Generic(new Str(''));
+        $message = new Generic(Str::of(''));
         $message2 = $message->withUserId(
             $expected = new UserId('foo')
         );
@@ -235,7 +234,7 @@ class GenericTest extends TestCase
 
     public function testAppId()
     {
-        $message = new Generic(new Str(''));
+        $message = new Generic(Str::of(''));
         $message2 = $message->withAppId(
             $expected = new AppId('foo')
         );

@@ -11,7 +11,7 @@ use Innmind\AMQP\{
     Transport\Protocol\v091\Protocol,
 };
 use Innmind\Socket\Internet\Transport;
-use Innmind\TimeContinuum\ElapsedPeriod;
+use Innmind\TimeContinuum\Earth\ElapsedPeriod;
 use Innmind\Url\Url;
 use Innmind\OperatingSystem\Factory;
 
@@ -21,11 +21,12 @@ return new SignalAware(
     new Client(
         new Connection(
             Transport::tcp(),
-            Url::fromString('//guest:guest@localhost:5672/'),
+            Url::of('//guest:guest@localhost:5672/'),
             new Protocol(new ValueTranslator),
             new ElapsedPeriod(1000),
             $os->clock(),
-            $os->remote()
+            $os->remote(),
+            $os->sockets(),
         ),
         $os->process()
     ),

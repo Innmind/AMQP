@@ -19,7 +19,7 @@ class NullExchangeTest extends TestCase
         $exchange = new NullExchange;
 
         $this->assertInstanceOf(Exchange::class, $exchange);
-        $this->assertSame($exchange, $exchange->declare(Declaration::passive('', Type::direct())));
-        $this->assertSame($exchange, $exchange->delete(new Deletion('')));
+        $this->assertNull($exchange->declare(Declaration::passive('', Type::direct())));
+        $this->assertNull($exchange->delete(new Deletion('')));
     }
 }

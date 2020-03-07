@@ -3,10 +3,7 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport\Frame\Value;
 
-use Innmind\AMQP\{
-    Transport\Frame\Value,
-    Exception\OutOfRangeValue,
-};
+use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\Math\{
     Algebra\Integer,
     DefinitionSet\Set,
@@ -14,12 +11,14 @@ use Innmind\Math\{
 };
 use Innmind\Stream\Readable;
 
+/**
+ * @implements Value<Integer>
+ */
 final class SignedLongInteger implements Value
 {
-    private static $definitionSet;
+    private static ?Set $definitionSet = null;
 
-    private $value;
-    private $original;
+    private Integer $original;
 
     public function __construct(Integer $value)
     {
@@ -28,16 +27,15 @@ final class SignedLongInteger implements Value
 
     public static function of(Integer $value): self
     {
-        if (!self::definitionSet()->contains($value)) {
-            throw new OutOfRangeValue($value, self::definitionSet());
-        }
+        self::definitionSet()->accept($value);
 
         return new self($value);
     }
 
-    public static function fromStream(Readable $stream): Value
+    public static function unpack(Readable $stream): self
     {
-        [, $value] = \unpack('l', (string) $stream->read(4));
+        /** @var int $value */
+        [, $value] = \unpack('l', $stream->read(4)->toString());
 
         return new self(new Integer($value));
     }
@@ -47,16 +45,16 @@ final class SignedLongInteger implements Value
         return $this->original;
     }
 
-    public function __toString(): string
+    public function pack(): string
     {
-        return $this->value ?? $this->value = \pack('l', $this->original->value());
+        return \pack('l', $this->original->value());
     }
 
     public static function definitionSet(): Set
     {
         return self::$definitionSet ?? self::$definitionSet = Range::inclusive(
             new Integer(-2147483648),
-            new Integer(2147483647)
+            new Integer(2147483647),
         );
     }
 }

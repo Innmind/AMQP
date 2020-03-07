@@ -3,6 +3,8 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Client\Channel\Basic;
 
+use Innmind\AMQP\Model\Basic\Message;
+
 interface Consumer
 {
     /**
@@ -12,6 +14,8 @@ interface Consumer
      * - bool $redelivered
      * - string $exchange
      * - string $routingKey
+     *
+     * @param callable(Message, bool, string, string): void $consume
      */
     public function foreach(callable $consume): void;
 
@@ -20,7 +24,7 @@ interface Consumer
      *
      * This number applies to the number of message received post-filter
      */
-    public function take(int $count): self;
+    public function take(int $count): void;
 
     /**
      * Messages not fulfilling the predicate will be requeued
@@ -34,6 +38,8 @@ interface Consumer
      * - bool $redelivered
      * - string $exchange
      * - string $routingKey
+     *
+     * @param callable(Message, bool, string, string): bool $predicate
      */
-    public function filter(callable $predicate): self;
+    public function filter(callable $predicate): void;
 }

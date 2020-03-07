@@ -6,20 +6,21 @@ namespace Innmind\AMQP\Transport\Protocol\v091\Reader;
 use Innmind\AMQP\{
     Transport\Frame\Method,
     Transport\Frame\Visitor\ChunkArguments,
+    Transport\Frame\Value,
     Transport\Frame\Value\ShortString,
     Transport\Frame\Value\UnsignedLongInteger,
     Transport\Protocol\v091\Methods,
     Exception\UnknownMethod,
 };
 use Innmind\Stream\Readable;
-use Innmind\Immutable\StreamInterface;
+use Innmind\Immutable\Sequence;
 
 final class Queue
 {
     /**
-     * @return StreamInterface<Value>
+     * @return Sequence<Value>
      */
-    public function __invoke(Method $method, Readable $arguments): StreamInterface
+    public function __invoke(Method $method, Readable $arguments): Sequence
     {
         switch (true) {
             case Methods::get('queue.declare-ok')->equals($method):
@@ -52,33 +53,33 @@ final class Queue
     private function declareOk(): ChunkArguments
     {
         return new ChunkArguments(
-            ShortString::class, //queue
-            UnsignedLongInteger::class, //message count
-            UnsignedLongInteger::class //consumer count
+            ShortString::class, // queue
+            UnsignedLongInteger::class, // message count
+            UnsignedLongInteger::class, // consumer count
         );
     }
 
     private function bindOk(): ChunkArguments
     {
-        return new ChunkArguments; //no arguments
+        return new ChunkArguments; // no arguments
     }
 
     private function unbindOk(): ChunkArguments
     {
-        return new ChunkArguments; //no arguments
+        return new ChunkArguments; // no arguments
     }
 
     private function purgeOk(): ChunkArguments
     {
         return new ChunkArguments(
-            UnsignedLongInteger::class //message count
+            UnsignedLongInteger::class, // message count
         );
     }
 
     private function deleteOk(): ChunkArguments
     {
         return new ChunkArguments(
-            UnsignedLongInteger::class //message count
+            UnsignedLongInteger::class, // message count
         );
     }
 }

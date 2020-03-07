@@ -13,16 +13,18 @@ use Innmind\Immutable\Map;
 
 final class Client implements ClientInterface
 {
-    private $connection;
-    private $process;
-    private $channels;
-    private $channel = 1;
+    private Connection $connection;
+    private CurrentProcess $process;
+    /** @var Map<int, Channel> */
+    private Map $channels;
+    private int $channel = 1;
 
     public function __construct(Connection $connection, CurrentProcess $process)
     {
         $this->connection = $connection;
         $this->process = $process;
-        $this->channels = new Map('int', Channel::class);
+        /** @var Map<int, Channel> */
+        $this->channels = Map::of('int', Channel::class);
     }
 
     public function channel(): Channel
@@ -35,9 +37,9 @@ final class Client implements ClientInterface
 
         $channel = new Channel\Channel(
             $this->connection,
-            new Number($this->channel++)
+            new Number($this->channel++),
         );
-        $this->channels = $this->channels->put($pid, $channel);
+        $this->channels = ($this->channels)($pid, $channel);
 
         return $channel;
     }

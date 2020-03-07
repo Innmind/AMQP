@@ -13,8 +13,8 @@ use Innmind\AMQP\{
 
 final class Exchange implements ExchangeInterface
 {
-    private $connection;
-    private $channel;
+    private Connection $connection;
+    private Channel $channel;
 
     public function __construct(Connection $connection, Channel $channel)
     {
@@ -22,35 +22,31 @@ final class Exchange implements ExchangeInterface
         $this->channel = $channel;
     }
 
-    public function declare(Declaration $command): ExchangeInterface
+    public function declare(Declaration $command): void
     {
         $this->connection->send(
             $this->connection->protocol()->exchange()->declare(
                 $this->channel,
-                $command
-            )
+                $command,
+            ),
         );
 
         if ($command->shouldWait()) {
             $this->connection->wait('exchange.declare-ok');
         }
-
-        return $this;
     }
 
-    public function delete(Deletion $command): ExchangeInterface
+    public function delete(Deletion $command): void
     {
         $this->connection->send(
             $this->connection->protocol()->exchange()->delete(
                 $this->channel,
-                $command
-            )
+                $command,
+            ),
         );
 
         if ($command->shouldWait()) {
             $this->connection->wait('exchange.delete-ok');
         }
-
-        return $this;
     }
 }

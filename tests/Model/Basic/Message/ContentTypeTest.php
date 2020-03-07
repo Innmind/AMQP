@@ -15,7 +15,7 @@ class ContentTypeTest extends TestCase
     {
         $this->assertSame(
             'application/json',
-            (string) new ContentType('application', 'json')
+            (new ContentType('application', 'json'))->toString(),
         );
     }
 

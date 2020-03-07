@@ -3,16 +3,19 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Model\Connection;
 
-use Innmind\AMQP\Exception\DomainException;
+use Innmind\AMQP\Exception\{
+    DomainException,
+    FrameExceedAllowedSize,
+};
 
 final class MaxFrameSize
 {
-    private $value;
+    private int $value;
 
     public function __construct(int $value)
     {
-        if ($value < 0 || ($value !== 0 && $value < 9)) {
-            throw new DomainException;
+        if ($value !== 0 && $value < 9) {
+            throw new DomainException((string) $value);
         }
 
         $this->value = $value;
@@ -30,6 +33,16 @@ final class MaxFrameSize
         }
 
         return $size <= $this->value;
+    }
+
+    /**
+     * @throws FrameExceedAllowedSize
+     */
+    public function verify(int $size): void
+    {
+        if (!$this->allows($size)) {
+            throw new FrameExceedAllowedSize($size, $this);
+        }
     }
 
     public function toInt(): int

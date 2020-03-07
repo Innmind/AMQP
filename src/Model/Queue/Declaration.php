@@ -8,24 +8,23 @@ use Innmind\AMQP\Exception\{
     NotWaitingPassiveDeclarationDoesNothing,
     PassiveQueueDeclarationMustHaveAName,
 };
-use Innmind\Immutable\{
-    MapInterface,
-    Map,
-};
+use Innmind\Immutable\Map;
 
 final class Declaration
 {
-    private $name;
-    private $passive = false;
-    private $durable = false;
-    private $autoDelete = false;
-    private $exclusive = false;
-    private $wait = true;
-    private $arguments;
+    private ?string $name = null;
+    private bool $passive = false;
+    private bool $durable = false;
+    private bool $autoDelete = false;
+    private bool $exclusive = false;
+    private bool $wait = true;
+    /** @var Map<string, mixed> */
+    private Map $arguments;
 
     private function __construct()
     {
-        $this->arguments = new Map('string', 'mixed');
+        /** @var Map<string, mixed> */
+        $this->arguments = Map::of('string', 'mixed');
     }
 
     /**
@@ -147,10 +146,13 @@ final class Declaration
         return $self;
     }
 
+    /**
+     * @param mixed $value
+     */
     public function withArgument(string $key, $value): self
     {
         $self = clone $this;
-        $self->arguments = $self->arguments->put($key, $value);
+        $self->arguments = ($self->arguments)($key, $value);
 
         return $self;
     }
@@ -160,8 +162,10 @@ final class Declaration
         return !\is_string($this->name);
     }
 
+    /** @psalm-suppress InvalidNullableReturnType */
     public function name(): string
     {
+        /** @psalm-suppress NullableReturnStatement */
         return $this->name;
     }
 
@@ -191,9 +195,9 @@ final class Declaration
     }
 
     /**
-     * @return MapInterface<string, mixed>
+     * @return Map<string, mixed>
      */
-    public function arguments(): MapInterface
+    public function arguments(): Map
     {
         return $this->arguments;
     }

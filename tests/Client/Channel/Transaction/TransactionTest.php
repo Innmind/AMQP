@@ -13,12 +13,15 @@ use Innmind\AMQP\{
     Model\Channel\Close,
 };
 use Innmind\Socket\Internet\Transport;
-use Innmind\TimeContinuum\{
+use Innmind\TimeContinuum\Earth\{
     ElapsedPeriod,
-    TimeContinuum\Earth,
+    Clock,
 };
 use Innmind\Url\Url;
-use Innmind\OperatingSystem\Remote;
+use Innmind\OperatingSystem\{
+    Remote,
+    Sockets,
+};
 use Innmind\Server\Control\Server;
 use PHPUnit\Framework\TestCase;
 
@@ -32,31 +35,30 @@ class TransactionTest extends TestCase
         $this->transaction = new Transaction(
             $this->connection = new Connection(
                 Transport::tcp(),
-                Url::fromString('//guest:guest@localhost:5672/'),
+                Url::of('//guest:guest@localhost:5672/'),
                 new Protocol($this->createMock(ArgumentTranslator::class)),
                 new ElapsedPeriod(1000),
-                new Earth,
-                new Remote\Generic($this->createMock(Server::class))
+                new Clock,
+                new Remote\Generic($this->createMock(Server::class)),
+                new Sockets\Unix,
             ),
             new Channel(1)
         );
-        $this->connection
-            ->send(
-                $this->connection->protocol()->channel()->open(new Channel(1))
-            )
-            ->wait('channel.open-ok');
+        $this->connection->send(
+            $this->connection->protocol()->channel()->open(new Channel(1))
+        );
+        $this->connection->wait('channel.open-ok');
     }
 
     public function tearDown(): void
     {
-        $this->connection
-            ->send(
-                $this->connection->protocol()->channel()->close(
-                    new Channel(1),
-                    new Close
-                )
+        $this->connection->send(
+            $this->connection->protocol()->channel()->close(
+                new Channel(1),
+                new Close
             )
-            ->wait('channel.close-ok');
+        );
+        $this->connection->wait('channel.close-ok');
         $this->connection->close();
     }
 
@@ -67,18 +69,18 @@ class TransactionTest extends TestCase
 
     public function testSelect()
     {
-        $this->assertSame($this->transaction, $this->transaction->select());
+        $this->assertNull($this->transaction->select());
     }
 
     public function testCommit()
     {
         $this->transaction->select();
-        $this->assertSame($this->transaction, $this->transaction->commit());
+        $this->assertNull($this->transaction->commit());
     }
 
     public function testRollback()
     {
         $this->transaction->select();
-        $this->assertSame($this->transaction, $this->transaction->rollback());
+        $this->assertNull($this->transaction->rollback());
     }
 }

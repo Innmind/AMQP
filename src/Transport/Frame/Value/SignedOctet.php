@@ -3,10 +3,7 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport\Frame\Value;
 
-use Innmind\AMQP\{
-    Transport\Frame\Value,
-    Exception\OutOfRangeValue,
-};
+use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\Math\{
     Algebra\Integer,
     DefinitionSet\Set,
@@ -16,13 +13,14 @@ use Innmind\Stream\Readable;
 
 /**
  * Same as shortshort
+ *
+ * @implements Value<Integer>
  */
 final class SignedOctet implements Value
 {
-    private static $definitionSet;
+    private static ?Set $definitionSet = null;
 
-    private $value;
-    private $original;
+    private Integer $original;
 
     public function __construct(Integer $octet)
     {
@@ -31,16 +29,15 @@ final class SignedOctet implements Value
 
     public static function of(Integer $value): self
     {
-        if (!self::definitionSet()->contains($value)) {
-            throw new OutOfRangeValue($value, self::definitionSet());
-        }
+        self::definitionSet()->accept($value);
 
         return new self($value);
     }
 
-    public static function fromStream(Readable $stream): Value
+    public static function unpack(Readable $stream): self
     {
-        [, $value] = \unpack('c', (string) $stream->read(1));
+        /** @var int $value */
+        [, $value] = \unpack('c', $stream->read(1)->toString());
 
         return new self(new Integer($value));
     }
@@ -50,16 +47,16 @@ final class SignedOctet implements Value
         return $this->original;
     }
 
-    public function __toString(): string
+    public function pack(): string
     {
-        return $this->value ?? $this->value = \pack('c', $this->original->value());
+        return \pack('c', $this->original->value());
     }
 
     public static function definitionSet(): Set
     {
         return self::$definitionSet ?? self::$definitionSet = Range::inclusive(
             new Integer(-128),
-            new Integer(127)
+            new Integer(127),
         );
     }
 }

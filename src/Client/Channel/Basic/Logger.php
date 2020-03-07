@@ -19,8 +19,8 @@ use Psr\Log\LoggerInterface;
 
 final class Logger implements BasicInterface
 {
-    private $basic;
-    private $logger;
+    private BasicInterface $basic;
+    private LoggerInterface $logger;
 
     public function __construct(BasicInterface $basic, LoggerInterface $logger)
     {
@@ -28,25 +28,21 @@ final class Logger implements BasicInterface
         $this->logger = $logger;
     }
 
-    public function ack(Ack $command): BasicInterface
+    public function ack(Ack $command): void
     {
         $this->basic->ack($command);
-
-        return $this;
     }
 
-    public function cancel(Cancel $command): BasicInterface
+    public function cancel(Cancel $command): void
     {
         $this->basic->cancel($command);
-
-        return $this;
     }
 
     public function consume(Consume $command): Consumer
     {
         return new Consumer\Logger(
             $this->basic->consume($command),
-            $this->logger
+            $this->logger,
         );
     }
 
@@ -54,35 +50,27 @@ final class Logger implements BasicInterface
     {
         return new Get\Logger(
             $this->basic->get($command),
-            $this->logger
+            $this->logger,
         );
     }
 
-    public function publish(Publish $command): BasicInterface
+    public function publish(Publish $command): void
     {
         $this->basic->publish($command);
-
-        return $this;
     }
 
-    public function qos(Qos $command): BasicInterface
+    public function qos(Qos $command): void
     {
         $this->basic->qos($command);
-
-        return $this;
     }
 
-    public function recover(Recover $command): BasicInterface
+    public function recover(Recover $command): void
     {
         $this->basic->recover($command);
-
-        return $this;
     }
 
-    public function reject(Reject $command): BasicInterface
+    public function reject(Reject $command): void
     {
         $this->basic->reject($command);
-
-        return $this;
     }
 }

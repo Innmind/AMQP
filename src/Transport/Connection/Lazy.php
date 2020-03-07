@@ -11,31 +11,36 @@ use Innmind\AMQP\{
     Exception\ConnectionClosed,
 };
 use Innmind\Socket\Internet\Transport;
-use Innmind\Url\UrlInterface;
+use Innmind\Url\Url;
 use Innmind\TimeContinuum\{
-    TimeContinuumInterface,
+    Clock,
     ElapsedPeriod,
 };
-use Innmind\OperatingSystem\Remote;
+use Innmind\OperatingSystem\{
+    Remote,
+    Sockets,
+};
 
 final class Lazy implements ConnectionInterface
 {
-    private $transport;
-    private $server;
-    private $protocol;
-    private $timeout;
-    private $clock;
-    private $remote;
-    private $connection;
-    private $closed = false;
+    private Transport $transport;
+    private Url $server;
+    private Protocol $protocol;
+    private ElapsedPeriod $timeout;
+    private Clock $clock;
+    private Remote $remote;
+    private Sockets $sockets;
+    private ?Connection $connection = null;
+    private bool $closed = false;
 
     public function __construct(
         Transport $transport,
-        UrlInterface $server,
+        Url $server,
         Protocol $protocol,
         ElapsedPeriod $timeout,
-        TimeContinuumInterface $clock,
-        Remote $remote
+        Clock $clock,
+        Remote $remote,
+        Sockets $sockets
     ) {
         $this->transport = $transport;
         $this->server = $server;
@@ -43,6 +48,7 @@ final class Lazy implements ConnectionInterface
         $this->timeout = $timeout;
         $this->clock = $clock;
         $this->remote = $remote;
+        $this->sockets = $sockets;
     }
 
     public function protocol(): Protocol
@@ -50,17 +56,11 @@ final class Lazy implements ConnectionInterface
         return $this->connection()->protocol();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function send(Frame $frame): ConnectionInterface
+    public function send(Frame $frame): void
     {
-        return $this->connection()->send($frame);
+        $this->connection()->send($frame);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function wait(string ...$names): Frame
     {
         return $this->connection()->wait(...$names);
@@ -103,13 +103,14 @@ final class Lazy implements ConnectionInterface
             throw new ConnectionClosed;
         }
 
-        return $this->connection ?? $this->connection = new Connection(
+        return $this->connection ??= new Connection(
             $this->transport,
             $this->server,
             $this->protocol,
             $this->timeout,
             $this->clock,
-            $this->remote
+            $this->remote,
+            $this->sockets,
         );
     }
 }

@@ -6,10 +6,12 @@ namespace Tests\Innmind\AMQP\Transport\Frame\Value;
 use Innmind\AMQP\{
     Transport\Frame\Value\UnsignedLongInteger,
     Transport\Frame\Value,
-    Exception\OutOfRangeValue,
 };
-use Innmind\Math\Algebra\Integer;
-use Innmind\Filesystem\Stream\StringStream;
+use Innmind\Math\{
+    Algebra\Integer,
+    Exception\OutOfDefinitionSet,
+};
+use Innmind\Stream\Readable\Stream;
 use PHPUnit\Framework\TestCase;
 
 class UnsignedLongIntegerTest extends TestCase
@@ -24,7 +26,7 @@ class UnsignedLongIntegerTest extends TestCase
 
     public function testThrowWhenIntegerTooHigh()
     {
-        $this->expectException(OutOfRangeValue::class);
+        $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('4294967296 ∉ [0;4294967295]');
 
         UnsignedLongInteger::of(new Integer(4294967296));
@@ -32,7 +34,7 @@ class UnsignedLongIntegerTest extends TestCase
 
     public function testThrowWhenIntegerTooLow()
     {
-        $this->expectException(OutOfRangeValue::class);
+        $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('-1 ∉ [0;4294967295]');
 
         UnsignedLongInteger::of(new Integer(-1));
@@ -45,7 +47,7 @@ class UnsignedLongIntegerTest extends TestCase
     {
         $this->assertSame(
             $expected,
-            (string) new UnsignedLongInteger(new Integer($int))
+            (new UnsignedLongInteger(new Integer($int)))->pack()
         );
     }
 
@@ -54,12 +56,12 @@ class UnsignedLongIntegerTest extends TestCase
      */
     public function testFromStream($expected, $string)
     {
-        $value = UnsignedLongInteger::fromStream(new StringStream($string));
+        $value = UnsignedLongInteger::unpack(Stream::ofContent($string));
 
         $this->assertInstanceOf(UnsignedLongInteger::class, $value);
         $this->assertInstanceOf(Integer::class, $value->original());
         $this->assertSame($expected, $value->original()->value());
-        $this->assertSame($string, (string) $value);
+        $this->assertSame($string, $value->pack());
     }
 
     public function cases(): array

@@ -6,10 +6,12 @@ namespace Tests\Innmind\AMQP\Transport\Frame\Value;
 use Innmind\AMQP\{
     Transport\Frame\Value\UnsignedOctet,
     Transport\Frame\Value,
-    Exception\OutOfRangeValue,
 };
-use Innmind\Math\Algebra\Integer;
-use Innmind\Filesystem\Stream\StringStream;
+use Innmind\Math\{
+    Algebra\Integer,
+    Exception\OutOfDefinitionSet,
+};
+use Innmind\Stream\Readable\Stream;
 use PHPUnit\Framework\TestCase;
 
 class UnsignedOctetTest extends TestCase
@@ -28,7 +30,7 @@ class UnsignedOctetTest extends TestCase
     public function testStringCast($expected, $octet)
     {
         $value = new UnsignedOctet($int = new Integer($octet));
-        $this->assertSame($expected, (string) $value);
+        $this->assertSame($expected, $value->pack());
         $this->assertSame($int, $value->original());
     }
 
@@ -37,16 +39,16 @@ class UnsignedOctetTest extends TestCase
      */
     public function testFromStream($string, $expected)
     {
-        $value = UnsignedOctet::fromStream(new StringStream($string));
+        $value = UnsignedOctet::unpack(Stream::ofContent($string));
 
         $this->assertInstanceOf(UnsignedOctet::class, $value);
         $this->assertSame($expected, $value->original()->value());
-        $this->assertSame($string, (string) $value);
+        $this->assertSame($string, $value->pack());
     }
 
     public function testThrowWhenStringTooHigh()
     {
-        $this->expectException(OutOfRangeValue::class);
+        $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('256 ∉ [0;255]');
 
         UnsignedOctet::of(new Integer(256));
@@ -54,7 +56,7 @@ class UnsignedOctetTest extends TestCase
 
     public function testThrowWhenStringTooLow()
     {
-        $this->expectException(OutOfRangeValue::class);
+        $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('-1 ∉ [0;255]');
 
         UnsignedOctet::of(new Integer(-1));

@@ -20,8 +20,8 @@ use Innmind\AMQP\{
     Exception\MessageLocked,
 };
 use Innmind\TimeContinuum\{
-    PointInTimeInterface,
-    ElapsedPeriod,
+    PointInTime,
+    Earth\ElapsedPeriod,
 };
 use Innmind\Immutable\{
     Map,
@@ -33,7 +33,7 @@ class LockedTest extends TestCase
 {
     public function testInterface()
     {
-        $message = new Locked(new Generic(new Str('foo')));
+        $message = new Locked(new Generic(Str::of('foo')));
 
         $this->assertInstanceOf(Message::class, $message);
         $this->assertFalse($message->hasContentType());
@@ -50,13 +50,13 @@ class LockedTest extends TestCase
         $this->assertFalse($message->hasUserId());
         $this->assertFalse($message->hasAppId());
         $this->assertInstanceOf(Str::class, $message->body());
-        $this->assertSame('foo', (string) $message->body());
-        $this->assertSame('ASCII', (string) $message->body()->encoding());
+        $this->assertSame('foo', $message->body()->toString());
+        $this->assertSame('ASCII', $message->body()->encoding()->toString());
     }
 
     public function testContentType()
     {
-        $message = (new Generic(new Str('')))->withContentType(
+        $message = (new Generic(Str::of('')))->withContentType(
             $expected = new ContentType('text', 'plain')
         );
         $message = new Locked($message);
@@ -69,14 +69,14 @@ class LockedTest extends TestCase
     {
         $this->expectException(MessageLocked::class);
 
-        (new Locked(new Generic(new Str(''))))->withContentType(
+        (new Locked(new Generic(Str::of(''))))->withContentType(
             new ContentType('text', 'plain')
         );
     }
 
     public function testContentEncoding()
     {
-        $message = (new Generic(new Str('')))->withContentEncoding(
+        $message = (new Generic(Str::of('')))->withContentEncoding(
             $expected = new ContentEncoding('gzip')
         );
         $message = new Locked($message);
@@ -89,16 +89,16 @@ class LockedTest extends TestCase
     {
         $this->expectException(MessageLocked::class);
 
-        (new Locked(new Generic(new Str(''))))->withContentEncoding(
+        (new Locked(new Generic(Str::of(''))))->withContentEncoding(
             new ContentEncoding('gzip')
         );
     }
 
     public function testHeaders()
     {
-        $message = (new Generic(new Str('')))->withHeaders(
-            $expected = (new Map('string', 'mixed'))
-                ->put('foo', 'bar')
+        $message = (new Generic(Str::of('')))->withHeaders(
+            $expected = Map::of('string', 'mixed')
+                ('foo', 'bar')
         );
         $message = new Locked($message);
 
@@ -110,14 +110,14 @@ class LockedTest extends TestCase
     {
         $this->expectException(MessageLocked::class);
 
-        (new Locked(new Generic(new Str(''))))->withHeaders(
-            new Map('string', 'mixed')
+        (new Locked(new Generic(Str::of(''))))->withHeaders(
+            Map::of('string', 'mixed')
         );
     }
 
     public function testDeliveryMode()
     {
-        $message = (new Generic(new Str('')))->withDeliveryMode(
+        $message = (new Generic(Str::of('')))->withDeliveryMode(
             $expected = DeliveryMode::persistent()
         );
         $message = new Locked($message);
@@ -130,14 +130,14 @@ class LockedTest extends TestCase
     {
         $this->expectException(MessageLocked::class);
 
-        (new Locked(new Generic(new Str(''))))->withDeliveryMode(
+        (new Locked(new Generic(Str::of(''))))->withDeliveryMode(
             DeliveryMode::nonPersistent()
         );
     }
 
     public function testPriority()
     {
-        $message = (new Generic(new Str('')))->withPriority(
+        $message = (new Generic(Str::of('')))->withPriority(
             $expected = new Priority(0)
         );
         $message = new Locked($message);
@@ -150,14 +150,14 @@ class LockedTest extends TestCase
     {
         $this->expectException(MessageLocked::class);
 
-        (new Locked(new Generic(new Str(''))))->withPriority(
+        (new Locked(new Generic(Str::of(''))))->withPriority(
             new Priority(5)
         );
     }
 
     public function testCorrelationId()
     {
-        $message = (new Generic(new Str('')))->withCorrelationId(
+        $message = (new Generic(Str::of('')))->withCorrelationId(
             $expected = new CorrelationId('foo')
         );
         $message = new Locked($message);
@@ -170,14 +170,14 @@ class LockedTest extends TestCase
     {
         $this->expectException(MessageLocked::class);
 
-        (new Locked(new Generic(new Str(''))))->withCorrelationId(
+        (new Locked(new Generic(Str::of(''))))->withCorrelationId(
             new CorrelationId('')
         );
     }
 
     public function testReplyTo()
     {
-        $message = (new Generic(new Str('')))->withReplyTo(
+        $message = (new Generic(Str::of('')))->withReplyTo(
             $expected = new ReplyTo('foo')
         );
         $message = new Locked($message);
@@ -190,14 +190,14 @@ class LockedTest extends TestCase
     {
         $this->expectException(MessageLocked::class);
 
-        (new Locked(new Generic(new Str(''))))->withReplyTo(
+        (new Locked(new Generic(Str::of(''))))->withReplyTo(
             new ReplyTo('')
         );
     }
 
     public function testExpiration()
     {
-        $message = (new Generic(new Str('')))->withExpiration(
+        $message = (new Generic(Str::of('')))->withExpiration(
             $expected = new ElapsedPeriod(1000)
         );
         $message = new Locked($message);
@@ -210,14 +210,14 @@ class LockedTest extends TestCase
     {
         $this->expectException(MessageLocked::class);
 
-        (new Locked(new Generic(new Str(''))))->withExpiration(
+        (new Locked(new Generic(Str::of(''))))->withExpiration(
             new ElapsedPeriod(1000)
         );
     }
 
     public function testId()
     {
-        $message = (new Generic(new Str('')))->withId(
+        $message = (new Generic(Str::of('')))->withId(
             $expected = new Id('foo')
         );
         $message = new Locked($message);
@@ -230,15 +230,15 @@ class LockedTest extends TestCase
     {
         $this->expectException(MessageLocked::class);
 
-        (new Locked(new Generic(new Str(''))))->withId(
+        (new Locked(new Generic(Str::of(''))))->withId(
             new Id('')
         );
     }
 
     public function testTimestamp()
     {
-        $message = (new Generic(new Str('')))->withTimestamp(
-            $expected = $this->createMock(PointInTimeInterface::class)
+        $message = (new Generic(Str::of('')))->withTimestamp(
+            $expected = $this->createMock(PointInTime::class)
         );
         $message = new Locked($message);
 
@@ -250,14 +250,14 @@ class LockedTest extends TestCase
     {
         $this->expectException(MessageLocked::class);
 
-        (new Locked(new Generic(new Str(''))))->withTimestamp(
-            $this->createMock(PointInTimeInterface::class)
+        (new Locked(new Generic(Str::of(''))))->withTimestamp(
+            $this->createMock(PointInTime::class)
         );
     }
 
     public function testType()
     {
-        $message = (new Generic(new Str('')))->withType(
+        $message = (new Generic(Str::of('')))->withType(
             $expected = new Type('foo')
         );
         $message = new Locked($message);
@@ -270,14 +270,14 @@ class LockedTest extends TestCase
     {
         $this->expectException(MessageLocked::class);
 
-        (new Locked(new Generic(new Str(''))))->withType(
+        (new Locked(new Generic(Str::of(''))))->withType(
             new Type('')
         );
     }
 
     public function testUserId()
     {
-        $message = (new Generic(new Str('')))->withUserId(
+        $message = (new Generic(Str::of('')))->withUserId(
             $expected = new UserId('foo')
         );
         $message = new Locked($message);
@@ -290,14 +290,14 @@ class LockedTest extends TestCase
     {
         $this->expectException(MessageLocked::class);
 
-        (new Locked(new Generic(new Str(''))))->withUserId(
+        (new Locked(new Generic(Str::of(''))))->withUserId(
             new UserId('')
         );
     }
 
     public function testAppId()
     {
-        $message = (new Generic(new Str('')))->withAppId(
+        $message = (new Generic(Str::of('')))->withAppId(
             $expected = new AppId('foo')
         );
         $message = new Locked($message);
@@ -310,7 +310,7 @@ class LockedTest extends TestCase
     {
         $this->expectException(MessageLocked::class);
 
-        (new Locked(new Generic(new Str(''))))->withAppId(
+        (new Locked(new Generic(Str::of(''))))->withAppId(
             new AppId('')
         );
     }

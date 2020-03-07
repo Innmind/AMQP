@@ -5,19 +5,20 @@ namespace Innmind\AMQP\Transport\Protocol\v091\Reader;
 
 use Innmind\AMQP\{
     Transport\Frame\Method,
+    Transport\Frame\Value,
     Transport\Frame\Visitor\ChunkArguments,
     Transport\Protocol\v091\Methods,
     Exception\UnknownMethod,
 };
 use Innmind\Stream\Readable;
-use Innmind\Immutable\StreamInterface;
+use Innmind\Immutable\Sequence;
 
 final class Transaction
 {
     /**
-     * @return StreamInterface<Value>
+     * @return Sequence<Value>
      */
-    public function __invoke(Method $method, Readable $arguments): StreamInterface
+    public function __invoke(Method $method, Readable $arguments): Sequence
     {
         switch (true) {
             case Methods::get('tx.select-ok')->equals($method):
@@ -41,16 +42,16 @@ final class Transaction
 
     private function selectOk(): ChunkArguments
     {
-        return new ChunkArguments; //no arguments
+        return new ChunkArguments; // no arguments
     }
 
     private function commitOk(): ChunkArguments
     {
-        return new ChunkArguments; //no arguments
+        return new ChunkArguments; // no arguments
     }
 
     private function rollbackOk(): ChunkArguments
     {
-        return new ChunkArguments; //no arguments
+        return new ChunkArguments; // no arguments
     }
 }

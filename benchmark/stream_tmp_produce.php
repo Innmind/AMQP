@@ -40,7 +40,7 @@ for ($i = 0; $i < $max; $i++) {
     $channel
         ->basic()
         ->publish(
-            (new Publish(new Generic(new Str($msgBody))))
+            (new Publish(new Generic(Str::of($msgBody))))
                 ->withRoutingKey($queue)
         );
     //$channel->close(); not executed as only one channel allowed per process

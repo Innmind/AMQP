@@ -6,10 +6,12 @@ namespace Tests\Innmind\AMQP\Transport\Frame\Value;
 use Innmind\AMQP\{
     Transport\Frame\Value\SignedOctet,
     Transport\Frame\Value,
-    Exception\OutOfRangeValue,
 };
-use Innmind\Math\Algebra\Integer;
-use Innmind\Filesystem\Stream\StringStream;
+use Innmind\Math\{
+    Algebra\Integer,
+    Exception\OutOfDefinitionSet,
+};
+use Innmind\Stream\Readable\Stream;
 use PHPUnit\Framework\TestCase;
 
 class SignedOctetTest extends TestCase
@@ -25,7 +27,7 @@ class SignedOctetTest extends TestCase
     public function testStringCast($expected, $octet)
     {
         $value = new SignedOctet($int = new Integer($octet));
-        $this->assertSame($expected, (string) $value);
+        $this->assertSame($expected, $value->pack());
         $this->assertSame($int, $value->original());
     }
 
@@ -34,16 +36,16 @@ class SignedOctetTest extends TestCase
      */
     public function testFromStream($string, $expected)
     {
-        $value = SignedOctet::fromStream(new StringStream($string));
+        $value = SignedOctet::unpack(Stream::ofContent($string));
 
         $this->assertInstanceOf(SignedOctet::class, $value);
         $this->assertSame($expected, $value->original()->value());
-        $this->assertSame($string, (string) $value);
+        $this->assertSame($string, $value->pack());
     }
 
     public function testThrowWhenStringTooHigh()
     {
-        $this->expectException(OutOfRangeValue::class);
+        $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('128 ∉ [-128;127]');
 
         SignedOctet::of(new Integer(128));
@@ -51,7 +53,7 @@ class SignedOctetTest extends TestCase
 
     public function testThrowWhenStringTooLow()
     {
-        $this->expectException(OutOfRangeValue::class);
+        $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('-129 ∉ [-128;127]');
 
         SignedOctet::of(new Integer(-129));

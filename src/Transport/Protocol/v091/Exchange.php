@@ -25,7 +25,7 @@ use Innmind\Immutable\{
 
 final class Exchange implements ExchangeInterface
 {
-    private $translate;
+    private ArgumentTranslator $translate;
 
     public function __construct(ArgumentTranslator $translator)
     {
@@ -34,32 +34,31 @@ final class Exchange implements ExchangeInterface
 
     public function declare(FrameChannel $channel, Declaration $command): Frame
     {
+        /** @var Map<string, Value> */
+        $arguments = $command
+            ->arguments()
+            ->toMapOf(
+                'string',
+                Value::class,
+                function(string $key, $value): \Generator {
+                    yield $key => ($this->translate)($value);
+                },
+            );
+
         return Frame::method(
             $channel,
             Methods::get('exchange.declare'),
-            new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
-            ShortString::of(new Str($command->name())),
-            ShortString::of(new Str((string) $command->type())),
+            new UnsignedShortInteger(new Integer(0)), // ticket (reserved)
+            ShortString::of(Str::of($command->name())),
+            ShortString::of(Str::of($command->type()->toString())),
             new Bits(
                 $command->isPassive(),
                 $command->isDurable(),
-                $command->isAutoDeleted(), //reserved
-                false, //internal (reserved)
-                !$command->shouldWait()
+                $command->isAutoDeleted(), // reserved
+                false, // internal (reserved)
+                !$command->shouldWait(),
             ),
-            new Table(
-                $command
-                    ->arguments()
-                    ->reduce(
-                        new Map('string', Value::class),
-                        function(Map $carry, string $key, $value): Map {
-                            return $carry->put(
-                                $key,
-                                ($this->translate)($value)
-                            );
-                        }
-                    )
-            )
+            new Table($arguments),
         );
     }
 
@@ -68,12 +67,12 @@ final class Exchange implements ExchangeInterface
         return Frame::method(
             $channel,
             Methods::get('exchange.delete'),
-            new UnsignedShortInteger(new Integer(0)), //ticket (reserved)
-            ShortString::of(new Str($command->name())),
+            new UnsignedShortInteger(new Integer(0)), // ticket (reserved)
+            ShortString::of(Str::of($command->name())),
             new Bits(
                 $command->onlyIfUnused(),
-                !$command->shouldWait()
-            )
+                !$command->shouldWait(),
+            ),
         );
     }
 }

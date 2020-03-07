@@ -3,10 +3,15 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP;
 
+use Innmind\AMQP\Model\{
+    Exchange,
+    Queue,
+    Basic\Message,
+};
 use Innmind\Socket\Internet\Transport as Socket;
-use Innmind\Url\UrlInterface;
+use Innmind\Url\Url;
 use Innmind\TimeContinuum\{
-    TimeContinuumInterface,
+    Clock,
     ElapsedPeriod,
 };
 use Innmind\CLI\Command as CLICommand;
@@ -14,26 +19,31 @@ use Innmind\OperatingSystem\{
     CurrentProcess,
     CurrentProcess\Signals,
     Remote,
+    Sockets,
 };
 use Innmind\Immutable\{
-    SetInterface,
-    MapInterface,
+    Set,
+    Map,
 };
+use function Innmind\Immutable\unwrap;
 use Psr\Log\LoggerInterface;
 
-function bootstrap(LoggerInterface $logger = null): array
+/**
+ * @return array{client: array{basic: callable(Socket, Url, ElapsedPeriod, Clock, CurrentProcess, Remote, Sockets, LoggerInterface = null): Client, fluent: callable(Client): Client, logger: callable(Client, LoggerInterface): Client, signal_aware: callable(Client, Signals): Client, auto_declare: callable(Set<Exchange\Declaration>, Set<Queue\Declaration>, Set<Queue\Binding>): (callable(Client): Client)}, command: array{purge: callable(Client): CLICommand, get: callable(Map<string, callable(Message, bool, string, string): void>): (callable(Client): CLICommand), consume: callable(Map<string, callable(Message, bool, string, string): void>): (callable(Client): CLICommand)}, producers: callable(Set<Exchange\Declaration>): (callable(Client): Producers)}
+ */
+function bootstrap(): array
 {
     return [
         'client' => [
             'basic' => static function(
                 Socket $transport,
-                UrlInterface $server,
+                Url $server,
                 ElapsedPeriod $timeout,
-                TimeContinuumInterface $clock,
+                Clock $clock,
                 CurrentProcess $process,
-                Remote $remote
-            ) use (
-                $logger
+                Remote $remote,
+                Sockets $sockets,
+                LoggerInterface $logger = null
             ): Client {
                 $connection = new Transport\Connection\Lazy(
                     $transport,
@@ -43,7 +53,8 @@ function bootstrap(LoggerInterface $logger = null): array
                     ),
                     $timeout,
                     $clock,
-                    $remote
+                    $remote,
+                    $sockets,
                 );
 
                 if ($logger instanceof LoggerInterface) {
@@ -55,13 +66,18 @@ function bootstrap(LoggerInterface $logger = null): array
             'fluent' => static function(Client $client): Client {
                 return new Client\Fluent($client);
             },
-            'logger' => static function(Client $client) use ($logger): Client {
+            'logger' => static function(Client $client, LoggerInterface $logger): Client {
                 return new Client\Logger($client, $logger);
             },
             'signal_aware' => static function(Client $client, Signals $signals): Client {
                 return new Client\SignalAware($client, $signals);
             },
-            'auto_declare' => static function(SetInterface $exchanges, SetInterface $queues, SetInterface $bindings): callable {
+            'auto_declare' => static function(Set $exchanges, Set $queues, Set $bindings): callable {
+                /**
+                 * @var Set<Exchange\Declaration> $exchanges
+                 * @var Set<Queue\Declaration> $queues
+                 * @var Set<Queue\Binding> $bindings
+                 */
                 return static function(Client $client) use ($exchanges, $queues, $bindings): Client {
                     return new Client\AutoDeclare($client, $exchanges, $queues, $bindings);
                 };
@@ -71,20 +87,23 @@ function bootstrap(LoggerInterface $logger = null): array
             'purge' => static function(Client $client): CLICommand {
                 return new Command\Purge($client);
             },
-            'get' => static function(MapInterface $consumers): callable {
+            'get' => static function(Map $consumers): callable {
+                /** @var Map<string, callable(Message, bool, string, string): void> $consumers */
                 return static function(Client $client) use ($consumers): CLICommand {
                     return new Command\Get($client, new Consumers($consumers));
                 };
             },
-            'consume' => static function(MapInterface $consumers): callable {
+            'consume' => static function(Map $consumers): callable {
+                /** @var Map<string, callable(Message, bool, string, string): void> $consumers */
                 return static function(Client $client) use ($consumers): CLICommand {
                     return new Command\Consume($client, new Consumers($consumers));
                 };
             },
         ],
-        'producers' => static function(SetInterface $exchanges): callable {
+        'producers' => static function(Set $exchanges): callable {
+            /** @var Set<Exchange\Declaration> $exchanges */
             return static function(Client $client) use ($exchanges): Producers {
-                return Producers::fromDeclarations($client, ...$exchanges);
+                return Producers::of($client, ...unwrap($exchanges));
             };
         },
     ];

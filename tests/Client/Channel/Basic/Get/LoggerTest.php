@@ -32,7 +32,7 @@ class LoggerTest extends TestCase
         $message = $this->createMock(Message::class);
         $message
             ->method('body')
-            ->willReturn(new Str('foobar'));
+            ->willReturn(Str::of('foobar'));
 
         $consume = new Logger(
             new class($message) implements Get {
@@ -45,7 +45,7 @@ class LoggerTest extends TestCase
 
                 public function __invoke(callable $consume): void
                 {
-                    $consume($this->message);
+                    $consume($this->message, false, '', '', 0);
                 }
             },
             $logger = $this->createMock(LoggerInterface::class)
@@ -66,7 +66,7 @@ class LoggerTest extends TestCase
         $message = $this->createMock(Message::class);
         $message
             ->method('body')
-            ->willReturn(new Str('foobar'));
+            ->willReturn(Str::of('foobar'));
 
         $consume = new Logger(
             new class($message) implements Get {
@@ -80,7 +80,7 @@ class LoggerTest extends TestCase
                 public function __invoke(callable $consume): void
                 {
                     try {
-                        $consume($this->message);
+                        $consume($this->message, false, '', '', 0);
                     } catch (Reject $e) {
                         //pass
                     }
@@ -106,7 +106,7 @@ class LoggerTest extends TestCase
         $message = $this->createMock(Message::class);
         $message
             ->method('body')
-            ->willReturn(new Str('foobar'));
+            ->willReturn(Str::of('foobar'));
 
         $consume = new Logger(
             new class($message) implements Get {
@@ -120,7 +120,7 @@ class LoggerTest extends TestCase
                 public function __invoke(callable $consume): void
                 {
                     try {
-                        $consume($this->message);
+                        $consume($this->message, false, '', '', 0);
                     } catch (Requeue $e) {
                         //pass
                     }
@@ -146,7 +146,7 @@ class LoggerTest extends TestCase
         $message = $this->createMock(Message::class);
         $message
             ->method('body')
-            ->willReturn(new Str('foobar'));
+            ->willReturn(Str::of('foobar'));
 
         $consume = new Logger(
             new class($message) implements Get {
@@ -160,7 +160,7 @@ class LoggerTest extends TestCase
                 public function __invoke(callable $consume): void
                 {
                     try {
-                        $consume($this->message);
+                        $consume($this->message, false, '', '', 0);
                     } catch (\RuntimeException $e) {
                         //pass
                     }

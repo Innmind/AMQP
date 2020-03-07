@@ -7,18 +7,21 @@ use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\Stream\Readable;
 use Innmind\Immutable\Str;
 
+/**
+ * @implements Value<Str>
+ */
 final class Text implements Value
 {
-    private $value;
-    private $original;
+    private string $value;
+    private Str $original;
 
     public function __construct(Str $string)
     {
-        $this->value = (string) $string;
+        $this->value = $string->toString();
         $this->original = $string;
     }
 
-    public static function fromStream(Readable $stream): Value
+    public static function unpack(Readable $stream): self
     {
         return new self($stream->read());
     }
@@ -28,7 +31,7 @@ final class Text implements Value
         return $this->original;
     }
 
-    public function __toString(): string
+    public function pack(): string
     {
         return $this->value;
     }

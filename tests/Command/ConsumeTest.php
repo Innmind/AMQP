@@ -27,8 +27,8 @@ class ConsumeTest extends TestCase
             Command::class,
             new Consume(
                 $this->createMock(Client::class),
-                new Consumers
-            )
+                new Consumers(Map::of('string', 'callable')),
+            ),
         );
     }
 
@@ -42,10 +42,10 @@ USAGE;
 
         $this->assertSame(
             $expected,
-            (string) new Consume(
+            (new Consume(
                 $this->createMock(Client::class),
-                new Consumers
-            )
+                new Consumers(Map::of('string', 'callable')),
+            ))->toString(),
         );
     }
 
@@ -54,8 +54,8 @@ USAGE;
         $command = new Consume(
             $client = $this->createMock(Client::class),
             new Consumers(
-                (new Map('string', 'callable'))
-                    ->put('foo', $expected = function(){})
+                Map::of('string', 'callable')
+                    ('foo', $expected = function(){})
             )
         );
         $client
@@ -90,7 +90,7 @@ USAGE;
 
         $this->assertNull($command(
             $env,
-            new Arguments((new Map('string', 'mixed'))->put('queue', 'foo')),
+            new Arguments(Map::of('string', 'string')('queue', 'foo')),
             new Options
         ));
     }
@@ -100,8 +100,8 @@ USAGE;
         $consume = new Consume(
             $client = $this->createMock(Client::class),
             new Consumers(
-                (new Map('string', 'callable'))
-                    ->put('foo', function(){})
+                Map::of('string', 'callable')
+                    ('foo', function(){})
             )
         );
         $client
@@ -131,7 +131,7 @@ USAGE;
 
         $consume(
             $this->createMock(Environment::class),
-            new Arguments((new Map('string', 'mixed'))->put('queue', 'foo')),
+            new Arguments(Map::of('string', 'string')('queue', 'foo')),
             new Options
         );
     }
@@ -141,8 +141,8 @@ USAGE;
         $command = new Consume(
             $client = $this->createMock(Client::class),
             new Consumers(
-                (new Map('string', 'callable'))
-                    ->put('foo', $expected = function(){})
+                Map::of('string', 'callable')
+                    ('foo', $expected = function(){})
             )
         );
         $client
@@ -186,9 +186,9 @@ USAGE;
         $this->assertNull($command(
             $env,
             new Arguments(
-                (new Map('string', 'mixed'))
-                    ->put('queue', 'foo')
-                    ->put('number', '42')
+                Map::of('string', 'string')
+                    ('queue', 'foo')
+                    ('number', '42')
             ),
             new Options
         ));
@@ -199,8 +199,8 @@ USAGE;
         $command = new Consume(
             $client = $this->createMock(Client::class),
             new Consumers(
-                (new Map('string', 'callable'))
-                    ->put('foo', $expected = function(){})
+                Map::of('string', 'callable')
+                    ('foo', $expected = function(){})
             )
         );
         $client
@@ -244,10 +244,10 @@ USAGE;
         $this->assertNull($command(
             $env,
             new Arguments(
-                (new Map('string', 'mixed'))
-                    ->put('queue', 'foo')
-                    ->put('number', '42')
-                    ->put('prefetch', '24')
+                Map::of('string', 'string')
+                    ('queue', 'foo')
+                    ('number', '42')
+                    ('prefetch', '24')
             ),
             new Options
         ));

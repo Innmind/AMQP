@@ -9,11 +9,12 @@ use Innmind\AMQP\Transport\Frame\{
     Value\Bits,
     Value\LongString,
 };
-use Innmind\Filesystem\Stream\StringStream;
+use Innmind\Stream\Readable\Stream;
 use Innmind\Immutable\{
-    StreamInterface,
+    Sequence,
     Str,
 };
+use function Innmind\Immutable\unwrap;
 use PHPUnit\Framework\TestCase;
 
 class ChunkArgumentsTest extends TestCase
@@ -25,16 +26,16 @@ class ChunkArgumentsTest extends TestCase
             LongString::class
         );
 
-        $arguments = new Bits(true).new LongString(new Str('foo'));
+        $arguments = (new Bits(true))->pack().(new LongString(Str::of('foo')))->pack();
 
-        $stream = $visit(new StringStream($arguments));
+        $stream = $visit(Stream::ofContent($arguments));
 
-        $this->assertInstanceOf(StreamInterface::class, $stream);
+        $this->assertInstanceOf(Sequence::class, $stream);
         $this->assertSame(Value::class, (string) $stream->type());
         $this->assertCount(2, $stream);
         $this->assertInstanceOf(Bits::class, $stream->get(0));
         $this->assertInstanceOf(LongString::class, $stream->get(1));
-        $this->assertSame([true], $stream->get(0)->original()->toPrimitive());
-        $this->assertSame('foo', (string) $stream->get(1)->original());
+        $this->assertSame([true], unwrap($stream->get(0)->original()));
+        $this->assertSame('foo', $stream->get(1)->original()->toString());
     }
 }

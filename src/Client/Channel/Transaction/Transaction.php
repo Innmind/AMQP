@@ -11,8 +11,8 @@ use Innmind\AMQP\{
 
 final class Transaction implements TransactionInterface
 {
-    private $connection;
-    private $channel;
+    private Connection $connection;
+    private Channel $channel;
 
     public function __construct(Connection $connection, Channel $channel)
     {
@@ -20,39 +20,27 @@ final class Transaction implements TransactionInterface
         $this->channel = $channel;
     }
 
-    public function select(): TransactionInterface
+    public function select(): void
     {
-        $this
-            ->connection
-            ->send($this->connection->protocol()->transaction()->select(
-                $this->channel
-            ))
-            ->wait('tx.select-ok');
-
-        return $this;
+        $this->connection->send($this->connection->protocol()->transaction()->select(
+            $this->channel,
+        ));
+        $this->connection->wait('tx.select-ok');
     }
 
-    public function commit(): TransactionInterface
+    public function commit(): void
     {
-        $this
-            ->connection
-            ->send($this->connection->protocol()->transaction()->commit(
-                $this->channel
-            ))
-            ->wait('tx.commit-ok');
-
-        return $this;
+        $this->connection->send($this->connection->protocol()->transaction()->commit(
+            $this->channel,
+        ));
+        $this->connection->wait('tx.commit-ok');
     }
 
-    public function rollback(): TransactionInterface
+    public function rollback(): void
     {
-        $this
-            ->connection
-            ->send($this->connection->protocol()->transaction()->rollback(
-                $this->channel
-            ))
-            ->wait('tx.rollback-ok');
-
-        return $this;
+        $this->connection->send($this->connection->protocol()->transaction()->rollback(
+            $this->channel,
+        ));
+        $this->connection->wait('tx.rollback-ok');
     }
 }

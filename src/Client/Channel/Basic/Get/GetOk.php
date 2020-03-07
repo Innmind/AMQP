@@ -17,16 +17,16 @@ use Innmind\AMQP\{
 
 final class GetOk implements Get
 {
-    private $connection;
-    private $channel;
-    private $command;
-    private $message;
-    private $deliveryTag;
-    private $redelivered;
-    private $exchange;
-    private $routingKey;
-    private $messageCount;
-    private $consumed = false;
+    private Connection $connection;
+    private Channel $channel;
+    private Command $command;
+    private Message $message;
+    private int $deliveryTag;
+    private bool $redelivered;
+    private string $exchange;
+    private string $routingKey;
+    private int $messageCount;
+    private bool $consumed = false;
 
     public function __construct(
         Connection $connection,
@@ -50,9 +50,6 @@ final class GetOk implements Get
         $this->messageCount = $messageCount;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function __invoke(callable $consume): void
     {
         if ($this->consumed) {
@@ -65,16 +62,14 @@ final class GetOk implements Get
                 $this->redelivered,
                 $this->exchange,
                 $this->routingKey,
-                $this->messageCount
+                $this->messageCount,
             );
 
             if (!$this->command->shouldAutoAcknowledge()) {
-                $this
-                    ->connection
-                    ->send($this->connection->protocol()->basic()->ack(
-                        $this->channel,
-                        new Ack($this->deliveryTag)
-                    ));
+                $this->connection->send($this->connection->protocol()->basic()->ack(
+                    $this->channel,
+                    new Ack($this->deliveryTag),
+                ));
             }
 
             $this->consumed = true;
@@ -94,8 +89,8 @@ final class GetOk implements Get
         $this->connection->send(
             $this->connection->protocol()->basic()->reject(
                 $this->channel,
-                new RejectCommand($this->deliveryTag)
-            )
+                new RejectCommand($this->deliveryTag),
+            ),
         );
     }
 
@@ -104,8 +99,8 @@ final class GetOk implements Get
         $this->connection->send(
             $this->connection->protocol()->basic()->reject(
                 $this->channel,
-                RejectCommand::requeue($this->deliveryTag)
-            )
+                RejectCommand::requeue($this->deliveryTag),
+            ),
         );
     }
 }

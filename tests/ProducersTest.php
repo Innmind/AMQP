@@ -31,7 +31,7 @@ class ProducersTest extends TestCase
 
     public function testFromDeclarations()
     {
-        $producers = Producers::fromDeclarations(
+        $producers = Producers::of(
             $this->createMock(Client::class),
             Declaration::passive('foo', Type::direct()),
             Declaration::passive('bar', Type::direct())

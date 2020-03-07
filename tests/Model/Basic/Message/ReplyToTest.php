@@ -10,6 +10,6 @@ class ReplyToTest extends TestCase
 {
     public function testInterface()
     {
-        $this->assertSame('foo', (string) new ReplyTo('foo'));
+        $this->assertSame('foo', (new ReplyTo('foo'))->toString());
     }
 }

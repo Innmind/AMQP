@@ -12,22 +12,23 @@ use Innmind\Math\{
 };
 use Innmind\Stream\Readable;
 
-
+/**
+ * @implements Value<Number>
+ */
 final class Decimal implements Value
 {
-    private static $definitionSet;
+    private static ?NaturalNumbers $definitionSet = null;
 
-    private $string;
-    private $value;
-    private $scale;
-    private $original;
+    private Integer $value;
+    private Integer $scale;
+    private Number $original;
 
     public function __construct(Integer $value, Integer $scale)
     {
         $this->scale = $scale;
         $this->value = $value;
         $this->original = $value->divideBy(
-            (new Integer(10))->power($scale)
+            (new Integer(10))->power($scale),
         );
     }
 
@@ -39,10 +40,10 @@ final class Decimal implements Value
         return new self($value, $scale);
     }
 
-    public static function fromStream(Readable $stream): Value
+    public static function unpack(Readable $stream): self
     {
-        $scale = UnsignedOctet::fromStream($stream)->original();
-        $value = SignedLongInteger::fromStream($stream)->original();
+        $scale = UnsignedOctet::unpack($stream)->original();
+        $value = SignedLongInteger::unpack($stream)->original();
 
         return new self($value, $scale);
     }
@@ -52,9 +53,9 @@ final class Decimal implements Value
         return $this->original;
     }
 
-    public function __toString(): string
+    public function pack(): string
     {
-        return $this->string ?? $this->string = new UnsignedOctet($this->scale).new SignedLongInteger($this->value);
+        return (new UnsignedOctet($this->scale))->pack().(new SignedLongInteger($this->value))->pack();
     }
 
     public static function definitionSet(): Set

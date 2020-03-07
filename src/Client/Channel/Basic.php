@@ -17,12 +17,12 @@ use Innmind\AMQP\Model\Basic\{
 
 interface Basic
 {
-    public function ack(Ack $command): self;
-    public function cancel(Cancel $command): self;
+    public function ack(Ack $command): void;
+    public function cancel(Cancel $command): void;
     public function consume(Consume $command): Basic\Consumer;
     public function get(Get $command): Basic\Get;
-    public function publish(Publish $command): self;
-    public function qos(Qos $command): self;
-    public function recover(Recover $command): self;
-    public function reject(Reject $command): self;
+    public function publish(Publish $command): void;
+    public function qos(Qos $command): void;
+    public function recover(Recover $command): void;
+    public function reject(Reject $command): void;
 }
