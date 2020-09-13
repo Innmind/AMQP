@@ -9,6 +9,7 @@ use Innmind\AMQP\{
     Model\Basic\Ack,
     Model\Basic\Reject as RejectCommand,
     Model\Basic\Cancel as CancelCommand,
+    Model\Basic\Recover,
     Model\Basic\Message,
     Model\Basic\Message\Locked,
     Transport\Connection,
@@ -221,17 +222,18 @@ final class Consumer implements ConsumerInterface
         do {
             $frame = $this->connection->wait();
 
-            if (
-                $frame->type() === Type::method() &&
-                $frame->is($deliver)
-            ) {
-                // requeue all the messages sent right before the cancel method
-                $message = ($this->read)($this->connection);
-                /** @var Value\UnsignedLongLongInteger */
-                $deliveryTag = $frame->values()->get(1);
-                $this->requeue($deliveryTag->original()->value());
+            if ($frame->type() === Type::method() && $frame->is($deliver)) {
+                // read all the frames for the prefetched message
+                ($this->read)($this->connection);
             }
         } while (!$frame->is($expected));
+
+        // requeue all the messages sent right before the cancel method
+        $this->connection->send($this->connection->protocol()->basic()->recover(
+            $this->channel,
+            Recover::requeue(),
+        ));
+        $this->connection->wait('basic.recover-ok');
 
         $this->canceled = true;
     }
