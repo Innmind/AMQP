@@ -180,6 +180,9 @@ final class Basic implements BasicInterface
         );
     }
 
+    /**
+     * @param Map<string, mixed> $arguments
+     */
     private function arguments(Map $arguments): Table
     {
         /** @var Map<string, Value> */

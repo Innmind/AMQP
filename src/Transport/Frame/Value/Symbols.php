@@ -70,7 +70,7 @@ final class Symbols
             ->put('A', Sequence::class)
             ->put('F', Table::class);
         /**
-         * @psalm-suppress InvalidArgument
+         * @psalm-suppress ArgumentTypeCoercion
          * @var Map<class-string<Value>, string>
          */
         $classes = $symbols->map(static function(string $symbol, string $class): Pair {

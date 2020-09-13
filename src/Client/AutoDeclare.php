@@ -15,8 +15,11 @@ use function Innmind\Immutable\assertSet;
 final class AutoDeclare implements Client
 {
     private Client $client;
+    /** @var Set<Exchange> */
     private Set $exchanges;
+    /** @var Set<Queue> */
     private Set $queues;
+    /** @var Set<Binding> */
     private Set $bindings;
     private bool $declared = false;
 
