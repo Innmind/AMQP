@@ -57,7 +57,7 @@ $client
     ->channel()
     ->queue()
     ->declare(
-        Queue::durable('parser'),
+        Queue::durable()->withName('parser'),
     );
 $client
     ->channel()

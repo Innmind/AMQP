@@ -9,6 +9,7 @@ use Innmind\AMQP\{
     Model\Basic\Ack,
     Model\Basic\Reject as RejectCommand,
     Model\Basic\Cancel as CancelCommand,
+    Model\Basic\Recover,
     Model\Basic\Message,
     Model\Basic\Message\Locked,
     Transport\Connection,
@@ -218,20 +219,28 @@ final class Consumer implements ConsumerInterface
         $deliver = $this->connection->protocol()->method('basic.deliver');
         $expected = $this->connection->protocol()->method('basic.cancel-ok');
 
+        // walk over prefetched messages
         do {
             $frame = $this->connection->wait();
 
-            if (
-                $frame->type() === Type::method() &&
-                $frame->is($deliver)
-            ) {
-                // requeue all the messages sent right before the cancel method
-                $message = ($this->read)($this->connection);
-                /** @var Value\UnsignedLongLongInteger */
-                $deliveryTag = $frame->values()->get(1);
-                $this->requeue($deliveryTag->original()->value());
+            if ($frame->type() === Type::method() && $frame->is($deliver)) {
+                // read all the frames for the prefetched message
+                ($this->read)($this->connection);
             }
         } while (!$frame->is($expected));
+
+        // requeue all the messages sent right before the cancel method
+        //
+        // by default prefetched messages won't be requeued until the channel
+        // is closed thus the need to always call to recover otherwise a new call
+        // to "consume" within the same channel will receive new messages but
+        // won't receive previously prefetched messages leading to out of order
+        // messages handling
+        $this->connection->send($this->connection->protocol()->basic()->recover(
+            $this->channel,
+            Recover::requeue(),
+        ));
+        $this->connection->wait('basic.recover-ok');
 
         $this->canceled = true;
     }
