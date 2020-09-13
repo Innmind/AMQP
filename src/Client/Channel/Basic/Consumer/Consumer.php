@@ -219,6 +219,7 @@ final class Consumer implements ConsumerInterface
         $deliver = $this->connection->protocol()->method('basic.deliver');
         $expected = $this->connection->protocol()->method('basic.cancel-ok');
 
+        // walk over prefetched messages
         do {
             $frame = $this->connection->wait();
 
@@ -229,6 +230,12 @@ final class Consumer implements ConsumerInterface
         } while (!$frame->is($expected));
 
         // requeue all the messages sent right before the cancel method
+        //
+        // by default prefetched messages won't be requeued until the channel
+        // is closed thus the need to always call to recover otherwise a new call
+        // to "consume" within the same channel will receive new messages but
+        // won't receive previously prefetched messages leading to out of order
+        // messages handling
         $this->connection->send($this->connection->protocol()->basic()->recover(
             $this->channel,
             Recover::requeue(),
