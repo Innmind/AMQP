@@ -20,7 +20,7 @@
         "innmind/time-continuum": "~2.0",
         "innmind/math": "~5.0",
         "innmind/url": "~3.3",
-        "ramsey/uuid": "^3.7",
+        "ramsey/uuid": "~3.7|~4.0",
         "innmind/operating-system": "~2.0",
         "innmind/media-type": "~1.0"
     },
