@@ -62,9 +62,9 @@ class SignedOctetTest extends TestCase
     public function cases(): array
     {
         return [
-            [pack('c', 0), 0],
-            [pack('c', 127), 127],
-            [pack('c', -128), -128],
+            [\pack('c', 0), 0],
+            [\pack('c', 127), 127],
+            [\pack('c', -128), -128],
         ];
     }
 }

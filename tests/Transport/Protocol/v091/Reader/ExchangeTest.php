@@ -28,15 +28,15 @@ class ExchangeTest extends TestCase
 
         $stream = $read(
             Methods::get($method),
-            Stream::ofContent(implode('', $arguments))
+            Stream::ofContent(\implode('', $arguments))
         );
 
         $this->assertInstanceOf(Sequence::class, $stream);
         $this->assertSame(Value::class, (string) $stream->type());
-        $this->assertCount(count($arguments), $stream);
+        $this->assertCount(\count($arguments), $stream);
 
         foreach ($arguments as $i => $argument) {
-            $this->assertInstanceOf(get_class($argument), $stream->get($i));
+            $this->assertInstanceOf(\get_class($argument), $stream->get($i));
             $this->assertSame((string) $argument, (string) $stream->get($i));
         }
     }

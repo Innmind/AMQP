@@ -55,7 +55,7 @@ USAGE;
             $client = $this->createMock(Client::class),
             new Consumers(
                 Map::of('string', 'callable')
-                    ('foo', $expected = function(){})
+                    ('foo', $expected = static function() {})
             )
         );
         $client
@@ -72,7 +72,7 @@ USAGE;
         $basic
             ->expects($this->once())
             ->method('get')
-            ->with($this->callback(function($get): bool {
+            ->with($this->callback(static function($get): bool {
                 return $get->queue() === 'foo';
             }))
             ->willReturn($get = $this->createMock(Basic\Get::class));
@@ -101,7 +101,7 @@ USAGE;
             $client = $this->createMock(Client::class),
             new Consumers(
                 Map::of('string', 'callable')
-                    ('foo', function(){})
+                    ('foo', static function() {})
             )
         );
         $client
@@ -118,7 +118,7 @@ USAGE;
         $basic
             ->expects($this->once())
             ->method('get')
-            ->with($this->callback(function($get): bool {
+            ->with($this->callback(static function($get): bool {
                 return $get->queue() === 'foo';
             }))
             ->willReturn($get = $this->createMock(Basic\Get::class));

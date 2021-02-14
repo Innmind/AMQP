@@ -13,7 +13,6 @@ use Innmind\Math\{
     Exception\OutOfDefinitionSet,
 };
 use Innmind\Stream\Readable\Stream;
-use Innmind\Immutable\StreamInterface;
 use PHPUnit\Framework\TestCase;
 
 class DecimalTest extends TestCase
@@ -85,8 +84,8 @@ class DecimalTest extends TestCase
     public function cases(): array
     {
         return [
-            [100, 2, chr(2).pack('l', 100)],
-            [100, 0, chr(0).pack('l', 100)],
+            [100, 2, \chr(2).\pack('l', 100)],
+            [100, 0, \chr(0).\pack('l', 100)],
         ];
     }
 }

@@ -73,15 +73,33 @@ class DelegateTest extends TestCase
                 }
             }
 
-            public function read(Method $method, Readable $arguments): Sequence {}
-            public function readHeader(Readable $arguments): Sequence {}
-            public function method(string $name): Method {}
-            public function connection(): Connection {}
-            public function channel(): Channel {}
-            public function exchange(): Exchange {}
-            public function queue(): Queue {}
-            public function basic(): Basic {}
-            public function transaction(): Transaction {}
+            public function read(Method $method, Readable $arguments): Sequence
+            {
+            }
+            public function readHeader(Readable $arguments): Sequence
+            {
+            }
+            public function method(string $name): Method
+            {
+            }
+            public function connection(): Connection
+            {
+            }
+            public function channel(): Channel
+            {
+            }
+            public function exchange(): Exchange
+            {
+            }
+            public function queue(): Queue
+            {
+            }
+            public function basic(): Basic
+            {
+            }
+            public function transaction(): Transaction
+            {
+            }
         };
     }
 }

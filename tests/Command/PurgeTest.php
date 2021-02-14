@@ -59,7 +59,7 @@ USAGE;
         $queue
             ->expects($this->once())
             ->method('purge')
-            ->with($this->callback(function($purge): bool {
+            ->with($this->callback(static function($purge): bool {
                 return $purge->name() === 'foo';
             }));
         $env = $this->createMock(Environment::class);

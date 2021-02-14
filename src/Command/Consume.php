@@ -5,6 +5,7 @@ namespace Innmind\AMQP\Command;
 
 use Innmind\AMQP\{
     Client,
+    Client\Channel,
     Consumers,
     Model\Basic,
     Model\Basic\Qos,
@@ -33,11 +34,7 @@ final class Consume implements Command
         $consume = $this->consumers->get($queue);
         $basic = $this->client->channel()->basic();
 
-        if ($arguments->contains('prefetch')) {
-            $basic->qos(new Qos(0, (int) $arguments->get('prefetch')));
-        } else if ($arguments->contains('number')) {
-            $basic->qos(new Qos(0, (int) $arguments->get('number')));
-        }
+        $this->qos($arguments, $basic);
 
         $consumer = $basic->consume(new Basic\Consume($queue));
 
@@ -59,5 +56,20 @@ innmind:amqp:consume queue [number] [prefetch]
 
 Will process messages from the given queue
 USAGE;
+    }
+
+    private function qos(Arguments $arguments, Channel\Basic $basic): void
+    {
+        if ($arguments->contains('prefetch')) {
+            $basic->qos(new Qos(0, (int) $arguments->get('prefetch')));
+
+            return;
+        }
+
+        if ($arguments->contains('number')) {
+            $basic->qos(new Qos(0, (int) $arguments->get('number')));
+
+            return;
+        }
     }
 }

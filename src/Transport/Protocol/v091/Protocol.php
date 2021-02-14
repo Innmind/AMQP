@@ -26,7 +26,6 @@ use Innmind\AMQP\{
 };
 use Innmind\Stream\Readable;
 use Innmind\Immutable\Sequence;
-use function Innmind\Immutable\unwrap;
 
 final class Protocol implements ProtocolInterface
 {

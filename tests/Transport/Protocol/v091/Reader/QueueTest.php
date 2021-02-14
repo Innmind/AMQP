@@ -42,10 +42,10 @@ class QueueTest extends TestCase
 
         $this->assertInstanceOf(Sequence::class, $stream);
         $this->assertSame(Value::class, (string) $stream->type());
-        $this->assertCount(count($arguments), $stream);
+        $this->assertCount(\count($arguments), $stream);
 
         foreach ($arguments as $i => $argument) {
-            $this->assertInstanceOf(get_class($argument), $stream->get($i));
+            $this->assertInstanceOf(\get_class($argument), $stream->get($i));
             $this->assertSame($argument->pack(), $stream->get($i)->pack());
         }
     }

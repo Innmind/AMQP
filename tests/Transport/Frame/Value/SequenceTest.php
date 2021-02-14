@@ -45,11 +45,11 @@ class SequenceTest extends TestCase
         $value = Sequence::unpack(Stream::ofContent($string));
 
         $this->assertInstanceOf(Sequence::class, $value);
-        $this->assertCount(count($expected), $value->original());
+        $this->assertCount(\count($expected), $value->original());
 
         foreach ($expected as $i => $v) {
             $this->assertInstanceOf(
-                get_class($v),
+                \get_class($v),
                 $value->original()->get($i)
             );
             $this->assertSame(
@@ -72,11 +72,11 @@ class SequenceTest extends TestCase
     {
         return [
             [
-                pack('N', 8).'S'.pack('N', 3).'foo',
-                [new LongString(Str::of('foo'))]
+                \pack('N', 8).'S'.\pack('N', 3).'foo',
+                [new LongString(Str::of('foo'))],
             ],
             [
-                pack('N', 20).'S'.pack('N', 3).'fooS'.pack('N', 7).'🙏bar',
+                \pack('N', 20).'S'.\pack('N', 3).'fooS'.\pack('N', 7).'🙏bar',
                 [
                     new LongString(Str::of('foo')),
                     new LongString(Str::of('🙏bar')),

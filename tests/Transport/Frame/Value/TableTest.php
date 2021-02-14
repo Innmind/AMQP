@@ -59,7 +59,7 @@ class TableTest extends TestCase
 
         foreach ($expected as $i => $v) {
             $this->assertInstanceOf(
-                get_class($v),
+                \get_class($v),
                 $value->original()->get($i)
             );
             $this->assertSame(
@@ -88,11 +88,11 @@ class TableTest extends TestCase
 
         return [
             [
-                pack('N', 6).chr(3).'foob'.chr(1),
+                \pack('N', 6).\chr(3).'foob'.\chr(1),
                 $map,
             ],
             [
-                pack('N', 28).chr(3).'foob'.chr(1).chr(6).'foobarS'.pack('N', 10).'foo🙏bar',
+                \pack('N', 28).\chr(3).'foob'.\chr(1).\chr(6).'foobarS'.\pack('N', 10).'foo🙏bar',
                 $map->put('foobar', new LongString(Str::of('foo🙏bar'))),
             ],
         ];

@@ -58,11 +58,11 @@ class UnsignedLongLongIntegerTest extends TestCase
     public function cases(): array
     {
         return [
-            [0, pack('J', 0)],
-            [4294967295, pack('J', 4294967295)],
-            [4294967296, pack('J', 4294967296)],
-            [PHP_INT_MAX, pack('J', PHP_INT_MAX)],
-            [42, pack('J', 42)],
+            [0, \pack('J', 0)],
+            [4294967295, \pack('J', 4294967295)],
+            [4294967296, \pack('J', 4294967296)],
+            [\PHP_INT_MAX, \pack('J', \PHP_INT_MAX)],
+            [42, \pack('J', 42)],
         ];
     }
 }

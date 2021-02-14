@@ -65,10 +65,10 @@ class SignedLongIntegerTest extends TestCase
     public function cases(): array
     {
         return [
-            [0, pack('l', 0)],
-            [-2147483648, pack('l', -2147483648)],
-            [2147483647, pack('l', 2147483647)],
-            [42, pack('l', 42)],
+            [0, \pack('l', 0)],
+            [-2147483648, \pack('l', -2147483648)],
+            [2147483647, \pack('l', 2147483647)],
+            [42, \pack('l', 42)],
         ];
     }
 }

@@ -57,19 +57,19 @@ class LoggerTest extends TestCase
             ->withConsecutive(
                 [
                     'AMQP frame about to be sent',
-                    $this->callback(function(array $context) use (&$uuid): bool {
+                    $this->callback(static function(array $context) use (&$uuid): bool {
                         $uuid = $context['uuid'];
 
-                        return is_string($context['uuid']) &&
+                        return \is_string($context['uuid']) &&
                             $context['type'] === 8 &&
                             $context['channel'] === 0;
-                    })
+                    }),
                 ],
                 [
                     'AMQP frame sent',
-                    $this->callback(function(array $context) use (&$uuid): bool {
+                    $this->callback(static function(array $context) use (&$uuid): bool {
                         return $context['uuid'] === $uuid;
-                    })
+                    }),
                 ],
             );
 
@@ -94,14 +94,14 @@ class LoggerTest extends TestCase
             ->withConsecutive(
                 [
                     'Waiting for AMQP frame',
-                    ['names' => ['foo', 'bar']]
+                    ['names' => ['foo', 'bar']],
                 ],
                 [
                     'AMQP frame received',
                     [
                         'type' => 8,
                         'channel' => 0,
-                    ]
+                    ],
                 ],
             );
 

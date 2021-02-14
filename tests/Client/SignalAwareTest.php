@@ -44,7 +44,7 @@ class SignalAwareTest extends TestCase
                         $listen(); // doesn't expect to do anything
 
                         return true;
-                    })
+                    }),
                 ],
                 [Signal::interrupt(), $callback],
                 [Signal::abort(), $callback],
@@ -60,10 +60,10 @@ class SignalAwareTest extends TestCase
         $this->assertTrue($client->closed());
         $this->assertCount( // verify it's the same listener to close the channel
             1,
-            array_reduce(
+            \array_reduce(
                 $listeners,
                 static function(array $listeners, callable $listener): array {
-                    if (in_array($listener, $listeners, true)) {
+                    if (\in_array($listener, $listeners, true)) {
                         return $listeners;
                     }
 
@@ -74,6 +74,6 @@ class SignalAwareTest extends TestCase
                 []
             )
         );
-        array_walk($listeners, 'call_user_func');
+        \array_walk($listeners, 'call_user_func');
     }
 }

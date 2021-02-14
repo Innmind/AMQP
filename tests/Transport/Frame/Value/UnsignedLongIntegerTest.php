@@ -67,9 +67,9 @@ class UnsignedLongIntegerTest extends TestCase
     public function cases(): array
     {
         return [
-            [0, pack('N', 0)],
-            [4294967295, pack('N', 4294967295)],
-            [42, pack('N', 42)],
+            [0, \pack('N', 0)],
+            [4294967295, \pack('N', 4294967295)],
+            [42, \pack('N', 42)],
         ];
     }
 }

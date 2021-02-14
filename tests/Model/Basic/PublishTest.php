@@ -66,7 +66,7 @@ class PublishTest extends TestCase
         $command = new Publish($this->createMock(Message::class));
         $command2 = $command->flagAsMandatory();
 
-         $this->assertInstanceOf(Publish::class, $command2);
+        $this->assertInstanceOf(Publish::class, $command2);
         $this->assertNotSame($command, $command2);
         $this->assertFalse($command->mandatory());
         $this->assertTrue($command2->mandatory());
@@ -84,7 +84,7 @@ class PublishTest extends TestCase
         $command = new Publish($this->createMock(Message::class));
         $command2 = $command->flagAsImmediate();
 
-         $this->assertInstanceOf(Publish::class, $command2);
+        $this->assertInstanceOf(Publish::class, $command2);
         $this->assertNotSame($command, $command2);
         $this->assertFalse($command->immediate());
         $this->assertTrue($command2->immediate());

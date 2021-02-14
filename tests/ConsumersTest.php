@@ -13,7 +13,7 @@ class ConsumersTest extends TestCase
     {
         $consumers = new Consumers(
             Map::of('string', 'callable')
-                ('foo', $expected = function(){})
+                ('foo', $expected = static function() {})
         );
 
         $this->assertTrue($consumers->contains('foo'));
