@@ -39,7 +39,7 @@
         "phpunit/phpunit": "~8.0",
         "psr/log": "^1.0",
         "innmind/cli": "~2.0",
-        "vimeo/psalm": "^3.9",
+        "vimeo/psalm": "~4.4",
         "innmind/black-box": "^4.9"
     },
     "suggest": {
