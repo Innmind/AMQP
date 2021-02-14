@@ -59,11 +59,11 @@ USAGE;
             )
         );
         $client
-            ->expects($this->at(0))
+            ->expects($this->once())
             ->method('channel')
             ->willReturn($channel = $this->createMock(Channel::class));
         $client
-            ->expects($this->at(1))
+            ->expects($this->once())
             ->method('close');
         $channel
             ->expects($this->once())
@@ -105,11 +105,11 @@ USAGE;
             )
         );
         $client
-            ->expects($this->at(0))
+            ->expects($this->once())
             ->method('channel')
             ->willReturn($channel = $this->createMock(Channel::class));
         $client
-            ->expects($this->at(1))
+            ->expects($this->once())
             ->method('close');
         $channel
             ->expects($this->once())

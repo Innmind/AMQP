@@ -47,19 +47,12 @@ class QueueTest extends TestCase
     {
         $this
             ->translator
-            ->expects($this->at(0))
+            ->expects($this->exactly(2))
             ->method('__invoke')
-            ->with(24)
-            ->willReturn($firstArgument = new UnsignedShortInteger(
-                new Integer(24)
-            ));
-        $this
-            ->translator
-            ->expects($this->at(1))
-            ->method('__invoke')
-            ->with(42)
-            ->willReturn($secondArgument = new UnsignedShortInteger(
-                new Integer(42)
+            ->withConsecutive([24], [42])
+            ->will($this->onConsecutiveCalls(
+                $firstArgument = new UnsignedShortInteger(new Integer(24)),
+                $secondArgument = new UnsignedShortInteger(new Integer(42)),
             ));
         $frame = $this->queue->declare(
             $channel = new Channel(1),
@@ -213,19 +206,12 @@ class QueueTest extends TestCase
     {
         $this
             ->translator
-            ->expects($this->at(0))
+            ->expects($this->exactly(2))
             ->method('__invoke')
-            ->with(24)
-            ->willReturn($firstArgument = new UnsignedShortInteger(
-                new Integer(24)
-            ));
-        $this
-            ->translator
-            ->expects($this->at(1))
-            ->method('__invoke')
-            ->with(42)
-            ->willReturn($secondArgument = new UnsignedShortInteger(
-                new Integer(42)
+            ->withConsecutive([24], [42])
+            ->will($this->onConsecutiveCalls(
+                $firstArgument = new UnsignedShortInteger(new Integer(24)),
+                $secondArgument = new UnsignedShortInteger(new Integer(42)),
             ));
         $frame = $this->queue->bind(
             $channel = new Channel(1),
@@ -269,19 +255,12 @@ class QueueTest extends TestCase
     {
         $this
             ->translator
-            ->expects($this->at(0))
+            ->expects($this->exactly(2))
             ->method('__invoke')
-            ->with(24)
-            ->willReturn($firstArgument = new UnsignedShortInteger(
-                new Integer(24)
-            ));
-        $this
-            ->translator
-            ->expects($this->at(1))
-            ->method('__invoke')
-            ->with(42)
-            ->willReturn($secondArgument = new UnsignedShortInteger(
-                new Integer(42)
+            ->withConsecutive([24], [42])
+            ->will($this->onConsecutiveCalls(
+                $firstArgument = new UnsignedShortInteger(new Integer(24)),
+                $secondArgument = new UnsignedShortInteger(new Integer(42)),
             ));
         $frame = $this->queue->unbind(
             $channel = new Channel(1),

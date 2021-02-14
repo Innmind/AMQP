@@ -52,26 +52,25 @@ class LoggerTest extends TestCase
             ->with($frame);
         $uuid = null;
         $logger
-            ->expects($this->at(0))
+            ->expects($this->exactly(2))
             ->method('debug')
-            ->with(
-                'AMQP frame about to be sent',
-                $this->callback(function(array $context) use (&$uuid): bool {
-                    $uuid = $context['uuid'];
+            ->withConsecutive(
+                [
+                    'AMQP frame about to be sent',
+                    $this->callback(function(array $context) use (&$uuid): bool {
+                        $uuid = $context['uuid'];
 
-                    return is_string($context['uuid']) &&
-                        $context['type'] === 8 &&
-                        $context['channel'] === 0;
-                })
-            );
-        $logger
-            ->expects($this->at(1))
-            ->method('debug')
-            ->with(
-                'AMQP frame sent',
-                $this->callback(function(array $context) use (&$uuid): bool {
-                    return $context['uuid'] === $uuid;
-                })
+                        return is_string($context['uuid']) &&
+                            $context['type'] === 8 &&
+                            $context['channel'] === 0;
+                    })
+                ],
+                [
+                    'AMQP frame sent',
+                    $this->callback(function(array $context) use (&$uuid): bool {
+                        return $context['uuid'] === $uuid;
+                    })
+                ],
             );
 
         $this->assertNull($connection->send($frame));
@@ -90,21 +89,20 @@ class LoggerTest extends TestCase
             ->with('foo', 'bar')
             ->willReturn($frame);
         $logger
-            ->expects($this->at(0))
+            ->expects($this->exactly(2))
             ->method('debug')
-            ->with(
-                'Waiting for AMQP frame',
-                ['names' => ['foo', 'bar']]
-            );
-        $logger
-            ->expects($this->at(1))
-            ->method('debug')
-            ->with(
-                'AMQP frame received',
+            ->withConsecutive(
                 [
-                    'type' => 8,
-                    'channel' => 0,
-                ]
+                    'Waiting for AMQP frame',
+                    ['names' => ['foo', 'bar']]
+                ],
+                [
+                    'AMQP frame received',
+                    [
+                        'type' => 8,
+                        'channel' => 0,
+                    ]
+                ],
             );
 
         $this->assertSame($frame, $connection->wait('foo', 'bar'));
@@ -134,13 +132,9 @@ class LoggerTest extends TestCase
             $this->createMock(LoggerInterface::class)
         );
         $inner
-            ->expects($this->at(0))
+            ->expects($this->exactly(2))
             ->method('closed')
-            ->willReturn(false);
-        $inner
-            ->expects($this->at(1))
-            ->method('closed')
-            ->willReturn(true);
+            ->will($this->onConsecutiveCalls(false, true));
 
         $this->assertFalse($connection->closed());
         $this->assertTrue($connection->closed());
