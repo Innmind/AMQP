@@ -44,8 +44,8 @@ class LongStringTest extends TestCase
     public function cases(): array
     {
         return [
-            ['', pack('N', 0)],
-            ['foo🙏bar', pack('N', 10).'foo🙏bar'],
+            ['', \pack('N', 0)],
+            ['foo🙏bar', \pack('N', 10).'foo🙏bar'],
         ];
     }
 }

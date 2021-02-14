@@ -124,15 +124,33 @@ class ConnectionTest extends TestCase
                 }
             }
 
-            public function read(Method $method, Readable $arguments): Sequence {}
-            public function readHeader(Readable $arguments): Sequence {}
-            public function method(string $name): Method {}
-            public function connection(): PConnection {}
-            public function channel(): PChannel {}
-            public function exchange(): Exchange {}
-            public function queue(): Queue {}
-            public function basic(): Basic {}
-            public function transaction(): Transaction {}
+            public function read(Method $method, Readable $arguments): Sequence
+            {
+            }
+            public function readHeader(Readable $arguments): Sequence
+            {
+            }
+            public function method(string $name): Method
+            {
+            }
+            public function connection(): PConnection
+            {
+            }
+            public function channel(): PChannel
+            {
+            }
+            public function exchange(): Exchange
+            {
+            }
+            public function queue(): Queue
+            {
+            }
+            public function basic(): Basic
+            {
+            }
+            public function transaction(): Transaction
+            {
+            }
         };
         $connection = new Connection(
             Transport::tcp(),

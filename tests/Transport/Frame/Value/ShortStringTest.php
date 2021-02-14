@@ -52,8 +52,8 @@ class ShortStringTest extends TestCase
     public function cases(): array
     {
         return [
-            ['', chr(0)],
-            ['foo🙏bar', chr(10).'foo🙏bar'],
+            ['', \chr(0)],
+            ['foo🙏bar', \chr(10).'foo🙏bar'],
         ];
     }
 }

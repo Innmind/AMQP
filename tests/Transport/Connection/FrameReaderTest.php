@@ -66,8 +66,8 @@ class FrameReaderTest extends TestCase
     {
         $read = new FrameReader;
 
-        $file = tmpfile();
-        fwrite(
+        $file = \tmpfile();
+        \fwrite(
             $file,
             Frame::method(
                 new Channel(0),
@@ -79,7 +79,7 @@ class FrameReaderTest extends TestCase
                 new LongString(Str::of('en_US'))
             )->toString()
         );
-        fseek($file, 0);
+        \fseek($file, 0);
         $stream = new Stream($file);
 
         $frame = $read($stream, $this->protocol);
@@ -91,7 +91,7 @@ class FrameReaderTest extends TestCase
     {
         $read = new FrameReader;
 
-        $file = tmpfile();
+        $file = \tmpfile();
         $frame = Frame::method(
             new Channel(0),
             new Method(10, 10), // connection.start
@@ -101,10 +101,10 @@ class FrameReaderTest extends TestCase
             new LongString(Str::of('AMQPLAIN')),
             new LongString(Str::of('en_US'))
         )->toString();
-        $frame = mb_substr($frame, 0, -1, 'ASCII'); //remove end marker
+        $frame = \mb_substr($frame, 0, -1, 'ASCII'); //remove end marker
         $frame .= (new UnsignedOctet(new Integer(0xCD)))->pack();
-        fwrite($file, $frame);
-        fseek($file, 0);
+        \fwrite($file, $frame);
+        \fseek($file, 0);
         $stream = new Stream($file);
 
         $this->expectException(ReceivedFrameNotDelimitedCorrectly::class);
@@ -116,14 +116,14 @@ class FrameReaderTest extends TestCase
     {
         $read = new FrameReader;
 
-        $file = tmpfile();
+        $file = \tmpfile();
         $frame = Frame::method(
             new Channel(0),
             new Method(10, 10) // connection.start
         )->toString();
-        $frame = mb_substr($frame, 0, -2, 'ASCII');
-        fwrite($file, $frame);
-        fseek($file, 0);
+        $frame = \mb_substr($frame, 0, -2, 'ASCII');
+        \fwrite($file, $frame);
+        \fseek($file, 0);
         $stream = new Stream($file);
 
         $this->expectException(PayloadTooShort::class);
@@ -133,9 +133,9 @@ class FrameReaderTest extends TestCase
 
     public function testThrowWhenNoFrameDeteted()
     {
-        $file = tmpfile();
-        fwrite($file, $content = "AMQP\x00\x00\x09\x01");
-        fseek($file, 0);
+        $file = \tmpfile();
+        \fwrite($file, $content = "AMQP\x00\x00\x09\x01");
+        \fseek($file, 0);
         $stream = new Stream($file);
 
         try {
@@ -176,9 +176,9 @@ class FrameReaderTest extends TestCase
                 new MaxFrameSize(10)
             )
             ->get(1);
-        $file = tmpfile();
-        fwrite($file, $header->toString());
-        fseek($file, 0);
+        $file = \tmpfile();
+        \fwrite($file, $header->toString());
+        \fseek($file, 0);
 
         $frame = (new FrameReader)(new Stream($file), $this->protocol);
 
@@ -319,12 +319,12 @@ class FrameReaderTest extends TestCase
 
     public function testReadBody()
     {
-        $file = tmpfile();
-        fwrite($file, Frame::body(
+        $file = \tmpfile();
+        \fwrite($file, Frame::body(
             new Channel(1),
             Str::of('foobar')
         )->toString());
-        fseek($file, 0);
+        \fseek($file, 0);
 
         $frame = (new FrameReader)(new Stream($file), $this->protocol);
 
@@ -338,9 +338,9 @@ class FrameReaderTest extends TestCase
 
     public function testReadHeartbeat()
     {
-        $file = tmpfile();
-        fwrite($file, Frame::heartbeat()->toString());
-        fseek($file, 0);
+        $file = \tmpfile();
+        \fwrite($file, Frame::heartbeat()->toString());
+        \fseek($file, 0);
 
         $frame = (new FrameReader)(new Stream($file), $this->protocol);
 

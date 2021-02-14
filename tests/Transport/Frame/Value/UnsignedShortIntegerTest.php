@@ -66,10 +66,10 @@ class UnsignedShortIntegerTest extends TestCase
     public function cases(): array
     {
         return [
-            [0, pack('n', 0)],
-            [42, pack('n', 42)],
-            [32767, pack('n', 32767)],
-            [65535, pack('n', 65535)],
+            [0, \pack('n', 0)],
+            [42, \pack('n', 42)],
+            [32767, \pack('n', 32767)],
+            [65535, \pack('n', 65535)],
         ];
     }
 }

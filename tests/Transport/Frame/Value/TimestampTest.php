@@ -28,21 +28,21 @@ class TimestampTest extends TestCase
     public function testStringCast()
     {
         $value = new Timestamp($now = new Now);
-        $this->assertSame(pack('J', time()), $value->pack());
+        $this->assertSame(\pack('J', \time()), $value->pack());
         $this->assertSame($now, $value->original());
     }
 
     public function testFromStream()
     {
-        $value = Timestamp::unpack(Stream::ofContent(pack('J', $time = time())));
+        $value = Timestamp::unpack(Stream::ofContent(\pack('J', $time = \time())));
 
         $this->assertInstanceOf(Timestamp::class, $value);
         $this->assertInstanceOf(PointInTimeInterface::class, $value->original());
         $this->assertTrue(
             $value->original()->equals(
-                new PointInTime(date(\DateTime::ATOM, $time))
+                new PointInTime(\date(\DateTime::ATOM, $time))
             )
         );
-        $this->assertSame(pack('J', $time), $value->pack());
+        $this->assertSame(\pack('J', $time), $value->pack());
     }
 }

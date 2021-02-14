@@ -65,12 +65,14 @@ class LoggerTest extends TestCase
 
                 public function foreach(callable $consume): void
                 {
-                    foreach (range(0, 1) as $i) {
+                    foreach (\range(0, 1) as $i) {
                         ($this->predicate)(($this->message)($i), false, '', '');
                     }
                 }
 
-                public function take(int $number): void {}
+                public function take(int $number): void
+                {
+                }
 
                 public function filter(callable $predicate): void
                 {
@@ -88,10 +90,10 @@ class LoggerTest extends TestCase
             );
 
         $filter = false;
-        $consumer->filter(function() use (&$filter): bool {
+        $consumer->filter(static function() use (&$filter): bool {
             return $filter = !$filter;
         });
-        $consumer->foreach(function(){});
+        $consumer->foreach(static function() {});
     }
 
     public function testLogMessageReceived()
@@ -115,8 +117,12 @@ class LoggerTest extends TestCase
                     $consume($this->message, false, '', '');
                 }
 
-                public function take(int $number): void {}
-                public function filter(callable $predicate): void {}
+                public function take(int $number): void
+                {
+                }
+                public function filter(callable $predicate): void
+                {
+                }
             },
             $logger = $this->createMock(LoggerInterface::class)
         );
@@ -128,7 +134,7 @@ class LoggerTest extends TestCase
                 ['body' => 'foobar']
             );
 
-        $consumer->foreach(function(){});
+        $consumer->foreach(static function() {});
     }
 
     public function testLogReject()
@@ -156,8 +162,12 @@ class LoggerTest extends TestCase
                     }
                 }
 
-                public function take(int $number): void {}
-                public function filter(callable $predicate): void {}
+                public function take(int $number): void
+                {
+                }
+                public function filter(callable $predicate): void
+                {
+                }
             },
             $logger = $this->createMock(LoggerInterface::class)
         );
@@ -169,7 +179,7 @@ class LoggerTest extends TestCase
                 ['body' => 'foobar']
             );
 
-        $consumer->foreach(function(){
+        $consumer->foreach(static function() {
             throw new Reject;
         });
     }
@@ -199,8 +209,12 @@ class LoggerTest extends TestCase
                     }
                 }
 
-                public function take(int $number): void {}
-                public function filter(callable $predicate): void {}
+                public function take(int $number): void
+                {
+                }
+                public function filter(callable $predicate): void
+                {
+                }
             },
             $logger = $this->createMock(LoggerInterface::class)
         );
@@ -212,7 +226,7 @@ class LoggerTest extends TestCase
                 ['body' => 'foobar']
             );
 
-        $consumer->foreach(function(){
+        $consumer->foreach(static function() {
             throw new Requeue;
         });
     }
@@ -242,8 +256,12 @@ class LoggerTest extends TestCase
                     }
                 }
 
-                public function take(int $number): void {}
-                public function filter(callable $predicate): void {}
+                public function take(int $number): void
+                {
+                }
+                public function filter(callable $predicate): void
+                {
+                }
             },
             $logger = $this->createMock(LoggerInterface::class)
         );
@@ -255,7 +273,7 @@ class LoggerTest extends TestCase
                 ['body' => 'foobar']
             );
 
-        $consumer->foreach(function(){
+        $consumer->foreach(static function() {
             throw new Cancel;
         });
     }
@@ -285,8 +303,12 @@ class LoggerTest extends TestCase
                     }
                 }
 
-                public function take(int $number): void {}
-                public function filter(callable $predicate): void {}
+                public function take(int $number): void
+                {
+                }
+                public function filter(callable $predicate): void
+                {
+                }
             },
             $logger = $this->createMock(LoggerInterface::class)
         );
@@ -297,11 +319,11 @@ class LoggerTest extends TestCase
                 'AMQP message consumption generated an exception',
                 [
                     'body' => 'foobar',
-                    'exception' => 'RuntimeException'
+                    'exception' => 'RuntimeException',
                 ]
             );
 
-        $consumer->foreach(function(){
+        $consumer->foreach(static function() {
             throw new \RuntimeException;
         });
     }

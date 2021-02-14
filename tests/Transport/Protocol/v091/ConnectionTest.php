@@ -137,7 +137,7 @@ class ConnectionTest extends TestCase
         $this->assertSame('AMQPLAIN', $frame->values()->get(1)->original()->toString());
         $this->assertInstanceOf(LongString::class, $frame->values()->get(2));
         $this->assertSame(
-            chr(5).'LOGINS'.pack('N', 3).'foo'.chr(8).'PASSWORDS'.pack('N', 3).'bar',
+            \chr(5).'LOGINS'.\pack('N', 3).'foo'.\chr(8).'PASSWORDS'.\pack('N', 3).'bar',
             $frame->values()->get(2)->original()->toString(),
         );
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(3));
@@ -160,7 +160,7 @@ class ConnectionTest extends TestCase
         $this->assertCount(1, $frame->values());
         $this->assertInstanceOf(LongString::class, $frame->values()->get(0));
         $this->assertSame(
-            chr(5).'LOGINS'.pack('N', 3).'foo'.chr(8).'PASSWORDS'.pack('N', 3).'bar',
+            \chr(5).'LOGINS'.\pack('N', 3).'foo'.\chr(8).'PASSWORDS'.\pack('N', 3).'bar',
             $frame->values()->get(0)->original()->toString(),
         );
     }
@@ -261,7 +261,7 @@ class ConnectionTest extends TestCase
             Close::reply(1, 'foo')->causedBy('connection.close')
         );
 
-        $this->assertSame(1,  $frame->values()->get(0)->original()->value());
+        $this->assertSame(1, $frame->values()->get(0)->original()->value());
         $this->assertSame('foo', $frame->values()->get(1)->original()->toString());
         $this->assertSame(10, $frame->values()->get(2)->original()->value());
         $this->assertSame(50, $frame->values()->get(3)->original()->value());

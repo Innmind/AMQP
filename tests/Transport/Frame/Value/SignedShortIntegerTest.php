@@ -65,10 +65,10 @@ class SignedShortIntegerTest extends TestCase
     public function cases(): array
     {
         return [
-            [0, pack('s', 0)],
-            [-32768, pack('s', -32768)],
-            [32767, pack('s', 32767)],
-            [42, pack('s', 42)],
+            [0, \pack('s', 0)],
+            [-32768, \pack('s', -32768)],
+            [32767, \pack('s', 32767)],
+            [42, \pack('s', 42)],
         ];
     }
 }

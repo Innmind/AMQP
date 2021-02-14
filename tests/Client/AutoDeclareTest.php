@@ -67,13 +67,9 @@ class AutoDeclareTest extends TestCase
             $mock = $this->createMock(Client::class)
         );
         $mock
-            ->expects($this->at(0))
+            ->expects($this->exactly(2))
             ->method('closed')
-            ->willReturn(false);
-        $mock
-            ->expects($this->at(1))
-            ->method('closed')
-            ->willReturn(true);
+            ->will($this->onConsecutiveCalls(false, true));
 
         $this->assertFalse($client->closed());
         $this->assertTrue($client->closed());
@@ -107,36 +103,17 @@ class AutoDeclareTest extends TestCase
             ->method('queue')
             ->willReturn($clientQueue = $this->createMock(Channel\Queue::class));
         $clientExchange
-            ->expects($this->at(0))
-            ->method('declare')
-            ->with($exchange);
-        $clientExchange
-            ->expects($this->at(1))
-            ->method('declare')
-            ->with($exchange2);
-        $clientExchange
             ->expects($this->exactly(2))
-            ->method('declare');
-        $clientQueue
-            ->expects($this->at(0))
             ->method('declare')
-            ->with($queue);
+            ->withConsecutive([$exchange], [$exchange2]);
         $clientQueue
-            ->expects($this->at(1))
+            ->expects($this->exactly(2))
             ->method('declare')
-            ->with($queue2);
+            ->withConsecutive([$queue], [$queue2]);
         $clientQueue
+            ->expects($this->exactly(2))
             ->method('bind')
-            ->with($binding);
-        $clientQueue
-            ->method('bind')
-            ->with($binding2);
-        $clientQueue
-            ->expects($this->exactly(2))
-            ->method('declare');
-        $clientQueue
-            ->expects($this->exactly(2))
-            ->method('bind');
+            ->withConsecutive([$binding], [$binding2]);
 
         $this->assertSame($channel, $client->channel());
         //assert that the declaration is done only once

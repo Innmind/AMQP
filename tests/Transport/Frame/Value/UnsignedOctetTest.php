@@ -65,9 +65,9 @@ class UnsignedOctetTest extends TestCase
     public function cases(): array
     {
         return [
-            [chr(0), 0],
-            [chr(127), 127],
-            [chr(255), 255],
+            [\chr(0), 0],
+            [\chr(127), 127],
+            [\chr(255), 255],
         ];
     }
 }

@@ -46,11 +46,11 @@ USAGE;
     {
         $purge = new Purge($client = $this->createMock(Client::class));
         $client
-            ->expects($this->at(0))
+            ->expects($this->once())
             ->method('channel')
             ->willReturn($channel = $this->createMock(Channel::class));
         $client
-            ->expects($this->at(1))
+            ->expects($this->once())
             ->method('close');
         $channel
             ->expects($this->once())
@@ -59,7 +59,7 @@ USAGE;
         $queue
             ->expects($this->once())
             ->method('purge')
-            ->with($this->callback(function($purge): bool {
+            ->with($this->callback(static function($purge): bool {
                 return $purge->name() === 'foo';
             }));
         $env = $this->createMock(Environment::class);
@@ -78,11 +78,11 @@ USAGE;
     {
         $purge = new Purge($client = $this->createMock(Client::class));
         $client
-            ->expects($this->at(0))
+            ->expects($this->once())
             ->method('channel')
             ->will($this->throwException(new \Exception));
         $client
-            ->expects($this->at(1))
+            ->expects($this->once())
             ->method('close');
 
         $this->expectException(\Exception::class);

@@ -17,7 +17,7 @@ class NullConsumerTest extends TestCase
 
         $this->assertInstanceOf(Consumer::class, $consumer);
         $this->assertNull($consumer->take(42));
-        $this->assertNull($consumer->filter(function(){}));
-        $this->assertNull($consumer->foreach(function(){}));
+        $this->assertNull($consumer->filter(static function() {}));
+        $this->assertNull($consumer->foreach(static function() {}));
     }
 }

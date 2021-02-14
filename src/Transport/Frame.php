@@ -18,7 +18,6 @@ use Innmind\Immutable\{
     Sequence,
     Str,
 };
-use function Innmind\Immutable\join;
 
 final class Frame
 {

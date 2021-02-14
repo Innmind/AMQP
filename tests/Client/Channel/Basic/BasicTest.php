@@ -211,7 +211,7 @@ class BasicTest extends TestCase
         ));
         $this->connection->wait('queue.bind-ok');
 
-        foreach (range(0, 3) as $i) {
+        foreach (\range(0, 3) as $i) {
             $this->basic->publish(
                 (new Publish(new Generic(Str::of('foobar'.$i))))->to('amq.direct')
             );
@@ -276,22 +276,21 @@ class BasicTest extends TestCase
         ));
         $this->connection->wait('queue.bind-ok');
 
-        foreach (range(0, 3) as $i) {
+        foreach (\range(0, 3) as $i) {
             $this->basic->publish(
                 (new Publish(new Generic(Str::of('foobar'.$i))))->to('amq.direct')
             );
         }
 
-
         $consumer = $this->basic->consume(new Consume('test_consume'));
         $consumer->take(4);
         $this->assertNull(
-            $consumer->foreach(function(): void {
+            $consumer->foreach(static function(): void {
                 //pass
             })
         );
         $called = false;
-        $consumer->foreach(function() use (&$called): void {
+        $consumer->foreach(static function() use (&$called): void {
             $called = true;
         });
         $this->assertFalse($called);
@@ -312,17 +311,16 @@ class BasicTest extends TestCase
         ));
         $this->connection->wait('queue.bind-ok');
 
-        foreach (range(0, 3) as $i) {
+        foreach (\range(0, 3) as $i) {
             $this->basic->publish(
                 (new Publish(new Generic(Str::of('foobar'.$i))))->to('amq.direct')
             );
         }
 
-
         $consumer = $this->basic->consume(new Consume('test_consume'));
 
         try {
-            $consumer->foreach(function(): void {
+            $consumer->foreach(static function(): void {
                 throw new \Exception('error');
             });
         } catch (\Exception $e) {
@@ -330,7 +328,7 @@ class BasicTest extends TestCase
         }
 
         $called = false;
-        $consumer->foreach(function() use (&$called): void {
+        $consumer->foreach(static function() use (&$called): void {
             $called = true;
         });
         $this->assertFalse($called);
@@ -351,7 +349,7 @@ class BasicTest extends TestCase
         ));
         $this->connection->wait('queue.bind-ok');
 
-        foreach (range(0, 3) as $i) {
+        foreach (\range(0, 3) as $i) {
             $this->basic->publish(
                 (new Publish(new Generic(Str::of('foobar'.$i))))->to('amq.direct')
             );
@@ -413,7 +411,7 @@ class BasicTest extends TestCase
         ));
         $this->connection->wait('queue.bind-ok');
 
-        foreach (range(0, 5) as $i) {
+        foreach (\range(0, 5) as $i) {
             $this->basic->publish(
                 (new Publish(new Generic(Str::of('foobar'.$i))))->to('amq.direct')
             );
@@ -499,7 +497,7 @@ class BasicTest extends TestCase
         ));
         $this->connection->wait('queue.bind-ok');
 
-        foreach (range(0, 3) as $i) {
+        foreach (\range(0, 3) as $i) {
             $this->basic->publish(
                 (new Publish(new Generic(Str::of('foobar'.$i))))->to('amq.direct')
             );
@@ -539,7 +537,7 @@ class BasicTest extends TestCase
         $this->assertSame(4, $calls);
 
         $called = false;
-        $this->basic->get(new Get('test_consume'))(function() use (&$called): void {
+        $this->basic->get(new Get('test_consume'))(static function() use (&$called): void {
             $called = true;
         });
         $this->assertFalse($called);
@@ -560,7 +558,7 @@ class BasicTest extends TestCase
         ));
         $this->connection->wait('queue.bind-ok');
 
-        foreach (range(0, 3) as $i) {
+        foreach (\range(0, 3) as $i) {
             $this->basic->publish(
                 (new Publish(new Generic(Str::of('foobar'.$i))))->to('amq.direct')
             );
@@ -804,17 +802,17 @@ class BasicTest extends TestCase
                 ) use (
                     &$called
                 ): void {
-                    $called = true;
-                    $this->assertSame('foobar', $message->body()->toString());
-                    $this->assertFalse($redelivered);
-                    $this->assertSame('amq.direct', $exchange);
-                    $this->assertSame('', $routingKey);
-                    $this->assertSame(1, $messageCount); //1 left in the queue
-                })
+                $called = true;
+                $this->assertSame('foobar', $message->body()->toString());
+                $this->assertFalse($redelivered);
+                $this->assertSame('amq.direct', $exchange);
+                $this->assertSame('', $routingKey);
+                $this->assertSame(1, $messageCount); //1 left in the queue
+            })
         );
         $this->assertTrue($called);
         $called = false;
-        $this->assertNull($get(function() use (&$called) {
+        $this->assertNull($get(static function() use (&$called) {
             $called = true;
         }));
         $this->assertFalse($called);
@@ -841,7 +839,7 @@ class BasicTest extends TestCase
                 ->basic
                 ->get(
                     new Get('test_get')
-                )(function() use (&$called): void {
+                )(static function() use (&$called): void {
                     $called = true;
                 })
         );
@@ -872,14 +870,15 @@ class BasicTest extends TestCase
                 ->basic
                 ->get(
                     new Get('test_get')
-                )(function() use (&$called): void {
+                )(static function() use (&$called): void {
                     $called = true;
+
                     throw new Reject;
                 })
         );
         $this->assertTrue($called);
         $called = false;
-        $this->basic->get(new Get('test_get'))(function() use (&$called): void {
+        $this->basic->get(new Get('test_get'))(static function() use (&$called): void {
             $called = true;
         });
         $this->assertFalse($called);
@@ -909,8 +908,9 @@ class BasicTest extends TestCase
                 ->basic
                 ->get(
                     new Get('test_get')
-                )(function() use (&$called): void {
+                )(static function() use (&$called): void {
                     $called = true;
+
                     throw new \Exception('error');
                 });
         } catch (\Exception $e) {
@@ -919,7 +919,7 @@ class BasicTest extends TestCase
 
         $this->assertTrue($called);
         $called = false;
-        $this->basic->get(new Get('test_get'))(function() use (&$called): void {
+        $this->basic->get(new Get('test_get'))(static function() use (&$called): void {
             $called = true;
         });
         $this->assertFalse($called);
@@ -949,8 +949,9 @@ class BasicTest extends TestCase
                 ->basic
                 ->get(
                     new Get('test_get')
-                )(function() use (&$called): void {
+                )(static function() use (&$called): void {
                     $called = true;
+
                     throw new Requeue;
                 })
         );

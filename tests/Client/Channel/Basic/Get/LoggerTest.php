@@ -58,7 +58,7 @@ class LoggerTest extends TestCase
                 ['body' => 'foobar']
             );
 
-        $consume(function(){});
+        $consume(static function() {});
     }
 
     public function testLogReject()
@@ -96,7 +96,7 @@ class LoggerTest extends TestCase
                 ['body' => 'foobar']
             );
 
-        $consume(function(){
+        $consume(static function() {
             throw new Reject;
         });
     }
@@ -136,7 +136,7 @@ class LoggerTest extends TestCase
                 ['body' => 'foobar']
             );
 
-        $consume(function(){
+        $consume(static function() {
             throw new Requeue;
         });
     }
@@ -175,11 +175,11 @@ class LoggerTest extends TestCase
                 'AMQP message consumption generated an exception',
                 [
                     'body' => 'foobar',
-                    'exception' => 'RuntimeException'
+                    'exception' => 'RuntimeException',
                 ]
             );
 
-        $consume(function(){
+        $consume(static function() {
             throw new \RuntimeException;
         });
     }

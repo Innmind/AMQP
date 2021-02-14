@@ -25,22 +25,6 @@ use PHPUnit\Framework\TestCase;
 
 class ConsumerTest extends TestCase
 {
-    protected function client(): Client
-    {
-        $os = Factory::build();
-        $amqp = bootstrap();
-
-        return $amqp['client']['basic'](
-            Transport::tcp(),
-            Url::of('amqp://guest:guest@localhost:5672/'),
-            new ElapsedPeriod(1000), // timeout
-            $os->clock(),
-            $os->process(),
-            $os->remote(),
-            $os->sockets(),
-        );
-    }
-
     public function testSegmentedConsumingDoesntAlterMessageOrdering()
     {
         $client = $this->client();
@@ -79,13 +63,13 @@ class ConsumerTest extends TestCase
             ->qos(new Qos(0, 10));
         $expected = [];
 
-        foreach (range(1, 10) as $_) {
+        foreach (\range(1, 10) as $_) {
             $consumer = $client
                 ->channel()
                 ->basic()
                 ->consume(new Consume($queue->name()));
             $consumer->take(10);
-            $consumer->foreach(function($message) use (&$expected) {
+            $consumer->foreach(static function($message) use (&$expected) {
                 $expected[] = (int) $message->body()->toString();
             });
         }
@@ -128,7 +112,7 @@ class ConsumerTest extends TestCase
         $client->close();
         $expected = [];
 
-        foreach (range(1, 10) as $_) {
+        foreach (\range(1, 10) as $_) {
             $client = $this->client();
             $client
                 ->channel()
@@ -139,12 +123,27 @@ class ConsumerTest extends TestCase
                 ->basic()
                 ->consume(new Consume($queue->name()));
             $consumer->take(10);
-            $consumer->foreach(function($message) use (&$expected) {
+            $consumer->foreach(static function($message) use (&$expected) {
                 $expected[] = (int) $message->body()->toString();
             });
             $client->close();
         }
 
         $this->assertSame(\range(0, 99), $expected);
+    }
+    protected function client(): Client
+    {
+        $os = Factory::build();
+        $amqp = bootstrap();
+
+        return $amqp['client']['basic'](
+            Transport::tcp(),
+            Url::of('amqp://guest:guest@localhost:5672/'),
+            new ElapsedPeriod(1000), // timeout
+            $os->clock(),
+            $os->process(),
+            $os->remote(),
+            $os->sockets(),
+        );
     }
 }

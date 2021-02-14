@@ -15,7 +15,7 @@
         "issues": "http://github.com/Innmind/AMQP/issues"
     },
     "require": {
-        "php": "~7.4",
+        "php": "~7.4|~8.0",
         "innmind/immutable": "~3.5",
         "innmind/time-continuum": "~2.0",
         "innmind/math": "~5.0",
@@ -36,11 +36,12 @@
         }
     },
     "require-dev": {
-        "phpunit/phpunit": "~8.0",
+        "phpunit/phpunit": "~9.0",
         "psr/log": "^1.0",
         "innmind/cli": "~2.0",
-        "vimeo/psalm": "^3.9",
-        "innmind/black-box": "^4.2"
+        "vimeo/psalm": "~4.4",
+        "innmind/black-box": "^4.9",
+        "innmind/coding-standard": "^1.1"
     },
     "suggest": {
         "psr/log": "To log what's happening through the connection",
