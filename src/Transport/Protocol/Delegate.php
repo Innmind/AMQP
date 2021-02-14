@@ -21,7 +21,7 @@ final class Delegate implements Protocol
     {
         /** @var Sequence<Protocol> */
         $protocols = Sequence::of(Protocol::class, $first, ...$protocols)->sort(static function(Protocol $a, Protocol $b): int {
-            return (int) $b->version()->higherThan($a->version());
+            return $b->version()->higherThan($a->version()) ? 1 : -1;
         });
         $this->inUse = $protocols->first();
         $this->protocols = $protocols;
