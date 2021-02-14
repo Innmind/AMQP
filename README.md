@@ -1,6 +1,6 @@
 # AMQP
 
-[![Build Status](https://github.com/Innmind/AMQP/workflows/CI/badge.svg)](https://github.com/Innmind/AMQP/actions?query=workflow%3ACI)
+[![Build Status](https://github.com/Innmind/AMQP/workflows/CI/badge.svg?branch=master)](https://github.com/Innmind/AMQP/actions?query=workflow%3ACI)
 [![codecov](https://codecov.io/gh/Innmind/AMQP/branch/develop/graph/badge.svg)](https://codecov.io/gh/Innmind/AMQP)
 [![Type Coverage](https://shepherd.dev/github/Innmind/AMQP/coverage.svg)](https://shepherd.dev/github/Innmind/AMQP)
 
