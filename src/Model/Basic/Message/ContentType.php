@@ -19,7 +19,7 @@ final class ContentType
     public function __construct(string $topLevel, string $subType)
     {
         try {
-            $mediaType = new MediaType($topLevel, $subType);
+            new MediaType($topLevel, $subType);
             $this->value = $topLevel.'/'.$subType;
         } catch (Exception $e) {
             throw new DomainException($topLevel.'/'.$subType);

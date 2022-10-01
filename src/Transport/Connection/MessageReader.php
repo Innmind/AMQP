@@ -187,7 +187,6 @@ final class MessageReader
             $message = $message->withAppId(new AppId(
                 $value->original()->toString(),
             ));
-            $properties = $properties->drop(1);
         }
 
         return $message;

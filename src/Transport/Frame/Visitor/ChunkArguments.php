@@ -13,6 +13,8 @@ final class ChunkArguments
     private array $types;
 
     /**
+     * @no-named-arguments
+     *
      * @param list<class-string<Value>> $types
      */
     public function __construct(string ...$types)

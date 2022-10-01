@@ -40,7 +40,10 @@ final class Reader
      */
     public function __invoke(Method $method, Readable $arguments): Sequence
     {
-        /** @var Sequence<Value> */
+        /**
+         * @psalm-suppress MixedFunctionCall
+         * @var Sequence<Value>
+         */
         return ($this->{Methods::class($method)})($method, $arguments);
     }
 }

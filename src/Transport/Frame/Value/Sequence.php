@@ -79,6 +79,6 @@ final class Sequence implements Value
             new Integer($data->length()),
         ))->pack();
 
-        return $value .= $data->toString();
+        return $value.$data->toString();
     }
 }

@@ -34,7 +34,7 @@ final class Table implements Value
     {
         assertMap('string', Value::class, $map, 1);
 
-        $texts = $map->filter(static function(string $key, Value $value): bool {
+        $texts = $map->filter(static function(string $_, Value $value): bool {
             return $value instanceof Text;
         });
 
@@ -92,6 +92,6 @@ final class Table implements Value
             new Integer($data->length()),
         )->pack();
 
-        return $value .= $data->toString();
+        return $value.$data->toString();
     }
 }

@@ -225,7 +225,7 @@ final class Connection implements ConnectionInterface
         );
 
         try {
-            $frame = $this->wait('connection.start');
+            $this->wait('connection.start');
         } catch (NoFrameDetected $e) {
             $content = $e->content();
 
