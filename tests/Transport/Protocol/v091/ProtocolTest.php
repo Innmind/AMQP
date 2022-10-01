@@ -97,7 +97,7 @@ class ProtocolTest extends TestCase
                         ->withContentEncoding(new ContentEncoding('gzip'))
                         ->withHeaders(
                             Map::of('string', 'mixed')
-                                ('foo', new ShortString(Str::of('bar')))
+                                ('foo', new ShortString(Str::of('bar'))),
                         )
                         ->withDeliveryMode(DeliveryMode::persistent())
                         ->withPriority(new Priority(5))
@@ -108,9 +108,9 @@ class ProtocolTest extends TestCase
                         ->withTimestamp($now = new Now)
                         ->withType(new Type('type'))
                         ->withUserId(new UserId('guest'))
-                        ->withAppId(new AppId('webcrawler'))
+                        ->withAppId(new AppId('webcrawler')),
                 ),
-                new MaxFrameSize(10)
+                new MaxFrameSize(10),
             )
             ->get(1);
 

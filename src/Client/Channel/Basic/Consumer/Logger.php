@@ -19,7 +19,7 @@ final class Logger implements ConsumerInterface
 
     public function __construct(
         ConsumerInterface $consumer,
-        LoggerInterface $logger
+        LoggerInterface $logger,
     ) {
         $this->consumer = $consumer;
         $this->logger = $logger;
@@ -31,7 +31,7 @@ final class Logger implements ConsumerInterface
             Message $message,
             bool $redelivered,
             string $exchange,
-            string $routingKey
+            string $routingKey,
         ) use (
             $consume
         ): void {
@@ -88,7 +88,7 @@ final class Logger implements ConsumerInterface
             Message $message,
             bool $redelivered,
             string $exchange,
-            string $routingKey
+            string $routingKey,
         ) use (
             $predicate
         ): bool {

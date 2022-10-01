@@ -23,7 +23,7 @@ class DelegateTest extends TestCase
         $translate = new Delegate(
             $first = $this->createMock(ArgumentTranslator::class),
             $second = $this->createMock(ArgumentTranslator::class),
-            $third = $this->createMock(ArgumentTranslator::class)
+            $third = $this->createMock(ArgumentTranslator::class),
         );
         $value = 'foo';
         $first
@@ -46,7 +46,7 @@ class DelegateTest extends TestCase
     public function testThrowWhenValueNotTranslatable()
     {
         $translate = new Delegate(
-            $inner = $this->createMock(ArgumentTranslator::class)
+            $inner = $this->createMock(ArgumentTranslator::class),
         );
         $value = 'foo';
         $inner
@@ -54,7 +54,7 @@ class DelegateTest extends TestCase
             ->method('__invoke')
             ->with($value)
             ->will(
-                $exception = $this->throwException(new ValueNotTranslatable($value))
+                $exception = $this->throwException(new ValueNotTranslatable($value)),
             );
 
         try {

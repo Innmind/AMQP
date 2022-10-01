@@ -23,7 +23,7 @@ class ChunkArgumentsTest extends TestCase
     {
         $visit = new ChunkArguments(
             Bits::class,
-            LongString::class
+            LongString::class,
         );
 
         $arguments = (new Bits(true))->pack().(new LongString(Str::of('foo')))->pack();

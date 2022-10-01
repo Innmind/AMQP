@@ -43,7 +43,7 @@ class ReaderTest extends TestCase
 
         $stream = $read(
             Methods::get($method),
-            Stream::ofContent($args)
+            Stream::ofContent($args),
         );
 
         $this->assertInstanceOf(Sequence::class, $stream);

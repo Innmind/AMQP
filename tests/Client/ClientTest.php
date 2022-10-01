@@ -46,7 +46,7 @@ class ClientTest extends TestCase
                 new Remote\Generic($this->createMock(Server::class)),
                 new Sockets\Unix,
             ),
-            $this->process = $this->createMock(CurrentProcess::class)
+            $this->process = $this->createMock(CurrentProcess::class),
         );
     }
 

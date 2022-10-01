@@ -14,7 +14,7 @@ final class TuneOk
     public function __construct(
         MaxChannels $maxChannels,
         MaxFrameSize $maxFrameSize,
-        ElapsedPeriod $heartbeat
+        ElapsedPeriod $heartbeat,
     ) {
         $this->maxChannels = $maxChannels;
         $this->maxFrameSize = $maxFrameSize;

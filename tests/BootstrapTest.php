@@ -69,27 +69,27 @@ class BootstrapTest extends TestCase
         $this->assertIsCallable($autoDeclare(
             Set::of(Exchange::class),
             Set::of(Queue::class),
-            Set::of(Binding::class)
+            Set::of(Binding::class),
         ));
         $this->assertInstanceOf(
             Fluent::class,
-            $fluent($basic)
+            $fluent($basic),
         );
         $this->assertInstanceOf(
             Logger::class,
-            $logger($basic, $log)
+            $logger($basic, $log),
         );
         $this->assertInstanceOf(
             SignalAware::class,
-            $signalAware($basic, $this->createMock(Signals::class))
+            $signalAware($basic, $this->createMock(Signals::class)),
         );
         $this->assertInstanceOf(
             AutoDeclare::class,
             $autoDeclare(
                 Set::of(Exchange::class),
                 Set::of(Queue::class),
-                Set::of(Binding::class)
-            )($basic)
+                Set::of(Binding::class),
+            )($basic),
         );
 
         $purge = $services['command']['purge'];
@@ -100,18 +100,18 @@ class BootstrapTest extends TestCase
         $this->assertIsCallable($consume);
         $this->assertInstanceOf(
             Purge::class,
-            $purge($basic)
+            $purge($basic),
         );
         $consumers = Map::of('string', 'callable');
         $this->assertIsCallable($get($consumers));
         $this->assertIsCallable($consume($consumers));
         $this->assertInstanceOf(
             Get::class,
-            $get($consumers)($basic)
+            $get($consumers)($basic),
         );
         $this->assertInstanceOf(
             Consume::class,
-            $consume($consumers)($basic)
+            $consume($consumers)($basic),
         );
 
         $producers = $services['producers'];
@@ -119,7 +119,7 @@ class BootstrapTest extends TestCase
         $this->assertIsCallable($producers(Set::of(Exchange::class)));
         $this->assertInstanceOf(
             Producers::class,
-            $producers(Set::of(Exchange::class))($basic)
+            $producers(Set::of(Exchange::class))($basic),
         );
     }
 }

@@ -20,7 +20,7 @@ final class MessageFromAnotherConsumerReceived extends RuntimeException
         int $deliveryTag,
         bool $redelivered,
         string $exchange,
-        string $routingKey
+        string $routingKey,
     ) {
         $this->_message = $message;
         $this->consumerTag = $consumerTag;

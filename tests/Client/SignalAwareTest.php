@@ -18,7 +18,7 @@ class SignalAwareTest extends TestCase
     {
         $client = new SignalAware(
             $inner = $this->createMock(Client::class),
-            $signals = $this->createMock(Signals::class)
+            $signals = $this->createMock(Signals::class),
         );
         $inner
             ->expects($this->exactly(2))
@@ -71,8 +71,8 @@ class SignalAwareTest extends TestCase
 
                     return $listeners;
                 },
-                []
-            )
+                [],
+            ),
         );
         \array_walk($listeners, 'call_user_func');
     }

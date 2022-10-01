@@ -21,7 +21,7 @@ class DecimalTest extends TestCase
     {
         $this->assertInstanceOf(
             Value::class,
-            new Decimal(new Integer(100), new Integer(2))
+            new Decimal(new Integer(100), new Integer(2)),
         );
     }
 

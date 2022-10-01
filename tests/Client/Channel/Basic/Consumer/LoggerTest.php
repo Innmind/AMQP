@@ -23,8 +23,8 @@ class LoggerTest extends TestCase
             Consumer::class,
             new Logger(
                 $this->createMock(Consumer::class),
-                $this->createMock(LoggerInterface::class)
-            )
+                $this->createMock(LoggerInterface::class),
+            ),
         );
     }
 
@@ -32,7 +32,7 @@ class LoggerTest extends TestCase
     {
         $consumer = new Logger(
             $inner = $this->createMock(Consumer::class),
-            $this->createMock(LoggerInterface::class)
+            $this->createMock(LoggerInterface::class),
         );
         $inner
             ->expects($this->once())
@@ -79,14 +79,14 @@ class LoggerTest extends TestCase
                     $this->predicate = $predicate;
                 }
             },
-            $logger = $this->createMock(LoggerInterface::class)
+            $logger = $this->createMock(LoggerInterface::class),
         );
         $logger
             ->expects($this->once())
             ->method('info')
             ->with(
                 'AMQP message was filtered',
-                ['body' => 'foobar1']
+                ['body' => 'foobar1'],
             );
 
         $filter = false;
@@ -124,14 +124,14 @@ class LoggerTest extends TestCase
                 {
                 }
             },
-            $logger = $this->createMock(LoggerInterface::class)
+            $logger = $this->createMock(LoggerInterface::class),
         );
         $logger
             ->expects($this->once())
             ->method('debug')
             ->with(
                 'AMQP message received',
-                ['body' => 'foobar']
+                ['body' => 'foobar'],
             );
 
         $consumer->foreach(static function() {});
@@ -169,14 +169,14 @@ class LoggerTest extends TestCase
                 {
                 }
             },
-            $logger = $this->createMock(LoggerInterface::class)
+            $logger = $this->createMock(LoggerInterface::class),
         );
         $logger
             ->expects($this->once())
             ->method('warning')
             ->with(
                 'AMQP message rejected',
-                ['body' => 'foobar']
+                ['body' => 'foobar'],
             );
 
         $consumer->foreach(static function() {
@@ -216,14 +216,14 @@ class LoggerTest extends TestCase
                 {
                 }
             },
-            $logger = $this->createMock(LoggerInterface::class)
+            $logger = $this->createMock(LoggerInterface::class),
         );
         $logger
             ->expects($this->once())
             ->method('info')
             ->with(
                 'AMQP message requeued',
-                ['body' => 'foobar']
+                ['body' => 'foobar'],
             );
 
         $consumer->foreach(static function() {
@@ -263,14 +263,14 @@ class LoggerTest extends TestCase
                 {
                 }
             },
-            $logger = $this->createMock(LoggerInterface::class)
+            $logger = $this->createMock(LoggerInterface::class),
         );
         $logger
             ->expects($this->once())
             ->method('warning')
             ->with(
                 'AMQP consumer canceled',
-                ['body' => 'foobar']
+                ['body' => 'foobar'],
             );
 
         $consumer->foreach(static function() {
@@ -310,7 +310,7 @@ class LoggerTest extends TestCase
                 {
                 }
             },
-            $logger = $this->createMock(LoggerInterface::class)
+            $logger = $this->createMock(LoggerInterface::class),
         );
         $logger
             ->expects($this->once())
@@ -320,7 +320,7 @@ class LoggerTest extends TestCase
                 [
                     'body' => 'foobar',
                     'exception' => 'RuntimeException',
-                ]
+                ],
             );
 
         $consumer->foreach(static function() {

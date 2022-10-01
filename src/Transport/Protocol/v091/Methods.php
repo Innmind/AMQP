@@ -26,11 +26,13 @@ final class Methods
 
     public static function classId(string $class): int
     {
-        return first(self::classes()
-            ->filter(static function(int $id, string $name) use ($class): bool {
-                return $name === $class;
-            })
-            ->keys());
+        return first(
+            self::classes()
+                ->filter(static function(int $id, string $name) use ($class): bool {
+                    return $name === $class;
+                })
+                ->keys(),
+        );
     }
 
     /**

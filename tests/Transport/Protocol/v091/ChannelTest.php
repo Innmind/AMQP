@@ -29,7 +29,7 @@ class ChannelTest extends TestCase
     public function testOpen()
     {
         $frame = (new Channel)->open(
-            $channel = new FrameChannel(1)
+            $channel = new FrameChannel(1),
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -45,7 +45,7 @@ class ChannelTest extends TestCase
     {
         $frame = (new Channel)->flow(
             $channel = new FrameChannel(1),
-            Flow::start()
+            Flow::start(),
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -58,7 +58,7 @@ class ChannelTest extends TestCase
 
         $frame = (new Channel)->flow(
             $channel = new FrameChannel(1),
-            Flow::stop()
+            Flow::stop(),
         );
 
         $this->assertFalse($frame->values()->get(0)->original()->first());
@@ -68,7 +68,7 @@ class ChannelTest extends TestCase
     {
         $frame = (new Channel)->flowOk(
             $channel = new FrameChannel(1),
-            new FlowOk(true)
+            new FlowOk(true),
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -81,7 +81,7 @@ class ChannelTest extends TestCase
 
         $frame = (new Channel)->flowOk(
             $channel = new FrameChannel(1),
-            new FlowOk(false)
+            new FlowOk(false),
         );
 
         $this->assertFalse($frame->values()->get(0)->original()->first());
@@ -91,7 +91,7 @@ class ChannelTest extends TestCase
     {
         $frame = (new Channel)->close(
             $channel = new FrameChannel(1),
-            new Close
+            new Close,
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -101,25 +101,25 @@ class ChannelTest extends TestCase
         $this->assertCount(4, $frame->values());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
-            $frame->values()->get(0)
+            $frame->values()->get(0),
         );
         $this->assertSame(0, $frame->values()->get(0)->original()->value());
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(1));
         $this->assertSame('', $frame->values()->get(1)->original()->toString());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
-            $frame->values()->get(2)
+            $frame->values()->get(2),
         );
         $this->assertSame(0, $frame->values()->get(2)->original()->value());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
-            $frame->values()->get(3)
+            $frame->values()->get(3),
         );
         $this->assertSame(0, $frame->values()->get(3)->original()->value());
 
         $frame = (new Channel)->close(
             $channel = new FrameChannel(1),
-            Close::reply(1, 'foo')->causedBy('channel.close')
+            Close::reply(1, 'foo')->causedBy('channel.close'),
         );
 
         $this->assertSame(1, $frame->values()->get(0)->original()->value());
@@ -131,7 +131,7 @@ class ChannelTest extends TestCase
     public function testCloseOk()
     {
         $frame = (new Channel)->closeOk(
-            $channel = new FrameChannel(1)
+            $channel = new FrameChannel(1),
         );
 
         $this->assertInstanceOf(Frame::class, $frame);

@@ -20,8 +20,8 @@ class ProducerTest extends TestCase
             ProducerInterface::class,
             new Producer(
                 $this->createMock(Client::class),
-                'foo'
-            )
+                'foo',
+            ),
         );
     }
 
@@ -29,7 +29,7 @@ class ProducerTest extends TestCase
     {
         $producer = new Producer(
             $client = $this->createMock(Client::class),
-            'foo'
+            'foo',
         );
         $message = $this->createMock(Message::class);
         $client
@@ -56,7 +56,7 @@ class ProducerTest extends TestCase
     {
         $producer = new Producer(
             $client = $this->createMock(Client::class),
-            'foo'
+            'foo',
         );
         $message = $this->createMock(Message::class);
         $client

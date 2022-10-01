@@ -13,7 +13,7 @@ final class Logger implements ChannelInterface
 
     public function __construct(
         ChannelInterface $channel,
-        LoggerInterface $logger
+        LoggerInterface $logger,
     ) {
         $this->channel = $channel;
         $this->basic = new Basic\Logger(

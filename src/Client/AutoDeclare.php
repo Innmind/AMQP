@@ -32,7 +32,7 @@ final class AutoDeclare implements Client
         Client $client,
         Set $exchanges = null,
         Set $queues = null,
-        Set $bindings = null
+        Set $bindings = null,
     ) {
         $this->client = $client;
         $this->exchanges = $exchanges ?? Set::of(Exchange::class);

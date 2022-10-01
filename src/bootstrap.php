@@ -43,13 +43,13 @@ function bootstrap(): array
                 CurrentProcess $process,
                 Remote $remote,
                 Sockets $sockets,
-                LoggerInterface $logger = null
+                LoggerInterface $logger = null,
             ): Client {
                 $connection = new Transport\Connection\Lazy(
                     $transport,
                     $server,
                     new Transport\Protocol\v091\Protocol(
-                        new Transport\Protocol\ArgumentTranslator\ValueTranslator
+                        new Transport\Protocol\ArgumentTranslator\ValueTranslator,
                     ),
                     $timeout,
                     $clock,

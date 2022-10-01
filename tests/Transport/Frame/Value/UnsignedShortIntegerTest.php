@@ -20,7 +20,7 @@ class UnsignedShortIntegerTest extends TestCase
     {
         $this->assertInstanceOf(
             Value::class,
-            new UnsignedShortInteger(new Integer(0))
+            new UnsignedShortInteger(new Integer(0)),
         );
     }
 

@@ -97,14 +97,14 @@ final class Basic implements BasicInterface
             Methods::get('basic.get'),
             new UnsignedShortInteger(new Integer(0)), // ticket (reserved)
             ShortString::of(Str::of($command->queue())),
-            new Bits($command->shouldAutoAcknowledge())
+            new Bits($command->shouldAutoAcknowledge()),
         );
     }
 
     public function publish(
         FrameChannel $channel,
         Publish $command,
-        MaxFrameSize $maxFrameSize
+        MaxFrameSize $maxFrameSize,
     ): Sequence {
         /** @var Sequence<Frame> */
         $frames = Sequence::of(
@@ -117,17 +117,17 @@ final class Basic implements BasicInterface
                 ShortString::of(Str::of($command->routingKey())),
                 new Bits(
                     $command->mandatory(),
-                    $command->immediate()
-                )
+                    $command->immediate(),
+                ),
             ),
             Frame::header(
                 $channel,
                 Methods::classId('basic'),
                 UnsignedLongLongInteger::of(new Integer(
-                    $command->message()->body()->length()
+                    $command->message()->body()->length(),
                 )),
-                ...$this->serializeProperties($command->message())
-            )
+                ...$this->serializeProperties($command->message()),
+            ),
         );
 
         // the "-8" is due to the content frame extra informations (type, channel and end flag)
@@ -157,7 +157,7 @@ final class Basic implements BasicInterface
             Methods::get('basic.qos'),
             UnsignedLongInteger::of(new Integer($command->prefetchSize())),
             UnsignedShortInteger::of(new Integer($command->prefetchCount())),
-            new Bits($command->isGlobal())
+            new Bits($command->isGlobal()),
         );
     }
 
@@ -166,7 +166,7 @@ final class Basic implements BasicInterface
         return Frame::method(
             $channel,
             Methods::get('basic.recover'),
-            new Bits($command->shouldRequeue())
+            new Bits($command->shouldRequeue()),
         );
     }
 
@@ -176,7 +176,7 @@ final class Basic implements BasicInterface
             $channel,
             Methods::get('basic.reject'),
             UnsignedLongLongInteger::of(new Integer($command->deliveryTag())),
-            new Bits($command->shouldRequeue())
+            new Bits($command->shouldRequeue()),
         );
     }
 
@@ -207,14 +207,14 @@ final class Basic implements BasicInterface
 
         if ($message->hasContentType()) {
             $properties[] = ShortString::of(
-                Str::of($message->contentType()->toString())
+                Str::of($message->contentType()->toString()),
             );
             $flagBits |= (1 << 15);
         }
 
         if ($message->hasContentEncoding()) {
             $properties[] = ShortString::of(
-                Str::of($message->contentEncoding()->toString())
+                Str::of($message->contentEncoding()->toString()),
             );
             $flagBits |= (1 << 14);
         }
@@ -226,42 +226,42 @@ final class Basic implements BasicInterface
 
         if ($message->hasDeliveryMode()) {
             $properties[] = UnsignedOctet::of(
-                new Integer($message->deliveryMode()->toInt())
+                new Integer($message->deliveryMode()->toInt()),
             );
             $flagBits |= (1 << 12);
         }
 
         if ($message->hasPriority()) {
             $properties[] = UnsignedOctet::of(
-                new Integer($message->priority()->toInt())
+                new Integer($message->priority()->toInt()),
             );
             $flagBits |= (1 << 11);
         }
 
         if ($message->hasCorrelationId()) {
             $properties[] = ShortString::of(
-                Str::of($message->correlationId()->toString())
+                Str::of($message->correlationId()->toString()),
             );
             $flagBits |= (1 << 10);
         }
 
         if ($message->hasReplyTo()) {
             $properties[] = ShortString::of(
-                Str::of($message->replyTo()->toString())
+                Str::of($message->replyTo()->toString()),
             );
             $flagBits |= (1 << 9);
         }
 
         if ($message->hasExpiration()) {
             $properties[] = ShortString::of(
-                Str::of((string) $message->expiration()->milliseconds())
+                Str::of((string) $message->expiration()->milliseconds()),
             );
             $flagBits |= (1 << 8);
         }
 
         if ($message->hasId()) {
             $properties[] = ShortString::of(
-                Str::of($message->id()->toString())
+                Str::of($message->id()->toString()),
             );
             $flagBits |= (1 << 7);
         }
@@ -273,28 +273,28 @@ final class Basic implements BasicInterface
 
         if ($message->hasType()) {
             $properties[] = ShortString::of(
-                Str::of($message->type()->toString())
+                Str::of($message->type()->toString()),
             );
             $flagBits |= (1 << 5);
         }
 
         if ($message->hasUserId()) {
             $properties[] = ShortString::of(
-                Str::of($message->userId()->toString())
+                Str::of($message->userId()->toString()),
             );
             $flagBits |= (1 << 4);
         }
 
         if ($message->hasAppId()) {
             $properties[] = ShortString::of(
-                Str::of($message->appId()->toString())
+                Str::of($message->appId()->toString()),
             );
             $flagBits |= (1 << 3);
         }
 
         \array_unshift(
             $properties,
-            new UnsignedShortInteger(new Integer($flagBits))
+            new UnsignedShortInteger(new Integer($flagBits)),
         );
 
         return $properties;

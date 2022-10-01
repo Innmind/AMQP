@@ -20,7 +20,7 @@ class SignedLongIntegerTest extends TestCase
     {
         $this->assertInstanceOf(
             Value::class,
-            new SignedLongInteger(new Integer(0))
+            new SignedLongInteger(new Integer(0)),
         );
     }
 

@@ -20,8 +20,8 @@ class LoggerTest extends TestCase
             Connection::class,
             new Logger(
                 $this->createMock(Connection::class),
-                $this->createMock(LoggerInterface::class)
-            )
+                $this->createMock(LoggerInterface::class),
+            ),
         );
     }
 
@@ -29,7 +29,7 @@ class LoggerTest extends TestCase
     {
         $connection = new Logger(
             $inner = $this->createMock(Connection::class),
-            $this->createMock(LoggerInterface::class)
+            $this->createMock(LoggerInterface::class),
         );
         $inner
             ->expects($this->once())
@@ -43,7 +43,7 @@ class LoggerTest extends TestCase
     {
         $connection = new Logger(
             $inner = $this->createMock(Connection::class),
-            $logger = $this->createMock(LoggerInterface::class)
+            $logger = $this->createMock(LoggerInterface::class),
         );
         $frame = Frame::heartbeat();
         $inner
@@ -80,7 +80,7 @@ class LoggerTest extends TestCase
     {
         $connection = new Logger(
             $inner = $this->createMock(Connection::class),
-            $logger = $this->createMock(LoggerInterface::class)
+            $logger = $this->createMock(LoggerInterface::class),
         );
         $frame = Frame::heartbeat();
         $inner
@@ -112,7 +112,7 @@ class LoggerTest extends TestCase
     {
         $connection = new Logger(
             $inner = $this->createMock(Connection::class),
-            $logger = $this->createMock(LoggerInterface::class)
+            $logger = $this->createMock(LoggerInterface::class),
         );
         $inner
             ->expects($this->once())
@@ -129,7 +129,7 @@ class LoggerTest extends TestCase
     {
         $connection = new Logger(
             $inner = $this->createMock(Connection::class),
-            $this->createMock(LoggerInterface::class)
+            $this->createMock(LoggerInterface::class),
         );
         $inner
             ->expects($this->exactly(2))

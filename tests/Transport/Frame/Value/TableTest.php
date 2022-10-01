@@ -25,7 +25,7 @@ class TableTest extends TestCase
     {
         $this->assertInstanceOf(
             Value::class,
-            new Table(Map::of('string', Value::class))
+            new Table(Map::of('string', Value::class)),
         );
     }
 
@@ -60,7 +60,7 @@ class TableTest extends TestCase
         foreach ($expected as $i => $v) {
             $this->assertInstanceOf(
                 \get_class($v),
-                $value->original()->get($i)
+                $value->original()->get($i),
             );
             $this->assertSame(
                 $v->pack(),
@@ -77,7 +77,7 @@ class TableTest extends TestCase
 
         new Table(
             Map::of('string', Value::class)
-                ('foo', new Text(Str::of('')))
+                ('foo', new Text(Str::of(''))),
         );
     }
 

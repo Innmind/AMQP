@@ -17,7 +17,7 @@ class LoggerTest extends TestCase
     {
         $logger = new Logger(
             $client = $this->createMock(Client::class),
-            $this->createMock(LoggerInterface::class)
+            $this->createMock(LoggerInterface::class),
         );
         $client
             ->expects($this->once())

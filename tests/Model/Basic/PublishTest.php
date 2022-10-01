@@ -14,7 +14,7 @@ class PublishTest extends TestCase
     public function testInterface()
     {
         $command = new Publish(
-            $message = $this->createMock(Message::class)
+            $message = $this->createMock(Message::class),
         );
 
         $this->assertSame($message, $command->message());

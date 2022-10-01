@@ -50,10 +50,10 @@ class QueueTest extends TestCase
                 new Remote\Generic($this->createMock(Server::class)),
                 new Sockets\Unix,
             ),
-            new Channel(1)
+            new Channel(1),
         );
         $this->connection->send(
-            $this->connection->protocol()->channel()->open(new Channel(1))
+            $this->connection->protocol()->channel()->open(new Channel(1)),
         );
         $this->connection->wait('channel.open-ok');
     }
@@ -63,8 +63,8 @@ class QueueTest extends TestCase
         $this->connection->send(
             $this->connection->protocol()->channel()->close(
                 new Channel(1),
-                new Close
-            )
+                new Close,
+            ),
         );
         $this->connection->wait('channel.close-ok');
         $this->connection->close();
@@ -78,10 +78,10 @@ class QueueTest extends TestCase
     public function testDeclare()
     {
         $this->assertNull($this->queue->declare(
-            Declaration::durable()->dontWait()
+            Declaration::durable()->dontWait(),
         ));
         $response = $this->queue->declare(
-            Declaration::durable()
+            Declaration::durable(),
         );
         $this->assertInstanceOf(DeclareOk::class, $response);
         $this->assertNotEmpty($response->name());
@@ -92,19 +92,19 @@ class QueueTest extends TestCase
         $queue = $this
             ->queue
             ->declare(
-                Declaration::durable()
+                Declaration::durable(),
             )
             ->name();
 
         $this->assertNull(
             $this->queue->bind(
-                (new Binding('amq.direct', $queue, 'foo'))->dontWait()
-            )
+                (new Binding('amq.direct', $queue, 'foo'))->dontWait(),
+            ),
         );
         $this->assertNull(
             $this->queue->bind(
-                new Binding('amq.direct', $queue, 'bar')
-            )
+                new Binding('amq.direct', $queue, 'bar'),
+            ),
         );
     }
 
@@ -113,14 +113,14 @@ class QueueTest extends TestCase
         $queue = $this
             ->queue
             ->declare(
-                Declaration::durable()
+                Declaration::durable(),
             )
             ->name();
 
         $this->assertNull(
             $this->queue->unbind(
-                new Unbinding('amq.direct', $queue, 'bar')
-            )
+                new Unbinding('amq.direct', $queue, 'bar'),
+            ),
         );
     }
 
@@ -129,12 +129,12 @@ class QueueTest extends TestCase
         $queue = $this
             ->queue
             ->declare(
-                Declaration::durable()
+                Declaration::durable(),
             )
             ->name();
 
         $this->assertNull($this->queue->purge(
-            (new Purge($queue))->dontWait()
+            (new Purge($queue))->dontWait(),
         ));
 
         $response = $this->queue->purge(new Purge($queue));
@@ -146,12 +146,12 @@ class QueueTest extends TestCase
         $queue = $this
             ->queue
             ->declare(
-                Declaration::durable()
+                Declaration::durable(),
             )
             ->name();
 
         $this->assertNull($this->queue->delete(
-            (new Deletion($queue))->dontWait()
+            (new Deletion($queue))->dontWait(),
         ));
 
         $response = $this->queue->delete(new Deletion($queue));

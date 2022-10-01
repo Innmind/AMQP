@@ -43,8 +43,8 @@ class ConnectionTest extends TestCase
         $frame = (new Connection)->startOk(
             new StartOk(
                 User::of('foo'),
-                Password::of('bar')
-            )
+                Password::of('bar'),
+            ),
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -76,7 +76,7 @@ class ConnectionTest extends TestCase
         );
         $this->assertCount(
             5,
-            $frame->values()->get(0)->original()->get('capabilities')->original()
+            $frame->values()->get(0)->original()->get('capabilities')->original(),
         );
         $this->assertTrue(
             $frame
@@ -87,7 +87,7 @@ class ConnectionTest extends TestCase
                 ->original()
                 ->get('authentication_failure_close')
                 ->original()
-                ->first()
+                ->first(),
         );
         $this->assertTrue(
             $frame
@@ -98,7 +98,7 @@ class ConnectionTest extends TestCase
                 ->original()
                 ->get('publisher_confirms')
                 ->original()
-                ->first()
+                ->first(),
         );
         $this->assertTrue(
             $frame
@@ -109,7 +109,7 @@ class ConnectionTest extends TestCase
                 ->original()
                 ->get('consumer_cancel_notify')
                 ->original()
-                ->first()
+                ->first(),
         );
         $this->assertTrue(
             $frame
@@ -120,7 +120,7 @@ class ConnectionTest extends TestCase
                 ->original()
                 ->get('exchange_exchange_bindings')
                 ->original()
-                ->first()
+                ->first(),
         );
         $this->assertTrue(
             $frame
@@ -131,7 +131,7 @@ class ConnectionTest extends TestCase
                 ->original()
                 ->get('connection.blocked')
                 ->original()
-                ->first()
+                ->first(),
         );
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(1));
         $this->assertSame('AMQPLAIN', $frame->values()->get(1)->original()->toString());
@@ -149,8 +149,8 @@ class ConnectionTest extends TestCase
         $frame = (new Connection)->secureOk(
             new SecureOk(
                 User::of('foo'),
-                Password::of('bar')
-            )
+                Password::of('bar'),
+            ),
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -171,8 +171,8 @@ class ConnectionTest extends TestCase
             new TuneOk(
                 new MaxChannels(1),
                 new MaxFrameSize(10),
-                new ElapsedPeriod(3000)
-            )
+                new ElapsedPeriod(3000),
+            ),
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -182,17 +182,17 @@ class ConnectionTest extends TestCase
         $this->assertCount(3, $frame->values());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
-            $frame->values()->get(0)
+            $frame->values()->get(0),
         );
         $this->assertSame(1, $frame->values()->get(0)->original()->value());
         $this->assertInstanceOf(
             UnsignedLongInteger::class,
-            $frame->values()->get(1)
+            $frame->values()->get(1),
         );
         $this->assertSame(10, $frame->values()->get(1)->original()->value());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
-            $frame->values()->get(2)
+            $frame->values()->get(2),
         );
         $this->assertSame(3, $frame->values()->get(2)->original()->value());
     }
@@ -200,7 +200,7 @@ class ConnectionTest extends TestCase
     public function testOpen()
     {
         $frame = (new Connection)->open(
-            new Open(Path::of('/'))
+            new Open(Path::of('/')),
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -210,17 +210,17 @@ class ConnectionTest extends TestCase
         $this->assertCount(3, $frame->values());
         $this->assertInstanceOf(
             ShortString::class,
-            $frame->values()->get(0)
+            $frame->values()->get(0),
         );
         $this->assertSame('/', $frame->values()->get(0)->original()->toString());
         $this->assertInstanceOf(
             ShortString::class,
-            $frame->values()->get(1)
+            $frame->values()->get(1),
         );
         $this->assertSame('', $frame->values()->get(1)->original()->toString());
         $this->assertInstanceOf(
             Bits::class,
-            $frame->values()->get(2)
+            $frame->values()->get(2),
         );
         $this->assertFalse($frame->values()->get(2)->original()->first());
     }
@@ -228,7 +228,7 @@ class ConnectionTest extends TestCase
     public function testClose()
     {
         $frame = (new Connection)->close(
-            new Close
+            new Close,
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -238,27 +238,27 @@ class ConnectionTest extends TestCase
         $this->assertCount(4, $frame->values());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
-            $frame->values()->get(0)
+            $frame->values()->get(0),
         );
         $this->assertSame(0, $frame->values()->get(0)->original()->value());
         $this->assertInstanceOf(
             ShortString::class,
-            $frame->values()->get(1)
+            $frame->values()->get(1),
         );
         $this->assertSame('', $frame->values()->get(1)->original()->toString());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
-            $frame->values()->get(2)
+            $frame->values()->get(2),
         );
         $this->assertSame(0, $frame->values()->get(2)->original()->value());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
-            $frame->values()->get(3)
+            $frame->values()->get(3),
         );
         $this->assertSame(0, $frame->values()->get(3)->original()->value());
 
         $frame = (new Connection)->close(
-            Close::reply(1, 'foo')->causedBy('connection.close')
+            Close::reply(1, 'foo')->causedBy('connection.close'),
         );
 
         $this->assertSame(1, $frame->values()->get(0)->original()->value());

@@ -73,7 +73,7 @@ final class Connection implements ConnectionInterface
         ElapsedPeriod $timeout,
         Clock $clock,
         Remote $remote,
-        Sockets $sockets
+        Sockets $sockets,
     ) {
         $this->transport = $transport;
         $this->authority = $server->authority();

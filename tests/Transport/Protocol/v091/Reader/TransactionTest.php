@@ -28,7 +28,7 @@ class TransactionTest extends TestCase
 
         $stream = $read(
             Methods::get($method),
-            Stream::ofContent(\implode('', $arguments))
+            Stream::ofContent(\implode('', $arguments)),
         );
 
         $this->assertInstanceOf(Sequence::class, $stream);

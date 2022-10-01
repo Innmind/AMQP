@@ -30,7 +30,7 @@ class ExchangeTest extends TestCase
     public function setUp(): void
     {
         $this->exchange = new Exchange(
-            $this->translator = $this->createMock(ArgumentTranslator::class)
+            $this->translator = $this->createMock(ArgumentTranslator::class),
         );
     }
 
@@ -54,7 +54,7 @@ class ExchangeTest extends TestCase
             $channel = new Channel(1),
             Declaration::passive('foo', Type::direct())
                 ->withArgument('foo', 24)
-                ->withArgument('bar', 42)
+                ->withArgument('bar', 42),
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -64,7 +64,7 @@ class ExchangeTest extends TestCase
         $this->assertCount(5, $frame->values());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
-            $frame->values()->get(0)
+            $frame->values()->get(0),
         );
         $this->assertSame(0, $frame->values()->get(0)->original()->value());
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(1));
@@ -74,7 +74,7 @@ class ExchangeTest extends TestCase
         $this->assertInstanceOf(Bits::class, $frame->values()->get(3));
         $this->assertSame(
             [true, false, false, false, false],
-            unwrap($frame->values()->get(3)->original())
+            unwrap($frame->values()->get(3)->original()),
         );
         $this->assertInstanceOf(Table::class, $frame->values()->get(4));
         $this->assertCount(2, $frame->values()->get(4)->original());
@@ -83,42 +83,42 @@ class ExchangeTest extends TestCase
 
         $frame = $this->exchange->declare(
             $channel = new Channel(1),
-            Declaration::durable('foo', Type::direct())
+            Declaration::durable('foo', Type::direct()),
         );
 
         $this->assertSame(
             [false, true, false, false, false],
-            unwrap($frame->values()->get(3)->original())
+            unwrap($frame->values()->get(3)->original()),
         );
 
         $frame = $this->exchange->declare(
             $channel = new Channel(1),
-            Declaration::temporary('foo', Type::direct())
+            Declaration::temporary('foo', Type::direct()),
         );
 
         $this->assertSame(
             [false, false, false, false, false],
-            unwrap($frame->values()->get(3)->original())
+            unwrap($frame->values()->get(3)->original()),
         );
 
         $frame = $this->exchange->declare(
             $channel = new Channel(1),
-            Declaration::autoDelete('foo', Type::direct())
+            Declaration::autoDelete('foo', Type::direct()),
         );
 
         $this->assertSame(
             [false, false, true, false, false],
-            unwrap($frame->values()->get(3)->original())
+            unwrap($frame->values()->get(3)->original()),
         );
 
         $frame = $this->exchange->declare(
             $channel = new Channel(1),
-            Declaration::autoDelete('foo', Type::direct())->dontWait()
+            Declaration::autoDelete('foo', Type::direct())->dontWait(),
         );
 
         $this->assertSame(
             [false, false, true, false, true],
-            unwrap($frame->values()->get(3)->original())
+            unwrap($frame->values()->get(3)->original()),
         );
     }
 
@@ -126,7 +126,7 @@ class ExchangeTest extends TestCase
     {
         $frame = $this->exchange->delete(
             $channel = new Channel(1),
-            new Deletion('foo')
+            new Deletion('foo'),
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -136,7 +136,7 @@ class ExchangeTest extends TestCase
         $this->assertCount(3, $frame->values());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
-            $frame->values()->get(0)
+            $frame->values()->get(0),
         );
         $this->assertSame(0, $frame->values()->get(0)->original()->value());
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(1));
@@ -144,27 +144,27 @@ class ExchangeTest extends TestCase
         $this->assertInstanceOf(Bits::class, $frame->values()->get(2));
         $this->assertSame(
             [false, false],
-            unwrap($frame->values()->get(2)->original())
+            unwrap($frame->values()->get(2)->original()),
         );
 
         $frame = $this->exchange->delete(
             $channel = new Channel(1),
-            (new Deletion('foo'))->ifUnused()
+            (new Deletion('foo'))->ifUnused(),
         );
 
         $this->assertSame(
             [true, false],
-            unwrap($frame->values()->get(2)->original())
+            unwrap($frame->values()->get(2)->original()),
         );
 
         $frame = $this->exchange->delete(
             $channel = new Channel(1),
-            (new Deletion('foo'))->dontWait()
+            (new Deletion('foo'))->dontWait(),
         );
 
         $this->assertSame(
             [false, true],
-            unwrap($frame->values()->get(2)->original())
+            unwrap($frame->values()->get(2)->original()),
         );
     }
 }

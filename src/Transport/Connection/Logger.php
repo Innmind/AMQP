@@ -19,7 +19,7 @@ final class Logger implements ConnectionInterface
 
     public function __construct(
         ConnectionInterface $connection,
-        LoggerInterface $logger
+        LoggerInterface $logger,
     ) {
         $this->connection = $connection;
         $this->logger = $logger;

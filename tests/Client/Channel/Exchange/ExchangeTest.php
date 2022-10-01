@@ -45,10 +45,10 @@ class ExchangeTest extends TestCase
                 new Remote\Generic($this->createMock(Server::class)),
                 new Sockets\Unix,
             ),
-            new Channel(1)
+            new Channel(1),
         );
         $this->connection->send(
-            $this->connection->protocol()->channel()->open(new Channel(1))
+            $this->connection->protocol()->channel()->open(new Channel(1)),
         );
         $this->connection->wait('channel.open-ok');
     }
@@ -58,8 +58,8 @@ class ExchangeTest extends TestCase
         $this->connection->send(
             $this->connection->protocol()->channel()->close(
                 new Channel(1),
-                new Close
-            )
+                new Close,
+            ),
         );
         $this->connection->wait('channel.close-ok');
         $this->connection->close();
@@ -74,13 +74,13 @@ class ExchangeTest extends TestCase
     {
         $this->assertNull(
             $this->exchange->declare(
-                Declaration::durable('foo', Type::direct())->dontWait()
-            )
+                Declaration::durable('foo', Type::direct())->dontWait(),
+            ),
         );
         $this->assertNull(
             $this->exchange->declare(
-                Declaration::durable('bar', Type::direct())
-            )
+                Declaration::durable('bar', Type::direct()),
+            ),
         );
     }
 
@@ -88,13 +88,13 @@ class ExchangeTest extends TestCase
     {
         $this->assertNull(
             $this->exchange->delete(
-                (new Deletion('foo'))->dontWait()
-            )
+                (new Deletion('foo'))->dontWait(),
+            ),
         );
         $this->assertNull(
             $this->exchange->delete(
-                new Deletion('bar')
-            )
+                new Deletion('bar'),
+            ),
         );
     }
 }

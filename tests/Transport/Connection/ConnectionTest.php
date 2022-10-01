@@ -60,8 +60,8 @@ class ConnectionTest extends TestCase
         $this->assertSame(131072, $connection->maxFrameSize()->toInt());
         $this->assertNull(
             $connection->send(
-                $protocol->channel()->open(new Channel(1))
-            )
+                $protocol->channel()->open(new Channel(1)),
+            ),
         );
         $this->assertInstanceOf(Frame::class, $connection->wait('channel.open-ok'));
         $connection->close(); //test it closes without exception
@@ -168,8 +168,8 @@ class ConnectionTest extends TestCase
         );
         $this->assertNull(
             $connection->send(
-                $protocol->channel()->open(new Channel(1))
-            )
+                $protocol->channel()->open(new Channel(1)),
+            ),
         );
         $this->assertInstanceOf(Frame::class, $connection->wait('channel.open-ok'));
         unset($connection); //test it closes without exception
@@ -190,7 +190,7 @@ class ConnectionTest extends TestCase
         try {
             $connection->send(Frame::method(
                 new Channel(0),
-                new Method(20, 10)
+                new Method(20, 10),
                 //missing arguments
             ));
             $connection->wait('channel.open-ok');

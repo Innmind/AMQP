@@ -40,7 +40,7 @@ final class Lazy implements ConnectionInterface
         ElapsedPeriod $timeout,
         Clock $clock,
         Remote $remote,
-        Sockets $sockets
+        Sockets $sockets,
     ) {
         $this->transport = $transport;
         $this->server = $server;

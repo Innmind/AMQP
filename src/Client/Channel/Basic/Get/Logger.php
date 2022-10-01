@@ -18,7 +18,7 @@ final class Logger implements Get
 
     public function __construct(
         Get $get,
-        LoggerInterface $logger
+        LoggerInterface $logger,
     ) {
         $this->get = $get;
         $this->logger = $logger;

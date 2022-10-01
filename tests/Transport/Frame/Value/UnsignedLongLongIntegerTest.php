@@ -20,7 +20,7 @@ class UnsignedLongLongIntegerTest extends TestCase
     {
         $this->assertInstanceOf(
             Value::class,
-            new UnsignedLongLongInteger(new Integer(0))
+            new UnsignedLongLongInteger(new Integer(0)),
         );
     }
 

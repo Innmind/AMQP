@@ -55,8 +55,8 @@ USAGE;
             $client = $this->createMock(Client::class),
             new Consumers(
                 Map::of('string', 'callable')
-                    ('foo', $expected = static function() {})
-            )
+                    ('foo', $expected = static function() {}),
+            ),
         );
         $client
             ->expects($this->once())
@@ -91,7 +91,7 @@ USAGE;
         $this->assertNull($command(
             $env,
             new Arguments(Map::of('string', 'string')('queue', 'foo')),
-            new Options
+            new Options,
         ));
     }
 
@@ -101,8 +101,8 @@ USAGE;
             $client = $this->createMock(Client::class),
             new Consumers(
                 Map::of('string', 'callable')
-                    ('foo', static function() {})
-            )
+                    ('foo', static function() {}),
+            ),
         );
         $client
             ->expects($this->once())
@@ -132,7 +132,7 @@ USAGE;
         $consume(
             $this->createMock(Environment::class),
             new Arguments(Map::of('string', 'string')('queue', 'foo')),
-            new Options
+            new Options,
         );
     }
 
@@ -142,8 +142,8 @@ USAGE;
             $client = $this->createMock(Client::class),
             new Consumers(
                 Map::of('string', 'callable')
-                    ('foo', $expected = static function() {})
-            )
+                    ('foo', $expected = static function() {}),
+            ),
         );
         $client
             ->expects($this->once())
@@ -188,9 +188,9 @@ USAGE;
             new Arguments(
                 Map::of('string', 'string')
                     ('queue', 'foo')
-                    ('number', '42')
+                    ('number', '42'),
             ),
-            new Options
+            new Options,
         ));
     }
 
@@ -200,8 +200,8 @@ USAGE;
             $client = $this->createMock(Client::class),
             new Consumers(
                 Map::of('string', 'callable')
-                    ('foo', $expected = static function() {})
-            )
+                    ('foo', $expected = static function() {}),
+            ),
         );
         $client
             ->expects($this->once())
@@ -247,9 +247,9 @@ USAGE;
                 Map::of('string', 'string')
                     ('queue', 'foo')
                     ('number', '42')
-                    ('prefetch', '24')
+                    ('prefetch', '24'),
             ),
-            new Options
+            new Options,
         ));
     }
 }

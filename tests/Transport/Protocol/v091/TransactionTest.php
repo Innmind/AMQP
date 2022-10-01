@@ -23,7 +23,7 @@ class TransactionTest extends TestCase
     public function testSelect()
     {
         $frame = (new Transaction)->select(
-            $channel = new Channel(1)
+            $channel = new Channel(1),
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -36,7 +36,7 @@ class TransactionTest extends TestCase
     public function testCommit()
     {
         $frame = (new Transaction)->commit(
-            $channel = new Channel(1)
+            $channel = new Channel(1),
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -49,7 +49,7 @@ class TransactionTest extends TestCase
     public function testRollback()
     {
         $frame = (new Transaction)->rollback(
-            $channel = new Channel(1)
+            $channel = new Channel(1),
         );
 
         $this->assertInstanceOf(Frame::class, $frame);

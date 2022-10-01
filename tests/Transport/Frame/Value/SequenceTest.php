@@ -50,11 +50,11 @@ class SequenceTest extends TestCase
         foreach ($expected as $i => $v) {
             $this->assertInstanceOf(
                 \get_class($v),
-                $value->original()->get($i)
+                $value->original()->get($i),
             );
             $this->assertSame(
                 $v->pack(),
-                $value->original()->get($i)->pack()
+                $value->original()->get($i)->pack(),
             );
         }
 

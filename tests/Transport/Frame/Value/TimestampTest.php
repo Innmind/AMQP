@@ -21,7 +21,7 @@ class TimestampTest extends TestCase
     {
         $this->assertInstanceOf(
             Value::class,
-            new Timestamp(new Now)
+            new Timestamp(new Now),
         );
     }
 
@@ -40,8 +40,8 @@ class TimestampTest extends TestCase
         $this->assertInstanceOf(PointInTimeInterface::class, $value->original());
         $this->assertTrue(
             $value->original()->equals(
-                new PointInTime(\date(\DateTime::ATOM, $time))
-            )
+                new PointInTime(\date(\DateTime::ATOM, $time)),
+            ),
         );
         $this->assertSame(\pack('J', $time), $value->pack());
     }

@@ -20,7 +20,7 @@ class LoggerTest extends TestCase
     {
         $logger = new Logger(
             $channel = $this->createMock(Channel::class),
-            $this->createMock(LoggerInterface::class)
+            $this->createMock(LoggerInterface::class),
         );
         $channel
             ->expects($this->once())

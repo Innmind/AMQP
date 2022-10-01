@@ -13,7 +13,7 @@ final class Logger implements ClientInterface
 
     public function __construct(
         ClientInterface $client,
-        LoggerInterface $logger
+        LoggerInterface $logger,
     ) {
         $this->client = $client;
         $this->logger = $logger;

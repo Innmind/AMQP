@@ -20,7 +20,7 @@ class UnsignedOctetTest extends TestCase
     {
         $this->assertInstanceOf(
             Value::class,
-            new UnsignedOctet(new Integer(0))
+            new UnsignedOctet(new Integer(0)),
         );
     }
 

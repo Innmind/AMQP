@@ -16,7 +16,7 @@ class DeclareOkTest extends TestCase
         $model = new DeclareOk(
             'foo',
             $message = new Count(1),
-            $consumer = new Count(2)
+            $consumer = new Count(2),
         );
 
         $this->assertSame('foo', $model->name());

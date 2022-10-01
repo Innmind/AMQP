@@ -21,7 +21,7 @@ class AutoDeclareTest extends TestCase
     {
         $this->assertInstanceOf(
             Client::class,
-            new AutoDeclare($this->createMock(Client::class))
+            new AutoDeclare($this->createMock(Client::class)),
         );
     }
 
@@ -32,7 +32,7 @@ class AutoDeclareTest extends TestCase
 
         new AutoDeclare(
             $this->createMock(Client::class),
-            Set::of('string')
+            Set::of('string'),
         );
     }
 
@@ -44,7 +44,7 @@ class AutoDeclareTest extends TestCase
         new AutoDeclare(
             $this->createMock(Client::class),
             null,
-            Set::of('string')
+            Set::of('string'),
         );
     }
 
@@ -57,14 +57,14 @@ class AutoDeclareTest extends TestCase
             $this->createMock(Client::class),
             null,
             null,
-            Set::of('string')
+            Set::of('string'),
         );
     }
 
     public function testClosed()
     {
         $client = new AutoDeclare(
-            $mock = $this->createMock(Client::class)
+            $mock = $this->createMock(Client::class),
         );
         $mock
             ->expects($this->exactly(2))
@@ -88,7 +88,7 @@ class AutoDeclareTest extends TestCase
             $mock = $this->createMock(Client::class),
             Set::of(Exchange::class, $exchange, $exchange2),
             Set::of(Queue::class, $queue, $queue2),
-            Set::of(Binding::class, $binding, $binding2)
+            Set::of(Binding::class, $binding, $binding2),
         );
         $mock
             ->expects($this->exactly(2))
@@ -130,7 +130,7 @@ class AutoDeclareTest extends TestCase
             $mock = $this->createMock(Client::class),
             Set::of(Exchange::class, $exchange),
             Set::of(Queue::class, $queue),
-            Set::of(Binding::class, $binding)
+            Set::of(Binding::class, $binding),
         );
         $mock
             ->expects($this->once())

@@ -45,7 +45,7 @@ class ChannelTest extends TestCase
                 new Remote\Generic($this->createMock(Server::class)),
                 new Sockets\Unix,
             ),
-            new Number(1)
+            new Number(1),
         );
     }
 

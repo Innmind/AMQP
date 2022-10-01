@@ -30,7 +30,7 @@ final class Producer implements ProducerInterface
             ->publish(
                 Publish::a($message)
                     ->to($this->exchange)
-                    ->withRoutingKey($routingKey ?? '')
+                    ->withRoutingKey($routingKey ?? ''),
             );
     }
 }

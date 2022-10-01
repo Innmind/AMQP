@@ -69,7 +69,7 @@ final class Version
             "AMQP\x00%s%s%s",
             \chr($this->major),
             \chr($this->minor),
-            \chr($this->fix)
+            \chr($this->fix),
         );
     }
 }

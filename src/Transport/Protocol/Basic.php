@@ -31,7 +31,7 @@ interface Basic
     public function publish(
         FrameChannel $channel,
         Publish $command,
-        MaxFrameSize $maxFrameSize
+        MaxFrameSize $maxFrameSize,
     ): Sequence;
     public function qos(FrameChannel $channel, Qos $command): Frame;
     public function recover(FrameChannel $channel, Recover $command): Frame;

@@ -42,10 +42,10 @@ class TransactionTest extends TestCase
                 new Remote\Generic($this->createMock(Server::class)),
                 new Sockets\Unix,
             ),
-            new Channel(1)
+            new Channel(1),
         );
         $this->connection->send(
-            $this->connection->protocol()->channel()->open(new Channel(1))
+            $this->connection->protocol()->channel()->open(new Channel(1)),
         );
         $this->connection->wait('channel.open-ok');
     }
@@ -55,8 +55,8 @@ class TransactionTest extends TestCase
         $this->connection->send(
             $this->connection->protocol()->channel()->close(
                 new Channel(1),
-                new Close
-            )
+                new Close,
+            ),
         );
         $this->connection->wait('channel.close-ok');
         $this->connection->close();

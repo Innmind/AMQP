@@ -37,7 +37,7 @@ final class GetOk implements Get
         bool $redelivered,
         string $exchange,
         string $routingKey,
-        int $messageCount
+        int $messageCount,
     ) {
         $this->connection = $connection;
         $this->channel = $channel;

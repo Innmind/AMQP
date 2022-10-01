@@ -26,7 +26,7 @@ class DelegateTest extends TestCase
     {
         $this->assertInstanceOf(
             Protocol::class,
-            new Delegate($this->createMock(Protocol::class))
+            new Delegate($this->createMock(Protocol::class)),
         );
     }
 

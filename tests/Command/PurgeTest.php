@@ -27,7 +27,7 @@ class PurgeTest extends TestCase
     {
         $this->assertInstanceOf(
             Command::class,
-            new Purge($this->createMock(Client::class))
+            new Purge($this->createMock(Client::class)),
         );
     }
 
@@ -70,7 +70,7 @@ USAGE;
         $this->assertNull($purge(
             $env,
             new Arguments(Map::of('string', 'string')('queue', 'foo')),
-            new Options
+            new Options,
         ));
     }
 
@@ -90,7 +90,7 @@ USAGE;
         $purge(
             $this->createMock(Environment::class),
             new Arguments(Map::of('string', 'string')('queue', 'foo')),
-            new Options
+            new Options,
         );
     }
 
@@ -131,7 +131,7 @@ USAGE;
         $this->assertNull($purge(
             $env,
             new Arguments(Map::of('string', 'string')('queue', 'foo')),
-            new Options
+            new Options,
         ));
     }
 }

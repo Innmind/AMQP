@@ -31,7 +31,7 @@ final class Frame
     private function __construct(
         Type $type,
         Channel $channel,
-        Value ...$values
+        Value ...$values,
     ) {
         $this->type = $type;
         $this->channel = $channel;
@@ -60,7 +60,7 @@ final class Frame
     public static function method(
         Channel $channel,
         Method $method,
-        Value ...$values
+        Value ...$values,
     ): self {
         $self = new self(
             Type::method(),
@@ -78,7 +78,7 @@ final class Frame
     public static function header(
         Channel $channel,
         int $class,
-        Value ...$values
+        Value ...$values,
     ): self {
         $self = new self(
             Type::header(),

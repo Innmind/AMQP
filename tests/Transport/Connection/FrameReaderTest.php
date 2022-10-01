@@ -76,8 +76,8 @@ class FrameReaderTest extends TestCase
                 new UnsignedOctet(new Integer(9)),
                 new Table(Map::of('string', Value::class)),
                 new LongString(Str::of('AMQPLAIN')),
-                new LongString(Str::of('en_US'))
-            )->toString()
+                new LongString(Str::of('en_US')),
+            )->toString(),
         );
         \fseek($file, 0);
         $stream = new Stream($file);
@@ -99,7 +99,7 @@ class FrameReaderTest extends TestCase
             new UnsignedOctet(new Integer(9)),
             new Table(Map::of('string', Value::class)),
             new LongString(Str::of('AMQPLAIN')),
-            new LongString(Str::of('en_US'))
+            new LongString(Str::of('en_US')),
         )->toString();
         $frame = \mb_substr($frame, 0, -1, 'ASCII'); //remove end marker
         $frame .= (new UnsignedOctet(new Integer(0xCD)))->pack();
@@ -119,7 +119,7 @@ class FrameReaderTest extends TestCase
         $file = \tmpfile();
         $frame = Frame::method(
             new Channel(0),
-            new Method(10, 10) // connection.start
+            new Method(10, 10), // connection.start
         )->toString();
         $frame = \mb_substr($frame, 0, -2, 'ASCII');
         \fwrite($file, $frame);
@@ -160,7 +160,7 @@ class FrameReaderTest extends TestCase
                         ->withContentEncoding(new ContentEncoding('gzip'))
                         ->withHeaders(
                             Map::of('string', 'mixed')
-                                ('foo', new ShortString(Str::of('bar')))
+                                ('foo', new ShortString(Str::of('bar'))),
                         )
                         ->withDeliveryMode(DeliveryMode::persistent())
                         ->withPriority(new Priority(5))
@@ -171,9 +171,9 @@ class FrameReaderTest extends TestCase
                         ->withTimestamp($now = new Now)
                         ->withType(new MessageType('type'))
                         ->withUserId(new UserId('guest'))
-                        ->withAppId(new AppId('webcrawler'))
+                        ->withAppId(new AppId('webcrawler')),
                 ),
-                new MaxFrameSize(10)
+                new MaxFrameSize(10),
             )
             ->get(1);
         $file = \tmpfile();
@@ -188,12 +188,12 @@ class FrameReaderTest extends TestCase
         $this->assertCount(15, $frame->values());
         $this->assertInstanceOf(
             UnsignedLongLongInteger::class,
-            $frame->values()->first()
+            $frame->values()->first(),
         );
         $this->assertSame(6, $frame->values()->first()->original()->value()); //body size
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
-            $frame->values()->get(1)
+            $frame->values()->get(1),
         );
         $bits = 0;
         $bits |= 1 << 15;
@@ -212,7 +212,7 @@ class FrameReaderTest extends TestCase
         $this->assertSame($bits, $frame->values()->get(1)->original()->value());
         $this->assertInstanceOf(
             ShortString::class,
-            $frame->values()->get(2)
+            $frame->values()->get(2),
         );
         $this->assertSame(
             'application/json',
@@ -220,7 +220,7 @@ class FrameReaderTest extends TestCase
         );
         $this->assertInstanceOf(
             ShortString::class,
-            $frame->values()->get(3)
+            $frame->values()->get(3),
         );
         $this->assertSame(
             'gzip',
@@ -228,7 +228,7 @@ class FrameReaderTest extends TestCase
         );
         $this->assertInstanceOf(
             Table::class,
-            $frame->values()->get(4)
+            $frame->values()->get(4),
         );
         $this->assertCount(1, $frame->values()->get(4)->original());
         $this->assertSame(
@@ -237,23 +237,23 @@ class FrameReaderTest extends TestCase
         );
         $this->assertInstanceOf(
             UnsignedOctet::class,
-            $frame->values()->get(5)
+            $frame->values()->get(5),
         );
         $this->assertSame(
             2,
-            $frame->values()->get(5)->original()->value()
+            $frame->values()->get(5)->original()->value(),
         );
         $this->assertInstanceOf(
             UnsignedOctet::class,
-            $frame->values()->get(6)
+            $frame->values()->get(6),
         );
         $this->assertSame(
             5,
-            $frame->values()->get(6)->original()->value()
+            $frame->values()->get(6)->original()->value(),
         );
         $this->assertInstanceOf(
             ShortString::class,
-            $frame->values()->get(7)
+            $frame->values()->get(7),
         );
         $this->assertSame(
             'correlation',
@@ -261,7 +261,7 @@ class FrameReaderTest extends TestCase
         );
         $this->assertInstanceOf(
             ShortString::class,
-            $frame->values()->get(8)
+            $frame->values()->get(8),
         );
         $this->assertSame(
             'reply',
@@ -269,7 +269,7 @@ class FrameReaderTest extends TestCase
         );
         $this->assertInstanceOf(
             ShortString::class,
-            $frame->values()->get(9)
+            $frame->values()->get(9),
         );
         $this->assertSame(
             '1000',
@@ -277,7 +277,7 @@ class FrameReaderTest extends TestCase
         );
         $this->assertInstanceOf(
             ShortString::class,
-            $frame->values()->get(10)
+            $frame->values()->get(10),
         );
         $this->assertSame(
             'id',
@@ -285,15 +285,15 @@ class FrameReaderTest extends TestCase
         );
         $this->assertInstanceOf(
             Timestamp::class,
-            $frame->values()->get(11)
+            $frame->values()->get(11),
         );
         $this->assertSame(
             $now->format(new TimestampFormat),
-            $frame->values()->get(11)->original()->format(new TimestampFormat)
+            $frame->values()->get(11)->original()->format(new TimestampFormat),
         );
         $this->assertInstanceOf(
             ShortString::class,
-            $frame->values()->get(12)
+            $frame->values()->get(12),
         );
         $this->assertSame(
             'type',
@@ -301,7 +301,7 @@ class FrameReaderTest extends TestCase
         );
         $this->assertInstanceOf(
             ShortString::class,
-            $frame->values()->get(13)
+            $frame->values()->get(13),
         );
         $this->assertSame(
             'guest',
@@ -309,7 +309,7 @@ class FrameReaderTest extends TestCase
         );
         $this->assertInstanceOf(
             ShortString::class,
-            $frame->values()->get(14)
+            $frame->values()->get(14),
         );
         $this->assertSame(
             'webcrawler',
@@ -322,7 +322,7 @@ class FrameReaderTest extends TestCase
         $file = \tmpfile();
         \fwrite($file, Frame::body(
             new Channel(1),
-            Str::of('foobar')
+            Str::of('foobar'),
         )->toString());
         \fseek($file, 0);
 

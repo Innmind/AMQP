@@ -22,8 +22,8 @@ class LoggerTest extends TestCase
             Get::class,
             new Logger(
                 $this->createMock(Get::class),
-                $this->createMock(LoggerInterface::class)
-            )
+                $this->createMock(LoggerInterface::class),
+            ),
         );
     }
 
@@ -48,14 +48,14 @@ class LoggerTest extends TestCase
                     $consume($this->message, false, '', '', 0);
                 }
             },
-            $logger = $this->createMock(LoggerInterface::class)
+            $logger = $this->createMock(LoggerInterface::class),
         );
         $logger
             ->expects($this->once())
             ->method('debug')
             ->with(
                 'AMQP message received',
-                ['body' => 'foobar']
+                ['body' => 'foobar'],
             );
 
         $consume(static function() {});
@@ -86,14 +86,14 @@ class LoggerTest extends TestCase
                     }
                 }
             },
-            $logger = $this->createMock(LoggerInterface::class)
+            $logger = $this->createMock(LoggerInterface::class),
         );
         $logger
             ->expects($this->once())
             ->method('warning')
             ->with(
                 'AMQP message rejected',
-                ['body' => 'foobar']
+                ['body' => 'foobar'],
             );
 
         $consume(static function() {
@@ -126,14 +126,14 @@ class LoggerTest extends TestCase
                     }
                 }
             },
-            $logger = $this->createMock(LoggerInterface::class)
+            $logger = $this->createMock(LoggerInterface::class),
         );
         $logger
             ->expects($this->once())
             ->method('info')
             ->with(
                 'AMQP message requeued',
-                ['body' => 'foobar']
+                ['body' => 'foobar'],
             );
 
         $consume(static function() {
@@ -166,7 +166,7 @@ class LoggerTest extends TestCase
                     }
                 }
             },
-            $logger = $this->createMock(LoggerInterface::class)
+            $logger = $this->createMock(LoggerInterface::class),
         );
         $logger
             ->expects($this->once())
@@ -176,7 +176,7 @@ class LoggerTest extends TestCase
                 [
                     'body' => 'foobar',
                     'exception' => 'RuntimeException',
-                ]
+                ],
             );
 
         $consume(static function() {

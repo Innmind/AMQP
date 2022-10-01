@@ -25,7 +25,7 @@ class LoggerTest extends TestCase
     {
         $basic = new Logger(
             $this->createMock(Basic::class),
-            $this->createMock(LoggerInterface::class)
+            $this->createMock(LoggerInterface::class),
         );
 
         $this->assertInstanceOf(Basic::class, $basic);
@@ -33,11 +33,11 @@ class LoggerTest extends TestCase
         $this->assertNull($basic->cancel(new Cancel('')));
         $this->assertInstanceOf(
             Basic\Consumer\Logger::class,
-            $basic->consume(new Consume(''))
+            $basic->consume(new Consume('')),
         );
         $this->assertInstanceOf(
             Basic\Get\Logger::class,
-            $basic->get(new Get(''))
+            $basic->get(new Get('')),
         );
         $this->assertNull($basic->publish(new Publish($this->createMock(Message::class))));
         $this->assertNull($basic->qos(new Qos(0, 0)));

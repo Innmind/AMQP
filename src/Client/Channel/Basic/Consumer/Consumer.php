@@ -39,7 +39,7 @@ final class Consumer implements ConsumerInterface
         Connection $connection,
         Consume $command,
         Channel $channel,
-        string $consumerTag
+        string $consumerTag,
     ) {
         $this->connection = $connection;
         $this->command = $command;

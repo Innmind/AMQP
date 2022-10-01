@@ -18,7 +18,7 @@ class FluentTest extends TestCase
     public function testInterface()
     {
         $fluent = new Fluent(
-            $channel = $this->createMock(Channel::class)
+            $channel = $this->createMock(Channel::class),
         );
         $channel
             ->expects($this->once())
