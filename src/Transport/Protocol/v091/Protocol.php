@@ -67,12 +67,11 @@ final class Protocol implements ProtocolInterface
         return ($this->read)($method, $arguments);
     }
 
-    public function readHeader(Readable $payload): Sequence
+    public function readHeader(Readable $arguments): Sequence
     {
-        $bodySize = UnsignedLongLongInteger::unpack($payload);
-        $flags = UnsignedShortInteger::unpack($payload);
+        $bodySize = UnsignedLongLongInteger::unpack($arguments);
+        $flags = UnsignedShortInteger::unpack($arguments);
 
-        /** @var int */
         $flagBits = $flags->original()->value();
         $toChunk = [];
 
@@ -132,7 +131,7 @@ final class Protocol implements ProtocolInterface
         $values = Sequence::of(Value::class, $bodySize, $flags);
 
         return $values->append(
-            (new ChunkArguments(...$toChunk))($payload),
+            (new ChunkArguments(...$toChunk))($arguments),
         );
     }
 

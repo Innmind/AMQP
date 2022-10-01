@@ -86,7 +86,6 @@ final class MessageReader
         if ($flagBits & (1 << 13)) {
             /** @var Value\Table */
             $value = $properties->first();
-            /** @var Map<string, mixed> */
             $headers = $value
                 ->original()
                 ->toMapOf(

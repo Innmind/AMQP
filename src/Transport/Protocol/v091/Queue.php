@@ -117,7 +117,6 @@ final class Queue implements QueueInterface
      */
     private function translate(Map $arguments): Table
     {
-        /** @var Map<string, Value> */
         $table = $arguments->toMapOf(
             'string',
             Value::class,

@@ -21,13 +21,11 @@ final class Bits implements Value
 
     public function __construct(bool $first, bool ...$bits)
     {
-        /** @var Seq<bool> */
         $this->original = Seq::of('bool', $first, ...$bits);
     }
 
     public static function unpack(Readable $stream): self
     {
-        /** @var Seq<bool> */
         $bits = $stream
             ->read(1)
             ->toEncoding('ASCII')

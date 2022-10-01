@@ -24,7 +24,6 @@ final class Sequence implements Value
 
     public function __construct(Value ...$values)
     {
-        /** @var Seq<Value> */
         $values = Seq::of(Value::class, ...$values);
 
         $texts = $values->filter(static function(Value $value): bool {
@@ -68,7 +67,6 @@ final class Sequence implements Value
 
     public function pack(): string
     {
-        /** @var Seq<string> */
         $data = $this->original->toSequenceOf(
             'string',
             static function(Value $value): \Generator {

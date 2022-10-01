@@ -78,7 +78,6 @@ final class Table implements Value
 
     public function pack(): string
     {
-        /** @var Seq<string> */
         $data = $this->original->toSequenceOf(
             'string',
             static function(string $key, Value $value): \Generator {

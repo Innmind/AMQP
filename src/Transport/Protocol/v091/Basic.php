@@ -106,7 +106,6 @@ final class Basic implements BasicInterface
         Publish $command,
         MaxFrameSize $maxFrameSize,
     ): Sequence {
-        /** @var Sequence<Frame> */
         $frames = Sequence::of(
             Frame::class,
             Frame::method(
@@ -137,7 +136,6 @@ final class Basic implements BasicInterface
             return $frames;
         }
 
-        /** @var Sequence<Frame> */
         $payloadFrames = $command
             ->message()
             ->body()
@@ -185,7 +183,6 @@ final class Basic implements BasicInterface
      */
     private function arguments(Map $arguments): Table
     {
-        /** @var Map<string, Value> */
         $table = $arguments->toMapOf(
             'string',
             Value::class,

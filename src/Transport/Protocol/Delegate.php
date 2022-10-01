@@ -19,7 +19,6 @@ final class Delegate implements Protocol
 
     public function __construct(Protocol $first, Protocol ...$protocols)
     {
-        /** @var Sequence<Protocol> */
         $protocols = Sequence::of(Protocol::class, $first, ...$protocols)->sort(static function(Protocol $a, Protocol $b): int {
             return $b->version()->higherThan($a->version()) ? 1 : -1;
         });

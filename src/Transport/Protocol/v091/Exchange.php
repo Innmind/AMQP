@@ -34,7 +34,6 @@ final class Exchange implements ExchangeInterface
 
     public function declare(FrameChannel $channel, Declaration $command): Frame
     {
-        /** @var Map<string, Value> */
         $arguments = $command
             ->arguments()
             ->toMapOf(
