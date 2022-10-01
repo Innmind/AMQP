@@ -32,7 +32,7 @@ class ConsumerTest extends TestCase
             ->channel()
             ->exchange()
             ->declare(
-                Exchange::durable('e', Type::direct()),
+                Exchange::durable('e', Type::direct),
             );
         $queue = $client
             ->channel()
@@ -84,7 +84,7 @@ class ConsumerTest extends TestCase
             ->channel()
             ->exchange()
             ->declare(
-                Exchange::durable('e', Type::direct()),
+                Exchange::durable('e', Type::direct),
             );
         $queue = $client
             ->channel()

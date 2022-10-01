@@ -52,7 +52,7 @@ class ExchangeTest extends TestCase
             ));
         $frame = $this->exchange->declare(
             $channel = new Channel(1),
-            Declaration::passive('foo', Type::direct())
+            Declaration::passive('foo', Type::direct)
                 ->withArgument('foo', 24)
                 ->withArgument('bar', 42),
         );
@@ -83,7 +83,7 @@ class ExchangeTest extends TestCase
 
         $frame = $this->exchange->declare(
             $channel = new Channel(1),
-            Declaration::durable('foo', Type::direct()),
+            Declaration::durable('foo', Type::direct),
         );
 
         $this->assertSame(
@@ -93,7 +93,7 @@ class ExchangeTest extends TestCase
 
         $frame = $this->exchange->declare(
             $channel = new Channel(1),
-            Declaration::temporary('foo', Type::direct()),
+            Declaration::temporary('foo', Type::direct),
         );
 
         $this->assertSame(
@@ -103,7 +103,7 @@ class ExchangeTest extends TestCase
 
         $frame = $this->exchange->declare(
             $channel = new Channel(1),
-            Declaration::autoDelete('foo', Type::direct()),
+            Declaration::autoDelete('foo', Type::direct),
         );
 
         $this->assertSame(
@@ -113,7 +113,7 @@ class ExchangeTest extends TestCase
 
         $frame = $this->exchange->declare(
             $channel = new Channel(1),
-            Declaration::autoDelete('foo', Type::direct())->dontWait(),
+            Declaration::autoDelete('foo', Type::direct)->dontWait(),
         );
 
         $this->assertSame(

@@ -10,17 +10,15 @@ class FlowTest extends TestCase
 {
     public function testStart()
     {
-        $command = Flow::start();
+        $command = Flow::start;
 
-        $this->assertInstanceOf(Flow::class, $command);
         $this->assertTrue($command->active());
     }
 
     public function testStop()
     {
-        $command = Flow::stop();
+        $command = Flow::stop;
 
-        $this->assertInstanceOf(Flow::class, $command);
         $this->assertFalse($command->active());
     }
 }

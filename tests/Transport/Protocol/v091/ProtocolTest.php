@@ -99,8 +99,8 @@ class ProtocolTest extends TestCase
                             Map::of('string', 'mixed')
                                 ('foo', new ShortString(Str::of('bar'))),
                         )
-                        ->withDeliveryMode(DeliveryMode::persistent())
-                        ->withPriority(new Priority(5))
+                        ->withDeliveryMode(DeliveryMode::persistent)
+                        ->withPriority(Priority::five)
                         ->withCorrelationId(new CorrelationId('correlation'))
                         ->withReplyTo(new ReplyTo('reply'))
                         ->withExpiration(new ElapsedPeriod(1000))

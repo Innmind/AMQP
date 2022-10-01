@@ -103,8 +103,8 @@ final class MessageReader
             /** @var Value\UnsignedOctet */
             $value = $properties->first();
             $message = $message->withDeliveryMode(
-                $value->original()->value() === DeliveryMode::persistent()->toInt() ?
-                    DeliveryMode::persistent() : DeliveryMode::nonPersistent(),
+                $value->original()->value() === DeliveryMode::persistent->toInt() ?
+                    DeliveryMode::persistent : DeliveryMode::nonPersistent,
             );
             $properties = $properties->drop(1);
         }
@@ -112,7 +112,7 @@ final class MessageReader
         if ($flagBits & (1 << 11)) {
             /** @var Value\UnsignedOctet */
             $value = $properties->first();
-            $message = $message->withPriority(new Priority(
+            $message = $message->withPriority(Priority::of(
                 $value->original()->value(),
             ));
             $properties = $properties->drop(1);

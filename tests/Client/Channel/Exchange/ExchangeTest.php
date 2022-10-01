@@ -74,12 +74,12 @@ class ExchangeTest extends TestCase
     {
         $this->assertNull(
             $this->exchange->declare(
-                Declaration::durable('foo', Type::direct())->dontWait(),
+                Declaration::durable('foo', Type::direct)->dontWait(),
             ),
         );
         $this->assertNull(
             $this->exchange->declare(
-                Declaration::durable('bar', Type::direct()),
+                Declaration::durable('bar', Type::direct),
             ),
         );
     }

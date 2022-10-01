@@ -110,7 +110,7 @@ class GenericTest extends TestCase
     {
         $message = new Generic(Str::of(''));
         $message2 = $message->withDeliveryMode(
-            $expected = DeliveryMode::persistent(),
+            $expected = DeliveryMode::persistent,
         );
 
         $this->assertInstanceOf(Message::class, $message2);
@@ -124,7 +124,7 @@ class GenericTest extends TestCase
     {
         $message = new Generic(Str::of(''));
         $message2 = $message->withPriority(
-            $expected = new Priority(0),
+            $expected = Priority::zero,
         );
 
         $this->assertInstanceOf(Message::class, $message2);

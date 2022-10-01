@@ -77,7 +77,7 @@ class AutoDeclareTest extends TestCase
 
     public function testDeclareModelOnChannelAccess()
     {
-        $exchange = Exchange::temporary('foo', Type::direct());
+        $exchange = Exchange::temporary('foo', Type::direct);
         $exchange2 = clone $exchange;
         $queue = Queue::durable();
         $queue2 = clone $queue;
@@ -122,7 +122,7 @@ class AutoDeclareTest extends TestCase
 
     public function testNoDeclarationDoneOnceClientClosed()
     {
-        $exchange = Exchange::temporary('foo', Type::direct());
+        $exchange = Exchange::temporary('foo', Type::direct);
         $queue = Queue::durable();
         $binding = new Binding('foo', 'bar');
 

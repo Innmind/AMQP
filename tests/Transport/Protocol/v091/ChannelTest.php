@@ -45,7 +45,7 @@ class ChannelTest extends TestCase
     {
         $frame = (new Channel)->flow(
             $channel = new FrameChannel(1),
-            Flow::start(),
+            Flow::start,
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -58,7 +58,7 @@ class ChannelTest extends TestCase
 
         $frame = (new Channel)->flow(
             $channel = new FrameChannel(1),
-            Flow::stop(),
+            Flow::stop,
         );
 
         $this->assertFalse($frame->values()->get(0)->original()->first());

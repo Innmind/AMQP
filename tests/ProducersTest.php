@@ -33,8 +33,8 @@ class ProducersTest extends TestCase
     {
         $producers = Producers::of(
             $this->createMock(Client::class),
-            Declaration::passive('foo', Type::direct()),
-            Declaration::passive('bar', Type::direct()),
+            Declaration::passive('foo', Type::direct),
+            Declaration::passive('bar', Type::direct),
         );
 
         $this->assertTrue($producers->contains('foo'));

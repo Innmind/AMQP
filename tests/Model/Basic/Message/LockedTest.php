@@ -118,7 +118,7 @@ class LockedTest extends TestCase
     public function testDeliveryMode()
     {
         $message = (new Generic(Str::of('')))->withDeliveryMode(
-            $expected = DeliveryMode::persistent(),
+            $expected = DeliveryMode::persistent,
         );
         $message = new Locked($message);
 
@@ -131,14 +131,14 @@ class LockedTest extends TestCase
         $this->expectException(MessageLocked::class);
 
         (new Locked(new Generic(Str::of(''))))->withDeliveryMode(
-            DeliveryMode::nonPersistent(),
+            DeliveryMode::nonPersistent,
         );
     }
 
     public function testPriority()
     {
         $message = (new Generic(Str::of('')))->withPriority(
-            $expected = new Priority(0),
+            $expected = Priority::zero,
         );
         $message = new Locked($message);
 
@@ -151,7 +151,7 @@ class LockedTest extends TestCase
         $this->expectException(MessageLocked::class);
 
         (new Locked(new Generic(Str::of(''))))->withPriority(
-            new Priority(5),
+            Priority::five,
         );
     }
 
