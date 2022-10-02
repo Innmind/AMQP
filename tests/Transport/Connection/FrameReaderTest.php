@@ -189,7 +189,7 @@ class FrameReaderTest extends TestCase
         $frame = (new FrameReader)(Stream::of($file), $this->protocol);
 
         $this->assertInstanceOf(Frame::class, $frame);
-        $this->assertSame(Type::header(), $frame->type());
+        $this->assertSame(Type::header, $frame->type());
         $this->assertSame(1, $frame->channel()->toInt());
         $this->assertCount(15, $frame->values());
         $this->assertInstanceOf(
@@ -439,7 +439,7 @@ class FrameReaderTest extends TestCase
         $frame = (new FrameReader)(Stream::of($file), $this->protocol);
 
         $this->assertInstanceOf(Frame::class, $frame);
-        $this->assertSame(Type::body(), $frame->type());
+        $this->assertSame(Type::body, $frame->type());
         $this->assertSame(1, $frame->channel()->toInt());
         $this->assertCount(1, $frame->values());
         $this->assertInstanceOf(Text::class, $frame->values()->first()->match(
@@ -461,6 +461,6 @@ class FrameReaderTest extends TestCase
         $frame = (new FrameReader)(Stream::of($file), $this->protocol);
 
         $this->assertInstanceOf(Frame::class, $frame);
-        $this->assertSame(Type::heartbeat(), $frame->type());
+        $this->assertSame(Type::heartbeat, $frame->type());
     }
 }

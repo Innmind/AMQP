@@ -66,7 +66,7 @@ final class Frame
         Value ...$values,
     ): self {
         $self = new self(
-            Type::method(),
+            Type::method,
             $channel,
             new UnsignedShortInteger(Integer::of($method->class())),
             new UnsignedShortInteger(Integer::of($method->method())),
@@ -87,7 +87,7 @@ final class Frame
         Value ...$values,
     ): self {
         $self = new self(
-            Type::header(),
+            Type::header,
             $channel,
             new UnsignedShortInteger(Integer::of($class)),
             new UnsignedShortInteger(Integer::of(0)), // weight
@@ -101,7 +101,7 @@ final class Frame
     public static function body(Channel $channel, Str $payload): self
     {
         $self = new self(
-            Type::body(),
+            Type::body,
             $channel,
             $value = new Text($payload),
         );
@@ -114,7 +114,7 @@ final class Frame
     public static function heartbeat(): self
     {
         return new self(
-            Type::heartbeat(),
+            Type::heartbeat,
             new Channel(0),
         );
     }
@@ -131,7 +131,7 @@ final class Frame
 
     public function is(Method $method): bool
     {
-        if ($this->type() !== Type::method()) {
+        if ($this->type() !== Type::method) {
             return false;
         }
 

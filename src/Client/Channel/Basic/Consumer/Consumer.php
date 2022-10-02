@@ -241,7 +241,7 @@ final class Consumer implements ConsumerInterface
         do {
             $frame = $this->connection->wait();
 
-            if ($frame->type() === Type::method() && $frame->is($deliver)) {
+            if ($frame->type() === Type::method && $frame->is($deliver)) {
                 // read all the frames for the prefetched message
                 ($this->read)($this->connection);
             }

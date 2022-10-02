@@ -14,7 +14,6 @@ use Innmind\AMQP\{
     Transport\Frame\Value\UnsignedLongInteger,
     Exception\ReceivedFrameNotDelimitedCorrectly,
     Exception\PayloadTooShort,
-    Exception\UnknownFrameType,
     Exception\NoFrameDetected,
     Exception\LogicException,
 };
@@ -31,7 +30,7 @@ final class FrameReader
 
         try {
             $type = Type::of($octet->original()->value());
-        } catch (UnknownFrameType $e) {
+        } catch (\UnhandledMatchError $e) {
             $data = $stream->read()->match(
                 static fn($data) => $data,
                 static fn() => throw new \LogicException,
@@ -56,8 +55,8 @@ final class FrameReader
 
         if (
             (
-                $type === Type::method() ||
-                $type === Type::header()
+                $type === Type::method ||
+                $type === Type::header
             ) &&
             $payload->length() < 4
         ) {
@@ -73,7 +72,7 @@ final class FrameReader
         $payload = Stream::ofContent($payload->toString());
 
         switch ($type) {
-            case Type::method():
+            case Type::method:
                 $method = new Method(
                     UnsignedShortInteger::unpack($payload)
                         ->original()
@@ -89,7 +88,7 @@ final class FrameReader
                     ...$protocol->read($method, $payload)->toList(),
                 );
 
-            case Type::header():
+            case Type::header:
                 $class = UnsignedShortInteger::unpack($payload)
                     ->original()
                     ->value();
@@ -104,13 +103,13 @@ final class FrameReader
                     ...$protocol->readHeader($payload)->toList(),
                 );
 
-            case Type::body():
+            case Type::body:
                 return Frame::body($channel, $payload->read()->match(
                     static fn($data) => $data,
                     static fn() => throw new \LogicException,
                 ));
 
-            case Type::heartbeat():
+            case Type::heartbeat:
                 return Frame::heartbeat();
 
             default:

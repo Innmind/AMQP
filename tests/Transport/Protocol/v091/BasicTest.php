@@ -78,7 +78,7 @@ class BasicTest extends TestCase
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
-        $this->assertSame(Type::method(), $frame->type());
+        $this->assertSame(Type::method, $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertTrue($frame->is(new Method(60, 80)));
         $this->assertCount(2, $frame->values());
@@ -127,7 +127,7 @@ class BasicTest extends TestCase
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
-        $this->assertSame(Type::method(), $frame->type());
+        $this->assertSame(Type::method, $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertTrue($frame->is(new Method(60, 30)));
         $this->assertCount(2, $frame->values());
@@ -184,7 +184,7 @@ class BasicTest extends TestCase
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
-        $this->assertSame(Type::method(), $frame->type());
+        $this->assertSame(Type::method, $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertTrue($frame->is(new Method(60, 20)));
         $this->assertCount(5, $frame->values());
@@ -322,7 +322,7 @@ class BasicTest extends TestCase
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
-        $this->assertSame(Type::method(), $frame->type());
+        $this->assertSame(Type::method, $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertTrue($frame->is(new Method(60, 70)));
         $this->assertCount(3, $frame->values());
@@ -386,7 +386,7 @@ class BasicTest extends TestCase
             static fn($frame) => $frame,
             static fn() => null,
         );
-        $this->assertSame(Type::method(), $frame->type());
+        $this->assertSame(Type::method, $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertTrue($frame->is(new Method(60, 40)));
         $this->assertCount(4, $frame->values());
@@ -433,7 +433,7 @@ class BasicTest extends TestCase
             static fn($frame) => $frame,
             static fn() => null,
         );
-        $this->assertSame(Type::header(), $frame->type());
+        $this->assertSame(Type::header, $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertCount(2, $frame->values());
         $this->assertInstanceOf(
@@ -463,7 +463,7 @@ class BasicTest extends TestCase
             static fn($frame) => $frame,
             static fn() => null,
         );
-        $this->assertSame(Type::body(), $frame->type());
+        $this->assertSame(Type::body, $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertSame(
             'foobar',
@@ -498,7 +498,7 @@ class BasicTest extends TestCase
             static fn($frame) => $frame,
             static fn() => null,
         );
-        $this->assertSame(Type::body(), $frame->type());
+        $this->assertSame(Type::body, $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertSame(
             'foo',
@@ -512,7 +512,7 @@ class BasicTest extends TestCase
             static fn($frame) => $frame,
             static fn() => null,
         );
-        $this->assertSame(Type::body(), $frame->type());
+        $this->assertSame(Type::body, $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertSame(
             'bar',
@@ -557,7 +557,7 @@ class BasicTest extends TestCase
             static fn($frame) => $frame,
             static fn() => null,
         );
-        $this->assertSame(Type::header(), $frame->type());
+        $this->assertSame(Type::header, $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertCount(15, $frame->values());
         $this->assertInstanceOf(
@@ -872,7 +872,7 @@ class BasicTest extends TestCase
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
-        $this->assertSame(Type::method(), $frame->type());
+        $this->assertSame(Type::method, $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertTrue($frame->is(new Method(60, 10)));
         $this->assertCount(3, $frame->values());
@@ -932,7 +932,7 @@ class BasicTest extends TestCase
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
-        $this->assertSame(Type::method(), $frame->type());
+        $this->assertSame(Type::method, $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertTrue($frame->is(new Method(60, 110)));
         $this->assertCount(1, $frame->values());
@@ -970,7 +970,7 @@ class BasicTest extends TestCase
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
-        $this->assertSame(Type::method(), $frame->type());
+        $this->assertSame(Type::method, $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertTrue($frame->is(new Method(60, 90)));
         $this->assertCount(2, $frame->values());

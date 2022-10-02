@@ -48,7 +48,7 @@ class ConnectionTest extends TestCase
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
-        $this->assertSame(Type::method(), $frame->type());
+        $this->assertSame(Type::method, $frame->type());
         $this->assertSame(0, $frame->channel()->toInt());
         $this->assertTrue($frame->is(new Method(10, 11)));
         $this->assertCount(4, $frame->values());
@@ -340,7 +340,7 @@ class ConnectionTest extends TestCase
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
-        $this->assertSame(Type::method(), $frame->type());
+        $this->assertSame(Type::method, $frame->type());
         $this->assertSame(0, $frame->channel()->toInt());
         $this->assertTrue($frame->is(new Method(10, 21)));
         $this->assertCount(1, $frame->values());
@@ -368,7 +368,7 @@ class ConnectionTest extends TestCase
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
-        $this->assertSame(Type::method(), $frame->type());
+        $this->assertSame(Type::method, $frame->type());
         $this->assertSame(0, $frame->channel()->toInt());
         $this->assertTrue($frame->is(new Method(10, 31)));
         $this->assertCount(3, $frame->values());
@@ -414,7 +414,7 @@ class ConnectionTest extends TestCase
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
-        $this->assertSame(Type::method(), $frame->type());
+        $this->assertSame(Type::method, $frame->type());
         $this->assertSame(0, $frame->channel()->toInt());
         $this->assertTrue($frame->is(new Method(10, 40)));
         $this->assertCount(3, $frame->values());
@@ -463,7 +463,7 @@ class ConnectionTest extends TestCase
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
-        $this->assertSame(Type::method(), $frame->type());
+        $this->assertSame(Type::method, $frame->type());
         $this->assertSame(0, $frame->channel()->toInt());
         $this->assertTrue($frame->is(new Method(10, 50)));
         $this->assertCount(4, $frame->values());
@@ -539,7 +539,7 @@ class ConnectionTest extends TestCase
         $frame = (new Connection)->closeOk();
 
         $this->assertInstanceOf(Frame::class, $frame);
-        $this->assertSame(Type::method(), $frame->type());
+        $this->assertSame(Type::method, $frame->type());
         $this->assertSame(0, $frame->channel()->toInt());
         $this->assertTrue($frame->is(new Method(10, 51)));
         $this->assertCount(0, $frame->values());

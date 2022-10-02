@@ -30,7 +30,7 @@ class FrameTest extends TestCase
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
-        $this->assertSame(Type::method(), $frame->type());
+        $this->assertSame(Type::method, $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertTrue($frame->is($method));
         $this->assertInstanceOf(Sequence::class, $frame->values());
@@ -50,7 +50,7 @@ class FrameTest extends TestCase
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
-        $this->assertSame(Type::header(), $frame->type());
+        $this->assertSame(Type::header, $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertFalse($frame->is(new Method(0, 0)));
         $this->assertInstanceOf(Sequence::class, $frame->values());

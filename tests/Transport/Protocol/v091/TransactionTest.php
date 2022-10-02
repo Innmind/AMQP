@@ -27,7 +27,7 @@ class TransactionTest extends TestCase
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
-        $this->assertSame(Type::method(), $frame->type());
+        $this->assertSame(Type::method, $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertTrue($frame->is(new Method(90, 10)));
         $this->assertCount(0, $frame->values());
@@ -40,7 +40,7 @@ class TransactionTest extends TestCase
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
-        $this->assertSame(Type::method(), $frame->type());
+        $this->assertSame(Type::method, $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertTrue($frame->is(new Method(90, 20)));
         $this->assertCount(0, $frame->values());
@@ -53,7 +53,7 @@ class TransactionTest extends TestCase
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
-        $this->assertSame(Type::method(), $frame->type());
+        $this->assertSame(Type::method, $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertTrue($frame->is(new Method(90, 30)));
         $this->assertCount(0, $frame->values());

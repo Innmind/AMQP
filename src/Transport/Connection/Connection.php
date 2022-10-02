@@ -135,7 +135,7 @@ final class Connection implements ConnectionInterface
         $frame = ($this->read)($this->socket, $this->protocol);
         $this->lastReceivedData = $this->clock->now();
 
-        if ($frame->type() === Type::heartbeat()) {
+        if ($frame->type() === Type::heartbeat) {
             return $this->wait(...$names);
         }
 
@@ -143,7 +143,7 @@ final class Connection implements ConnectionInterface
             return $frame;
         }
 
-        if ($frame->type() !== Type::method()) {
+        if ($frame->type() !== Type::method) {
             // someone must have forgot a wait() call
             throw new ExpectedMethodFrame($frame->type());
         }
