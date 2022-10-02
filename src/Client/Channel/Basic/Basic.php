@@ -13,7 +13,6 @@ use Innmind\AMQP\{
     Model\Basic\Qos,
     Model\Basic\Recover,
     Model\Basic\Reject,
-    Model\Basic\Message\Locked,
     Transport\Connection,
     Transport\Connection\MessageReader,
     Transport\Frame,
@@ -130,7 +129,7 @@ final class Basic implements BasicInterface
             $this->connection,
             $this->channel,
             $command,
-            new Locked($message),
+            $message,
             $deliveryTag->original()->value(),
             $redelivered->original()->first()->match(
                 static fn($bool) => $bool,

@@ -11,7 +11,6 @@ use Innmind\AMQP\{
     Model\Basic\Cancel as CancelCommand,
     Model\Basic\Recover,
     Model\Basic\Message,
-    Model\Basic\Message\Locked,
     Transport\Connection,
     Transport\Connection\MessageReader,
     Transport\Frame\Channel,
@@ -58,7 +57,6 @@ final class Consumer implements ConsumerInterface
         while ($this->shouldConsume()) {
             $frame = $this->connection->wait('basic.deliver');
             $message = ($this->read)($this->connection);
-            $message = new Locked($message);
             /** @var Value\ShortString */
             $consumerTag = $frame->values()->first()->match(
                 static fn($value) => $value,
