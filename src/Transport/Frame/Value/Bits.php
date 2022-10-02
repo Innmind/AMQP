@@ -12,6 +12,7 @@ use Innmind\Immutable\{
 
 /**
  * @implements Value<Seq<bool>>
+ * @psalm-immutable
  */
 final class Bits implements Value
 {

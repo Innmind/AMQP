@@ -18,6 +18,7 @@ use Innmind\Immutable\{
 
 /**
  * @implements Value<Map<string, Value>>
+ * @psalm-immutable
  */
 final class Table implements Value
 {

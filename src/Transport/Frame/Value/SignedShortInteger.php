@@ -13,11 +13,10 @@ use Innmind\Stream\Readable;
 
 /**
  * @implements Value<Integer>
+ * @psalm-immutable
  */
 final class SignedShortInteger implements Value
 {
-    private static ?Set $definitionSet = null;
-
     private Integer $original;
 
     public function __construct(Integer $value)
@@ -25,6 +24,9 @@ final class SignedShortInteger implements Value
         $this->original = $value;
     }
 
+    /**
+     * @psalm-pure
+     */
     public static function of(Integer $value): self
     {
         self::definitionSet()->accept($value);
@@ -54,9 +56,12 @@ final class SignedShortInteger implements Value
         return \pack('s', $this->original->value());
     }
 
+    /**
+     * @psalm-pure
+     */
     public static function definitionSet(): Set
     {
-        return self::$definitionSet ?? self::$definitionSet = Range::inclusive(
+        return Range::inclusive(
             Integer::of(-32768),
             Integer::of(32767),
         );

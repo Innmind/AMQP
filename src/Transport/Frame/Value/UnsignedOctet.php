@@ -15,11 +15,10 @@ use Innmind\Stream\Readable;
  * Same as unsigned shortshort
  *
  * @implements Value<Integer>
+ * @psalm-immutable
  */
 final class UnsignedOctet implements Value
 {
-    private static ?Set $definitionSet = null;
-
     private Integer $original;
 
     public function __construct(Integer $octet)
@@ -27,6 +26,9 @@ final class UnsignedOctet implements Value
         $this->original = $octet;
     }
 
+    /**
+     * @psalm-pure
+     */
     public static function of(Integer $octet): self
     {
         self::definitionSet()->accept($octet);
@@ -57,9 +59,12 @@ final class UnsignedOctet implements Value
         return \chr($this->original->value());
     }
 
+    /**
+     * @psalm-pure
+     */
     public static function definitionSet(): Set
     {
-        return self::$definitionSet ?? self::$definitionSet = Range::inclusive(
+        return Range::inclusive(
             Integer::of(0),
             Integer::of(255),
         );

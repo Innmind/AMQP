@@ -19,6 +19,7 @@ use Innmind\Immutable\{
  * It's an array, but "array" is a reserved keyword in PHP
  *
  * @implements Value<Seq<Value>>
+ * @psalm-immutable
  */
 final class Sequence implements Value
 {

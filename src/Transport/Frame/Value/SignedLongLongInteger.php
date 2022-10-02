@@ -9,6 +9,7 @@ use Innmind\Stream\Readable;
 
 /**
  * @implements Value<Integer>
+ * @psalm-immutable
  */
 final class SignedLongLongInteger implements Value
 {

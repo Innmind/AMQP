@@ -5,6 +5,9 @@ namespace Innmind\AMQP\Transport\Frame;
 
 use Innmind\AMQP\Exception\DomainException;
 
+/**
+ * @psalm-immutable
+ */
 final class Channel
 {
     private int $value;

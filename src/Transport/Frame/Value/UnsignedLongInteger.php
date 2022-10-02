@@ -13,11 +13,10 @@ use Innmind\Stream\Readable;
 
 /**
  * @implements Value<Integer>
+ * @psalm-immutable
  */
 final class UnsignedLongInteger implements Value
 {
-    private static ?Set $definitionSet = null;
-
     private Integer $original;
 
     public function __construct(Integer $value)
@@ -25,6 +24,9 @@ final class UnsignedLongInteger implements Value
         $this->original = $value;
     }
 
+    /**
+     * @psalm-pure
+     */
     public static function of(Integer $value): self
     {
         self::definitionSet()->accept($value);
@@ -55,9 +57,12 @@ final class UnsignedLongInteger implements Value
         return \pack('N', $this->original->value());
     }
 
+    /**
+     * @psalm-pure
+     */
     public static function definitionSet(): Set
     {
-        return self::$definitionSet ?? self::$definitionSet = Range::inclusive(
+        return Range::inclusive(
             Integer::of(0),
             Integer::of(4294967295),
         );

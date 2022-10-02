@@ -10,6 +10,7 @@ use Innmind\Immutable\Str;
 
 /**
  * @implements Value<Str>
+ * @psalm-immutable
  */
 final class LongString implements Value
 {
@@ -20,9 +21,12 @@ final class LongString implements Value
         $this->original = $string;
     }
 
+    /**
+     * @psalm-pure
+     */
     public static function of(Str $string): self
     {
-        UnsignedLongInteger::of(Integer::of($string->toEncoding('ASCII')->length()));
+        $_ = UnsignedLongInteger::of(Integer::of($string->toEncoding('ASCII')->length()));
 
         return new self($string);
     }

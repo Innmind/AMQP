@@ -15,11 +15,10 @@ use Innmind\Stream\Readable;
  * Same as shortshort
  *
  * @implements Value<Integer>
+ * @psalm-immutable
  */
 final class SignedOctet implements Value
 {
-    private static ?Set $definitionSet = null;
-
     private Integer $original;
 
     public function __construct(Integer $octet)
@@ -27,6 +26,9 @@ final class SignedOctet implements Value
         $this->original = $octet;
     }
 
+    /**
+     * @psalm-pure
+     */
     public static function of(Integer $value): self
     {
         self::definitionSet()->accept($value);
@@ -56,9 +58,12 @@ final class SignedOctet implements Value
         return \pack('c', $this->original->value());
     }
 
+    /**
+     * @psalm-pure
+     */
     public static function definitionSet(): Set
     {
-        return self::$definitionSet ?? self::$definitionSet = Range::inclusive(
+        return Range::inclusive(
             Integer::of(-128),
             Integer::of(127),
         );

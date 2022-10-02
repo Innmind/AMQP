@@ -20,6 +20,9 @@ use Innmind\Immutable\{
     Maybe,
 };
 
+/**
+ * @psalm-immutable
+ */
 final class Frame
 {
     private Type $type;
@@ -63,6 +66,7 @@ final class Frame
 
     /**
      * @no-named-arguments
+     * @psalm-pure
      */
     public static function method(
         Channel $channel,
@@ -84,6 +88,7 @@ final class Frame
 
     /**
      * @no-named-arguments
+     * @psalm-pure
      */
     public static function header(
         Channel $channel,
@@ -102,6 +107,9 @@ final class Frame
         return $self;
     }
 
+    /**
+     * @psalm-pure
+     */
     public static function body(Channel $channel, Str $payload): self
     {
         $self = new self(
@@ -115,6 +123,9 @@ final class Frame
         return $self;
     }
 
+    /**
+     * @psalm-pure
+     */
     public static function heartbeat(): self
     {
         return new self(
@@ -154,6 +165,9 @@ final class Frame
         return $this->string;
     }
 
+    /**
+     * @psalm-pure
+     */
     public static function end(): int
     {
         return 0xCE;

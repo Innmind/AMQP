@@ -7,6 +7,8 @@ use Innmind\Stream\Readable;
 
 /**
  * @template T
+ *
+ * @psalm-immutable
  */
 interface Value
 {

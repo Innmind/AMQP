@@ -9,6 +9,7 @@ use Innmind\Immutable\Str;
 
 /**
  * @implements Value<Str>
+ * @psalm-immutable
  */
 final class Text implements Value
 {

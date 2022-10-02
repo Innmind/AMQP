@@ -17,6 +17,7 @@ use Innmind\Stream\Readable;
 
 /**
  * @implements Value<PointInTimeInterface>
+ * @psalm-immutable
  */
 final class Timestamp implements Value
 {

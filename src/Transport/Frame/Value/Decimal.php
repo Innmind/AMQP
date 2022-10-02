@@ -14,11 +14,10 @@ use Innmind\Stream\Readable;
 
 /**
  * @implements Value<Number>
+ * @psalm-immutable
  */
 final class Decimal implements Value
 {
-    private static ?NaturalNumbers $definitionSet = null;
-
     private Integer $value;
     private Integer $scale;
     private Number $original;
@@ -32,10 +31,13 @@ final class Decimal implements Value
         );
     }
 
+    /**
+     * @psalm-pure
+     */
     public static function of(Integer $value, Integer $scale): self
     {
-        SignedLongInteger::of($value);
-        UnsignedOctet::of($scale);
+        $_ = SignedLongInteger::of($value);
+        $_ = UnsignedOctet::of($scale);
 
         return new self($value, $scale);
     }
@@ -60,6 +62,6 @@ final class Decimal implements Value
 
     public static function definitionSet(): Set
     {
-        return self::$definitionSet ?? self::$definitionSet = new NaturalNumbers;
+        return new NaturalNumbers;
     }
 }

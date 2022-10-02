@@ -8,6 +8,7 @@ use Innmind\Stream\Readable;
 
 /**
  * @implements Value<void>
+ * @psalm-immutable
  */
 final class VoidValue implements Value
 {
