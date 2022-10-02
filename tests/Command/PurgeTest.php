@@ -16,8 +16,8 @@ use Innmind\CLI\{
     Command\Arguments,
     Command\Options,
     Environment,
+    Console,
 };
-use Innmind\Stream\Writable;
 use Innmind\Immutable\Map;
 use PHPUnit\Framework\TestCase;
 
@@ -39,7 +39,7 @@ innmind:amqp:purge queue
 Will delete all messages for the given queue
 USAGE;
 
-        $this->assertSame($expected, (new Purge($this->createMock(Client::class)))->toString());
+        $this->assertSame($expected, (new Purge($this->createMock(Client::class)))->usage());
     }
 
     public function testInvokation()
@@ -62,15 +62,23 @@ USAGE;
             ->with($this->callback(static function($purge): bool {
                 return $purge->name() === 'foo';
             }));
-        $env = $this->createMock(Environment::class);
-        $env
-            ->expects($this->never())
-            ->method('exit');
 
-        $this->assertNull($purge(
-            $env,
-            new Arguments(Map::of('string', 'string')('queue', 'foo')),
-            new Options,
+        $console = $purge(
+            Console::of(
+                Environment\InMemory::of(
+                    [],
+                    true,
+                    ['foo'],
+                    [],
+                    '/',
+                ),
+                new Arguments(Map::of(['queue', 'foo'])),
+                new Options,
+            ),
+        );
+        $this->assertNull($console->environment()->exitCode()->match(
+            static fn($code) => $code,
+            static fn() => null,
         ));
     }
 
@@ -88,9 +96,17 @@ USAGE;
         $this->expectException(\Exception::class);
 
         $purge(
-            $this->createMock(Environment::class),
-            new Arguments(Map::of('string', 'string')('queue', 'foo')),
-            new Options,
+            Console::of(
+                Environment\InMemory::of(
+                    [],
+                    true,
+                    ['foo'],
+                    [],
+                    '/',
+                ),
+                new Arguments(Map::of(['queue', 'foo'])),
+                new Options,
+            ),
         );
     }
 
@@ -112,26 +128,24 @@ USAGE;
                 return $purge->name() === 'foo';
             }))
             ->will($this->throwException(new UnexpectedFrame(Frame::heartbeat())));
-        $env = $this->createMock(Environment::class);
-        $env
-            ->expects($this->once())
-            ->method('exit')
-            ->with(1);
-        $env
-            ->expects($this->once())
-            ->method('error')
-            ->willReturn($error = $this->createMock(Writable::class));
-        $error
-            ->expects($this->once())
-            ->method('write')
-            ->with($this->callback(static function($str): bool {
-                return $str->toString() === 'Purging "foo" failed';
-            }));
 
-        $this->assertNull($purge(
-            $env,
-            new Arguments(Map::of('string', 'string')('queue', 'foo')),
-            new Options,
+        $console = $purge(
+            Console::of(
+                Environment\InMemory::of(
+                    [],
+                    true,
+                    ['foo'],
+                    [],
+                    '/',
+                ),
+                new Arguments(Map::of(['queue', 'foo'])),
+                new Options,
+            ),
+        );
+        $this->assertSame(1, $console->environment()->exitCode()->match(
+            static fn($code) => $code->toInt(),
+            static fn() => null,
         ));
+        $this->assertSame(['Purging "foo" failed'], $console->environment()->errors());
     }
 }

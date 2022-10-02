@@ -34,10 +34,15 @@ final class UnsignedLongInteger implements Value
 
     public static function unpack(Readable $stream): self
     {
-        /** @var int $value */
-        [, $value] = \unpack('N', $stream->read(4)->toString());
+        $chunk = $stream->read(4)->match(
+            static fn($chunk) => $chunk,
+            static fn() => throw new \LogicException,
+        );
 
-        return new self(new Integer($value));
+        /** @var int $value */
+        [, $value] = \unpack('N', $chunk->toString());
+
+        return new self(Integer::of($value));
     }
 
     public function original(): Integer
@@ -53,8 +58,8 @@ final class UnsignedLongInteger implements Value
     public static function definitionSet(): Set
     {
         return self::$definitionSet ?? self::$definitionSet = Range::inclusive(
-            new Integer(0),
-            new Integer(4294967295),
+            Integer::of(0),
+            Integer::of(4294967295),
         );
     }
 }

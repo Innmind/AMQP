@@ -66,10 +66,10 @@ final class Channel implements ChannelInterface
         return Frame::method(
             $channel,
             Methods::get('channel.close'),
-            UnsignedShortInteger::of(new Integer($replyCode)),
+            UnsignedShortInteger::of(Integer::of($replyCode)),
             ShortString::of(Str::of($replyText)),
-            UnsignedShortInteger::of(new Integer($method->class())),
-            UnsignedShortInteger::of(new Integer($method->method())),
+            UnsignedShortInteger::of(Integer::of($method->class())),
+            UnsignedShortInteger::of(Integer::of($method->method())),
         );
     }
 

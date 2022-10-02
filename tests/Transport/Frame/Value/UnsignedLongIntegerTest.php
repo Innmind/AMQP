@@ -20,7 +20,7 @@ class UnsignedLongIntegerTest extends TestCase
     {
         $this->assertInstanceOf(
             Value::class,
-            new UnsignedLongInteger(new Integer(0)),
+            new UnsignedLongInteger(Integer::of(0)),
         );
     }
 
@@ -29,7 +29,7 @@ class UnsignedLongIntegerTest extends TestCase
         $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('4294967296 ∉ [0;4294967295]');
 
-        UnsignedLongInteger::of(new Integer(4294967296));
+        UnsignedLongInteger::of(Integer::of(4294967296));
     }
 
     public function testThrowWhenIntegerTooLow()
@@ -37,7 +37,7 @@ class UnsignedLongIntegerTest extends TestCase
         $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('-1 ∉ [0;4294967295]');
 
-        UnsignedLongInteger::of(new Integer(-1));
+        UnsignedLongInteger::of(Integer::of(-1));
     }
 
     /**
@@ -47,7 +47,7 @@ class UnsignedLongIntegerTest extends TestCase
     {
         $this->assertSame(
             $expected,
-            (new UnsignedLongInteger(new Integer($int)))->pack(),
+            (new UnsignedLongInteger(Integer::of($int)))->pack(),
         );
     }
 

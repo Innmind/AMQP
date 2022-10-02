@@ -44,7 +44,6 @@ use Innmind\Immutable\{
     Map,
     Sequence,
 };
-use function Innmind\Immutable\join;
 use PHPUnit\Framework\TestCase;
 
 class ProtocolTest extends TestCase
@@ -96,8 +95,7 @@ class ProtocolTest extends TestCase
                         ->withContentType(new ContentType('application', 'json'))
                         ->withContentEncoding(new ContentEncoding('gzip'))
                         ->withHeaders(
-                            Map::of('string', 'mixed')
-                                ('foo', new ShortString(Str::of('bar'))),
+                            Map::of(['foo', new ShortString(Str::of('bar'))]),
                         )
                         ->withDeliveryMode(DeliveryMode::persistent)
                         ->withPriority(Priority::five)
@@ -112,36 +110,41 @@ class ProtocolTest extends TestCase
                 ),
                 new MaxFrameSize(10),
             )
-            ->get(1);
+            ->get(1)
+            ->match(
+                static fn($value) => $value,
+                static fn() => null,
+            );
 
-        $values = $protocol->readHeader(Stream::ofContent(join(
-            '',
-            $header
-                ->values()
-                ->mapTo(
-                    'string',
-                    static fn($v) => $v->pack(),
-                ),
-        )->toString()));
+        $values = $protocol->readHeader(
+            Stream::ofContent(
+                Str::of('')
+                    ->join(
+                        $header
+                            ->values()
+                            ->map(static fn($v) => $v->pack()),
+                    )
+                    ->toString(),
+            ),
+        );
 
         $this->assertInstanceOf(Sequence::class, $values);
-        $this->assertSame(Value::class, (string) $values->type());
         $this->assertCount(15, $values); // body size + flag bits + 13 properties
         $this->assertSame(
-            join(
-                '',
-                $values->mapTo(
-                    'string',
-                    static fn($v) => $v->pack(),
-                ),
-            )->toString(),
-            join(
-                '',
-                $header->values()->mapTo(
-                    'string',
-                    static fn($v) => $v->pack(),
-                ),
-            )->toString(),
+            Str::of('')
+                ->join(
+                    $values->map(
+                        static fn($v) => $v->pack(),
+                    ),
+                )
+                ->toString(),
+            Str::of('')
+                ->join(
+                    $header->values()->map(
+                        static fn($v) => $v->pack(),
+                    ),
+                )
+                ->toString(),
         );
     }
 

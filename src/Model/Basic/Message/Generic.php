@@ -12,7 +12,6 @@ use Innmind\Immutable\{
     Map,
     Str,
 };
-use function Innmind\Immutable\assertMap;
 
 final class Generic implements Message
 {
@@ -36,7 +35,7 @@ final class Generic implements Message
     {
         $this->body = $body->toEncoding('ASCII');
         /** @var Map<string, mixed> */
-        $this->headers = Map::of('string', 'mixed');
+        $this->headers = Map::of();
     }
 
     public function hasContentType(): bool
@@ -91,8 +90,6 @@ final class Generic implements Message
 
     public function withHeaders(Map $headers): Message
     {
-        assertMap('string', 'mixed', $headers, 1);
-
         $self = clone $this;
         $self->headers = $headers;
 

@@ -10,9 +10,7 @@ use Innmind\AMQP\{
 };
 use Innmind\CLI\{
     Command,
-    Command\Arguments,
-    Command\Options,
-    Environment,
+    Console,
 };
 use Innmind\Immutable\Str;
 
@@ -25,9 +23,9 @@ final class Purge implements Command
         $this->client = $client;
     }
 
-    public function __invoke(Environment $env, Arguments $arguments, Options $options): void
+    public function __invoke(Console $console): Console
     {
-        $queue = $arguments->get('queue');
+        $queue = $console->arguments()->get('queue');
 
         try {
             $this
@@ -35,15 +33,21 @@ final class Purge implements Command
                 ->channel()
                 ->queue()
                 ->purge(new Queue\Purge($queue));
+
+            return $console;
         } catch (UnexpectedFrame $e) {
-            $env->error()->write(Str::of("Purging \"$queue\" failed"));
-            $env->exit(1);
+            return $console
+                ->error(Str::of("Purging \"$queue\" failed"))
+                ->exit(1);
         } finally {
             $this->client->close();
         }
     }
 
-    public function toString(): string
+    /**
+     * @psalm-pure
+     */
+    public function usage(): string
     {
         return <<<USAGE
 innmind:amqp:purge queue

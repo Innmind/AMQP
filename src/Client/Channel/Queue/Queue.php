@@ -45,11 +45,20 @@ final class Queue implements QueueInterface
 
         $frame = $this->connection->wait('queue.declare-ok');
         /** @var Value\ShortString */
-        $name = $frame->values()->get(0);
+        $name = $frame->values()->get(0)->match(
+            static fn($value) => $value,
+            static fn() => throw new \LogicException,
+        );
         /** @var Value\UnsignedLongInteger */
-        $message = $frame->values()->get(1);
+        $message = $frame->values()->get(1)->match(
+            static fn($value) => $value,
+            static fn() => throw new \LogicException,
+        );
         /** @var Value\UnsignedLongInteger */
-        $consumer = $frame->values()->get(2);
+        $consumer = $frame->values()->get(2)->match(
+            static fn($value) => $value,
+            static fn() => throw new \LogicException,
+        );
 
         return new DeclareOk(
             $name->original()->toString(),
@@ -73,7 +82,10 @@ final class Queue implements QueueInterface
 
         $frame = $this->connection->wait('queue.delete-ok');
         /** @var Value\UnsignedLongInteger */
-        $message = $frame->values()->first();
+        $message = $frame->values()->first()->match(
+            static fn($value) => $value,
+            static fn() => throw new \LogicException,
+        );
 
         return new DeleteOk(new Count(
             $message->original()->value(),
@@ -118,7 +130,10 @@ final class Queue implements QueueInterface
 
         $frame = $this->connection->wait('queue.purge-ok');
         /** @var Value\UnsignedLongInteger */
-        $message = $frame->values()->first();
+        $message = $frame->values()->first()->match(
+            static fn($value) => $value,
+            static fn() => throw new \LogicException,
+        );
 
         return new PurgeOk(new Count(
             $message->original()->value(),

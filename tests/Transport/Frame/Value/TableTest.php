@@ -25,16 +25,8 @@ class TableTest extends TestCase
     {
         $this->assertInstanceOf(
             Value::class,
-            new Table(Map::of('string', Value::class)),
+            new Table(Map::of()),
         );
-    }
-
-    public function testThrowWhenInvalidMap()
-    {
-        $this->expectException(\TypeError::class);
-        $this->expectExceptionMessage('Argument 1 must be of type Map<string, Innmind\AMQP\Transport\Frame\Value>');
-
-        new Table(Map::of('string', 'mixed'));
     }
 
     /**
@@ -76,15 +68,13 @@ class TableTest extends TestCase
         $this->expectException(UnboundedTextCannotBeWrapped::class);
 
         new Table(
-            Map::of('string', Value::class)
-                ('foo', new Text(Str::of(''))),
+            Map::of(['foo', new Text(Str::of(''))]),
         );
     }
 
     public function cases(): array
     {
-        $map = Map::of('string', Value::class)
-            ('foo', new SignedOctet(new Integer(1)));
+        $map = Map::of(['foo', new SignedOctet(Integer::of(1))]);
 
         return [
             [

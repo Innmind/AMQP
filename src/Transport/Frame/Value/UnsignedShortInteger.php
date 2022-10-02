@@ -34,10 +34,15 @@ final class UnsignedShortInteger implements Value
 
     public static function unpack(Readable $stream): self
     {
-        /** @var int $value */
-        [, $value] = \unpack('n', $stream->read(2)->toString());
+        $chunk = $stream->read(2)->match(
+            static fn($chunk) => $chunk,
+            static fn() => throw new \LogicException,
+        );
 
-        return new self(new Integer($value));
+        /** @var int $value */
+        [, $value] = \unpack('n', $chunk->toString());
+
+        return new self(Integer::of($value));
     }
 
     public function original(): Integer
@@ -53,8 +58,8 @@ final class UnsignedShortInteger implements Value
     public static function definitionSet(): Set
     {
         return self::$definitionSet ?? self::$definitionSet = Range::inclusive(
-            new Integer(0),
-            new Integer(65535),
+            Integer::of(0),
+            Integer::of(65535),
         );
     }
 }

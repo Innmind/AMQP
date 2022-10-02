@@ -15,6 +15,7 @@ use Innmind\CLI\{
     Command\Arguments,
     Command\Options,
     Environment,
+    Console,
 };
 use Innmind\Immutable\Map;
 use PHPUnit\Framework\TestCase;
@@ -27,7 +28,7 @@ class ConsumeTest extends TestCase
             Command::class,
             new Consume(
                 $this->createMock(Client::class),
-                new Consumers(Map::of('string', 'callable')),
+                new Consumers(Map::of()),
             ),
         );
     }
@@ -44,8 +45,8 @@ USAGE;
             $expected,
             (new Consume(
                 $this->createMock(Client::class),
-                new Consumers(Map::of('string', 'callable')),
-            ))->toString(),
+                new Consumers(Map::of()),
+            ))->usage(),
         );
     }
 
@@ -54,8 +55,7 @@ USAGE;
         $command = new Consume(
             $client = $this->createMock(Client::class),
             new Consumers(
-                Map::of('string', 'callable')
-                    ('foo', $expected = static function() {}),
+                Map::of(['foo', $expected = static function() {}]),
             ),
         );
         $client
@@ -80,19 +80,27 @@ USAGE;
             ->expects($this->once())
             ->method('foreach')
             ->with($expected);
-        $env = $this->createMock(Environment::class);
-        $env
-            ->expects($this->never())
-            ->method('exit');
-        $env
-            ->expects($this->never())
-            ->method('output');
 
-        $this->assertNull($command(
-            $env,
-            new Arguments(Map::of('string', 'string')('queue', 'foo')),
-            new Options,
+        $console = $command(
+            Console::of(
+                Environment\InMemory::of(
+                    [],
+                    true,
+                    ['foo'],
+                    [],
+                    '/',
+                ),
+                new Arguments(
+                    Map::of(['queue', 'foo']),
+                ),
+                new Options,
+            ),
+        );
+        $this->assertNull($console->environment()->exitCode()->match(
+            static fn($code) => $code,
+            static fn() => null,
         ));
+        $this->assertSame([], $console->environment()->outputs());
     }
 
     public function testCloseEvenOnException()
@@ -100,8 +108,7 @@ USAGE;
         $consume = new Consume(
             $client = $this->createMock(Client::class),
             new Consumers(
-                Map::of('string', 'callable')
-                    ('foo', static function() {}),
+                Map::of(['foo', static function() {}]),
             ),
         );
         $client
@@ -129,10 +136,20 @@ USAGE;
 
         $this->expectException(\Exception::class);
 
-        $consume(
-            $this->createMock(Environment::class),
-            new Arguments(Map::of('string', 'string')('queue', 'foo')),
-            new Options,
+        $console = $consume(
+            Console::of(
+                Environment\InMemory::of(
+                    [],
+                    true,
+                    ['foo'],
+                    [],
+                    '/',
+                ),
+                new Arguments(
+                    Map::of(['queue', 'foo']),
+                ),
+                new Options,
+            ),
         );
     }
 
@@ -141,8 +158,7 @@ USAGE;
         $command = new Consume(
             $client = $this->createMock(Client::class),
             new Consumers(
-                Map::of('string', 'callable')
-                    ('foo', $expected = static function() {}),
+                Map::of(['foo', $expected = static function() {}]),
             ),
         );
         $client
@@ -175,23 +191,30 @@ USAGE;
             ->expects($this->once())
             ->method('foreach')
             ->with($expected);
-        $env = $this->createMock(Environment::class);
-        $env
-            ->expects($this->never())
-            ->method('exit');
-        $env
-            ->expects($this->never())
-            ->method('output');
 
-        $this->assertNull($command(
-            $env,
-            new Arguments(
-                Map::of('string', 'string')
-                    ('queue', 'foo')
-                    ('number', '42'),
+        $console = $command(
+            Console::of(
+                Environment\InMemory::of(
+                    [],
+                    true,
+                    ['foo', '42'],
+                    [],
+                    '/',
+                ),
+                new Arguments(
+                    Map::of(
+                        ['queue', 'foo'],
+                        ['number', '42'],
+                    ),
+                ),
+                new Options,
             ),
-            new Options,
+        );
+        $this->assertNull($console->environment()->exitCode()->match(
+            static fn($code) => $code,
+            static fn() => null,
         ));
+        $this->assertSame([], $console->environment()->outputs());
     }
 
     public function testPrefetchMessages()
@@ -199,8 +222,7 @@ USAGE;
         $command = new Consume(
             $client = $this->createMock(Client::class),
             new Consumers(
-                Map::of('string', 'callable')
-                    ('foo', $expected = static function() {}),
+                Map::of(['foo', $expected = static function() {}]),
             ),
         );
         $client
@@ -233,23 +255,30 @@ USAGE;
             ->expects($this->once())
             ->method('foreach')
             ->with($expected);
-        $env = $this->createMock(Environment::class);
-        $env
-            ->expects($this->never())
-            ->method('exit');
-        $env
-            ->expects($this->never())
-            ->method('output');
 
-        $this->assertNull($command(
-            $env,
-            new Arguments(
-                Map::of('string', 'string')
-                    ('queue', 'foo')
-                    ('number', '42')
-                    ('prefetch', '24'),
+        $console = $command(
+            Console::of(
+                Environment\InMemory::of(
+                    [],
+                    true,
+                    ['foo', '42', '24'],
+                    [],
+                    '/',
+                ),
+                new Arguments(
+                    Map::of(
+                        ['queue', 'foo'],
+                        ['number', '42'],
+                        ['prefetch', '24'],
+                    ),
+                ),
+                new Options,
             ),
-            new Options,
+        );
+        $this->assertNull($console->environment()->exitCode()->match(
+            static fn($code) => $code,
+            static fn() => null,
         ));
+        $this->assertSame([], $console->environment()->outputs());
     }
 }

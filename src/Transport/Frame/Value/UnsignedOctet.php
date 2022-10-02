@@ -36,10 +36,15 @@ final class UnsignedOctet implements Value
 
     public static function unpack(Readable $stream): self
     {
-        /** @var int $octet */
-        [, $octet] = \unpack('C', $stream->read(1)->toString());
+        $chunk = $stream->read(1)->match(
+            static fn($chunk) => $chunk,
+            static fn() => throw new \LogicException,
+        );
 
-        return new self(new Integer($octet));
+        /** @var int $octet */
+        [, $octet] = \unpack('C', $chunk->toString());
+
+        return new self(Integer::of($octet));
     }
 
     public function original(): Integer
@@ -55,8 +60,8 @@ final class UnsignedOctet implements Value
     public static function definitionSet(): Set
     {
         return self::$definitionSet ?? self::$definitionSet = Range::inclusive(
-            new Integer(0),
-            new Integer(255),
+            Integer::of(0),
+            Integer::of(255),
         );
     }
 }

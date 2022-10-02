@@ -12,9 +12,7 @@ use Innmind\AMQP\{
 };
 use Innmind\CLI\{
     Command,
-    Command\Arguments,
-    Command\Options,
-    Environment,
+    Console,
 };
 
 final class Consume implements Command
@@ -28,28 +26,33 @@ final class Consume implements Command
         $this->consumers = $consumers;
     }
 
-    public function __invoke(Environment $env, Arguments $arguments, Options $options): void
+    public function __invoke(Console $console): Console
     {
-        $queue = $arguments->get('queue');
+        $queue = $console->arguments()->get('queue');
         $consume = $this->consumers->get($queue);
         $basic = $this->client->channel()->basic();
 
-        $this->qos($arguments, $basic);
+        $this->qos($console, $basic);
 
         $consumer = $basic->consume(new Basic\Consume($queue));
 
-        if ($arguments->contains('number')) {
-            $consumer->take((int) $arguments->get('number'));
+        if ($console->arguments()->contains('number')) {
+            $consumer->take((int) $console->arguments()->get('number'));
         }
 
         try {
             $consumer->foreach($consume);
+
+            return $console;
         } finally {
             $this->client->close();
         }
     }
 
-    public function toString(): string
+    /**
+     * @psalm-pure
+     */
+    public function usage(): string
     {
         return <<<USAGE
 innmind:amqp:consume queue [number] [prefetch]
@@ -58,16 +61,16 @@ Will process messages from the given queue
 USAGE;
     }
 
-    private function qos(Arguments $arguments, Channel\Basic $basic): void
+    private function qos(Console $console, Channel\Basic $basic): void
     {
-        if ($arguments->contains('prefetch')) {
-            $basic->qos(new Qos(0, (int) $arguments->get('prefetch')));
+        if ($console->arguments()->contains('prefetch')) {
+            $basic->qos(new Qos(0, (int) $console->arguments()->get('prefetch')));
 
             return;
         }
 
-        if ($arguments->contains('number')) {
-            $basic->qos(new Qos(0, (int) $arguments->get('number')));
+        if ($console->arguments()->contains('number')) {
+            $basic->qos(new Qos(0, (int) $console->arguments()->get('number')));
 
             return;
         }

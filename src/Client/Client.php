@@ -24,7 +24,7 @@ final class Client implements ClientInterface
         $this->connection = $connection;
         $this->process = $process;
         /** @var Map<int, Channel> */
-        $this->channels = Map::of('int', Channel::class);
+        $this->channels = Map::of();
     }
 
     public function channel(): Channel
@@ -32,7 +32,10 @@ final class Client implements ClientInterface
         $pid = $this->process->id()->toInt();
 
         if ($this->channels->contains($pid)) {
-            return $this->channels->get($pid);
+            return $this->channels->get($pid)->match(
+                static fn($channel) => $channel,
+                static fn() => throw new \LogicException,
+            );
         }
 
         $channel = new Channel\Channel(
@@ -55,7 +58,7 @@ final class Client implements ClientInterface
             return;
         }
 
-        $this->channels->foreach(static function(int $_, Channel $channel): void {
+        $_ = $this->channels->foreach(static function(int $_, Channel $channel): void {
             $channel->close();
         });
         $this->connection->close();

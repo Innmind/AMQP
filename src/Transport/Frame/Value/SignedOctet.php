@@ -36,10 +36,14 @@ final class SignedOctet implements Value
 
     public static function unpack(Readable $stream): self
     {
+        $chunk = $stream->read(1)->match(
+            static fn($chunk) => $chunk,
+            static fn() => throw new \LogicException,
+        );
         /** @var int $value */
-        [, $value] = \unpack('c', $stream->read(1)->toString());
+        [, $value] = \unpack('c', $chunk->toString());
 
-        return new self(new Integer($value));
+        return new self(Integer::of($value));
     }
 
     public function original(): Integer
@@ -55,8 +59,8 @@ final class SignedOctet implements Value
     public static function definitionSet(): Set
     {
         return self::$definitionSet ?? self::$definitionSet = Range::inclusive(
-            new Integer(-128),
-            new Integer(127),
+            Integer::of(-128),
+            Integer::of(127),
         );
     }
 }

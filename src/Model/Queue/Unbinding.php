@@ -19,7 +19,7 @@ final class Unbinding
         $this->queue = $queue;
         $this->routingKey = $routingKey;
         /** @var Map<string, mixed> */
-        $this->arguments = Map::of('string', 'mixed');
+        $this->arguments = Map::of();
     }
 
     /**

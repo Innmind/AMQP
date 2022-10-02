@@ -5,7 +5,6 @@ namespace Innmind\AMQP;
 
 use Innmind\AMQP\Model\Basic\Message;
 use Innmind\Immutable\Map;
-use function Innmind\Immutable\assertMap;
 
 final class Consumers
 {
@@ -17,8 +16,6 @@ final class Consumers
      */
     public function __construct(Map $consumers)
     {
-        assertMap('string', 'callable', $consumers, 1);
-
         $this->consumers = $consumers;
     }
 
@@ -32,6 +29,9 @@ final class Consumers
      */
     public function get(string $queue): callable
     {
-        return $this->consumers->get($queue);
+        return $this->consumers->get($queue)->match(
+            static fn($consumer) => $consumer,
+            static fn() => throw new \LogicException,
+        );
     }
 }

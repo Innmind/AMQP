@@ -10,7 +10,6 @@ use Innmind\AMQP\{
     Model\Queue\Binding,
 };
 use Innmind\Immutable\Set;
-use function Innmind\Immutable\assertSet;
 
 final class AutoDeclare implements Client
 {
@@ -35,13 +34,9 @@ final class AutoDeclare implements Client
         Set $bindings = null,
     ) {
         $this->client = $client;
-        $this->exchanges = $exchanges ?? Set::of(Exchange::class);
-        $this->queues = $queues ?? Set::of(Queue::class);
-        $this->bindings = $bindings ?? Set::of(Binding::class);
-
-        assertSet(Exchange::class, $this->exchanges, 2);
-        assertSet(Queue::class, $this->queues, 3);
-        assertSet(Binding::class, $this->bindings, 4);
+        $this->exchanges = $exchanges ?? Set::of();
+        $this->queues = $queues ?? Set::of();
+        $this->bindings = $bindings ?? Set::of();
     }
 
     public function channel(): Channel
@@ -72,13 +67,13 @@ final class AutoDeclare implements Client
         $exchange = $channel->exchange();
         $queue = $channel->queue();
 
-        $this->exchanges->foreach(static function(Exchange $command) use ($exchange): void {
+        $_ = $this->exchanges->foreach(static function(Exchange $command) use ($exchange): void {
             $exchange->declare($command);
         });
-        $this->queues->foreach(static function(Queue $command) use ($queue): void {
+        $_ = $this->queues->foreach(static function(Queue $command) use ($queue): void {
             $queue->declare($command);
         });
-        $this->bindings->foreach(static function(Binding $command) use ($queue): void {
+        $_ = $this->bindings->foreach(static function(Binding $command) use ($queue): void {
             $queue->bind($command);
         });
         $this->declared = true;

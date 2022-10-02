@@ -34,10 +34,14 @@ final class SignedLongInteger implements Value
 
     public static function unpack(Readable $stream): self
     {
+        $chunk = $stream->read(4)->match(
+            static fn($chunk) => $chunk,
+            static fn() => throw new \LogicException,
+        );
         /** @var int $value */
-        [, $value] = \unpack('l', $stream->read(4)->toString());
+        [, $value] = \unpack('l', $chunk->toString());
 
-        return new self(new Integer($value));
+        return new self(Integer::of($value));
     }
 
     public function original(): Integer
@@ -53,8 +57,8 @@ final class SignedLongInteger implements Value
     public static function definitionSet(): Set
     {
         return self::$definitionSet ?? self::$definitionSet = Range::inclusive(
-            new Integer(-2147483648),
-            new Integer(2147483647),
+            Integer::of(-2147483648),
+            Integer::of(2147483647),
         );
     }
 }

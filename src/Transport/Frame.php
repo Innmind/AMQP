@@ -36,7 +36,7 @@ final class Frame
         $this->type = $type;
         $this->channel = $channel;
         /** @var Sequence<Value> */
-        $this->values = Sequence::of(Value::class);
+        $this->values = Sequence::of();
 
         $values = \array_map(
             static fn(Value $value): string => $value->pack(),
@@ -47,16 +47,19 @@ final class Frame
         $frame = \array_map(
             static fn(Value $value): string => $value->pack(),
             [
-                new UnsignedOctet(new Integer($type->toInt())),
-                new UnsignedShortInteger(new Integer($channel->toInt())),
-                new UnsignedLongInteger(new Integer($payload->length())),
+                new UnsignedOctet(Integer::of($type->toInt())),
+                new UnsignedShortInteger(Integer::of($channel->toInt())),
+                new UnsignedLongInteger(Integer::of($payload->length())),
                 new Text($payload),
-                new UnsignedOctet(new Integer(self::end())),
+                new UnsignedOctet(Integer::of(self::end())),
             ],
         );
         $this->string = \implode('', $frame);
     }
 
+    /**
+     * @no-named-arguments
+     */
     public static function method(
         Channel $channel,
         Method $method,
@@ -65,16 +68,19 @@ final class Frame
         $self = new self(
             Type::method(),
             $channel,
-            new UnsignedShortInteger(new Integer($method->class())),
-            new UnsignedShortInteger(new Integer($method->method())),
+            new UnsignedShortInteger(Integer::of($method->class())),
+            new UnsignedShortInteger(Integer::of($method->method())),
             ...$values,
         );
         $self->method = $method;
-        $self->values = Sequence::of(Value::class, ...$values);
+        $self->values = Sequence::of(...$values);
 
         return $self;
     }
 
+    /**
+     * @no-named-arguments
+     */
     public static function header(
         Channel $channel,
         int $class,
@@ -83,11 +89,11 @@ final class Frame
         $self = new self(
             Type::header(),
             $channel,
-            new UnsignedShortInteger(new Integer($class)),
-            new UnsignedShortInteger(new Integer(0)), // weight
+            new UnsignedShortInteger(Integer::of($class)),
+            new UnsignedShortInteger(Integer::of(0)), // weight
             ...$values,
         );
-        $self->values = Sequence::of(Value::class, ...$values);
+        $self->values = Sequence::of(...$values);
 
         return $self;
     }
@@ -100,7 +106,7 @@ final class Frame
             $value = new Text($payload),
         );
         /** @var Sequence<Value> */
-        $self->values = Sequence::of(Value::class, $value);
+        $self->values = Sequence::of($value);
 
         return $self;
     }

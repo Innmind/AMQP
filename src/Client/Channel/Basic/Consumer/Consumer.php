@@ -60,19 +60,37 @@ final class Consumer implements ConsumerInterface
             $message = ($this->read)($this->connection);
             $message = new Locked($message);
             /** @var Value\ShortString */
-            $consumerTag = $frame->values()->first();
+            $consumerTag = $frame->values()->first()->match(
+                static fn($value) => $value,
+                static fn() => throw new \LogicException,
+            );
             $consumerTag = $consumerTag->original()->toString();
             /** @var Value\UnsignedLongLongInteger */
-            $deliveryTag = $frame->values()->get(1);
+            $deliveryTag = $frame->values()->get(1)->match(
+                static fn($value) => $value,
+                static fn() => throw new \LogicException,
+            );
             $deliveryTag = $deliveryTag->original()->value();
             /** @var Value\Bits */
-            $redelivered = $frame->values()->get(2);
-            $redelivered = $redelivered->original()->first();
+            $redelivered = $frame->values()->get(2)->match(
+                static fn($value) => $value,
+                static fn() => throw new \LogicException,
+            );
+            $redelivered = $redelivered->original()->first()->match(
+                static fn($bool) => $bool,
+                static fn() => throw new \LogicException,
+            );
             /** @var Value\ShortString */
-            $exchange = $frame->values()->get(3);
+            $exchange = $frame->values()->get(3)->match(
+                static fn($value) => $value,
+                static fn() => throw new \LogicException,
+            );
             $exchange = $exchange->original()->toString();
             /** @var Value\ShortString */
-            $routingKey = $frame->values()->get(4);
+            $routingKey = $frame->values()->get(4)->match(
+                static fn($value) => $value,
+                static fn() => throw new \LogicException,
+            );
             $routingKey = $routingKey->original()->toString();
 
             try {

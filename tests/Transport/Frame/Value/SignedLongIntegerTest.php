@@ -20,7 +20,7 @@ class SignedLongIntegerTest extends TestCase
     {
         $this->assertInstanceOf(
             Value::class,
-            new SignedLongInteger(new Integer(0)),
+            new SignedLongInteger(Integer::of(0)),
         );
     }
 
@@ -29,7 +29,7 @@ class SignedLongIntegerTest extends TestCase
      */
     public function testStringCast($int, $expected)
     {
-        $value = new SignedLongInteger($int = new Integer($int));
+        $value = new SignedLongInteger($int = Integer::of($int));
         $this->assertSame($expected, $value->pack());
         $this->assertSame($int, $value->original());
     }
@@ -51,7 +51,7 @@ class SignedLongIntegerTest extends TestCase
         $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('2147483648 ∉ [-2147483648;2147483647]');
 
-        SignedLongInteger::of(new Integer(2147483648));
+        SignedLongInteger::of(Integer::of(2147483648));
     }
 
     public function testThrowWhenIntegerTooLow()
@@ -59,7 +59,7 @@ class SignedLongIntegerTest extends TestCase
         $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('-2147483649 ∉ [-2147483648;2147483647]');
 
-        SignedLongInteger::of(new Integer(-2147483649));
+        SignedLongInteger::of(Integer::of(-2147483649));
     }
 
     public function cases(): array

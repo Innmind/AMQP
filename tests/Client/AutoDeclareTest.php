@@ -25,42 +25,6 @@ class AutoDeclareTest extends TestCase
         );
     }
 
-    public function testThrowWhenInvalidExchangeSet()
-    {
-        $this->expectException(\TypeError::class);
-        $this->expectExceptionMessage('Argument 2 must be of type Set<Innmind\AMQP\Model\Exchange\Declaration>');
-
-        new AutoDeclare(
-            $this->createMock(Client::class),
-            Set::of('string'),
-        );
-    }
-
-    public function testThrowWhenInvalidQueueSet()
-    {
-        $this->expectException(\TypeError::class);
-        $this->expectExceptionMessage('Argument 3 must be of type Set<Innmind\AMQP\Model\Queue\Declaration>');
-
-        new AutoDeclare(
-            $this->createMock(Client::class),
-            null,
-            Set::of('string'),
-        );
-    }
-
-    public function testThrowWhenInvalidBindingSet()
-    {
-        $this->expectException(\TypeError::class);
-        $this->expectExceptionMessage('Argument 4 must be of type Set<Innmind\AMQP\Model\Queue\Binding>');
-
-        new AutoDeclare(
-            $this->createMock(Client::class),
-            null,
-            null,
-            Set::of('string'),
-        );
-    }
-
     public function testClosed()
     {
         $client = new AutoDeclare(
@@ -86,9 +50,9 @@ class AutoDeclareTest extends TestCase
 
         $client = new AutoDeclare(
             $mock = $this->createMock(Client::class),
-            Set::of(Exchange::class, $exchange, $exchange2),
-            Set::of(Queue::class, $queue, $queue2),
-            Set::of(Binding::class, $binding, $binding2),
+            Set::of($exchange, $exchange2),
+            Set::of($queue, $queue2),
+            Set::of($binding, $binding2),
         );
         $mock
             ->expects($this->exactly(2))

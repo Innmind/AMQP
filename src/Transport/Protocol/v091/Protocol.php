@@ -128,7 +128,7 @@ final class Protocol implements ProtocolInterface
         }
 
         /** @var Sequence<Value> */
-        $values = Sequence::of(Value::class, $bodySize, $flags);
+        $values = Sequence::of($bodySize, $flags);
 
         return $values->append(
             (new ChunkArguments(...$toChunk))($arguments),

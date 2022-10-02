@@ -22,7 +22,6 @@ use Innmind\Stream\{
     Readable,
     Readable\Stream,
 };
-use function Innmind\Immutable\unwrap;
 
 final class FrameReader
 {
@@ -33,16 +32,26 @@ final class FrameReader
         try {
             $type = Type::of($octet->original()->value());
         } catch (UnknownFrameType $e) {
+            $data = $stream->read()->match(
+                static fn($data) => $data,
+                static fn() => throw new \LogicException,
+            );
+
             throw new NoFrameDetected(Stream::ofContent(
-                $stream->read()->prepend($octet->pack())->toString(),
+                $data->prepend($octet->pack())->toString(),
             ));
         }
 
         $channel = new Channel(
             UnsignedShortInteger::unpack($stream)->original()->value(),
         );
+        /** @psalm-suppress ArgumentTypeCoercion */
         $payload = $stream
             ->read(UnsignedLongInteger::unpack($stream)->original()->value())
+            ->match(
+                static fn($payload) => $payload,
+                static fn() => throw new \LogicException,
+            )
             ->toEncoding('ASCII');
 
         if (
@@ -77,23 +86,29 @@ final class FrameReader
                 return Frame::method(
                     $channel,
                     $method,
-                    ...unwrap($protocol->read($method, $payload)),
+                    ...$protocol->read($method, $payload)->toList(),
                 );
 
             case Type::header():
                 $class = UnsignedShortInteger::unpack($payload)
                     ->original()
                     ->value();
-                $payload->read(2); // walk over the weight definition
+                $_ = $payload->read(2)->match(
+                    static fn() => null,
+                    static fn() => throw new \LogicException,
+                ); // walk over the weight definition
 
                 return Frame::header(
                     $channel,
                     $class,
-                    ...unwrap($protocol->readHeader($payload)),
+                    ...$protocol->readHeader($payload)->toList(),
                 );
 
             case Type::body():
-                return Frame::body($channel, $payload->read());
+                return Frame::body($channel, $payload->read()->match(
+                    static fn($data) => $data,
+                    static fn() => throw new \LogicException,
+                ));
 
             case Type::heartbeat():
                 return Frame::heartbeat();

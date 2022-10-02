@@ -25,7 +25,6 @@ use Innmind\Immutable\{
     Set,
     Map,
 };
-use function Innmind\Immutable\unwrap;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -103,7 +102,7 @@ function bootstrap(): array
         'producers' => static function(Set $exchanges): callable {
             /** @var Set<Exchange\Declaration> $exchanges */
             return static function(Client $client) use ($exchanges): Producers {
-                return Producers::of($client, ...unwrap($exchanges));
+                return Producers::of($client, ...$exchanges->toList());
             };
         },
     ];

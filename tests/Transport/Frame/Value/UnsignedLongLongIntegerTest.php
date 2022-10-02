@@ -20,7 +20,7 @@ class UnsignedLongLongIntegerTest extends TestCase
     {
         $this->assertInstanceOf(
             Value::class,
-            new UnsignedLongLongInteger(new Integer(0)),
+            new UnsignedLongLongInteger(Integer::of(0)),
         );
     }
 
@@ -29,7 +29,7 @@ class UnsignedLongLongIntegerTest extends TestCase
         $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('-1 ∉ [0;+∞]');
 
-        UnsignedLongLongInteger::of(new Integer(-1));
+        UnsignedLongLongInteger::of(Integer::of(-1));
     }
 
     /**
@@ -37,7 +37,7 @@ class UnsignedLongLongIntegerTest extends TestCase
      */
     public function testStringCast($int, $expected)
     {
-        $value = new UnsignedLongLongInteger($int = new Integer($int));
+        $value = new UnsignedLongLongInteger($int = Integer::of($int));
         $this->assertSame($expected, $value->pack());
         $this->assertSame($int, $value->original());
     }

@@ -46,7 +46,7 @@ final class Timestamp implements Value
     public function pack(): string
     {
         return (new UnsignedLongLongInteger(
-            new Integer((int) $this->original->format(new TimestampFormat)),
+            Integer::of((int) $this->original->format(new TimestampFormat)),
         ))->pack();
     }
 }

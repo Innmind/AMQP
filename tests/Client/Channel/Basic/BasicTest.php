@@ -89,8 +89,8 @@ class BasicTest extends TestCase
                 new Protocol(new ValueTranslator),
                 new ElapsedPeriod(1000),
                 new Clock,
-                new Remote\Generic($this->createMock(Server::class)),
-                new Sockets\Unix,
+                Remote\Generic::of($this->createMock(Server::class), new Clock),
+                Sockets\Unix::of(),
             ),
             new Channel(1),
         );
@@ -142,6 +142,10 @@ class BasicTest extends TestCase
         $deliveryTag = $frame
             ->values()
             ->first()
+            ->match(
+                static fn($value) => $value,
+                static fn() => null,
+            )
             ->original()
             ->value();
         $this->connection->wait(); //header
@@ -677,23 +681,21 @@ class BasicTest extends TestCase
             ->withContentType(new ContentType('text', 'plain'))
             ->withContentEncoding(new ContentEncoding('gzip'))
             ->withHeaders(
-                Map::of('string', 'mixed')
-                    ->put('bits', new Bits(true))
-                    ->put('decimal', new Decimal(new Integer(1), new Integer(1)))
-                    ->put('longstr', new LongString(Str::of('bar')))
-                    ->put('array', new Sequence(new Bits(true)))
-                    ->put('long', new SignedLongInteger(new Integer(2)))
-                    ->put('octet', new SignedOctet(new Integer(4)))
-                    ->put('table', new Table(Map::of('string', Value::class)(
-                        'inner',
-                        new Bits(true)
-                    )))
-                    ->put('timestamp', new Timestamp($ts = new Now))
-                    ->put('ulong', new UnsignedLongInteger(new Integer(6)))
-                    ->put('ulonglong', new UnsignedLongLongInteger(new Integer(7)))
-                    ->put('uoctet', new UnsignedOctet(new Integer(8)))
-                    ->put('ushort', new UnsignedShortInteger(new Integer(9)))
-                    ->put('void', new VoidValue),
+                Map::of(
+                    ['bits', new Bits(true)],
+                    ['decimal', new Decimal(Integer::of(1), Integer::of(1))],
+                    ['longstr', new LongString(Str::of('bar'))],
+                    ['array', new Sequence(new Bits(true))],
+                    ['long', new SignedLongInteger(Integer::of(2))],
+                    ['octet', new SignedOctet(Integer::of(4))],
+                    ['table', new Table(Map::of(['inner', new Bits(true)]))],
+                    ['timestamp', new Timestamp($ts = new Now)],
+                    ['ulong', new UnsignedLongInteger(Integer::of(6))],
+                    ['ulonglong', new UnsignedLongLongInteger(Integer::of(7))],
+                    ['uoctet', new UnsignedOctet(Integer::of(8))],
+                    ['ushort', new UnsignedShortInteger(Integer::of(9))],
+                    ['void', new VoidValue],
+                ),
             )
             ->withDeliveryMode(DeliveryMode::persistent)
             ->withPriority(Priority::five)
@@ -731,22 +733,76 @@ class BasicTest extends TestCase
                     $this->assertSame('text/plain', $message->contentType()->toString());
                     $this->assertSame('gzip', $message->contentEncoding()->toString());
 
-                    $this->assertSame(true, $message->headers()->get('bits')->first());
-                    $this->assertSame(0.1, $message->headers()->get('decimal')->value());
-                    $this->assertSame('bar', $message->headers()->get('longstr')->toString());
-                    $this->assertSame(true, $message->headers()->get('array')->first()->original()->first());
-                    $this->assertSame(2, $message->headers()->get('long')->value());
-                    $this->assertSame(4, $message->headers()->get('octet')->value());
-                    $this->assertSame(true, $message->headers()->get('table')->get('inner')->original()->first());
+                    $this->assertSame(true, $message->headers()->get('bits')->match(
+                        static fn($bits) => $bits->first()->match(
+                            static fn($bool) => $bool,
+                            static fn() => null,
+                        ),
+                        static fn() => null,
+                    ));
+                    $this->assertSame(0.1, $message->headers()->get('decimal')->match(
+                        static fn($value) => $value->value(),
+                        static fn() => null,
+                    ));
+                    $this->assertSame('bar', $message->headers()->get('longstr')->match(
+                        static fn($value) => $value->toString(),
+                        static fn() => null,
+                    ));
+                    $this->assertSame(true, $message->headers()->get('array')->match(
+                        static fn($value) => $value->first()->match(
+                            static fn($first) => $first->original()->first()->match(
+                                static fn($bool) => $bool,
+                                static fn() => null,
+                            ),
+                            static fn() => null,
+                        ),
+                        static fn() => null,
+                    ));
+                    $this->assertSame(2, $message->headers()->get('long')->match(
+                        static fn($value) => $value->value(),
+                        static fn() => null,
+                    ));
+                    $this->assertSame(4, $message->headers()->get('octet')->match(
+                        static fn($value) => $value->value(),
+                        static fn() => null,
+                    ));
+                    $this->assertSame(true, $message->headers()->get('table')->match(
+                        static fn($value) => $value->get('inner')->match(
+                            static fn($value) => $value->original()->first()->match(
+                                static fn($bool) => $bool,
+                                static fn() => null,
+                            ),
+                            static fn() => null,
+                        ),
+                        static fn() => null,
+                    ));
                     $this->assertSame(
                         (int) ($ts->milliseconds() / 1000), //timestamp expressed in seconds and not milliseconds
-                        (int) ($message->headers()->get('timestamp')->milliseconds() / 1000),
+                        $message->headers()->get('timestamp')->match(
+                            static fn($value) => (int) ($value->milliseconds() / 1000),
+                            static fn() => null,
+                        ),
                     );
-                    $this->assertSame(6, $message->headers()->get('ulong')->value());
-                    $this->assertSame(7, $message->headers()->get('ulonglong')->value());
-                    $this->assertSame(8, $message->headers()->get('uoctet')->value());
-                    $this->assertSame(9, $message->headers()->get('ushort')->value());
-                    $this->assertNull($message->headers()->get('void'));
+                    $this->assertSame(6, $message->headers()->get('ulong')->match(
+                        static fn($value) => $value->value(),
+                        static fn() => null,
+                    ));
+                    $this->assertSame(7, $message->headers()->get('ulonglong')->match(
+                        static fn($value) => $value->value(),
+                        static fn() => null,
+                    ));
+                    $this->assertSame(8, $message->headers()->get('uoctet')->match(
+                        static fn($value) => $value->value(),
+                        static fn() => null,
+                    ));
+                    $this->assertSame(9, $message->headers()->get('ushort')->match(
+                        static fn($value) => $value->value(),
+                        static fn() => null,
+                    ));
+                    $this->assertNull($message->headers()->get('void')->match(
+                        static fn($value) => $value,
+                        static fn() => false,
+                    ));
 
                     $this->assertSame(2, $message->deliveryMode()->toInt());
                     $this->assertSame(5, $message->priority()->toInt());
@@ -998,6 +1054,10 @@ class BasicTest extends TestCase
         $deliveryTag = $frame
             ->values()
             ->first()
+            ->match(
+                static fn($value) => $value,
+                static fn() => null,
+            )
             ->original()
             ->value();
         $this->connection->wait(); //header
@@ -1033,6 +1093,10 @@ class BasicTest extends TestCase
         $deliveryTag = $frame
             ->values()
             ->first()
+            ->match(
+                static fn($value) => $value,
+                static fn() => null,
+            )
             ->original()
             ->value();
         $this->connection->wait(); //header

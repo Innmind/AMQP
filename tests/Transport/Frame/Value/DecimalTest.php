@@ -21,7 +21,7 @@ class DecimalTest extends TestCase
     {
         $this->assertInstanceOf(
             Value::class,
-            new Decimal(new Integer(100), new Integer(2)),
+            new Decimal(Integer::of(100), Integer::of(2)),
         );
     }
 
@@ -30,7 +30,7 @@ class DecimalTest extends TestCase
      */
     public function testStringCast($number, $scale, $expected)
     {
-        $value = new Decimal(new Integer($number), new Integer($scale));
+        $value = new Decimal(Integer::of($number), Integer::of($scale));
         $this->assertSame($expected, $value->pack());
         $this->assertInstanceOf(Number::class, $value->original());
         $this->assertSame("$number ÷ (10^$scale)", $value->original()->toString());
@@ -54,7 +54,7 @@ class DecimalTest extends TestCase
         $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('2147483648 ∉ [-2147483648;2147483647]');
 
-        Decimal::of(new Integer(2147483648), new Integer(0));
+        Decimal::of(Integer::of(2147483648), Integer::of(0));
     }
 
     public function testThrowWhenValueTooLow()
@@ -62,7 +62,7 @@ class DecimalTest extends TestCase
         $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('-2147483649 ∉ [-2147483648;2147483647]');
 
-        Decimal::of(new Integer(-2147483649), new Integer(0));
+        Decimal::of(Integer::of(-2147483649), Integer::of(0));
     }
 
     public function testThrowWhenScaleTooHigh()
@@ -70,7 +70,7 @@ class DecimalTest extends TestCase
         $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('256 ∉ [0;255]');
 
-        Decimal::of(new Integer(1), new Integer(256));
+        Decimal::of(Integer::of(1), Integer::of(256));
     }
 
     public function testThrowWhenScaleTooLow()
@@ -78,7 +78,7 @@ class DecimalTest extends TestCase
         $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('-1 ∉ [0;255]');
 
-        Decimal::of(new Integer(1), new Integer(-1));
+        Decimal::of(Integer::of(1), Integer::of(-1));
     }
 
     public function cases(): array

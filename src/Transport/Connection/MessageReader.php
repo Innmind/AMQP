@@ -31,12 +31,18 @@ final class MessageReader
     {
         $header = $connection->wait();
         /** @var Value\UnsignedLongLongInteger */
-        $value = $header->values()->first();
+        $value = $header->values()->first()->match(
+            static fn($value) => $value,
+            static fn() => throw new \LogicException,
+        );
         $bodySize = $value
             ->original()
             ->value();
         /** @var Value\UnsignedShortInteger */
-        $value = $header->values()->get(1);
+        $value = $header->values()->get(1)->match(
+            static fn($value) => $value,
+            static fn() => throw new \LogicException,
+        );
         $flagBits = $value
             ->original()
             ->value();
@@ -47,7 +53,11 @@ final class MessageReader
             $value = $connection
                 ->wait()
                 ->values()
-                ->first();
+                ->first()
+                ->match(
+                    static fn($value) => $value,
+                    static fn() => throw new \LogicException,
+                );
             $payload = $payload->append(
                 $value
                     ->original()
@@ -61,8 +71,11 @@ final class MessageReader
             ->drop(2);
 
         if ($flagBits & (1 << 15)) {
-            /** @var Value\ShortString */
-            $value = $properties->first();
+            /** @var Value\ShortString $value */
+            [$value, $properties] = $properties->match(
+                static fn($value, $properties) => [$value, $properties],
+                static fn() => throw new \LogicException,
+            );
             [$topLevel, $subType] = \explode(
                 '/',
                 $value->original()->toString(),
@@ -71,119 +84,137 @@ final class MessageReader
                 $topLevel,
                 $subType,
             ));
-            $properties = $properties->drop(1);
         }
 
         if ($flagBits & (1 << 14)) {
-            /** @var Value\ShortString */
-            $value = $properties->first();
+            /** @var Value\ShortString $value */
+            [$value, $properties] = $properties->match(
+                static fn($value, $properties) => [$value, $properties],
+                static fn() => throw new \LogicException,
+            );
             $message = $message->withContentEncoding(new ContentEncoding(
                 $value->original()->toString(),
             ));
-            $properties = $properties->drop(1);
         }
 
         if ($flagBits & (1 << 13)) {
-            /** @var Value\Table */
-            $value = $properties->first();
+            /** @var Value\Table $value */
+            [$value, $properties] = $properties->match(
+                static fn($value, $properties) => [$value, $properties],
+                static fn() => throw new \LogicException,
+            );
             $headers = $value
                 ->original()
-                ->toMapOf(
-                    'string',
-                    'mixed',
-                    static function(string $key, Value $value): \Generator {
-                        yield $key => $value->original();
-                    },
-                );
+                ->map(static fn($_, $value): mixed => $value->original());
             $message = $message->withHeaders($headers);
-            $properties = $properties->drop(1);
         }
 
         if ($flagBits & (1 << 12)) {
-            /** @var Value\UnsignedOctet */
-            $value = $properties->first();
+            /** @var Value\UnsignedOctet $value */
+            [$value, $properties] = $properties->match(
+                static fn($value, $properties) => [$value, $properties],
+                static fn() => throw new \LogicException,
+            );
             $message = $message->withDeliveryMode(
                 $value->original()->value() === DeliveryMode::persistent->toInt() ?
                     DeliveryMode::persistent : DeliveryMode::nonPersistent,
             );
-            $properties = $properties->drop(1);
         }
 
         if ($flagBits & (1 << 11)) {
-            /** @var Value\UnsignedOctet */
-            $value = $properties->first();
+            /** @var Value\UnsignedOctet $value */
+            [$value, $properties] = $properties->match(
+                static fn($value, $properties) => [$value, $properties],
+                static fn() => throw new \LogicException,
+            );
             $message = $message->withPriority(Priority::of(
                 $value->original()->value(),
             ));
-            $properties = $properties->drop(1);
         }
 
         if ($flagBits & (1 << 10)) {
-            /** @var Value\ShortString */
-            $value = $properties->first();
+            /** @var Value\ShortString $value */
+            [$value, $properties] = $properties->match(
+                static fn($value, $properties) => [$value, $properties],
+                static fn() => throw new \LogicException,
+            );
             $message = $message->withCorrelationId(new CorrelationId(
                 $value->original()->toString(),
             ));
-            $properties = $properties->drop(1);
         }
 
         if ($flagBits & (1 << 9)) {
-            /** @var Value\ShortString */
-            $value = $properties->first();
+            /** @var Value\ShortString $value */
+            [$value, $properties] = $properties->match(
+                static fn($value, $properties) => [$value, $properties],
+                static fn() => throw new \LogicException,
+            );
             $message = $message->withReplyTo(new ReplyTo(
                 $value->original()->toString(),
             ));
-            $properties = $properties->drop(1);
         }
 
         if ($flagBits & (1 << 8)) {
-            /** @var Value\ShortString */
-            $value = $properties->first();
+            /** @var Value\ShortString $value */
+            [$value, $properties] = $properties->match(
+                static fn($value, $properties) => [$value, $properties],
+                static fn() => throw new \LogicException,
+            );
             $message = $message->withExpiration(new ElapsedPeriod(
                 (int) $value->original()->toString(),
             ));
-            $properties = $properties->drop(1);
         }
 
         if ($flagBits & (1 << 7)) {
-            /** @var Value\ShortString */
-            $value = $properties->first();
+            /** @var Value\ShortString $value */
+            [$value, $properties] = $properties->match(
+                static fn($value, $properties) => [$value, $properties],
+                static fn() => throw new \LogicException,
+            );
             $message = $message->withId(new Id(
                 $value->original()->toString(),
             ));
-            $properties = $properties->drop(1);
         }
 
         if ($flagBits & (1 << 6)) {
-            /** @var Value\Timestamp */
-            $value = $properties->first();
+            /** @var Value\Timestamp $value */
+            [$value, $properties] = $properties->match(
+                static fn($value, $properties) => [$value, $properties],
+                static fn() => throw new \LogicException,
+            );
             $message = $message->withTimestamp(
                 $value->original(),
             );
-            $properties = $properties->drop(1);
         }
 
         if ($flagBits & (1 << 5)) {
-            /** @var Value\ShortString */
-            $value = $properties->first();
+            /** @var Value\ShortString $value */
+            [$value, $properties] = $properties->match(
+                static fn($value, $properties) => [$value, $properties],
+                static fn() => throw new \LogicException,
+            );
             $message = $message->withType(new Type(
                 $value->original()->toString(),
             ));
-            $properties = $properties->drop(1);
         }
 
         if ($flagBits & (1 << 4)) {
-            /** @var Value\ShortString */
-            $value = $properties->first();
+            /** @var Value\ShortString $value */
+            [$value, $properties] = $properties->match(
+                static fn($value, $properties) => [$value, $properties],
+                static fn() => throw new \LogicException,
+            );
             $message = $message->withUserId(new UserId(
                 $value->original()->toString(),
             ));
-            $properties = $properties->drop(1);
         }
 
         if ($flagBits & (1 << 3)) {
-            /** @var Value\ShortString */
-            $value = $properties->first();
+            /** @var Value\ShortString $value */
+            $value = $properties->match(
+                static fn($value) => $value,
+                static fn() => throw new \LogicException,
+            );
             $message = $message->withAppId(new AppId(
                 $value->original()->toString(),
             ));

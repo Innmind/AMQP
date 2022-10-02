@@ -50,8 +50,8 @@ class ConnectionTest extends TestCase
             $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
             new ElapsedPeriod(1000),
             new Clock,
-            new Remote\Generic($this->createMock(Server::class)),
-            new Sockets\Unix,
+            Remote\Generic::of($this->createMock(Server::class), new Clock),
+            Sockets\Unix::of(),
         );
 
         $this->assertInstanceOf(ConnectionInterface::class, $connection);
@@ -75,8 +75,8 @@ class ConnectionTest extends TestCase
             $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
             new ElapsedPeriod(1000),
             new Clock,
-            new Remote\Generic($this->createMock(Server::class)),
-            new Sockets\Unix,
+            Remote\Generic::of($this->createMock(Server::class), new Clock),
+            Sockets\Unix::of(),
         );
 
         $this->assertFalse($connection->closed());
@@ -92,8 +92,8 @@ class ConnectionTest extends TestCase
             $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
             new ElapsedPeriod(1000),
             new Clock,
-            new Remote\Generic($this->createMock(Server::class)),
-            new Sockets\Unix,
+            Remote\Generic::of($this->createMock(Server::class), new Clock),
+            Sockets\Unix::of(),
         );
 
         $this->expectException(UnexpectedFrame::class);
@@ -158,8 +158,8 @@ class ConnectionTest extends TestCase
             $protocol = new Delegate($top, new Protocol($this->createMock(ArgumentTranslator::class))),
             new ElapsedPeriod(1000),
             new Clock,
-            new Remote\Generic($this->createMock(Server::class)),
-            new Sockets\Unix,
+            Remote\Generic::of($this->createMock(Server::class), new Clock),
+            Sockets\Unix::of(),
         );
 
         $this->assertSame(
@@ -183,8 +183,8 @@ class ConnectionTest extends TestCase
             $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
             new ElapsedPeriod(1000),
             new Clock,
-            new Remote\Generic($this->createMock(Server::class)),
-            new Sockets\Unix,
+            Remote\Generic::of($this->createMock(Server::class), new Clock),
+            Sockets\Unix::of(),
         );
 
         try {

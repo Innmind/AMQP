@@ -42,12 +42,17 @@ class ChannelTest extends TestCase
         );
 
         $this->assertInstanceOf(Sequence::class, $stream);
-        $this->assertSame(Value::class, (string) $stream->type());
         $this->assertCount(\count($arguments), $stream);
 
         foreach ($arguments as $i => $argument) {
-            $this->assertInstanceOf(\get_class($argument), $stream->get($i));
-            $this->assertSame($argument->pack(), $stream->get($i)->pack());
+            $this->assertInstanceOf(\get_class($argument), $stream->get($i)->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ));
+            $this->assertSame($argument->pack(), $stream->get($i)->match(
+                static fn($value) => $value->pack(),
+                static fn() => null,
+            ));
         }
     }
 
@@ -77,10 +82,10 @@ class ChannelTest extends TestCase
             [
                 'channel.close',
                 [
-                    new UnsignedShortInteger(new Integer(42)),
+                    new UnsignedShortInteger(Integer::of(42)),
                     new ShortString(Str::of('foo')),
-                    new UnsignedShortInteger(new Integer(24)),
-                    new UnsignedShortInteger(new Integer(66)),
+                    new UnsignedShortInteger(Integer::of(24)),
+                    new UnsignedShortInteger(Integer::of(66)),
                 ],
             ],
             [

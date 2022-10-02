@@ -52,96 +52,282 @@ class ConnectionTest extends TestCase
         $this->assertSame(0, $frame->channel()->toInt());
         $this->assertTrue($frame->is(new Method(10, 11)));
         $this->assertCount(4, $frame->values());
-        $this->assertInstanceOf(Table::class, $frame->values()->get(0));
-        $this->assertCount(6, $frame->values()->get(0)->original());
+        $this->assertInstanceOf(Table::class, $frame->values()->get(0)->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
+        $this->assertCount(6, $frame->values()->get(0)->match(
+            static fn($value) => $value->original(),
+            static fn() => null,
+        ));
         $this->assertSame(
             'InnmindAMQP',
-            $frame->values()->get(0)->original()->get('product')->original()->toString(),
+            $frame
+                ->values()
+                ->get(0)
+                ->match(
+                    static fn($value) => $value,
+                    static fn() => null,
+                )
+                ->original()
+                ->get('product')
+                ->match(
+                    static fn($value) => $value,
+                    static fn() => null,
+                )
+                ->original()
+                ->toString(),
         );
         $this->assertSame(
             'PHP',
-            $frame->values()->get(0)->original()->get('platform')->original()->toString(),
+            $frame
+                ->values()
+                ->get(0)
+                ->match(
+                    static fn($value) => $value,
+                    static fn() => null,
+                )
+                ->original()
+                ->get('platform')
+                ->match(
+                    static fn($value) => $value,
+                    static fn() => null,
+                )
+                ->original()
+                ->toString(),
         );
         $this->assertSame(
             '1.0',
-            $frame->values()->get(0)->original()->get('version')->original()->toString(),
+            $frame
+                ->values()
+                ->get(0)
+                ->match(
+                    static fn($value) => $value,
+                    static fn() => null,
+                )
+                ->original()
+                ->get('version')
+                ->match(
+                    static fn($value) => $value,
+                    static fn() => null,
+                )
+                ->original()
+                ->toString(),
         );
         $this->assertSame(
             '',
-            $frame->values()->get(0)->original()->get('information')->original()->toString(),
+            $frame
+                ->values()
+                ->get(0)
+                ->match(
+                    static fn($value) => $value,
+                    static fn() => null,
+                )
+                ->original()
+                ->get('information')
+                ->match(
+                    static fn($value) => $value,
+                    static fn() => null,
+                )
+                ->original()
+                ->toString(),
         );
         $this->assertSame(
             '',
-            $frame->values()->get(0)->original()->get('copyright')->original()->toString(),
+            $frame
+                ->values()
+                ->get(0)
+                ->match(
+                    static fn($value) => $value,
+                    static fn() => null,
+                )
+                ->original()
+                ->get('copyright')
+                ->match(
+                    static fn($value) => $value,
+                    static fn() => null,
+                )
+                ->original()
+                ->toString(),
         );
         $this->assertCount(
             5,
-            $frame->values()->get(0)->original()->get('capabilities')->original(),
+            $frame
+                ->values()
+                ->get(0)
+                ->match(
+                    static fn($value) => $value,
+                    static fn() => null,
+                )
+                ->original()
+                ->get('capabilities')
+                ->match(
+                    static fn($value) => $value,
+                    static fn() => null,
+                )
+                ->original(),
         );
         $this->assertTrue(
             $frame
                 ->values()
                 ->get(0)
+                ->match(
+                    static fn($value) => $value,
+                    static fn() => null,
+                )
                 ->original()
                 ->get('capabilities')
+                ->match(
+                    static fn($value) => $value,
+                    static fn() => null,
+                )
                 ->original()
                 ->get('authentication_failure_close')
+                ->match(
+                    static fn($value) => $value,
+                    static fn() => null,
+                )
                 ->original()
-                ->first(),
+                ->first()
+                ->match(
+                    static fn($bool) => $bool,
+                    static fn() => null,
+                ),
         );
         $this->assertTrue(
             $frame
                 ->values()
                 ->get(0)
+                ->match(
+                    static fn($value) => $value,
+                    static fn() => null,
+                )
                 ->original()
                 ->get('capabilities')
+                ->match(
+                    static fn($value) => $value,
+                    static fn() => null,
+                )
                 ->original()
                 ->get('publisher_confirms')
+                ->match(
+                    static fn($value) => $value,
+                    static fn() => null,
+                )
                 ->original()
-                ->first(),
+                ->first()
+                ->match(
+                    static fn($bool) => $bool,
+                    static fn() => null,
+                ),
         );
         $this->assertTrue(
             $frame
                 ->values()
                 ->get(0)
+                ->match(
+                    static fn($value) => $value,
+                    static fn() => null,
+                )
                 ->original()
                 ->get('capabilities')
+                ->match(
+                    static fn($value) => $value,
+                    static fn() => null,
+                )
                 ->original()
                 ->get('consumer_cancel_notify')
+                ->match(
+                    static fn($value) => $value,
+                    static fn() => null,
+                )
                 ->original()
-                ->first(),
+                ->first()
+                ->match(
+                    static fn($bool) => $bool,
+                    static fn() => null,
+                ),
         );
         $this->assertTrue(
             $frame
                 ->values()
                 ->get(0)
+                ->match(
+                    static fn($value) => $value,
+                    static fn() => null,
+                )
                 ->original()
                 ->get('capabilities')
+                ->match(
+                    static fn($value) => $value,
+                    static fn() => null,
+                )
                 ->original()
                 ->get('exchange_exchange_bindings')
+                ->match(
+                    static fn($value) => $value,
+                    static fn() => null,
+                )
                 ->original()
-                ->first(),
+                ->first()
+                ->match(
+                    static fn($bool) => $bool,
+                    static fn() => null,
+                ),
         );
         $this->assertTrue(
             $frame
                 ->values()
                 ->get(0)
+                ->match(
+                    static fn($value) => $value,
+                    static fn() => null,
+                )
                 ->original()
                 ->get('capabilities')
+                ->match(
+                    static fn($value) => $value,
+                    static fn() => null,
+                )
                 ->original()
                 ->get('connection.blocked')
+                ->match(
+                    static fn($value) => $value,
+                    static fn() => null,
+                )
                 ->original()
-                ->first(),
+                ->first()->match(
+                    static fn($bool) => $bool,
+                    static fn() => null,
+                ),
         );
-        $this->assertInstanceOf(ShortString::class, $frame->values()->get(1));
-        $this->assertSame('AMQPLAIN', $frame->values()->get(1)->original()->toString());
-        $this->assertInstanceOf(LongString::class, $frame->values()->get(2));
+        $this->assertInstanceOf(ShortString::class, $frame->values()->get(1)->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
+        $this->assertSame('AMQPLAIN', $frame->values()->get(1)->match(
+            static fn($value) => $value->original()->toString(),
+            static fn() => null,
+        ));
+        $this->assertInstanceOf(LongString::class, $frame->values()->get(2)->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
         $this->assertSame(
             \chr(5).'LOGINS'.\pack('N', 3).'foo'.\chr(8).'PASSWORDS'.\pack('N', 3).'bar',
-            $frame->values()->get(2)->original()->toString(),
+            $frame->values()->get(2)->match(
+                static fn($value) => $value->original()->toString(),
+                static fn() => null,
+            ),
         );
-        $this->assertInstanceOf(ShortString::class, $frame->values()->get(3));
-        $this->assertSame('en_US', $frame->values()->get(3)->original()->toString());
+        $this->assertInstanceOf(ShortString::class, $frame->values()->get(3)->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
+        $this->assertSame('en_US', $frame->values()->get(3)->match(
+            static fn($value) => $value->original()->toString(),
+            static fn() => null,
+        ));
     }
 
     public function testSecureOk()
@@ -158,10 +344,16 @@ class ConnectionTest extends TestCase
         $this->assertSame(0, $frame->channel()->toInt());
         $this->assertTrue($frame->is(new Method(10, 21)));
         $this->assertCount(1, $frame->values());
-        $this->assertInstanceOf(LongString::class, $frame->values()->get(0));
+        $this->assertInstanceOf(LongString::class, $frame->values()->get(0)->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
         $this->assertSame(
             \chr(5).'LOGINS'.\pack('N', 3).'foo'.\chr(8).'PASSWORDS'.\pack('N', 3).'bar',
-            $frame->values()->get(0)->original()->toString(),
+            $frame->values()->get(0)->match(
+                static fn($value) => $value->original()->toString(),
+                static fn() => null,
+            ),
         );
     }
 
@@ -182,19 +374,37 @@ class ConnectionTest extends TestCase
         $this->assertCount(3, $frame->values());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
-            $frame->values()->get(0),
+            $frame->values()->get(0)->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
         );
-        $this->assertSame(1, $frame->values()->get(0)->original()->value());
+        $this->assertSame(1, $frame->values()->get(0)->match(
+            static fn($value) => $value->original()->value(),
+            static fn() => null,
+        ));
         $this->assertInstanceOf(
             UnsignedLongInteger::class,
-            $frame->values()->get(1),
+            $frame->values()->get(1)->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
         );
-        $this->assertSame(10, $frame->values()->get(1)->original()->value());
+        $this->assertSame(10, $frame->values()->get(1)->match(
+            static fn($value) => $value->original()->value(),
+            static fn() => null,
+        ));
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
-            $frame->values()->get(2),
+            $frame->values()->get(2)->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
         );
-        $this->assertSame(3, $frame->values()->get(2)->original()->value());
+        $this->assertSame(3, $frame->values()->get(2)->match(
+            static fn($value) => $value->original()->value(),
+            static fn() => null,
+        ));
     }
 
     public function testOpen()
@@ -210,19 +420,40 @@ class ConnectionTest extends TestCase
         $this->assertCount(3, $frame->values());
         $this->assertInstanceOf(
             ShortString::class,
-            $frame->values()->get(0),
+            $frame->values()->get(0)->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
         );
-        $this->assertSame('/', $frame->values()->get(0)->original()->toString());
+        $this->assertSame('/', $frame->values()->get(0)->match(
+            static fn($value) => $value->original()->toString(),
+            static fn() => null,
+        ));
         $this->assertInstanceOf(
             ShortString::class,
-            $frame->values()->get(1),
+            $frame->values()->get(1)->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
         );
-        $this->assertSame('', $frame->values()->get(1)->original()->toString());
+        $this->assertSame('', $frame->values()->get(1)->match(
+            static fn($value) => $value->original()->toString(),
+            static fn() => null,
+        ));
         $this->assertInstanceOf(
             Bits::class,
-            $frame->values()->get(2),
+            $frame->values()->get(2)->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
         );
-        $this->assertFalse($frame->values()->get(2)->original()->first());
+        $this->assertFalse($frame->values()->get(2)->match(
+            static fn($value) => $value->original()->first()->match(
+                static fn($bool) => $bool,
+                static fn() => null,
+            ),
+            static fn() => null,
+        ));
     }
 
     public function testClose()
@@ -238,33 +469,69 @@ class ConnectionTest extends TestCase
         $this->assertCount(4, $frame->values());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
-            $frame->values()->get(0),
+            $frame->values()->get(0)->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
         );
-        $this->assertSame(0, $frame->values()->get(0)->original()->value());
+        $this->assertSame(0, $frame->values()->get(0)->match(
+            static fn($value) => $value->original()->value(),
+            static fn() => null,
+        ));
         $this->assertInstanceOf(
             ShortString::class,
-            $frame->values()->get(1),
+            $frame->values()->get(1)->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
         );
-        $this->assertSame('', $frame->values()->get(1)->original()->toString());
+        $this->assertSame('', $frame->values()->get(1)->match(
+            static fn($value) => $value->original()->toString(),
+            static fn() => null,
+        ));
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
-            $frame->values()->get(2),
+            $frame->values()->get(2)->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
         );
-        $this->assertSame(0, $frame->values()->get(2)->original()->value());
+        $this->assertSame(0, $frame->values()->get(2)->match(
+            static fn($value) => $value->original()->value(),
+            static fn() => null,
+        ));
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
-            $frame->values()->get(3),
+            $frame->values()->get(3)->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
         );
-        $this->assertSame(0, $frame->values()->get(3)->original()->value());
+        $this->assertSame(0, $frame->values()->get(3)->match(
+            static fn($value) => $value->original()->value(),
+            static fn() => null,
+        ));
 
         $frame = (new Connection)->close(
             Close::reply(1, 'foo')->causedBy('connection.close'),
         );
 
-        $this->assertSame(1, $frame->values()->get(0)->original()->value());
-        $this->assertSame('foo', $frame->values()->get(1)->original()->toString());
-        $this->assertSame(10, $frame->values()->get(2)->original()->value());
-        $this->assertSame(50, $frame->values()->get(3)->original()->value());
+        $this->assertSame(1, $frame->values()->get(0)->match(
+            static fn($value) => $value->original()->value(),
+            static fn() => null,
+        ));
+        $this->assertSame('foo', $frame->values()->get(1)->match(
+            static fn($value) => $value->original()->toString(),
+            static fn() => null,
+        ));
+        $this->assertSame(10, $frame->values()->get(2)->match(
+            static fn($value) => $value->original()->value(),
+            static fn() => null,
+        ));
+        $this->assertSame(50, $frame->values()->get(3)->match(
+            static fn($value) => $value->original()->value(),
+            static fn() => null,
+        ));
     }
 
     public function testCloseOk()

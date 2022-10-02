@@ -34,20 +34,14 @@ final class Exchange implements ExchangeInterface
 
     public function declare(FrameChannel $channel, Declaration $command): Frame
     {
-        $arguments = $command
-            ->arguments()
-            ->toMapOf(
-                'string',
-                Value::class,
-                function(string $key, $value): \Generator {
-                    yield $key => ($this->translate)($value);
-                },
-            );
+        $arguments = $command->arguments()->map(
+            fn($_, $value) => ($this->translate)($value),
+        );
 
         return Frame::method(
             $channel,
             Methods::get('exchange.declare'),
-            new UnsignedShortInteger(new Integer(0)), // ticket (reserved)
+            new UnsignedShortInteger(Integer::of(0)), // ticket (reserved)
             ShortString::of(Str::of($command->name())),
             ShortString::of(Str::of($command->type()->toString())),
             new Bits(
@@ -66,7 +60,7 @@ final class Exchange implements ExchangeInterface
         return Frame::method(
             $channel,
             Methods::get('exchange.delete'),
-            new UnsignedShortInteger(new Integer(0)), // ticket (reserved)
+            new UnsignedShortInteger(Integer::of(0)), // ticket (reserved)
             ShortString::of(Str::of($command->name())),
             new Bits(
                 $command->onlyIfUnused(),

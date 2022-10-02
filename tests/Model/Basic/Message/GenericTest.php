@@ -38,8 +38,6 @@ class GenericTest extends TestCase
         $this->assertFalse($message->hasContentEncoding());
         $this->assertFalse($message->hasHeaders());
         $this->assertInstanceOf(Map::class, $message->headers());
-        $this->assertSame('string', (string) $message->headers()->keyType());
-        $this->assertSame('mixed', (string) $message->headers()->valueType());
         $this->assertFalse($message->hasDeliveryMode());
         $this->assertFalse($message->hasPriority());
         $this->assertFalse($message->hasCorrelationId());
@@ -87,8 +85,7 @@ class GenericTest extends TestCase
     {
         $message = new Generic(Str::of(''));
         $message2 = $message->withHeaders(
-            $expected = Map::of('string', 'mixed')
-                ('foo', 'bar'),
+            $expected = Map::of(['foo', 'bar']),
         );
 
         $this->assertInstanceOf(Message::class, $message2);
@@ -96,14 +93,6 @@ class GenericTest extends TestCase
         $this->assertFalse($message->hasHeaders());
         $this->assertTrue($message2->hasHeaders());
         $this->assertSame($expected, $message2->headers());
-    }
-
-    public function testThrowWhenInvalidHeaderMap()
-    {
-        $this->expectException(\TypeError::class);
-        $this->expectExceptionMessage('Argument 1 must be of type Map<string, mixed>');
-
-        (new Generic(Str::of('')))->withHeaders(Map::of('string', 'string'));
     }
 
     public function testDeliveryMode()

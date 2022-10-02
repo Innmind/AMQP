@@ -9,7 +9,6 @@ use Innmind\Immutable\{
     Str,
     Sequence as Seq,
 };
-use function Innmind\Immutable\unwrap;
 
 /**
  * @implements Value<Seq<bool>>
@@ -21,29 +20,27 @@ final class Bits implements Value
 
     public function __construct(bool $first, bool ...$bits)
     {
-        $this->original = Seq::of('bool', $first, ...$bits);
+        $this->original = Seq::of($first, ...$bits);
     }
 
     public static function unpack(Readable $stream): self
     {
-        $bits = $stream
-            ->read(1)
+        $chunk = $stream->read(1)->match(
+            static fn($chunk) => $chunk,
+            static fn() => throw new \LogicException,
+        );
+        $bits = $chunk
             ->toEncoding('ASCII')
             ->chunk()
-            ->toSequenceOf(
-                'bool',
-                static function(Str $bits): \Generator {
-                    $bits = Str::of(\decbin(\ord($bits->toString())));
-                    $bitsAsStrings = unwrap($bits->chunk());
-
-                    foreach ($bitsAsStrings as $bit) {
-                        yield (bool) (int) $bit->toString();
-                    }
-                },
+            ->flatMap(
+                static fn($bits) => Str::of(\decbin(\ord($bits->toString())))
+                    ->chunk()
+                    ->map(static fn($bit) => (bool) (int) $bit->toString()),
             )
-            ->reverse();
+            ->reverse()
+            ->toList();
 
-        return new self(...unwrap($bits));
+        return new self(...$bits);
     }
 
     /**
@@ -58,7 +55,7 @@ final class Bits implements Value
     {
         $value = 0;
 
-        foreach (unwrap($this->original) as $i => $bit) {
+        foreach ($this->original->toList() as $i => $bit) {
             $bit = (int) $bit;
             $value |= $bit << $i;
         }

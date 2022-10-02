@@ -46,14 +46,14 @@ final class SignalAware implements ClientInterface
             $this->close();
         };
 
-        $this->signals->listen(Signal::hangup(), static function() {
+        $this->signals->listen(Signal::hangup, static function() {
             // do nothing so it can run in background
         });
-        $this->signals->listen(Signal::interrupt(), $softClose);
-        $this->signals->listen(Signal::abort(), $softClose);
-        $this->signals->listen(Signal::terminate(), $softClose);
-        $this->signals->listen(Signal::terminalStop(), $softClose);
-        $this->signals->listen(Signal::alarm(), $softClose);
+        $this->signals->listen(Signal::interrupt, $softClose);
+        $this->signals->listen(Signal::abort, $softClose);
+        $this->signals->listen(Signal::terminate, $softClose);
+        $this->signals->listen(Signal::terminalStop, $softClose);
+        $this->signals->listen(Signal::alarm, $softClose);
         $this->handlersRegistered = true;
     }
 }

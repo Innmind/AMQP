@@ -19,10 +19,13 @@ final class Delegate implements Protocol
 
     public function __construct(Protocol $first, Protocol ...$protocols)
     {
-        $protocols = Sequence::of(Protocol::class, $first, ...$protocols)->sort(static function(Protocol $a, Protocol $b): int {
+        $protocols = Sequence::of($first, ...$protocols)->sort(static function(Protocol $a, Protocol $b): int {
             return $b->version()->higherThan($a->version()) ? 1 : -1;
         });
-        $this->inUse = $protocols->first();
+        $this->inUse = $protocols->first()->match(
+            static fn($protocol) => $protocol,
+            static fn() => throw new \LogicException('Unreachable'),
+        );
         $this->protocols = $protocols;
     }
 
@@ -49,7 +52,10 @@ final class Delegate implements Protocol
             throw new VersionNotUsable($version);
         }
 
-        $this->inUse = $protocols->first();
+        $this->inUse = $protocols->first()->match(
+            static fn($protocol) => $protocol,
+            static fn() => throw new \LogicException('Unreachable'),
+        );
     }
 
     public function read(Method $method, Readable $arguments): Sequence

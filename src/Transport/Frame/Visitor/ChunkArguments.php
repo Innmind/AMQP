@@ -28,7 +28,7 @@ final class ChunkArguments
     public function __invoke(Readable $arguments): Sequence
     {
         /** @var Sequence<Value> */
-        $sequence = Sequence::of(Value::class);
+        $sequence = Sequence::of();
 
         foreach ($this->types as $type) {
             /** @var Value */

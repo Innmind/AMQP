@@ -102,7 +102,7 @@ class BootstrapTest extends TestCase
             Purge::class,
             $purge($basic),
         );
-        $consumers = Map::of('string', 'callable');
+        $consumers = Map::of();
         $this->assertIsCallable($get($consumers));
         $this->assertIsCallable($consume($consumers));
         $this->assertInstanceOf(
@@ -116,10 +116,10 @@ class BootstrapTest extends TestCase
 
         $producers = $services['producers'];
         $this->assertIsCallable($producers);
-        $this->assertIsCallable($producers(Set::of(Exchange::class)));
+        $this->assertIsCallable($producers(Set::of()));
         $this->assertInstanceOf(
             Producers::class,
-            $producers(Set::of(Exchange::class))($basic),
+            $producers(Set::of())($basic),
         );
     }
 }

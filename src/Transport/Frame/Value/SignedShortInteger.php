@@ -34,10 +34,14 @@ final class SignedShortInteger implements Value
 
     public static function unpack(Readable $stream): self
     {
+        $chunk = $stream->read(2)->match(
+            static fn($chunk) => $chunk,
+            static fn() => throw new \LogicException,
+        );
         /** @var int $value */
-        [, $value] = \unpack('s', $stream->read(2)->toString());
+        [, $value] = \unpack('s', $chunk->toString());
 
-        return new self(new Integer($value));
+        return new self(Integer::of($value));
     }
 
     public function original(): Integer
@@ -53,8 +57,8 @@ final class SignedShortInteger implements Value
     public static function definitionSet(): Set
     {
         return self::$definitionSet ?? self::$definitionSet = Range::inclusive(
-            new Integer(-32768),
-            new Integer(32767),
+            Integer::of(-32768),
+            Integer::of(32767),
         );
     }
 }

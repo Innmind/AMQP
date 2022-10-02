@@ -11,10 +11,7 @@ use Innmind\AMQP\{
     Transport\Frame,
     Exception\ConnectionClosed,
 };
-use Innmind\Socket\{
-    Internet\Transport,
-    Exception\FailedToOpenSocket,
-};
+use Innmind\Socket\Internet\Transport;
 use Innmind\Url\Url;
 use Innmind\TimeContinuum\Earth\{
     Clock,
@@ -53,13 +50,13 @@ class LazyTest extends TestCase
                 $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
                 new ElapsedPeriod(1000),
                 new Clock,
-                new Remote\Generic($this->createMock(Server::class)),
-                new Sockets\Unix,
+                Remote\Generic::of($this->createMock(Server::class), new Clock),
+                Sockets\Unix::of(),
             );
             $connection->protocol();
             $this->fail('it should fail');
         } catch (\Exception $e) {
-            $this->assertInstanceOf(FailedToOpenSocket::class, $e);
+            $this->assertInstanceOf(\RuntimeException::class, $e);
         }
     }
 
@@ -72,13 +69,13 @@ class LazyTest extends TestCase
                 $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
                 new ElapsedPeriod(1000),
                 new Clock,
-                new Remote\Generic($this->createMock(Server::class)),
-                new Sockets\Unix,
+                Remote\Generic::of($this->createMock(Server::class), new Clock),
+                Sockets\Unix::of(),
             );
             $connection->send(Frame::heartbeat());
             $this->fail('it should fail');
         } catch (\Exception $e) {
-            $this->assertInstanceOf(FailedToOpenSocket::class, $e);
+            $this->assertInstanceOf(\RuntimeException::class, $e);
         }
     }
 
@@ -91,13 +88,13 @@ class LazyTest extends TestCase
                 $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
                 new ElapsedPeriod(1000),
                 new Clock,
-                new Remote\Generic($this->createMock(Server::class)),
-                new Sockets\Unix,
+                Remote\Generic::of($this->createMock(Server::class), new Clock),
+                Sockets\Unix::of(),
             );
             $connection->wait();
             $this->fail('it should fail');
         } catch (\Exception $e) {
-            $this->assertInstanceOf(FailedToOpenSocket::class, $e);
+            $this->assertInstanceOf(\RuntimeException::class, $e);
         }
     }
 
@@ -110,13 +107,13 @@ class LazyTest extends TestCase
                 $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
                 new ElapsedPeriod(1000),
                 new Clock,
-                new Remote\Generic($this->createMock(Server::class)),
-                new Sockets\Unix,
+                Remote\Generic::of($this->createMock(Server::class), new Clock),
+                Sockets\Unix::of(),
             );
             $connection->maxFrameSize();
             $this->fail('it should fail');
         } catch (\Exception $e) {
-            $this->assertInstanceOf(FailedToOpenSocket::class, $e);
+            $this->assertInstanceOf(\RuntimeException::class, $e);
         }
     }
 

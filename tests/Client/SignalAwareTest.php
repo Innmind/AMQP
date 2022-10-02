@@ -39,18 +39,18 @@ class SignalAwareTest extends TestCase
             ->method('listen')
             ->withConsecutive(
                 [
-                    Signal::hangup(),
+                    Signal::hangup,
                     $this->callback(static function($listen): bool {
                         $listen(); // doesn't expect to do anything
 
                         return true;
                     }),
                 ],
-                [Signal::interrupt(), $callback],
-                [Signal::abort(), $callback],
-                [Signal::terminate(), $callback],
-                [Signal::terminalStop(), $callback],
-                [Signal::alarm(), $callback],
+                [Signal::interrupt, $callback],
+                [Signal::abort, $callback],
+                [Signal::terminate, $callback],
+                [Signal::terminalStop, $callback],
+                [Signal::alarm, $callback],
             );
 
         $this->assertInstanceOf(Client::class, $client);

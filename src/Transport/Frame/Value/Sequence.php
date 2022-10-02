@@ -9,8 +9,11 @@ use Innmind\AMQP\{
 };
 use Innmind\Math\Algebra\Integer;
 use Innmind\Stream\Readable;
-use Innmind\Immutable\Sequence as Seq;
-use function Innmind\Immutable\join;
+use Innmind\Immutable\{
+    Sequence as Seq,
+    Monoid\Concat,
+    Str,
+};
 
 /**
  * It's an array, but "array" is a reserved keyword in PHP
@@ -22,9 +25,12 @@ final class Sequence implements Value
     /** @var Seq<Value> */
     private Seq $original;
 
+    /**
+     * @no-named-arguments
+     */
     public function __construct(Value ...$values)
     {
-        $values = Seq::of(Value::class, ...$values);
+        $values = Seq::of(...$values);
 
         $texts = $values->filter(static function(Value $value): bool {
             return $value instanceof Text;
@@ -47,7 +53,11 @@ final class Sequence implements Value
         $values = [];
 
         while ($position < $boundary) {
-            $class = Symbols::class($stream->read(1)->toString());
+            $chunk = $stream->read(1)->match(
+                static fn($chunk) => $chunk,
+                static fn() => throw new \LogicException,
+            );
+            $class = Symbols::class($chunk->toString());
             /** @var Value */
             $value = [$class, 'unpack']($stream);
             $values[] = $value;
@@ -67,16 +77,17 @@ final class Sequence implements Value
 
     public function pack(): string
     {
-        $data = $this->original->toSequenceOf(
-            'string',
-            static function(Value $value): \Generator {
-                yield Symbols::symbol(\get_class($value));
-                yield $value->pack();
-            },
-        );
-        $data = join('', $data)->toEncoding('ASCII');
+        $data = $this
+            ->original
+            ->flatMap(static fn($value) => Seq::of(
+                Symbols::symbol(\get_class($value)),
+                $value->pack(),
+            ))
+            ->map(Str::of(...))
+            ->fold(new Concat)
+            ->toEncoding('ASCII');
         $value = (new UnsignedLongInteger(
-            new Integer($data->length()),
+            Integer::of($data->length()),
         ))->pack();
 
         return $value.$data->toString();

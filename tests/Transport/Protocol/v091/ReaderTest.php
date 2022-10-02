@@ -47,12 +47,17 @@ class ReaderTest extends TestCase
         );
 
         $this->assertInstanceOf(Sequence::class, $stream);
-        $this->assertSame(Value::class, (string) $stream->type());
         $this->assertCount(\count($arguments), $stream);
 
         foreach ($arguments as $i => $argument) {
-            $this->assertInstanceOf(\get_class($argument), $stream->get($i));
-            $this->assertSame($argument->pack(), $stream->get($i)->pack());
+            $this->assertInstanceOf(\get_class($argument), $stream->get($i)->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ));
+            $this->assertSame($argument->pack(), $stream->get($i)->match(
+                static fn($value) => $value->pack(),
+                static fn() => null,
+            ));
         }
     }
 
@@ -74,7 +79,7 @@ class ReaderTest extends TestCase
             [
                 'basic.return',
                 [
-                    new UnsignedShortInteger(new Integer(42)),
+                    new UnsignedShortInteger(Integer::of(42)),
                     new ShortString(Str::of('foo')),
                     new ShortString(Str::of('bar')),
                     new ShortString(Str::of('baz')),
@@ -84,7 +89,7 @@ class ReaderTest extends TestCase
                 'basic.deliver',
                 [
                     new ShortString(Str::of('foo')),
-                    new UnsignedLongLongInteger(new Integer(42)),
+                    new UnsignedLongLongInteger(Integer::of(42)),
                     new Bits(true),
                     new ShortString(Str::of('bar')),
                     new ShortString(Str::of('baz')),
@@ -93,11 +98,11 @@ class ReaderTest extends TestCase
             [
                 'basic.get-ok',
                 [
-                    new UnsignedLongLongInteger(new Integer(42)),
+                    new UnsignedLongLongInteger(Integer::of(42)),
                     new Bits(true),
                     new ShortString(Str::of('foo')),
                     new ShortString(Str::of('bar')),
-                    new UnsignedLongInteger(new Integer(24)),
+                    new UnsignedLongInteger(Integer::of(24)),
                 ],
             ],
             [
@@ -123,10 +128,10 @@ class ReaderTest extends TestCase
             [
                 'channel.close',
                 [
-                    new UnsignedShortInteger(new Integer(42)),
+                    new UnsignedShortInteger(Integer::of(42)),
                     new ShortString(Str::of('foo')),
-                    new UnsignedShortInteger(new Integer(24)),
-                    new UnsignedShortInteger(new Integer(66)),
+                    new UnsignedShortInteger(Integer::of(24)),
+                    new UnsignedShortInteger(Integer::of(66)),
                 ],
             ],
             [
@@ -136,9 +141,9 @@ class ReaderTest extends TestCase
             [
                 'connection.start',
                 [
-                    new UnsignedOctet(new Integer(0)),
-                    new UnsignedOctet(new Integer(9)),
-                    new Table(Map::of('string', Value::class)),
+                    new UnsignedOctet(Integer::of(0)),
+                    new UnsignedOctet(Integer::of(9)),
+                    new Table(Map::of()),
                     new LongString(Str::of('foo')),
                     new LongString(Str::of('bar')),
                 ],
@@ -150,9 +155,9 @@ class ReaderTest extends TestCase
             [
                 'connection.tune',
                 [
-                    new UnsignedShortInteger(new Integer(1)),
-                    new UnsignedLongInteger(new Integer(2)),
-                    new UnsignedShortInteger(new Integer(3)),
+                    new UnsignedShortInteger(Integer::of(1)),
+                    new UnsignedLongInteger(Integer::of(2)),
+                    new UnsignedShortInteger(Integer::of(3)),
                 ],
             ],
             [
@@ -164,10 +169,10 @@ class ReaderTest extends TestCase
             [
                 'connection.close',
                 [
-                    new UnsignedShortInteger(new Integer(0)),
+                    new UnsignedShortInteger(Integer::of(0)),
                     new ShortString(Str::of('foo')),
-                    new UnsignedShortInteger(new Integer(1)),
-                    new UnsignedShortInteger(new Integer(2)),
+                    new UnsignedShortInteger(Integer::of(1)),
+                    new UnsignedShortInteger(Integer::of(2)),
                 ],
             ],
             [
@@ -186,8 +191,8 @@ class ReaderTest extends TestCase
                 'queue.declare-ok',
                 [
                     new ShortString(Str::of('foo')),
-                    new UnsignedLongInteger(new Integer(42)),
-                    new UnsignedLongInteger(new Integer(24)),
+                    new UnsignedLongInteger(Integer::of(42)),
+                    new UnsignedLongInteger(Integer::of(24)),
                 ],
             ],
             [
@@ -200,11 +205,11 @@ class ReaderTest extends TestCase
             ],
             [
                 'queue.purge-ok',
-                [new UnsignedLongInteger(new Integer(42))],
+                [new UnsignedLongInteger(Integer::of(42))],
             ],
             [
                 'queue.delete-ok',
-                [new UnsignedLongInteger(new Integer(42))],
+                [new UnsignedLongInteger(Integer::of(42))],
             ],
             [
                 'tx.select-ok',

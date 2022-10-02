@@ -13,10 +13,7 @@ use Innmind\Immutable\{
     Str,
     Sequence as Seq,
     Map,
-};
-use function Innmind\Immutable\{
-    assertMap,
-    join,
+    Monoid\Concat,
 };
 
 /**
@@ -32,8 +29,6 @@ final class Table implements Value
      */
     public function __construct(Map $map)
     {
-        assertMap('string', Value::class, $map, 1);
-
         $texts = $map->filter(static function(string $_, Value $value): bool {
             return $value instanceof Text;
         });
@@ -52,11 +47,15 @@ final class Table implements Value
         $boundary = $position + $length->value();
 
         /** @var Map<string, Value> */
-        $map = Map::of('string', Value::class);
+        $map = Map::of();
 
         while ($position < $boundary) {
             $key = ShortString::unpack($stream)->original();
-            $class = Symbols::class($stream->read(1)->toString());
+            $chunk = $stream->read(1)->match(
+                static fn($chunk) => $chunk,
+                static fn() => throw new \LogicException,
+            );
+            $class = Symbols::class($chunk->toString());
             /** @var Value */
             $value = [$class, 'unpack']($stream);
 
@@ -78,18 +77,22 @@ final class Table implements Value
 
     public function pack(): string
     {
-        $data = $this->original->toSequenceOf(
-            'string',
-            static function(string $key, Value $value): \Generator {
-                yield (new ShortString(Str::of($key)))->pack();
-                yield Symbols::symbol(\get_class($value));
-                yield $value->pack();
-            },
-        );
-        $data = join('', $data)->toEncoding('ASCII');
+        /** @psalm-suppress MixedArgumentTypeCoercion */
+        $data = $this
+            ->original
+            ->reduce(
+                Seq::strings(),
+                static fn(Seq $data, string $key, Value $value) => ($data)
+                    ((new ShortString(Str::of($key)))->pack())
+                    (Symbols::symbol(\get_class($value)))
+                    ($value->pack()),
+            )
+            ->map(Str::of(...))
+            ->fold(new Concat)
+            ->toEncoding('ASCII');
 
         $value = UnsignedLongInteger::of(
-            new Integer($data->length()),
+            Integer::of($data->length()),
         )->pack();
 
         return $value.$data->toString();

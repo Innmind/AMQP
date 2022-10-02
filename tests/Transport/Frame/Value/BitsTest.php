@@ -9,7 +9,6 @@ use Innmind\AMQP\Transport\Frame\{
 };
 use Innmind\Stream\Readable\Stream;
 use Innmind\Immutable\Sequence;
-use function Innmind\Immutable\unwrap;
 use PHPUnit\Framework\TestCase;
 
 class BitsTest extends TestCase
@@ -27,8 +26,7 @@ class BitsTest extends TestCase
         $value = new Bits(...$bits);
         $this->assertSame($expected, $value->pack());
         $this->assertInstanceOf(Sequence::class, $value->original());
-        $this->assertSame('bool', (string) $value->original()->type());
-        $this->assertSame($bits, unwrap($value->original()));
+        $this->assertSame($bits, $value->original()->toList());
     }
 
     /**
@@ -39,7 +37,7 @@ class BitsTest extends TestCase
         $value = Bits::unpack(Stream::ofContent($string));
 
         $this->assertInstanceOf(Bits::class, $value);
-        $this->assertSame($expected, unwrap($value->original()));
+        $this->assertSame($expected, $value->original()->toList());
         $this->assertSame($string, $value->pack());
     }
 

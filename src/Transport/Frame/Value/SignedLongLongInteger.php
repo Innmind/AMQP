@@ -21,10 +21,14 @@ final class SignedLongLongInteger implements Value
 
     public static function unpack(Readable $stream): self
     {
+        $chunk = $stream->read(8)->match(
+            static fn($chunk) => $chunk,
+            static fn() => throw new \LogicException,
+        );
         /** @var int $value */
-        [, $value] = \unpack('q', $stream->read(8)->toString());
+        [, $value] = \unpack('q', $chunk->toString());
 
-        return new self(new Integer($value));
+        return new self(Integer::of($value));
     }
 
     public function original(): Integer

@@ -6,7 +6,7 @@ namespace Innmind\AMQP\Transport\Frame\Value;
 use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\Math\{
     Algebra\Integer,
-    Algebra\Number\Infinite,
+    Algebra,
     DefinitionSet\Set,
     DefinitionSet\Range,
 };
@@ -35,10 +35,15 @@ final class UnsignedLongLongInteger implements Value
 
     public static function unpack(Readable $stream): self
     {
-        /** @var int $value */
-        [, $value] = \unpack('J', $stream->read(8)->toString());
+        $chunk = $stream->read(8)->match(
+            static fn($chunk) => $chunk,
+            static fn() => throw new \LogicException,
+        );
 
-        return new self(new Integer($value));
+        /** @var int $value */
+        [, $value] = \unpack('J', $chunk->toString());
+
+        return new self(Integer::of($value));
     }
 
     public function original(): Integer
@@ -54,8 +59,8 @@ final class UnsignedLongLongInteger implements Value
     public static function definitionSet(): Set
     {
         return self::$definitionSet ?? self::$definitionSet = Range::inclusive(
-            new Integer(0),
-            Infinite::positive(),
+            Integer::of(0),
+            Algebra\Value::infinite,
         );
     }
 }

@@ -70,7 +70,10 @@ final class Basic implements BasicInterface
         if ($command->shouldWait()) {
             $frame = $this->connection->wait('basic.consume-ok');
             /** @var Value\ShortString */
-            $consumerTag = $frame->values()->first();
+            $consumerTag = $frame->values()->first()->match(
+                static fn($value) => $value,
+                static fn() => throw new \LogicException,
+            );
             $consumerTag = $consumerTag->original()->toString();
         } else {
             $consumerTag = $command->consumerTag();
@@ -98,15 +101,30 @@ final class Basic implements BasicInterface
 
         $message = ($this->read)($this->connection);
         /** @var Value\UnsignedLongLongInteger */
-        $deliveryTag = $frame->values()->first();
+        $deliveryTag = $frame->values()->first()->match(
+            static fn($value) => $value,
+            static fn() => throw new \LogicException,
+        );
         /** @var Value\Bits */
-        $redelivered = $frame->values()->get(1);
+        $redelivered = $frame->values()->get(1)->match(
+            static fn($value) => $value,
+            static fn() => throw new \LogicException,
+        );
         /** @var Value\ShortString */
-        $exchange = $frame->values()->get(2);
+        $exchange = $frame->values()->get(2)->match(
+            static fn($value) => $value,
+            static fn() => throw new \LogicException,
+        );
         /** @var Value\ShortString */
-        $routingKey = $frame->values()->get(3);
+        $routingKey = $frame->values()->get(3)->match(
+            static fn($value) => $value,
+            static fn() => throw new \LogicException,
+        );
         /** @var Value\UnsignedLongInteger */
-        $messageCount = $frame->values()->get(4);
+        $messageCount = $frame->values()->get(4)->match(
+            static fn($value) => $value,
+            static fn() => throw new \LogicException,
+        );
 
         return new Get\GetOk(
             $this->connection,
@@ -114,7 +132,10 @@ final class Basic implements BasicInterface
             $command,
             new Locked($message),
             $deliveryTag->original()->value(),
-            $redelivered->original()->first(),
+            $redelivered->original()->first()->match(
+                static fn($bool) => $bool,
+                static fn() => throw new \LogicException,
+            ),
             $exchange->original()->toString(),
             $routingKey->original()->toString(),
             $messageCount->original()->value(),
@@ -123,7 +144,7 @@ final class Basic implements BasicInterface
 
     public function publish(Publish $command): void
     {
-        $this
+        $_ = $this
             ->connection
             ->protocol()
             ->basic()

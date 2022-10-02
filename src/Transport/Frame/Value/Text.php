@@ -23,7 +23,12 @@ final class Text implements Value
 
     public static function unpack(Readable $stream): self
     {
-        return new self($stream->read());
+        $text = $stream->read()->match(
+            static fn($text) => $text,
+            static fn() => throw new \LogicException,
+        );
+
+        return new self($text);
     }
 
     public function original(): Str

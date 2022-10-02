@@ -39,8 +39,8 @@ class TransactionTest extends TestCase
                 new Protocol($this->createMock(ArgumentTranslator::class)),
                 new ElapsedPeriod(1000),
                 new Clock,
-                new Remote\Generic($this->createMock(Server::class)),
-                new Sockets\Unix,
+                Remote\Generic::of($this->createMock(Server::class), new Clock),
+                Sockets\Unix::of(),
             ),
             new Channel(1),
         );

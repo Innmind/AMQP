@@ -24,7 +24,7 @@ final class Declaration
     private function __construct()
     {
         /** @var Map<string, mixed> */
-        $this->arguments = Map::of('string', 'mixed');
+        $this->arguments = Map::of();
     }
 
     /**

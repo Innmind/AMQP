@@ -32,12 +32,17 @@ class ExchangeTest extends TestCase
         );
 
         $this->assertInstanceOf(Sequence::class, $stream);
-        $this->assertSame(Value::class, (string) $stream->type());
         $this->assertCount(\count($arguments), $stream);
 
         foreach ($arguments as $i => $argument) {
-            $this->assertInstanceOf(\get_class($argument), $stream->get($i));
-            $this->assertSame((string) $argument, (string) $stream->get($i));
+            $this->assertInstanceOf(\get_class($argument), $stream->get($i)->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ));
+            $this->assertSame((string) $argument, $stream->get($i)->match(
+                static fn($value) => (string) $value,
+                static fn() => null,
+            ));
         }
     }
 

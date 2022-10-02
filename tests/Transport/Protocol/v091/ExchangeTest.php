@@ -19,7 +19,6 @@ use Innmind\AMQP\{
     Model\Exchange\Type,
 };
 use Innmind\Math\Algebra\Integer;
-use function Innmind\Immutable\unwrap;
 use PHPUnit\Framework\TestCase;
 
 class ExchangeTest extends TestCase
@@ -47,8 +46,8 @@ class ExchangeTest extends TestCase
             ->method('__invoke')
             ->withConsecutive([24], [42])
             ->will($this->onConsecutiveCalls(
-                $firstArgument = new UnsignedShortInteger(new Integer(24)),
-                $secondArgument = new UnsignedShortInteger(new Integer(42)),
+                $firstArgument = new UnsignedShortInteger(Integer::of(24)),
+                $secondArgument = new UnsignedShortInteger(Integer::of(42)),
             ));
         $frame = $this->exchange->declare(
             $channel = new Channel(1),
@@ -64,22 +63,64 @@ class ExchangeTest extends TestCase
         $this->assertCount(5, $frame->values());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
-            $frame->values()->get(0),
+            $frame->values()->get(0)->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
         );
-        $this->assertSame(0, $frame->values()->get(0)->original()->value());
-        $this->assertInstanceOf(ShortString::class, $frame->values()->get(1));
-        $this->assertSame('foo', $frame->values()->get(1)->original()->toString());
-        $this->assertInstanceOf(ShortString::class, $frame->values()->get(2));
-        $this->assertSame('direct', $frame->values()->get(2)->original()->toString());
-        $this->assertInstanceOf(Bits::class, $frame->values()->get(3));
+        $this->assertSame(0, $frame->values()->get(0)->match(
+            static fn($value) => $value->original()->value(),
+            static fn() => null,
+        ));
+        $this->assertInstanceOf(ShortString::class, $frame->values()->get(1)->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
+        $this->assertSame('foo', $frame->values()->get(1)->match(
+            static fn($value) => $value->original()->toString(),
+            static fn() => null,
+        ));
+        $this->assertInstanceOf(ShortString::class, $frame->values()->get(2)->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
+        $this->assertSame('direct', $frame->values()->get(2)->match(
+            static fn($value) => $value->original()->toString(),
+            static fn() => null,
+        ));
+        $this->assertInstanceOf(Bits::class, $frame->values()->get(3)->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
         $this->assertSame(
             [true, false, false, false, false],
-            unwrap($frame->values()->get(3)->original()),
+            $frame->values()->get(3)->match(
+                static fn($value) => $value->original()->toList(),
+                static fn() => null,
+            ),
         );
-        $this->assertInstanceOf(Table::class, $frame->values()->get(4));
-        $this->assertCount(2, $frame->values()->get(4)->original());
-        $this->assertSame($firstArgument, $frame->values()->get(4)->original()->get('foo'));
-        $this->assertSame($secondArgument, $frame->values()->get(4)->original()->get('bar'));
+        $this->assertInstanceOf(Table::class, $frame->values()->get(4)->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
+        $this->assertCount(2, $frame->values()->get(4)->match(
+            static fn($value) => $value->original(),
+            static fn() => null,
+        ));
+        $this->assertSame($firstArgument, $frame->values()->get(4)->match(
+            static fn($value) => $value->original()->get('foo')->match(
+                static fn($argument) => $argument,
+                static fn() => null,
+            ),
+            static fn() => null,
+        ));
+        $this->assertSame($secondArgument, $frame->values()->get(4)->match(
+            static fn($value) => $value->original()->get('bar')->match(
+                static fn($argument) => $argument,
+                static fn() => null,
+            ),
+            static fn() => null,
+        ));
 
         $frame = $this->exchange->declare(
             $channel = new Channel(1),
@@ -88,7 +129,10 @@ class ExchangeTest extends TestCase
 
         $this->assertSame(
             [false, true, false, false, false],
-            unwrap($frame->values()->get(3)->original()),
+            $frame->values()->get(3)->match(
+                static fn($value) => $value->original()->toList(),
+                static fn() => null,
+            ),
         );
 
         $frame = $this->exchange->declare(
@@ -98,7 +142,10 @@ class ExchangeTest extends TestCase
 
         $this->assertSame(
             [false, false, false, false, false],
-            unwrap($frame->values()->get(3)->original()),
+            $frame->values()->get(3)->match(
+                static fn($value) => $value->original()->toList(),
+                static fn() => null,
+            ),
         );
 
         $frame = $this->exchange->declare(
@@ -108,7 +155,10 @@ class ExchangeTest extends TestCase
 
         $this->assertSame(
             [false, false, true, false, false],
-            unwrap($frame->values()->get(3)->original()),
+            $frame->values()->get(3)->match(
+                static fn($value) => $value->original()->toList(),
+                static fn() => null,
+            ),
         );
 
         $frame = $this->exchange->declare(
@@ -118,7 +168,10 @@ class ExchangeTest extends TestCase
 
         $this->assertSame(
             [false, false, true, false, true],
-            unwrap($frame->values()->get(3)->original()),
+            $frame->values()->get(3)->match(
+                static fn($value) => $value->original()->toList(),
+                static fn() => null,
+            ),
         );
     }
 
@@ -136,15 +189,33 @@ class ExchangeTest extends TestCase
         $this->assertCount(3, $frame->values());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
-            $frame->values()->get(0),
+            $frame->values()->get(0)->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
         );
-        $this->assertSame(0, $frame->values()->get(0)->original()->value());
-        $this->assertInstanceOf(ShortString::class, $frame->values()->get(1));
-        $this->assertSame('foo', $frame->values()->get(1)->original()->toString());
-        $this->assertInstanceOf(Bits::class, $frame->values()->get(2));
+        $this->assertSame(0, $frame->values()->get(0)->match(
+            static fn($value) => $value->original()->value(),
+            static fn() => null,
+        ));
+        $this->assertInstanceOf(ShortString::class, $frame->values()->get(1)->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
+        $this->assertSame('foo', $frame->values()->get(1)->match(
+            static fn($value) => $value->original()->toString(),
+            static fn() => null,
+        ));
+        $this->assertInstanceOf(Bits::class, $frame->values()->get(2)->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
         $this->assertSame(
             [false, false],
-            unwrap($frame->values()->get(2)->original()),
+            $frame->values()->get(2)->match(
+                static fn($value) => $value->original()->toList(),
+                static fn() => null,
+            ),
         );
 
         $frame = $this->exchange->delete(
@@ -154,7 +225,10 @@ class ExchangeTest extends TestCase
 
         $this->assertSame(
             [true, false],
-            unwrap($frame->values()->get(2)->original()),
+            $frame->values()->get(2)->match(
+                static fn($value) => $value->original()->toList(),
+                static fn() => null,
+            ),
         );
 
         $frame = $this->exchange->delete(
@@ -164,7 +238,10 @@ class ExchangeTest extends TestCase
 
         $this->assertSame(
             [false, true],
-            unwrap($frame->values()->get(2)->original()),
+            $frame->values()->get(2)->match(
+                static fn($value) => $value->original()->toList(),
+                static fn() => null,
+            ),
         );
     }
 }

@@ -26,8 +26,6 @@ class DeclarationTest extends TestCase
         $this->assertFalse($command->isExclusive());
         $this->assertTrue($command->shouldWait());
         $this->assertInstanceOf(Map::class, $command->arguments());
-        $this->assertSame('string', (string) $command->arguments()->keyType());
-        $this->assertSame('mixed', (string) $command->arguments()->valueType());
         $this->assertCount(0, $command->arguments());
     }
 
@@ -43,8 +41,6 @@ class DeclarationTest extends TestCase
         $this->assertFalse($command->isExclusive());
         $this->assertTrue($command->shouldWait());
         $this->assertInstanceOf(Map::class, $command->arguments());
-        $this->assertSame('string', (string) $command->arguments()->keyType());
-        $this->assertSame('mixed', (string) $command->arguments()->valueType());
         $this->assertCount(0, $command->arguments());
     }
 
@@ -60,8 +56,6 @@ class DeclarationTest extends TestCase
         $this->assertFalse($command->isExclusive());
         $this->assertTrue($command->shouldWait());
         $this->assertInstanceOf(Map::class, $command->arguments());
-        $this->assertSame('string', (string) $command->arguments()->keyType());
-        $this->assertSame('mixed', (string) $command->arguments()->valueType());
         $this->assertCount(0, $command->arguments());
     }
 
@@ -77,8 +71,6 @@ class DeclarationTest extends TestCase
         $this->assertFalse($command->isExclusive());
         $this->assertTrue($command->shouldWait());
         $this->assertInstanceOf(Map::class, $command->arguments());
-        $this->assertSame('string', (string) $command->arguments()->keyType());
-        $this->assertSame('mixed', (string) $command->arguments()->valueType());
         $this->assertCount(0, $command->arguments());
     }
 
@@ -179,6 +171,9 @@ class DeclarationTest extends TestCase
         $this->assertNotSame($command2, $command);
         $this->assertCount(0, $command->arguments());
         $this->assertCount(1, $command2->arguments());
-        $this->assertSame([42], $command2->arguments()->get('foo'));
+        $this->assertSame([42], $command2->arguments()->get('foo')->match(
+            static fn($argument) => $argument,
+            static fn() => null,
+        ));
     }
 }

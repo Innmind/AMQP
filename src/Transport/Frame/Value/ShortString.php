@@ -22,7 +22,7 @@ final class ShortString implements Value
 
     public static function of(Str $string): self
     {
-        UnsignedOctet::of(new Integer($string->toEncoding('ASCII')->length()));
+        UnsignedOctet::of(Integer::of($string->toEncoding('ASCII')->length()));
 
         return new self($string);
     }
@@ -30,8 +30,13 @@ final class ShortString implements Value
     public static function unpack(Readable $stream): self
     {
         $length = UnsignedOctet::unpack($stream)->original();
+        /** @psalm-suppress ArgumentTypeCoercion */
+        $string = $stream->read($length->value())->match(
+            static fn($string) => $string,
+            static fn() => throw new \LogicException,
+        );
 
-        return new self($stream->read($length->value()));
+        return new self($string);
     }
 
     public function original(): Str
@@ -42,7 +47,7 @@ final class ShortString implements Value
     public function pack(): string
     {
         return (new UnsignedOctet(
-            new Integer($this->original->toEncoding('ASCII')->length()),
+            Integer::of($this->original->toEncoding('ASCII')->length()),
         ))->pack().$this->original->toString();
     }
 }

@@ -17,8 +17,6 @@ class UnbindingTest extends TestCase
         $this->assertSame('bar', $command->queue());
         $this->assertSame('baz', $command->routingKey());
         $this->assertInstanceOf(Map::class, $command->arguments());
-        $this->assertSame('string', (string) $command->arguments()->keyType());
-        $this->assertSame('mixed', (string) $command->arguments()->valueType());
         $this->assertCount(0, $command->arguments());
     }
 
@@ -31,6 +29,9 @@ class UnbindingTest extends TestCase
         $this->assertNotSame($command2, $command);
         $this->assertCount(0, $command->arguments());
         $this->assertCount(1, $command2->arguments());
-        $this->assertSame([42], $command2->arguments()->get('f'));
+        $this->assertSame([42], $command2->arguments()->get('f')->match(
+            static fn($argument) => $argument,
+            static fn() => null,
+        ));
     }
 }

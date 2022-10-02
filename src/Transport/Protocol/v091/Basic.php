@@ -51,7 +51,7 @@ final class Basic implements BasicInterface
         return Frame::method(
             $channel,
             Methods::get('basic.ack'),
-            UnsignedLongLongInteger::of(new Integer($command->deliveryTag())),
+            UnsignedLongLongInteger::of(Integer::of($command->deliveryTag())),
             new Bits($command->isMultiple()),
         );
     }
@@ -77,7 +77,7 @@ final class Basic implements BasicInterface
         return Frame::method(
             $channel,
             Methods::get('basic.consume'),
-            new UnsignedShortInteger(new Integer(0)), // ticket (reserved)
+            new UnsignedShortInteger(Integer::of(0)), // ticket (reserved)
             ShortString::of(Str::of($command->queue())),
             ShortString::of(Str::of($consumerTag)),
             new Bits(
@@ -95,7 +95,7 @@ final class Basic implements BasicInterface
         return Frame::method(
             $channel,
             Methods::get('basic.get'),
-            new UnsignedShortInteger(new Integer(0)), // ticket (reserved)
+            new UnsignedShortInteger(Integer::of(0)), // ticket (reserved)
             ShortString::of(Str::of($command->queue())),
             new Bits($command->shouldAutoAcknowledge()),
         );
@@ -107,11 +107,10 @@ final class Basic implements BasicInterface
         MaxFrameSize $maxFrameSize,
     ): Sequence {
         $frames = Sequence::of(
-            Frame::class,
             Frame::method(
                 $channel,
                 Methods::get('basic.publish'),
-                new UnsignedShortInteger(new Integer(0)), // ticket (reserved)
+                new UnsignedShortInteger(Integer::of(0)), // ticket (reserved)
                 ShortString::of(Str::of($command->exchange())),
                 ShortString::of(Str::of($command->routingKey())),
                 new Bits(
@@ -122,7 +121,7 @@ final class Basic implements BasicInterface
             Frame::header(
                 $channel,
                 Methods::classId('basic'),
-                UnsignedLongLongInteger::of(new Integer(
+                UnsignedLongLongInteger::of(Integer::of(
                     $command->message()->body()->length(),
                 )),
                 ...$this->serializeProperties($command->message()),
@@ -136,14 +135,12 @@ final class Basic implements BasicInterface
             return $frames;
         }
 
+        /** @psalm-suppress ArgumentTypeCoercion */
         $payloadFrames = $command
             ->message()
             ->body()
             ->chunk($chunk)
-            ->mapTo(
-                Frame::class,
-                static fn(Str $chunk): Frame => Frame::body($channel, $chunk),
-            );
+            ->map(static fn($chunk) => Frame::body($channel, $chunk));
 
         return $frames->append($payloadFrames);
     }
@@ -153,8 +150,8 @@ final class Basic implements BasicInterface
         return Frame::method(
             $channel,
             Methods::get('basic.qos'),
-            UnsignedLongInteger::of(new Integer($command->prefetchSize())),
-            UnsignedShortInteger::of(new Integer($command->prefetchCount())),
+            UnsignedLongInteger::of(Integer::of($command->prefetchSize())),
+            UnsignedShortInteger::of(Integer::of($command->prefetchCount())),
             new Bits($command->isGlobal()),
         );
     }
@@ -173,7 +170,7 @@ final class Basic implements BasicInterface
         return Frame::method(
             $channel,
             Methods::get('basic.reject'),
-            UnsignedLongLongInteger::of(new Integer($command->deliveryTag())),
+            UnsignedLongLongInteger::of(Integer::of($command->deliveryTag())),
             new Bits($command->shouldRequeue()),
         );
     }
@@ -183,15 +180,9 @@ final class Basic implements BasicInterface
      */
     private function arguments(Map $arguments): Table
     {
-        $table = $arguments->toMapOf(
-            'string',
-            Value::class,
-            function(string $key, $value): \Generator {
-                yield $key => ($this->translate)($value);
-            },
-        );
-
-        return new Table($table);
+        return new Table($arguments->map(
+            fn($_, $value) => ($this->translate)($value),
+        ));
     }
 
     /**
@@ -223,14 +214,14 @@ final class Basic implements BasicInterface
 
         if ($message->hasDeliveryMode()) {
             $properties[] = UnsignedOctet::of(
-                new Integer($message->deliveryMode()->toInt()),
+                Integer::of($message->deliveryMode()->toInt()),
             );
             $flagBits |= (1 << 12);
         }
 
         if ($message->hasPriority()) {
             $properties[] = UnsignedOctet::of(
-                new Integer($message->priority()->toInt()),
+                Integer::of($message->priority()->toInt()),
             );
             $flagBits |= (1 << 11);
         }
@@ -291,7 +282,7 @@ final class Basic implements BasicInterface
 
         \array_unshift(
             $properties,
-            new UnsignedShortInteger(new Integer($flagBits)),
+            new UnsignedShortInteger(Integer::of($flagBits)),
         );
 
         return $properties;

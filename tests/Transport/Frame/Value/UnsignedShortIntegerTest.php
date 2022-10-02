@@ -20,7 +20,7 @@ class UnsignedShortIntegerTest extends TestCase
     {
         $this->assertInstanceOf(
             Value::class,
-            new UnsignedShortInteger(new Integer(0)),
+            new UnsignedShortInteger(Integer::of(0)),
         );
     }
 
@@ -29,7 +29,7 @@ class UnsignedShortIntegerTest extends TestCase
      */
     public function testStringCast($int, $expected)
     {
-        $value = new UnsignedShortInteger($int = new Integer($int));
+        $value = new UnsignedShortInteger($int = Integer::of($int));
         $this->assertSame($expected, $value->pack());
         $this->assertSame($int, $value->original());
     }
@@ -52,7 +52,7 @@ class UnsignedShortIntegerTest extends TestCase
         $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('65536 ∉ [0;65535]');
 
-        UnsignedShortInteger::of(new Integer(65536));
+        UnsignedShortInteger::of(Integer::of(65536));
     }
 
     public function testThrowWhenIntegerTooLow()
@@ -60,7 +60,7 @@ class UnsignedShortIntegerTest extends TestCase
         $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('-1 ∉ [0;65535]');
 
-        UnsignedShortInteger::of(new Integer(-1));
+        UnsignedShortInteger::of(Integer::of(-1));
     }
 
     public function cases(): array

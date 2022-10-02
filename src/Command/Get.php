@@ -10,9 +10,7 @@ use Innmind\AMQP\{
 };
 use Innmind\CLI\{
     Command,
-    Command\Arguments,
-    Command\Options,
-    Environment,
+    Console,
 };
 
 final class Get implements Command
@@ -26,9 +24,9 @@ final class Get implements Command
         $this->consumers = $consumers;
     }
 
-    public function __invoke(Environment $env, Arguments $arguments, Options $options): void
+    public function __invoke(Console $console): Console
     {
-        $queue = $arguments->get('queue');
+        $queue = $console->arguments()->get('queue');
         $consume = $this->consumers->get($queue);
 
         try {
@@ -37,12 +35,17 @@ final class Get implements Command
                 ->channel()
                 ->basic()
                 ->get(new Basic\Get($queue))($consume);
+
+            return $console;
         } finally {
             $this->client->close();
         }
     }
 
-    public function toString(): string
+    /**
+     * @psalm-pure
+     */
+    public function usage(): string
     {
         return <<<USAGE
 innmind:amqp:get queue

@@ -18,8 +18,6 @@ class ConsumeTest extends TestCase
 
         $this->assertSame('queue', $command->queue());
         $this->assertInstanceOf(Map::class, $command->arguments());
-        $this->assertSame('string', (string) $command->arguments()->keyType());
-        $this->assertSame('mixed', (string) $command->arguments()->valueType());
         $this->assertCount(0, $command->arguments());
         $this->assertTrue($command->shouldAutoGenerateConsumerTag());
         $this->assertTrue($command->isLocal());

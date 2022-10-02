@@ -44,7 +44,10 @@ use Innmind\OperatingSystem\{
     Remote,
     Sockets,
 };
-use Innmind\Immutable\Str;
+use Innmind\Immutable\{
+    Str,
+    Set,
+};
 
 final class Connection implements ConnectionInterface
 {
@@ -122,8 +125,12 @@ final class Connection implements ConnectionInterface
                 $this->send(Frame::heartbeat());
             }
 
-            $ready = ($this->watch)();
-        } while (!$ready->toRead()->contains($this->socket));
+            /** @var Set<Socket> */
+            $toRead = ($this->watch)()->match(
+                static fn($ready) => $ready->toRead(),
+                static fn() => Set::of(),
+            );
+        } while (!$toRead->contains($this->socket));
 
         $frame = ($this->read)($this->socket, $this->protocol);
         $this->lastReceivedData = $this->clock->now();
@@ -152,13 +159,25 @@ final class Connection implements ConnectionInterface
             $this->closed = true;
 
             /** @var Value\ShortString */
-            $message = $frame->values()->get(1);
+            $message = $frame->values()->get(1)->match(
+                static fn($value) => $value,
+                static fn() => throw new \LogicException,
+            );
             /** @var Value\UnsignedShortInteger */
-            $code = $frame->values()->get(0);
+            $code = $frame->values()->get(0)->match(
+                static fn($value) => $value,
+                static fn() => throw new \LogicException,
+            );
             /** @var Value\UnsignedShortInteger */
-            $class = $frame->values()->get(2);
+            $class = $frame->values()->get(2)->match(
+                static fn($value) => $value,
+                static fn() => throw new \LogicException,
+            );
             /** @var Value\UnsignedShortInteger */
-            $method = $frame->values()->get(3);
+            $method = $frame->values()->get(3)->match(
+                static fn($value) => $value,
+                static fn() => throw new \LogicException,
+            );
 
             throw ConnectionClosed::byServer(
                 $message->original()->toString(),
@@ -197,10 +216,17 @@ final class Connection implements ConnectionInterface
 
     private function buildSocket(): void
     {
-        $this->socket = $this->remote->socket(
-            $this->transport,
-            $this->authority->withoutUserInformation(),
-        );
+        $this->socket = $this
+            ->remote
+            ->socket(
+                $this->transport,
+                $this->authority->withoutUserInformation(),
+            )
+            ->match(
+                static fn($socket) => $socket,
+                static fn() => throw new \RuntimeException,
+            );
+        /** @psalm-suppress InvalidArgument */
         $this->watch = $this->sockets->watch($this->timeout)->forRead($this->socket);
     }
 
@@ -228,12 +254,19 @@ final class Connection implements ConnectionInterface
             $this->wait('connection.start');
         } catch (NoFrameDetected $e) {
             $content = $e->content();
+            $protocol = $content->read(4)->match(
+                static fn($protocol) => $protocol,
+                static fn() => throw new \LogicException,
+            );
 
-            if ($content->read(4)->toString() !== 'AMQP') {
+            if ($protocol->toString() !== 'AMQP') {
                 throw $e;
             }
 
-            $content->read(1); // there is a zero between AMQP and version number
+            $_ = $content->read(1)->match(
+                static fn() => null,
+                static fn() => throw new \LogicException,
+            ); // there is a zero between AMQP and version number
 
             $this->protocol->use(
                 new Version(
@@ -272,17 +305,26 @@ final class Connection implements ConnectionInterface
         }
 
         /** @var Value\UnsignedShortInteger */
-        $maxChannels = $frame->values()->get(0);
+        $maxChannels = $frame->values()->get(0)->match(
+            static fn($value) => $value,
+            static fn() => throw new \LogicException,
+        );
         $this->maxChannels = new MaxChannels(
             $maxChannels->original()->value(),
         );
         /** @var Value\UnsignedLongInteger */
-        $maxFrameSize = $frame->values()->get(1);
+        $maxFrameSize = $frame->values()->get(1)->match(
+            static fn($value) => $value,
+            static fn() => throw new \LogicException,
+        );
         $this->maxFrameSize = new MaxFrameSize(
             $maxFrameSize->original()->value(),
         );
         /** @var Value\UnsignedShortInteger */
-        $heartbeat = $frame->values()->get(2);
+        $heartbeat = $frame->values()->get(2)->match(
+            static fn($value) => $value,
+            static fn() => throw new \LogicException,
+        );
         $this->heartbeat = new Earth\ElapsedPeriod(
             $heartbeat->original()->value(),
         );

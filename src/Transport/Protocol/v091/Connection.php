@@ -38,23 +38,25 @@ final class Connection implements ConnectionInterface
     {
         /** @psalm-suppress InvalidArgument */
         $clientProperties = new Table(
-            Map::of('string', Value::class)
-                ('product', new LongString(Str::of('InnmindAMQP')))
-                ('platform', new LongString(Str::of('PHP')))
-                ('version', new LongString(Str::of('1.0')))
-                ('information', new LongString(Str::of('')))
-                ('copyright', new LongString(Str::of('')))
-                (
+            Map::of(
+                ['product', new LongString(Str::of('InnmindAMQP'))],
+                ['platform', new LongString(Str::of('PHP'))],
+                ['version', new LongString(Str::of('1.0'))],
+                ['information', new LongString(Str::of(''))],
+                ['copyright', new LongString(Str::of(''))],
+                [
                     'capabilities',
                     new Table(
-                        Map::of('string', Value::class)
-                            ('authentication_failure_close', new Bits(true))
-                            ('publisher_confirms', new Bits(true))
-                            ('consumer_cancel_notify', new Bits(true))
-                            ('exchange_exchange_bindings', new Bits(true))
-                            ('connection.blocked', new Bits(true)),
+                        Map::of(
+                            ['authentication_failure_close', new Bits(true)],
+                            ['publisher_confirms', new Bits(true)],
+                            ['consumer_cancel_notify', new Bits(true)],
+                            ['exchange_exchange_bindings', new Bits(true)],
+                            ['connection.blocked', new Bits(true)],
+                        ),
                     ),
-                ),
+                ],
+            ),
         );
 
         return Frame::method(
@@ -81,9 +83,9 @@ final class Connection implements ConnectionInterface
         return Frame::method(
             new Channel(0),
             Methods::get('connection.tune-ok'),
-            UnsignedShortInteger::of(new Integer($command->maxChannels())),
-            UnsignedLongInteger::of(new Integer($command->maxFrameSize())),
-            UnsignedShortInteger::of(new Integer(
+            UnsignedShortInteger::of(Integer::of($command->maxChannels())),
+            UnsignedLongInteger::of(Integer::of($command->maxFrameSize())),
+            UnsignedShortInteger::of(Integer::of(
                 (int) ($command->heartbeat()->milliseconds() / 1000),
             )),
         );
@@ -118,10 +120,10 @@ final class Connection implements ConnectionInterface
         return Frame::method(
             new Channel(0),
             Methods::get('connection.close'),
-            UnsignedShortInteger::of(new Integer($replyCode)),
+            UnsignedShortInteger::of(Integer::of($replyCode)),
             ShortString::of(Str::of($replyText)),
-            UnsignedShortInteger::of(new Integer($method->class())),
-            UnsignedShortInteger::of(new Integer($method->method())),
+            UnsignedShortInteger::of(Integer::of($method->class())),
+            UnsignedShortInteger::of(Integer::of($method->method())),
         );
     }
 
@@ -136,12 +138,11 @@ final class Connection implements ConnectionInterface
     private function response(User $user, Password $password): LongString
     {
         /** @var Map<string, Value> */
-        $arguments = Map::of('string', Value::class);
-        $response = new Table(
-            $arguments
-                ('LOGIN', LongString::of(Str::of($user->toString())))
-                ('PASSWORD', LongString::of(Str::of($password->toString()))),
+        $arguments = Map::of(
+            ['LOGIN', LongString::of(Str::of($user->toString()))],
+            ['PASSWORD', LongString::of(Str::of($password->toString()))],
         );
+        $response = new Table($arguments);
         $response = Str::of($response->pack())
             ->toEncoding('ASCII')
             ->substring(4); // skip the encoded table length integer

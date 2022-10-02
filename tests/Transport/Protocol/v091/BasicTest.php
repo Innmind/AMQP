@@ -51,7 +51,6 @@ use Innmind\Immutable\{
     Sequence,
     Map,
 };
-use function Innmind\Immutable\unwrap;
 use PHPUnit\Framework\TestCase;
 
 class BasicTest extends TestCase
@@ -85,18 +84,39 @@ class BasicTest extends TestCase
         $this->assertCount(2, $frame->values());
         $this->assertInstanceOf(
             UnsignedLongLongInteger::class,
-            $frame->values()->get(0),
+            $frame->values()->get(0)->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
         );
-        $this->assertSame(42, $frame->values()->get(0)->original()->value());
-        $this->assertInstanceOf(Bits::class, $frame->values()->get(1));
-        $this->assertFalse($frame->values()->get(1)->original()->first());
+        $this->assertSame(42, $frame->values()->get(0)->match(
+            static fn($value) => $value->original()->value(),
+            static fn() => null,
+        ));
+        $this->assertInstanceOf(Bits::class, $frame->values()->get(1)->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
+        $this->assertFalse($frame->values()->get(1)->match(
+            static fn($value) => $value->original()->first()->match(
+                static fn($bool) => $bool,
+                static fn() => null,
+            ),
+            static fn() => null,
+        ));
 
         $frame = $this->basic->ack(
             $channel = new Channel(1),
             Ack::multiple(42),
         );
 
-        $this->assertTrue($frame->values()->get(1)->original()->first());
+        $this->assertTrue($frame->values()->get(1)->match(
+            static fn($value) => $value->original()->first()->match(
+                static fn($bool) => $bool,
+                static fn() => null,
+            ),
+            static fn() => null,
+        ));
     }
 
     public function testCancel()
@@ -111,17 +131,38 @@ class BasicTest extends TestCase
         $this->assertSame($channel, $frame->channel());
         $this->assertTrue($frame->is(new Method(60, 30)));
         $this->assertCount(2, $frame->values());
-        $this->assertInstanceOf(ShortString::class, $frame->values()->get(0));
-        $this->assertSame('consumer', $frame->values()->get(0)->original()->toString());
-        $this->assertInstanceOf(Bits::class, $frame->values()->get(1));
-        $this->assertFalse($frame->values()->get(1)->original()->first());
+        $this->assertInstanceOf(ShortString::class, $frame->values()->get(0)->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
+        $this->assertSame('consumer', $frame->values()->get(0)->match(
+            static fn($value) => $value->original()->toString(),
+            static fn() => null,
+        ));
+        $this->assertInstanceOf(Bits::class, $frame->values()->get(1)->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
+        $this->assertFalse($frame->values()->get(1)->match(
+            static fn($value) => $value->original()->first()->match(
+                static fn($bool) => $bool,
+                static fn() => null,
+            ),
+            static fn() => null,
+        ));
 
         $frame = $this->basic->cancel(
             $channel = new Channel(1),
             (new Cancel('consumer'))->dontWait(),
         );
 
-        $this->assertTrue($frame->values()->get(1)->original()->first());
+        $this->assertTrue($frame->values()->get(1)->match(
+            static fn($value) => $value->original()->first()->match(
+                static fn($bool) => $bool,
+                static fn() => null,
+            ),
+            static fn() => null,
+        ));
     }
 
     public function testConsume()
@@ -132,8 +173,8 @@ class BasicTest extends TestCase
             ->method('__invoke')
             ->withConsecutive([24], [42])
             ->will($this->onConsecutiveCalls(
-                $firstArgument = new UnsignedShortInteger(new Integer(24)),
-                $secondArgument = new UnsignedShortInteger(new Integer(42)),
+                $firstArgument = new UnsignedShortInteger(Integer::of(24)),
+                $secondArgument = new UnsignedShortInteger(Integer::of(42)),
             ));
         $frame = $this->basic->consume(
             $channel = new Channel(1),
@@ -149,29 +190,74 @@ class BasicTest extends TestCase
         $this->assertCount(5, $frame->values());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
-            $frame->values()->get(0),
+            $frame->values()->get(0)->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
         );
-        $this->assertSame(0, $frame->values()->get(0)->original()->value());
-        $this->assertInstanceOf(ShortString::class, $frame->values()->get(1));
-        $this->assertSame('queue', $frame->values()->get(1)->original()->toString());
-        $this->assertInstanceOf(ShortString::class, $frame->values()->get(2));
-        $this->assertSame('', $frame->values()->get(2)->original()->toString());
-        $this->assertInstanceOf(Bits::class, $frame->values()->get(3));
+        $this->assertSame(0, $frame->values()->get(0)->match(
+            static fn($value) => $value->original()->value(),
+            static fn() => null,
+        ));
+        $this->assertInstanceOf(ShortString::class, $frame->values()->get(1)->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
+        $this->assertSame('queue', $frame->values()->get(1)->match(
+            static fn($value) => $value->original()->toString(),
+            static fn() => null,
+        ));
+        $this->assertInstanceOf(ShortString::class, $frame->values()->get(2)->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
+        $this->assertSame('', $frame->values()->get(2)->match(
+            static fn($value) => $value->original()->toString(),
+            static fn() => null,
+        ));
+        $this->assertInstanceOf(Bits::class, $frame->values()->get(3)->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
         $this->assertSame(
             [false, false, false, false],
-            unwrap($frame->values()->get(3)->original()),
+            $frame->values()->get(3)->match(
+                static fn($value) => $value->original()->toList(),
+                static fn() => null,
+            ),
         );
-        $this->assertInstanceOf(Table::class, $frame->values()->get(4));
-        $this->assertCount(2, $frame->values()->get(4)->original());
-        $this->assertSame($firstArgument, $frame->values()->get(4)->original()->get('foo'));
-        $this->assertSame($secondArgument, $frame->values()->get(4)->original()->get('bar'));
+        $this->assertInstanceOf(Table::class, $frame->values()->get(4)->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
+        $this->assertCount(2, $frame->values()->get(4)->match(
+            static fn($value) => $value->original(),
+            static fn() => null,
+        ));
+        $this->assertSame($firstArgument, $frame->values()->get(4)->match(
+            static fn($value) => $value->original()->get('foo')->match(
+                static fn($argument) => $argument,
+                static fn() => null,
+            ),
+            static fn() => null,
+        ));
+        $this->assertSame($secondArgument, $frame->values()->get(4)->match(
+            static fn($value) => $value->original()->get('bar')->match(
+                static fn($argument) => $argument,
+                static fn() => null,
+            ),
+            static fn() => null,
+        ));
 
         $frame = $this->basic->consume(
             $channel = new Channel(1),
             (new Consume('queue'))->withConsumerTag('tag'),
         );
 
-        $this->assertSame('tag', $frame->values()->get(2)->original()->toString());
+        $this->assertSame('tag', $frame->values()->get(2)->match(
+            static fn($value) => $value->original()->toString(),
+            static fn() => null,
+        ));
 
         $frame = $this->basic->consume(
             $channel = new Channel(1),
@@ -180,7 +266,10 @@ class BasicTest extends TestCase
 
         $this->assertSame(
             [true, false, false, false],
-            unwrap($frame->values()->get(3)->original()),
+            $frame->values()->get(3)->match(
+                static fn($value) => $value->original()->toList(),
+                static fn() => null,
+            ),
         );
 
         $frame = $this->basic->consume(
@@ -190,7 +279,10 @@ class BasicTest extends TestCase
 
         $this->assertSame(
             [false, true, false, false],
-            unwrap($frame->values()->get(3)->original()),
+            $frame->values()->get(3)->match(
+                static fn($value) => $value->original()->toList(),
+                static fn() => null,
+            ),
         );
 
         $frame = $this->basic->consume(
@@ -200,7 +292,10 @@ class BasicTest extends TestCase
 
         $this->assertSame(
             [false, false, true, false],
-            unwrap($frame->values()->get(3)->original()),
+            $frame->values()->get(3)->match(
+                static fn($value) => $value->original()->toList(),
+                static fn() => null,
+            ),
         );
 
         $frame = $this->basic->consume(
@@ -212,7 +307,10 @@ class BasicTest extends TestCase
 
         $this->assertSame(
             [false, false, false, true],
-            unwrap($frame->values()->get(3)->original()),
+            $frame->values()->get(3)->match(
+                static fn($value) => $value->original()->toList(),
+                static fn() => null,
+            ),
         );
     }
 
@@ -230,20 +328,47 @@ class BasicTest extends TestCase
         $this->assertCount(3, $frame->values());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
-            $frame->values()->get(0),
+            $frame->values()->get(0)->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
         );
-        $this->assertSame(0, $frame->values()->get(0)->original()->value());
-        $this->assertInstanceOf(ShortString::class, $frame->values()->get(1));
-        $this->assertSame('queue', $frame->values()->get(1)->original()->toString());
-        $this->assertInstanceOf(Bits::class, $frame->values()->get(2));
-        $this->assertFalse($frame->values()->get(2)->original()->first());
+        $this->assertSame(0, $frame->values()->get(0)->match(
+            static fn($value) => $value->original()->value(),
+            static fn() => null,
+        ));
+        $this->assertInstanceOf(ShortString::class, $frame->values()->get(1)->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
+        $this->assertSame('queue', $frame->values()->get(1)->match(
+            static fn($value) => $value->original()->toString(),
+            static fn() => null,
+        ));
+        $this->assertInstanceOf(Bits::class, $frame->values()->get(2)->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
+        $this->assertFalse($frame->values()->get(2)->match(
+            static fn($value) => $value->original()->first()->match(
+                static fn($bool) => $bool,
+                static fn() => null,
+            ),
+            static fn() => null,
+        ));
 
         $frame = $this->basic->get(
             $channel = new Channel(1),
             (new Get('queue'))->autoAcknowledge(),
         );
 
-        $this->assertTrue($frame->values()->get(2)->original()->first());
+        $this->assertTrue($frame->values()->get(2)->match(
+            static fn($value) => $value->original()->first()->match(
+                static fn($bool) => $bool,
+                static fn() => null,
+            ),
+            static fn() => null,
+        ));
     }
 
     public function testPublish()
@@ -255,50 +380,97 @@ class BasicTest extends TestCase
         );
 
         $this->assertInstanceOf(Sequence::class, $frames);
-        $this->assertSame(Frame::class, (string) $frames->type());
         $this->assertCount(3, $frames);
 
-        $frame = $frames->first();
+        $frame = $frames->first()->match(
+            static fn($frame) => $frame,
+            static fn() => null,
+        );
         $this->assertSame(Type::method(), $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertTrue($frame->is(new Method(60, 40)));
         $this->assertCount(4, $frame->values());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
-            $frame->values()->get(0),
+            $frame->values()->get(0)->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
         );
-        $this->assertSame(0, $frame->values()->get(0)->original()->value());
-        $this->assertInstanceOf(ShortString::class, $frame->values()->get(1));
-        $this->assertSame('', $frame->values()->get(1)->original()->toString());
-        $this->assertInstanceOf(ShortString::class, $frame->values()->get(2));
-        $this->assertSame('', $frame->values()->get(2)->original()->toString());
-        $this->assertInstanceOf(Bits::class, $frame->values()->get(3));
+        $this->assertSame(0, $frame->values()->get(0)->match(
+            static fn($value) => $value->original()->value(),
+            static fn() => null,
+        ));
+        $this->assertInstanceOf(ShortString::class, $frame->values()->get(1)->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
+        $this->assertSame('', $frame->values()->get(1)->match(
+            static fn($value) => $value->original()->toString(),
+            static fn() => null,
+        ));
+        $this->assertInstanceOf(ShortString::class, $frame->values()->get(2)->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
+        $this->assertSame('', $frame->values()->get(2)->match(
+            static fn($value) => $value->original()->toString(),
+            static fn() => null,
+        ));
+        $this->assertInstanceOf(Bits::class, $frame->values()->get(3)->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
         $this->assertSame(
             [false, false],
-            unwrap($frame->values()->get(3)->original()),
+            $frame->values()->get(3)->match(
+                static fn($value) => $value->original()->toList(),
+                static fn() => null,
+            ),
         );
 
-        $frame = $frames->get(1);
+        $frame = $frames->get(1)->match(
+            static fn($frame) => $frame,
+            static fn() => null,
+        );
         $this->assertSame(Type::header(), $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertCount(2, $frame->values());
         $this->assertInstanceOf(
             UnsignedLongLongInteger::class,
-            $frame->values()->get(0),
+            $frame->values()->get(0)->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
         );
-        $this->assertSame(6, $frame->values()->get(0)->original()->value());
+        $this->assertSame(6, $frame->values()->get(0)->match(
+            static fn($value) => $value->original()->value(),
+            static fn() => null,
+        ));
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
-            $frame->values()->get(1),
+            $frame->values()->get(1)->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
         );
-        $this->assertSame(0, $frame->values()->get(1)->original()->value());
+        $this->assertSame(0, $frame->values()->get(1)->match(
+            static fn($value) => $value->original()->value(),
+            static fn() => null,
+        ));
 
-        $frame = $frames->last();
+        $frame = $frames->last()->match(
+            static fn($frame) => $frame,
+            static fn() => null,
+        );
         $this->assertSame(Type::body(), $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertSame(
             'foobar',
-            $frame->values()->first()->original()->toString(),
+            $frame->values()->first()->match(
+                static fn($value) => $value->original()->toString(),
+                static fn() => null,
+            ),
         );
     }
 
@@ -311,26 +483,43 @@ class BasicTest extends TestCase
         );
 
         $this->assertInstanceOf(Sequence::class, $frames);
-        $this->assertSame(Frame::class, (string) $frames->type());
         $this->assertCount(4, $frames);
 
-        $frame = $frames->get(1);
-        $this->assertSame(6, $frame->values()->get(0)->original()->value()); //message length
+        $frame = $frames->get(1)->match(
+            static fn($frame) => $frame,
+            static fn() => null,
+        );
+        $this->assertSame(6, $frame->values()->get(0)->match(
+            static fn($value) => $value->original()->value(),
+            static fn() => null,
+        )); //message length
 
-        $frame = $frames->get(2);
+        $frame = $frames->get(2)->match(
+            static fn($frame) => $frame,
+            static fn() => null,
+        );
         $this->assertSame(Type::body(), $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertSame(
             'foo',
-            $frame->values()->first()->original()->toString(),
+            $frame->values()->first()->match(
+                static fn($value) => $value->original()->toString(),
+                static fn() => null,
+            ),
         );
 
-        $frame = $frames->last();
+        $frame = $frames->last()->match(
+            static fn($frame) => $frame,
+            static fn() => null,
+        );
         $this->assertSame(Type::body(), $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertSame(
             'bar',
-            $frame->values()->first()->original()->toString(),
+            $frame->values()->first()->match(
+                static fn($value) => $value->original()->toString(),
+                static fn() => null,
+            ),
         );
     }
 
@@ -345,8 +534,7 @@ class BasicTest extends TestCase
                     ->withContentType(new ContentType('application', 'json'))
                     ->withContentEncoding(new ContentEncoding('gzip'))
                     ->withHeaders(
-                        Map::of('string', 'mixed')
-                            ('foo', new ShortString(Str::of('bar'))),
+                        Map::of(['foo', new ShortString(Str::of('bar'))]),
                     )
                     ->withDeliveryMode(DeliveryMode::persistent)
                     ->withPriority(Priority::five)
@@ -363,21 +551,32 @@ class BasicTest extends TestCase
         );
 
         $this->assertInstanceOf(Sequence::class, $frames);
-        $this->assertSame(Frame::class, (string) $frames->type());
         $this->assertCount(3, $frames);
 
-        $frame = $frames->get(1);
+        $frame = $frames->get(1)->match(
+            static fn($frame) => $frame,
+            static fn() => null,
+        );
         $this->assertSame(Type::header(), $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertCount(15, $frame->values());
         $this->assertInstanceOf(
             UnsignedLongLongInteger::class,
-            $frame->values()->get(0),
+            $frame->values()->get(0)->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
         );
-        $this->assertSame(6, $frame->values()->get(0)->original()->value());
+        $this->assertSame(6, $frame->values()->get(0)->match(
+            static fn($value) => $value->original()->value(),
+            static fn() => null,
+        ));
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
-            $frame->values()->get(1),
+            $frame->values()->get(1)->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
         );
         $bits = 0;
         $bits |= 1 << 15;
@@ -393,102 +592,197 @@ class BasicTest extends TestCase
         $bits |= 1 << 5;
         $bits |= 1 << 4;
         $bits |= 1 << 3;
-        $this->assertSame($bits, $frame->values()->get(1)->original()->value());
+        $this->assertSame($bits, $frame->values()->get(1)->match(
+            static fn($value) => $value->original()->value(),
+            static fn() => null,
+        ));
         $this->assertInstanceOf(
             ShortString::class,
-            $frame->values()->get(2),
+            $frame->values()->get(2)->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
         );
         $this->assertSame(
             'application/json',
-            $frame->values()->get(2)->original()->toString(),
+            $frame->values()->get(2)->match(
+                static fn($value) => $value->original()->toString(),
+                static fn() => null,
+            ),
         );
         $this->assertInstanceOf(
             ShortString::class,
-            $frame->values()->get(3),
+            $frame->values()->get(3)->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
         );
         $this->assertSame(
             'gzip',
-            $frame->values()->get(3)->original()->toString(),
+            $frame->values()->get(3)->match(
+                static fn($value) => $value->original()->toString(),
+                static fn() => null,
+            ),
         );
         $this->assertInstanceOf(
             Table::class,
-            $frame->values()->get(4),
+            $frame->values()->get(4)->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
         );
-        $this->assertCount(1, $frame->values()->get(4)->original());
+        $this->assertCount(1, $frame->values()->get(4)->match(
+            static fn($value) => $value->original(),
+            static fn() => null,
+        ));
         $this->assertSame(
             'bar',
-            $frame->values()->get(4)->original()->get('foo')->original()->toString(),
+            $frame
+                ->values()
+                ->get(4)
+                ->match(
+                    static fn($value) => $value,
+                    static fn() => null,
+                )
+                ->original()
+                ->get('foo')
+                ->match(
+                    static fn($value) => $value,
+                    static fn() => null,
+                )
+                ->original()
+                ->toString(),
         );
         $this->assertInstanceOf(
             UnsignedOctet::class,
-            $frame->values()->get(5),
+            $frame->values()->get(5)->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
         );
-        $this->assertSame(2, $frame->values()->get(5)->original()->value());
+        $this->assertSame(2, $frame->values()->get(5)->match(
+            static fn($value) => $value->original()->value(),
+            static fn() => null,
+        ));
         $this->assertInstanceOf(
             UnsignedOctet::class,
-            $frame->values()->get(6),
+            $frame->values()->get(6)->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
         );
-        $this->assertSame(5, $frame->values()->get(6)->original()->value());
+        $this->assertSame(5, $frame->values()->get(6)->match(
+            static fn($value) => $value->original()->value(),
+            static fn() => null,
+        ));
         $this->assertInstanceOf(
             ShortString::class,
-            $frame->values()->get(7),
+            $frame->values()->get(7)->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
         );
         $this->assertSame(
             'correlation',
-            $frame->values()->get(7)->original()->toString(),
+            $frame->values()->get(7)->match(
+                static fn($value) => $value->original()->toString(),
+                static fn() => null,
+            ),
         );
         $this->assertInstanceOf(
             ShortString::class,
-            $frame->values()->get(8),
+            $frame->values()->get(8)->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
         );
         $this->assertSame(
             'reply',
-            $frame->values()->get(8)->original()->toString(),
+            $frame->values()->get(8)->match(
+                static fn($value) => $value->original()->toString(),
+                static fn() => null,
+            ),
         );
         $this->assertInstanceOf(
             ShortString::class,
-            $frame->values()->get(9),
+            $frame->values()->get(9)->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
         );
         $this->assertSame(
             '1000',
-            $frame->values()->get(9)->original()->toString(),
+            $frame->values()->get(9)->match(
+                static fn($value) => $value->original()->toString(),
+                static fn() => null,
+            ),
         );
         $this->assertInstanceOf(
             ShortString::class,
-            $frame->values()->get(10),
+            $frame->values()->get(10)->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
         );
         $this->assertSame(
             'id',
-            $frame->values()->get(10)->original()->toString(),
+            $frame->values()->get(10)->match(
+                static fn($value) => $value->original()->toString(),
+                static fn() => null,
+            ),
         );
         $this->assertInstanceOf(
             Timestamp::class,
-            $frame->values()->get(11),
+            $frame->values()->get(11)->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
         );
-        $this->assertSame($now, $frame->values()->get(11)->original());
+        $this->assertSame($now, $frame->values()->get(11)->match(
+            static fn($value) => $value->original(),
+            static fn() => null,
+        ));
         $this->assertInstanceOf(
             ShortString::class,
-            $frame->values()->get(12),
+            $frame->values()->get(12)->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
         );
         $this->assertSame(
             'type',
-            $frame->values()->get(12)->original()->toString(),
+            $frame->values()->get(12)->match(
+                static fn($value) => $value->original()->toString(),
+                static fn() => null,
+            ),
         );
         $this->assertInstanceOf(
             ShortString::class,
-            $frame->values()->get(13),
+            $frame->values()->get(13)->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
         );
         $this->assertSame(
             'guest',
-            $frame->values()->get(13)->original()->toString(),
+            $frame->values()->get(13)->match(
+                static fn($value) => $value->original()->toString(),
+                static fn() => null,
+            ),
         );
         $this->assertInstanceOf(
             ShortString::class,
-            $frame->values()->get(14),
+            $frame->values()->get(14)->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
         );
         $this->assertSame(
             'webcrawler',
-            $frame->values()->get(14)->original()->toString(),
+            $frame->values()->get(14)->match(
+                static fn($value) => $value->original()->toString(),
+                static fn() => null,
+            ),
         );
     }
 
@@ -500,8 +794,14 @@ class BasicTest extends TestCase
             new MaxFrameSize(0),
         );
 
-        $frame = $frames->first();
-        $this->assertSame('foo', $frame->values()->get(1)->original()->toString());
+        $frame = $frames->first()->match(
+            static fn($frame) => $frame,
+            static fn() => null,
+        );
+        $this->assertSame('foo', $frame->values()->get(1)->match(
+            static fn($value) => $value->original()->toString(),
+            static fn() => null,
+        ));
     }
 
     public function testPublishWithRoutingKey()
@@ -512,8 +812,14 @@ class BasicTest extends TestCase
             new MaxFrameSize(0),
         );
 
-        $frame = $frames->first();
-        $this->assertSame('foo', $frame->values()->get(2)->original()->toString());
+        $frame = $frames->first()->match(
+            static fn($frame) => $frame,
+            static fn() => null,
+        );
+        $this->assertSame('foo', $frame->values()->get(2)->match(
+            static fn($value) => $value->original()->toString(),
+            static fn() => null,
+        ));
     }
 
     public function testMandatoryPublish()
@@ -524,10 +830,16 @@ class BasicTest extends TestCase
             new MaxFrameSize(0),
         );
 
-        $frame = $frames->first();
+        $frame = $frames->first()->match(
+            static fn($frame) => $frame,
+            static fn() => null,
+        );
         $this->assertSame(
             [true, false],
-            unwrap($frame->values()->get(3)->original()),
+            $frame->values()->get(3)->match(
+                static fn($value) => $value->original()->toList(),
+                static fn() => null,
+            ),
         );
     }
 
@@ -539,10 +851,16 @@ class BasicTest extends TestCase
             new MaxFrameSize(0),
         );
 
-        $frame = $frames->first();
+        $frame = $frames->first()->match(
+            static fn($frame) => $frame,
+            static fn() => null,
+        );
         $this->assertSame(
             [false, true],
-            unwrap($frame->values()->get(3)->original()),
+            $frame->values()->get(3)->match(
+                static fn($value) => $value->original()->toList(),
+                static fn() => null,
+            ),
         );
     }
 
@@ -560,23 +878,50 @@ class BasicTest extends TestCase
         $this->assertCount(3, $frame->values());
         $this->assertInstanceOf(
             UnsignedLongInteger::class,
-            $frame->values()->get(0),
+            $frame->values()->get(0)->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
         );
-        $this->assertSame(1, $frame->values()->get(0)->original()->value());
+        $this->assertSame(1, $frame->values()->get(0)->match(
+            static fn($value) => $value->original()->value(),
+            static fn() => null,
+        ));
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
-            $frame->values()->get(1),
+            $frame->values()->get(1)->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
         );
-        $this->assertSame(2, $frame->values()->get(1)->original()->value());
-        $this->assertInstanceOf(Bits::class, $frame->values()->get(2));
-        $this->assertFalse($frame->values()->get(2)->original()->first());
+        $this->assertSame(2, $frame->values()->get(1)->match(
+            static fn($value) => $value->original()->value(),
+            static fn() => null,
+        ));
+        $this->assertInstanceOf(Bits::class, $frame->values()->get(2)->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
+        $this->assertFalse($frame->values()->get(2)->match(
+            static fn($value) => $value->original()->first()->match(
+                static fn($bool) => $bool,
+                static fn() => null,
+            ),
+            static fn() => null,
+        ));
 
         $frame = $this->basic->qos(
             $channel = new Channel(1),
             Qos::global(1, 2),
         );
 
-        $this->asserttrue($frame->values()->get(2)->original()->first());
+        $this->asserttrue($frame->values()->get(2)->match(
+            static fn($value) => $value->original()->first()->match(
+                static fn($bool) => $bool,
+                static fn() => null,
+            ),
+            static fn() => null,
+        ));
     }
 
     public function testRecover()
@@ -591,15 +936,30 @@ class BasicTest extends TestCase
         $this->assertSame($channel, $frame->channel());
         $this->assertTrue($frame->is(new Method(60, 110)));
         $this->assertCount(1, $frame->values());
-        $this->assertInstanceOf(Bits::class, $frame->values()->get(0));
-        $this->assertFalse($frame->values()->get(0)->original()->first());
+        $this->assertInstanceOf(Bits::class, $frame->values()->get(0)->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
+        $this->assertFalse($frame->values()->get(0)->match(
+            static fn($value) => $value->original()->first()->match(
+                static fn($bool) => $bool,
+                static fn() => null,
+            ),
+            static fn() => null,
+        ));
 
         $frame = $this->basic->recover(
             $channel = new Channel(1),
             Recover::requeue(),
         );
 
-        $this->assertTrue($frame->values()->get(0)->original()->first());
+        $this->assertTrue($frame->values()->get(0)->match(
+            static fn($value) => $value->original()->first()->match(
+                static fn($bool) => $bool,
+                static fn() => null,
+            ),
+            static fn() => null,
+        ));
     }
 
     public function testReject()
@@ -616,17 +976,38 @@ class BasicTest extends TestCase
         $this->assertCount(2, $frame->values());
         $this->assertInstanceOf(
             UnsignedLongLongInteger::class,
-            $frame->values()->get(0),
+            $frame->values()->get(0)->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
         );
-        $this->assertSame(42, $frame->values()->get(0)->original()->value());
-        $this->assertInstanceOf(Bits::class, $frame->values()->get(1));
-        $this->assertFalse($frame->values()->get(1)->original()->first());
+        $this->assertSame(42, $frame->values()->get(0)->match(
+            static fn($value) => $value->original()->value(),
+            static fn() => null,
+        ));
+        $this->assertInstanceOf(Bits::class, $frame->values()->get(1)->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
+        $this->assertFalse($frame->values()->get(1)->match(
+            static fn($value) => $value->original()->first()->match(
+                static fn($bool) => $bool,
+                static fn() => null,
+            ),
+            static fn() => null,
+        ));
 
         $frame = $this->basic->reject(
             $channel = new Channel(1),
             Reject::requeue(42),
         );
 
-        $this->assertTrue($frame->values()->get(1)->original()->first());
+        $this->assertTrue($frame->values()->get(1)->match(
+            static fn($value) => $value->original()->first()->match(
+                static fn($bool) => $bool,
+                static fn() => null,
+            ),
+            static fn() => null,
+        ));
     }
 }

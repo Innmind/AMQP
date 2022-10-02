@@ -97,8 +97,7 @@ class LockedTest extends TestCase
     public function testHeaders()
     {
         $message = (new Generic(Str::of('')))->withHeaders(
-            $expected = Map::of('string', 'mixed')
-                ('foo', 'bar'),
+            $expected = Map::of(['foo', 'bar']),
         );
         $message = new Locked($message);
 
@@ -111,7 +110,7 @@ class LockedTest extends TestCase
         $this->expectException(MessageLocked::class);
 
         (new Locked(new Generic(Str::of(''))))->withHeaders(
-            Map::of('string', 'mixed'),
+            Map::of(),
         );
     }
 

@@ -22,7 +22,7 @@ final class Declaration
         $this->name = $name;
         $this->type = $type;
         /** @var Map<string, mixed> */
-        $this->arguments = Map::of('string', 'mixed');
+        $this->arguments = Map::of();
     }
 
     /**

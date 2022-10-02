@@ -15,7 +15,6 @@ use Innmind\Immutable\{
     Sequence as Seq,
     Str,
 };
-use function Innmind\Immutable\unwrap;
 use PHPUnit\Framework\TestCase;
 
 class SequenceTest extends TestCase
@@ -33,8 +32,7 @@ class SequenceTest extends TestCase
         $value = new Sequence(...$values);
         $this->assertSame($expected, $value->pack());
         $this->assertInstanceOf(Seq::class, $value->original());
-        $this->assertSame(Value::class, (string) $value->original()->type());
-        $this->assertSame($values, unwrap($value->original()));
+        $this->assertSame($values, $value->original()->toList());
     }
 
     /**
@@ -50,11 +48,17 @@ class SequenceTest extends TestCase
         foreach ($expected as $i => $v) {
             $this->assertInstanceOf(
                 \get_class($v),
-                $value->original()->get($i),
+                $value->original()->get($i)->match(
+                    static fn($value) => $value,
+                    static fn() => null,
+                ),
             );
             $this->assertSame(
                 $v->pack(),
-                $value->original()->get($i)->pack(),
+                $value->original()->get($i)->match(
+                    static fn($value) => $value->pack(),
+                    static fn() => null,
+                ),
             );
         }
 

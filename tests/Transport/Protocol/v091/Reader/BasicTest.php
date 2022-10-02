@@ -44,12 +44,17 @@ class BasicTest extends TestCase
         );
 
         $this->assertInstanceOf(Sequence::class, $stream);
-        $this->assertSame(Value::class, (string) $stream->type());
         $this->assertCount(\count($arguments), $stream);
 
         foreach ($arguments as $i => $argument) {
-            $this->assertInstanceOf(\get_class($argument), $stream->get($i));
-            $this->assertSame($argument->pack(), $stream->get($i)->pack());
+            $this->assertInstanceOf(\get_class($argument), $stream->get($i)->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ));
+            $this->assertSame($argument->pack(), $stream->get($i)->match(
+                static fn($value) => $value->pack(),
+                static fn() => null,
+            ));
         }
     }
 
@@ -79,7 +84,7 @@ class BasicTest extends TestCase
             [
                 'basic.return',
                 [
-                    new UnsignedShortInteger(new Integer(42)),
+                    new UnsignedShortInteger(Integer::of(42)),
                     new ShortString(Str::of('foo')),
                     new ShortString(Str::of('bar')),
                     new ShortString(Str::of('baz')),
@@ -89,7 +94,7 @@ class BasicTest extends TestCase
                 'basic.deliver',
                 [
                     new ShortString(Str::of('foo')),
-                    new UnsignedLongLongInteger(new Integer(42)),
+                    new UnsignedLongLongInteger(Integer::of(42)),
                     new Bits(true),
                     new ShortString(Str::of('bar')),
                     new ShortString(Str::of('baz')),
@@ -98,11 +103,11 @@ class BasicTest extends TestCase
             [
                 'basic.get-ok',
                 [
-                    new UnsignedLongLongInteger(new Integer(42)),
+                    new UnsignedLongLongInteger(Integer::of(42)),
                     new Bits(true),
                     new ShortString(Str::of('foo')),
                     new ShortString(Str::of('bar')),
-                    new UnsignedLongInteger(new Integer(24)),
+                    new UnsignedLongInteger(Integer::of(24)),
                 ],
             ],
             [

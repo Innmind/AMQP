@@ -21,7 +21,7 @@ final class Consume
     {
         $this->queue = $queue;
         /** @var Map<string, mixed> */
-        $this->arguments = Map::of('string', 'mixed');
+        $this->arguments = Map::of();
     }
 
     public function withConsumerTag(string $tag): self

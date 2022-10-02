@@ -8,41 +8,45 @@ use Innmind\Immutable\{
     Sequence,
     Map,
 };
-use function Innmind\Immutable\unwrap;
 
 final class Producers
 {
     /** @var Map<string, Producer> */
     private Map $producers;
 
+    /**
+     * @no-named-arguments
+     */
     public function __construct(Client $client, string ...$exchanges)
     {
         /** @var Map<string, Producer> */
-        $this->producers = Sequence::strings(...$exchanges)->toMapOf(
-            'string',
-            Producer::class,
-            static function(string $exchange) use ($client): \Generator {
-                yield $exchange => new Producer\Producer($client, $exchange);
-            },
+        $this->producers = Map::of(
+            ...Sequence::strings(...$exchanges)
+                ->map(
+                    static fn($exchange) => [$exchange, new Producer\Producer($client, $exchange)],
+                )
+                ->toList(),
         );
     }
 
+    /**
+     * @no-named-arguments
+     */
     public static function of(Client $client, Declaration ...$exchanges): self
     {
-        $exchanges = Sequence::of(Declaration::class, ...$exchanges)->mapTo(
-            'string',
+        $exchanges = Sequence::of(...$exchanges)->map(
             static fn(Declaration $exchange): string => $exchange->name(),
         );
 
-        return new self(
-            $client,
-            ...unwrap($exchanges),
-        );
+        return new self($client, ...$exchanges->toList());
     }
 
     public function get(string $exchange): Producer
     {
-        return $this->producers->get($exchange);
+        return $this->producers->get($exchange)->match(
+            static fn($producer) => $producer,
+            static fn() => throw new \LogicException,
+        );
     }
 
     public function contains(string $exchange): bool
