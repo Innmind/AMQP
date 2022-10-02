@@ -4,117 +4,89 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Transport\Protocol\v091;
 
 use Innmind\AMQP\Transport\Frame\Method;
-use Innmind\Immutable\Map;
-use function Innmind\Immutable\first;
 
 final class Methods
 {
-    /** @var Map<string, Method>|null */
-    private static ?Map $all = null;
-    /** @var Map<int, string>|null */
-    private static ?Map $classes = null;
-
     public static function get(string $method): Method
     {
-        return self::all()->get($method);
+        return match ($method) {
+            'connection.start' => new Method(10, 10),
+            'connection.start-ok' => new Method(10, 11),
+            'connection.secure' => new Method(10, 20),
+            'connection.secure-ok' => new Method(10, 21),
+            'connection.tune' => new Method(10, 30),
+            'connection.tune-ok' => new Method(10, 31),
+            'connection.open' => new Method(10, 40),
+            'connection.open-ok' => new Method(10, 41),
+            'connection.close' => new Method(10, 50),
+            'connection.close-ok' => new Method(10, 51),
+            'channel.open' => new Method(20, 10),
+            'channel.open-ok' => new Method(20, 11),
+            'channel.flow' => new Method(20, 20),
+            'channel.flow-ok' => new Method(20, 21),
+            'channel.close' => new Method(20, 40),
+            'channel.close-ok' => new Method(20, 41),
+            'exchange.declare' => new Method(40, 10),
+            'exchange.declare-ok' => new Method(40, 11),
+            'exchange.delete' => new Method(40, 20),
+            'exchange.delete-ok' => new Method(40, 21),
+            'queue.declare' => new Method(50, 10),
+            'queue.declare-ok' => new Method(50, 11),
+            'queue.bind' => new Method(50, 20),
+            'queue.bind-ok' => new Method(50, 21),
+            'queue.unbind' => new Method(50, 50),
+            'queue.unbind-ok' => new Method(50, 51),
+            'queue.purge' => new Method(50, 30),
+            'queue.purge-ok' => new Method(50, 31),
+            'queue.delete' => new Method(50, 40),
+            'queue.delete-ok' => new Method(50, 41),
+            'basic.qos' => new Method(60, 10),
+            'basic.qos-ok' => new Method(60, 11),
+            'basic.consume' => new Method(60, 20),
+            'basic.consume-ok' => new Method(60, 21),
+            'basic.cancel' => new Method(60, 30),
+            'basic.cancel-ok' => new Method(60, 31),
+            'basic.publish' => new Method(60, 40),
+            'basic.return' => new Method(60, 50),
+            'basic.deliver' => new Method(60, 60),
+            'basic.get' => new Method(60, 70),
+            'basic.get-ok' => new Method(60, 71),
+            'basic.get-empty' => new Method(60, 72),
+            'basic.ack' => new Method(60, 80),
+            'basic.reject' => new Method(60, 90),
+            'basic.recover-async' => new Method(60, 100),
+            'basic.recover' => new Method(60, 110),
+            'basic.recover-ok' => new Method(60, 111),
+            'tx.select' => new Method(90, 10),
+            'tx.select-ok' => new Method(90, 11),
+            'tx.commit' => new Method(90, 20),
+            'tx.commit-ok' => new Method(90, 21),
+            'tx.rollback' => new Method(90, 30),
+            'tx.rollback-ok' => new Method(90, 31),
+        };
     }
 
     public static function class(Method $method): string
     {
-        return self::classes()->get($method->class());
+        return match ($method->class()) {
+            10 => 'connection',
+            20 => 'channel',
+            40 => 'exchange',
+            50 => 'queue',
+            60 => 'basic',
+            90 => 'tx',
+        };
     }
 
     public static function classId(string $class): int
     {
-        return first(
-            self::classes()
-                ->filter(static function(int $_, string $name) use ($class): bool {
-                    return $name === $class;
-                })
-                ->keys(),
-        );
-    }
-
-    /**
-     * @return Map<string, Method>
-     */
-    public static function all(): Map
-    {
-        /**
-         * @psalm-suppress InvalidArgument
-         * @var Map<string, Method>
-         */
-        return self::$all ??= Map::of('string', Method::class)
-            ->put('connection.start', new Method(10, 10))
-            ->put('connection.start-ok', new Method(10, 11))
-            ->put('connection.secure', new Method(10, 20))
-            ->put('connection.secure-ok', new Method(10, 21))
-            ->put('connection.tune', new Method(10, 30))
-            ->put('connection.tune-ok', new Method(10, 31))
-            ->put('connection.open', new Method(10, 40))
-            ->put('connection.open-ok', new Method(10, 41))
-            ->put('connection.close', new Method(10, 50))
-            ->put('connection.close-ok', new Method(10, 51))
-            ->put('channel.open', new Method(20, 10))
-            ->put('channel.open-ok', new Method(20, 11))
-            ->put('channel.flow', new Method(20, 20))
-            ->put('channel.flow-ok', new Method(20, 21))
-            ->put('channel.close', new Method(20, 40))
-            ->put('channel.close-ok', new Method(20, 41))
-            ->put('exchange.declare', new Method(40, 10))
-            ->put('exchange.declare-ok', new Method(40, 11))
-            ->put('exchange.delete', new Method(40, 20))
-            ->put('exchange.delete-ok', new Method(40, 21))
-            ->put('queue.declare', new Method(50, 10))
-            ->put('queue.declare-ok', new Method(50, 11))
-            ->put('queue.bind', new Method(50, 20))
-            ->put('queue.bind-ok', new Method(50, 21))
-            ->put('queue.unbind', new Method(50, 50))
-            ->put('queue.unbind-ok', new Method(50, 51))
-            ->put('queue.purge', new Method(50, 30))
-            ->put('queue.purge-ok', new Method(50, 31))
-            ->put('queue.delete', new Method(50, 40))
-            ->put('queue.delete-ok', new Method(50, 41))
-            ->put('basic.qos', new Method(60, 10))
-            ->put('basic.qos-ok', new Method(60, 11))
-            ->put('basic.consume', new Method(60, 20))
-            ->put('basic.consume-ok', new Method(60, 21))
-            ->put('basic.cancel', new Method(60, 30))
-            ->put('basic.cancel-ok', new Method(60, 31))
-            ->put('basic.publish', new Method(60, 40))
-            ->put('basic.return', new Method(60, 50))
-            ->put('basic.deliver', new Method(60, 60))
-            ->put('basic.get', new Method(60, 70))
-            ->put('basic.get-ok', new Method(60, 71))
-            ->put('basic.get-empty', new Method(60, 72))
-            ->put('basic.ack', new Method(60, 80))
-            ->put('basic.reject', new Method(60, 90))
-            ->put('basic.recover-async', new Method(60, 100))
-            ->put('basic.recover', new Method(60, 110))
-            ->put('basic.recover-ok', new Method(60, 111))
-            ->put('tx.select', new Method(90, 10))
-            ->put('tx.select-ok', new Method(90, 11))
-            ->put('tx.commit', new Method(90, 20))
-            ->put('tx.commit-ok', new Method(90, 21))
-            ->put('tx.rollback', new Method(90, 30))
-            ->put('tx.rollback-ok', new Method(90, 31));
-    }
-
-    /**
-     * @return Map<int, string>
-     */
-    public static function classes(): Map
-    {
-        /**
-         * @psalm-suppress InvalidArgument
-         * @var Map<int, string>
-         */
-        return self::$classes ??= Map::of('int', 'string')
-            ->put(10, 'connection')
-            ->put(20, 'channel')
-            ->put(40, 'exchange')
-            ->put(50, 'queue')
-            ->put(60, 'basic')
-            ->put(90, 'tx');
+        return match ($class) {
+            'connection' => 10,
+            'channel' => 20,
+            'exchange' => 40,
+            'queue' => 50,
+            'basic' => 60,
+            'tx' => 90,
+        };
     }
 }
