@@ -68,11 +68,10 @@ final class Basic implements BasicInterface
 
     public function consume(FrameChannel $channel, Consume $command): Frame
     {
-        $consumerTag = '';
-
-        if (!$command->shouldAutoGenerateConsumerTag()) {
-            $consumerTag = $command->consumerTag();
-        }
+        $consumerTag = $command->consumerTag()->match(
+            static fn($tag) => $tag,
+            static fn() => '',
+        );
 
         return Frame::method(
             $channel,
@@ -190,101 +189,104 @@ final class Basic implements BasicInterface
      */
     private function serializeProperties(Message $message): array
     {
-        $properties = [];
+        /** @var Sequence<Value> */
+        $properties = Sequence::of();
         $flagBits = 0;
 
-        if ($message->hasContentType()) {
-            $properties[] = ShortString::of(
-                Str::of($message->contentType()->toString()),
-            );
-            $flagBits |= (1 << 15);
-        }
+        [$flagBits, $properties] = $message->contentType()->match(
+            static fn($contentType) => [
+                $flagBits | (1 << 15),
+                ($properties)(ShortString::of(Str::of($contentType->toString()))),
+            ],
+            static fn() => [$flagBits, $properties],
+        );
+        [$flagBits, $properties] = $message->contentEncoding()->match(
+            static fn($contentEncoding) => [
+                $flagBits | (1 << 14),
+                ($properties)(ShortString::of(Str::of($contentEncoding->toString()))),
+            ],
+            static fn() => [$flagBits, $properties],
+        );
 
-        if ($message->hasContentEncoding()) {
-            $properties[] = ShortString::of(
-                Str::of($message->contentEncoding()->toString()),
-            );
-            $flagBits |= (1 << 14);
-        }
-
-        if ($message->hasHeaders()) {
-            $properties[] = $this->arguments($message->headers());
+        if (!$message->headers()->empty()) {
+            $properties = ($properties)($this->arguments($message->headers()));
             $flagBits |= (1 << 13);
         }
 
-        if ($message->hasDeliveryMode()) {
-            $properties[] = UnsignedOctet::of(
-                Integer::of($message->deliveryMode()->toInt()),
-            );
-            $flagBits |= (1 << 12);
-        }
-
-        if ($message->hasPriority()) {
-            $properties[] = UnsignedOctet::of(
-                Integer::of($message->priority()->toInt()),
-            );
-            $flagBits |= (1 << 11);
-        }
-
-        if ($message->hasCorrelationId()) {
-            $properties[] = ShortString::of(
-                Str::of($message->correlationId()->toString()),
-            );
-            $flagBits |= (1 << 10);
-        }
-
-        if ($message->hasReplyTo()) {
-            $properties[] = ShortString::of(
-                Str::of($message->replyTo()->toString()),
-            );
-            $flagBits |= (1 << 9);
-        }
-
-        if ($message->hasExpiration()) {
-            $properties[] = ShortString::of(
-                Str::of((string) $message->expiration()->milliseconds()),
-            );
-            $flagBits |= (1 << 8);
-        }
-
-        if ($message->hasId()) {
-            $properties[] = ShortString::of(
-                Str::of($message->id()->toString()),
-            );
-            $flagBits |= (1 << 7);
-        }
-
-        if ($message->hasTimestamp()) {
-            $properties[] = new Timestamp($message->timestamp());
-            $flagBits |= (1 << 6);
-        }
-
-        if ($message->hasType()) {
-            $properties[] = ShortString::of(
-                Str::of($message->type()->toString()),
-            );
-            $flagBits |= (1 << 5);
-        }
-
-        if ($message->hasUserId()) {
-            $properties[] = ShortString::of(
-                Str::of($message->userId()->toString()),
-            );
-            $flagBits |= (1 << 4);
-        }
-
-        if ($message->hasAppId()) {
-            $properties[] = ShortString::of(
-                Str::of($message->appId()->toString()),
-            );
-            $flagBits |= (1 << 3);
-        }
-
-        \array_unshift(
-            $properties,
-            new UnsignedShortInteger(Integer::of($flagBits)),
+        [$flagBits, $properties] = $message->deliveryMode()->match(
+            static fn($deliveryMode) => [
+                $flagBits | (1 << 12),
+                ($properties)(UnsignedOctet::of(Integer::of($deliveryMode->toInt()))),
+            ],
+            static fn() => [$flagBits, $properties],
+        );
+        [$flagBits, $properties] = $message->priority()->match(
+            static fn($priority) => [
+                $flagBits | (1 << 11),
+                ($properties)(UnsignedOctet::of(Integer::of($priority->toInt()))),
+            ],
+            static fn() => [$flagBits, $properties],
+        );
+        [$flagBits, $properties] = $message->correlationId()->match(
+            static fn($correlationId) => [
+                $flagBits | (1 << 10),
+                ($properties)(ShortString::of(Str::of($correlationId->toString()))),
+            ],
+            static fn() => [$flagBits, $properties],
+        );
+        [$flagBits, $properties] = $message->replyTo()->match(
+            static fn($replyTo) => [
+                $flagBits | (1 << 9),
+                ($properties)(ShortString::of(Str::of($replyTo->toString()))),
+            ],
+            static fn() => [$flagBits, $properties],
+        );
+        [$flagBits, $properties] = $message->expiration()->match(
+            static fn($expiration) => [
+                $flagBits | (1 << 8),
+                ($properties)(ShortString::of(Str::of((string) $expiration->milliseconds()))),
+            ],
+            static fn() => [$flagBits, $properties],
+        );
+        [$flagBits, $properties] = $message->id()->match(
+            static fn($id) => [
+                $flagBits | (1 << 7),
+                ($properties)(ShortString::of(Str::of($id->toString()))),
+            ],
+            static fn() => [$flagBits, $properties],
+        );
+        [$flagBits, $properties] = $message->timestamp()->match(
+            static fn($timestamp) => [
+                $flagBits | (1 << 6),
+                ($properties)(new Timestamp($timestamp)),
+            ],
+            static fn() => [$flagBits, $properties],
+        );
+        [$flagBits, $properties] = $message->type()->match(
+            static fn($type) => [
+                $flagBits | (1 << 5),
+                ($properties)(ShortString::of(Str::of($type->toString()))),
+            ],
+            static fn() => [$flagBits, $properties],
+        );
+        [$flagBits, $properties] = $message->userId()->match(
+            static fn($userId) => [
+                $flagBits | (1 << 4),
+                ($properties)(ShortString::of(Str::of($userId->toString()))),
+            ],
+            static fn() => [$flagBits, $properties],
+        );
+        [$flagBits, $properties] = $message->appId()->match(
+            static fn($appId) => [
+                $flagBits | (1 << 3),
+                ($properties)(ShortString::of(Str::of($appId->toString()))),
+            ],
+            static fn() => [$flagBits, $properties],
         );
 
-        return $properties;
+        return [
+            new UnsignedShortInteger(Integer::of($flagBits)),
+            ...$properties->toList(),
+        ];
     }
 }

@@ -104,18 +104,15 @@ final class Connection implements ConnectionInterface
 
     public function close(Close $command): Frame
     {
-        $replyCode = 0;
-        $replyText = '';
-        $method = new Method(0, 0);
+        [$replyCode, $replyText] = $command->response()->match(
+            static fn($info) => $info,
+            static fn() => [0, ''],
+        );
 
-        if ($command->hasReply()) {
-            $replyCode = $command->replyCode();
-            $replyText = $command->replyText();
-        }
-
-        if ($command->causedKnown()) {
-            $method = Methods::get($command->cause());
-        }
+        $method = $command->cause()->match(
+            static fn($cause) => Methods::get($cause),
+            static fn() => new Method(0, 0),
+        );
 
         return Frame::method(
             new Channel(0),

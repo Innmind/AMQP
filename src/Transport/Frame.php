@@ -17,13 +17,15 @@ use Innmind\Math\Algebra\Integer;
 use Innmind\Immutable\{
     Sequence,
     Str,
+    Maybe,
 };
 
 final class Frame
 {
     private Type $type;
     private Channel $channel;
-    private ?Method $method = null;
+    /** @var Maybe<Method> */
+    private Maybe $method;
     /** @var Sequence<Value> */
     private Sequence $values;
     private string $string;
@@ -35,6 +37,8 @@ final class Frame
     ) {
         $this->type = $type;
         $this->channel = $channel;
+        /** @var Maybe<Method> */
+        $this->method = Maybe::nothing();
         /** @var Sequence<Value> */
         $this->values = Sequence::of();
 
@@ -72,7 +76,7 @@ final class Frame
             new UnsignedShortInteger(Integer::of($method->method())),
             ...$values,
         );
-        $self->method = $method;
+        $self->method = Maybe::just($method);
         $self->values = Sequence::of(...$values);
 
         return $self;
@@ -131,11 +135,10 @@ final class Frame
 
     public function is(Method $method): bool
     {
-        if ($this->type() !== Type::method) {
-            return false;
-        }
-
-        return $this->method && $this->method->equals($method);
+        return $this->method->match(
+            static fn($self) => $self->equals($method),
+            static fn() => false,
+        );
     }
 
     /**

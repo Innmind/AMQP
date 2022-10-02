@@ -8,14 +8,18 @@ use Innmind\AMQP\Exception\{
     NotWaitingPassiveDeclarationDoesNothing,
     PassiveQueueDeclarationMustHaveAName,
 };
-use Innmind\Immutable\Map;
+use Innmind\Immutable\{
+    Map,
+    Maybe,
+};
 
 /**
  * @psalm-immutable
  */
 final class Declaration
 {
-    private ?string $name = null;
+    /** @var Maybe<string> */
+    private Maybe $name;
     private bool $passive = false;
     private bool $durable = false;
     private bool $autoDelete = false;
@@ -26,6 +30,8 @@ final class Declaration
 
     private function __construct()
     {
+        /** @var Maybe<string> */
+        $this->name = Maybe::nothing();
         /** @var Map<string, mixed> */
         $this->arguments = Map::of();
     }
@@ -137,7 +143,7 @@ final class Declaration
     public function withName(string $name): self
     {
         $self = clone $this;
-        $self->name = $name;
+        $self->name = Maybe::just($name);
 
         return $self;
     }
@@ -152,7 +158,8 @@ final class Declaration
         }
 
         $self = clone $this;
-        $self->name = null;
+        /** @var Maybe<string> */
+        $self->name = Maybe::nothing();
 
         return $self;
     }
@@ -168,15 +175,11 @@ final class Declaration
         return $self;
     }
 
-    public function shouldAutoGenerateName(): bool
+    /**
+     * @return Maybe<string>
+     */
+    public function name(): Maybe
     {
-        return !\is_string($this->name);
-    }
-
-    /** @psalm-suppress InvalidNullableReturnType */
-    public function name(): string
-    {
-        /** @psalm-suppress NullableReturnStatement */
         return $this->name;
     }
 

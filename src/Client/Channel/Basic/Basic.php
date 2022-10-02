@@ -75,7 +75,10 @@ final class Basic implements BasicInterface
             );
             $consumerTag = $consumerTag->original()->toString();
         } else {
-            $consumerTag = $command->consumerTag();
+            $consumerTag = $command->consumerTag()->match(
+                static fn($tag) => $tag,
+                static fn() => throw new \LogicException,
+            );
         }
 
         return new Consumer\Consumer(

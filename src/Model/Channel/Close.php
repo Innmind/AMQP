@@ -3,14 +3,25 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Model\Channel;
 
+use Innmind\Immutable\Maybe;
+
 /**
  * @psalm-immutable
  */
 final class Close
 {
-    private ?int $replyCode = null;
-    private ?string $replyText = null;
-    private ?string $cause = null;
+    /** @var Maybe<array{int, string}> */
+    private Maybe $reply;
+    /** @var Maybe<string> */
+    private Maybe $cause;
+
+    public function __construct()
+    {
+        /** @var Maybe<array{int, string}> */
+        $this->reply = Maybe::nothing();
+        /** @var Maybe<string> */
+        $this->cause = Maybe::nothing();
+    }
 
     /**
      * @psalm-pure
@@ -18,8 +29,7 @@ final class Close
     public static function reply(int $code, string $text): self
     {
         $self = new self;
-        $self->replyCode = $code;
-        $self->replyText = $text;
+        $self->reply = Maybe::just([$code, $text]);
 
         return $self;
     }
@@ -30,39 +40,24 @@ final class Close
     public function causedBy(string $method): self
     {
         $self = clone $this;
-        $self->cause = $method;
+        $self->cause = Maybe::just($method);
 
         return $self;
     }
 
-    public function hasReply(): bool
+    /**
+     * @return Maybe<array{int, string}>
+     */
+    public function response(): Maybe
     {
-        return \is_int($this->replyCode);
+        return $this->reply;
     }
 
-    /** @psalm-suppress InvalidNullableReturnType */
-    public function replyCode(): int
+    /**
+     * @return Maybe<string>
+     */
+    public function cause(): Maybe
     {
-        /** @psalm-suppress NullableReturnStatement */
-        return $this->replyCode;
-    }
-
-    /** @psalm-suppress InvalidNullableReturnType */
-    public function replyText(): string
-    {
-        /** @psalm-suppress NullableReturnStatement */
-        return $this->replyText;
-    }
-
-    public function causedKnown(): bool
-    {
-        return \is_string($this->cause);
-    }
-
-    /** @psalm-suppress InvalidNullableReturnType */
-    public function cause(): string
-    {
-        /** @psalm-suppress NullableReturnStatement */
         return $this->cause;
     }
 }

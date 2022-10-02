@@ -11,6 +11,7 @@ use Innmind\TimeContinuum\{
 use Innmind\Immutable\{
     Map,
     Str,
+    Maybe
 };
 
 /**
@@ -18,20 +19,32 @@ use Innmind\Immutable\{
  */
 final class Generic implements Message
 {
-    private ?ContentType $contentType = null;
-    private ?ContentEncoding $contentEncoding = null;
+    /** @var Maybe<ContentType> */
+    private Maybe $contentType;
+    /** @var Maybe<ContentEncoding> */
+    private Maybe $contentEncoding;
     /** @var Map<string, mixed> */
     private Map $headers;
-    private ?DeliveryMode $deliveryMode = null;
-    private ?Priority $priority = null;
-    private ?CorrelationId $correlationId = null;
-    private ?ReplyTo $replyTo = null;
-    private ?ElapsedPeriod $expiration = null;
-    private ?Id $id = null;
-    private ?PointInTime $timestamp = null;
-    private ?Type $type = null;
-    private ?UserId $userId = null;
-    private ?AppId $appId = null;
+    /** @var Maybe<DeliveryMode> */
+    private Maybe $deliveryMode;
+    /** @var Maybe<Priority> */
+    private Maybe $priority;
+    /** @var Maybe<CorrelationId> */
+    private Maybe $correlationId;
+    /** @var Maybe<ReplyTo> */
+    private Maybe $replyTo;
+    /** @var Maybe<ElapsedPeriod> */
+    private Maybe $expiration;
+    /** @var Maybe<Id> */
+    private Maybe $id;
+    /** @var Maybe<PointInTime> */
+    private Maybe $timestamp;
+    /** @var Maybe<Type> */
+    private Maybe $type;
+    /** @var Maybe<UserId> */
+    private Maybe $userId;
+    /** @var Maybe<AppId> */
+    private Maybe $appId;
     private Str $body;
 
     public function __construct(Str $body)
@@ -39,51 +52,56 @@ final class Generic implements Message
         $this->body = $body->toEncoding('ASCII');
         /** @var Map<string, mixed> */
         $this->headers = Map::of();
+        /** @var Maybe<ContentType> */
+        $this->contentType = Maybe::nothing();
+        /** @var Maybe<ContentEncoding> */
+        $this->contentEncoding = Maybe::nothing();
+        /** @var Maybe<DeliveryMode> */
+        $this->deliveryMode = Maybe::nothing();
+        /** @var Maybe<Priority> */
+        $this->priority = Maybe::nothing();
+        /** @var Maybe<CorrelationId> */
+        $this->correlationId = Maybe::nothing();
+        /** @var Maybe<ReplyTo> */
+        $this->replyTo = Maybe::nothing();
+        /** @var Maybe<ElapsedPeriod> */
+        $this->expiration = Maybe::nothing();
+        /** @var Maybe<Id> */
+        $this->id = Maybe::nothing();
+        /** @var Maybe<PointInTime> */
+        $this->timestamp = Maybe::nothing();
+        /** @var Maybe<Type> */
+        $this->type = Maybe::nothing();
+        /** @var Maybe<UserId> */
+        $this->userId = Maybe::nothing();
+        /** @var Maybe<AppId> */
+        $this->appId = Maybe::nothing();
     }
 
-    public function hasContentType(): bool
+    public function contentType(): Maybe
     {
-        return $this->contentType instanceof ContentType;
-    }
-
-    /** @psalm-suppress InvalidNullableReturnType */
-    public function contentType(): ContentType
-    {
-        /** @psalm-suppress NullableReturnStatement */
         return $this->contentType;
     }
 
     public function withContentType(ContentType $contentType): Message
     {
         $self = clone $this;
-        $self->contentType = $contentType;
+        $self->contentType = Maybe::just($contentType);
 
         return $self;
     }
 
-    public function hasContentEncoding(): bool
+    public function contentEncoding(): Maybe
     {
-        return $this->contentEncoding instanceof ContentEncoding;
-    }
-
-    /** @psalm-suppress InvalidNullableReturnType */
-    public function contentEncoding(): ContentEncoding
-    {
-        /** @psalm-suppress NullableReturnStatement */
         return $this->contentEncoding;
     }
 
     public function withContentEncoding(ContentEncoding $contentEncoding): Message
     {
         $self = clone $this;
-        $self->contentEncoding = $contentEncoding;
+        $self->contentEncoding = Maybe::just($contentEncoding);
 
         return $self;
-    }
-
-    public function hasHeaders(): bool
-    {
-        return $this->headers->size() > 0;
     }
 
     public function headers(): Map
@@ -99,202 +117,132 @@ final class Generic implements Message
         return $self;
     }
 
-    public function hasDeliveryMode(): bool
+    public function deliveryMode(): Maybe
     {
-        return $this->deliveryMode instanceof DeliveryMode;
-    }
-
-    /** @psalm-suppress InvalidNullableReturnType */
-    public function deliveryMode(): DeliveryMode
-    {
-        /** @psalm-suppress NullableReturnStatement */
         return $this->deliveryMode;
     }
 
     public function withDeliveryMode(DeliveryMode $deliveryMode): Message
     {
         $self = clone $this;
-        $self->deliveryMode = $deliveryMode;
+        $self->deliveryMode = Maybe::just($deliveryMode);
 
         return $self;
     }
 
-    public function hasPriority(): bool
+    public function priority(): Maybe
     {
-        return $this->priority instanceof Priority;
-    }
-
-    /** @psalm-suppress InvalidNullableReturnType */
-    public function priority(): Priority
-    {
-        /** @psalm-suppress NullableReturnStatement */
         return $this->priority;
     }
 
     public function withPriority(Priority $priority): Message
     {
         $self = clone $this;
-        $self->priority = $priority;
+        $self->priority = Maybe::just($priority);
 
         return $self;
     }
 
-    public function hasCorrelationId(): bool
+    public function correlationId(): Maybe
     {
-        return $this->correlationId instanceof CorrelationId;
-    }
-
-    /** @psalm-suppress InvalidNullableReturnType */
-    public function correlationId(): CorrelationId
-    {
-        /** @psalm-suppress NullableReturnStatement */
         return $this->correlationId;
     }
 
     public function withCorrelationId(CorrelationId $correlationId): Message
     {
         $self = clone $this;
-        $self->correlationId = $correlationId;
+        $self->correlationId = Maybe::just($correlationId);
 
         return $self;
     }
 
-    public function hasReplyTo(): bool
+    public function replyTo(): Maybe
     {
-        return $this->replyTo instanceof ReplyTo;
-    }
-
-    /** @psalm-suppress InvalidNullableReturnType */
-    public function replyTo(): ReplyTo
-    {
-        /** @psalm-suppress NullableReturnStatement */
         return $this->replyTo;
     }
 
     public function withReplyTo(ReplyTo $replyTo): Message
     {
         $self = clone $this;
-        $self->replyTo = $replyTo;
+        $self->replyTo = Maybe::just($replyTo);
 
         return $self;
     }
 
-    public function hasExpiration(): bool
+    public function expiration(): Maybe
     {
-        return $this->expiration instanceof ElapsedPeriod;
-    }
-
-    /** @psalm-suppress InvalidNullableReturnType */
-    public function expiration(): ElapsedPeriod
-    {
-        /** @psalm-suppress NullableReturnStatement */
         return $this->expiration;
     }
 
     public function withExpiration(ElapsedPeriod $expiration): Message
     {
         $self = clone $this;
-        $self->expiration = $expiration;
+        $self->expiration = Maybe::just($expiration);
 
         return $self;
     }
 
-    public function hasId(): bool
+    public function id(): Maybe
     {
-        return $this->id instanceof Id;
-    }
-
-    /** @psalm-suppress InvalidNullableReturnType */
-    public function id(): Id
-    {
-        /** @psalm-suppress NullableReturnStatement */
         return $this->id;
     }
 
     public function withId(Id $id): Message
     {
         $self = clone $this;
-        $self->id = $id;
+        $self->id = Maybe::just($id);
 
         return $self;
     }
 
-    public function hasTimestamp(): bool
+    public function timestamp(): Maybe
     {
-        return $this->timestamp instanceof PointInTime;
-    }
-
-    /** @psalm-suppress InvalidNullableReturnType */
-    public function timestamp(): PointInTime
-    {
-        /** @psalm-suppress NullableReturnStatement */
         return $this->timestamp;
     }
 
     public function withTimestamp(PointInTime $timestamp): Message
     {
         $self = clone $this;
-        $self->timestamp = $timestamp;
+        $self->timestamp = Maybe::just($timestamp);
 
         return $self;
     }
 
-    public function hasType(): bool
+    public function type(): Maybe
     {
-        return $this->type instanceof Type;
-    }
-
-    /** @psalm-suppress InvalidNullableReturnType */
-    public function type(): Type
-    {
-        /** @psalm-suppress NullableReturnStatement */
         return $this->type;
     }
 
     public function withType(Type $type): Message
     {
         $self = clone $this;
-        $self->type = $type;
+        $self->type = Maybe::just($type);
 
         return $self;
     }
 
-    public function hasUserId(): bool
+    public function userId(): Maybe
     {
-        return $this->userId instanceof UserId;
-    }
-
-    /** @psalm-suppress InvalidNullableReturnType */
-    public function userId(): UserId
-    {
-        /** @psalm-suppress NullableReturnStatement */
         return $this->userId;
     }
 
     public function withUserId(UserId $userId): Message
     {
         $self = clone $this;
-        $self->userId = $userId;
+        $self->userId = Maybe::just($userId);
 
         return $self;
     }
 
-    public function hasAppId(): bool
+    public function appId(): Maybe
     {
-        return $this->appId instanceof AppId;
-    }
-
-    /** @psalm-suppress InvalidNullableReturnType */
-    public function appId(): AppId
-    {
-        /** @psalm-suppress NullableReturnStatement */
         return $this->appId;
     }
 
     public function withAppId(AppId $appId): Message
     {
         $self = clone $this;
-        $self->appId = $appId;
+        $self->appId = Maybe::just($appId);
 
         return $self;
     }

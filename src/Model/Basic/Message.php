@@ -23,6 +23,7 @@ use Innmind\TimeContinuum\{
 use Innmind\Immutable\{
     Map,
     Str,
+    Maybe,
 };
 
 /**
@@ -30,13 +31,17 @@ use Innmind\Immutable\{
  */
 interface Message
 {
-    public function hasContentType(): bool;
-    public function contentType(): ContentType;
+    /**
+     * @return Maybe<ContentType>
+     */
+    public function contentType(): Maybe;
     public function withContentType(ContentType $contentType): self;
-    public function hasContentEncoding(): bool;
-    public function contentEncoding(): ContentEncoding;
+
+    /**
+     * @return Maybe<ContentEncoding>
+     */
+    public function contentEncoding(): Maybe;
     public function withContentEncoding(ContentEncoding $contentEncoding): self;
-    public function hasHeaders(): bool;
 
     /**
      * @return Map<string, mixed>
@@ -47,35 +52,65 @@ interface Message
      * @param Map<string, mixed> $headers
      */
     public function withHeaders(Map $headers): self;
-    public function hasDeliveryMode(): bool;
-    public function deliveryMode(): DeliveryMode;
+
+    /**
+     * @return Maybe<DeliveryMode>
+     */
+    public function deliveryMode(): Maybe;
     public function withDeliveryMode(DeliveryMode $deliveryMode): self;
-    public function hasPriority(): bool;
-    public function priority(): Priority;
+
+    /**
+     * @return Maybe<Priority>
+     */
+    public function priority(): Maybe;
     public function withPriority(Priority $priority): self;
-    public function hasCorrelationId(): bool;
-    public function correlationId(): CorrelationId;
+
+    /**
+     * @return Maybe<CorrelationId>
+     */
+    public function correlationId(): Maybe;
     public function withCorrelationId(CorrelationId $correlationId): self;
-    public function hasReplyTo(): bool;
-    public function replyTo(): ReplyTo;
+
+    /**
+     * @return Maybe<ReplyTo>
+     */
+    public function replyTo(): Maybe;
     public function withReplyTo(ReplyTo $replyTo): self;
-    public function hasExpiration(): bool;
-    public function expiration(): ElapsedPeriod;
+
+    /**
+     * @return Maybe<ElapsedPeriod>
+     */
+    public function expiration(): Maybe;
     public function withExpiration(ElapsedPeriod $expiration): self;
-    public function hasId(): bool;
-    public function id(): Id;
+
+    /**
+     * @return Maybe<Id>
+     */
+    public function id(): Maybe;
     public function withId(Id $id): self;
-    public function hasTimestamp(): bool;
-    public function timestamp(): PointInTime;
+
+    /**
+     * @return Maybe<PointInTime>
+     */
+    public function timestamp(): Maybe;
     public function withTimestamp(PointInTime $timestamp): self;
-    public function hasType(): bool;
-    public function type(): Type;
+
+    /**
+     * @return Maybe<Type>
+     */
+    public function type(): Maybe;
     public function withType(Type $type): self;
-    public function hasUserId(): bool;
-    public function userId(): UserId;
+
+    /**
+     * @return Maybe<UserId>
+     */
+    public function userId(): Maybe;
     public function withUserId(UserId $userId): self;
-    public function hasAppId(): bool;
-    public function appId(): AppId;
+
+    /**
+     * @return Maybe<AppId>
+     */
+    public function appId(): Maybe;
     public function withAppId(AppId $appId): self;
     public function body(): Str;
 }

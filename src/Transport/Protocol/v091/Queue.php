@@ -37,11 +37,10 @@ final class Queue implements QueueInterface
 
     public function declare(FrameChannel $channel, Declaration $command): Frame
     {
-        $name = '';
-
-        if (!$command->shouldAutoGenerateName()) {
-            $name = $command->name();
-        }
+        $name = $command->name()->match(
+            static fn($name) => $name,
+            static fn() => '',
+        );
 
         return Frame::method(
             $channel,

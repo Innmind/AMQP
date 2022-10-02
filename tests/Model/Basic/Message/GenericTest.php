@@ -34,20 +34,55 @@ class GenericTest extends TestCase
         $message = new Generic(Str::of('foo'));
 
         $this->assertInstanceOf(Message::class, $message);
-        $this->assertFalse($message->hasContentType());
-        $this->assertFalse($message->hasContentEncoding());
-        $this->assertFalse($message->hasHeaders());
+        $this->assertFalse($message->contentType()->match(
+            static fn() => true,
+            static fn() => false,
+        ));
+        $this->assertFalse($message->contentEncoding()->match(
+            static fn() => true,
+            static fn() => false,
+        ));
         $this->assertInstanceOf(Map::class, $message->headers());
-        $this->assertFalse($message->hasDeliveryMode());
-        $this->assertFalse($message->hasPriority());
-        $this->assertFalse($message->hasCorrelationId());
-        $this->assertFalse($message->hasReplyTo());
-        $this->assertFalse($message->hasExpiration());
-        $this->assertFalse($message->hasId());
-        $this->assertFalse($message->hasTimestamp());
-        $this->assertFalse($message->hasType());
-        $this->assertFalse($message->hasUserId());
-        $this->assertFalse($message->hasAppId());
+        $this->assertFalse($message->deliveryMode()->match(
+            static fn() => true,
+            static fn() => false,
+        ));
+        $this->assertFalse($message->priority()->match(
+            static fn() => true,
+            static fn() => false,
+        ));
+        $this->assertFalse($message->correlationId()->match(
+            static fn() => true,
+            static fn() => false,
+        ));
+        $this->assertFalse($message->replyTo()->match(
+            static fn() => true,
+            static fn() => false,
+        ));
+        $this->assertFalse($message->expiration()->match(
+            static fn() => true,
+            static fn() => false,
+        ));
+        $this->assertFalse($message->id()->match(
+            static fn() => true,
+            static fn() => false,
+        ));
+        $this->assertFalse($message->timestamp()->match(
+            static fn() => true,
+            static fn() => false,
+        ));
+        $this->assertFalse($message->type()->match(
+            static fn() => true,
+            static fn() => false,
+        ));
+        $this->assertFalse($message->userId()->match(
+            static fn() => true,
+            static fn() => false,
+        ));
+        $this->assertFalse($message->appId()->match(
+            static fn() => true,
+            static fn() => false,
+        ));
         $this->assertInstanceOf(Str::class, $message->body());
         $this->assertSame('foo', $message->body()->toString());
         $this->assertSame('ASCII', $message->body()->encoding()->toString());
@@ -61,10 +96,10 @@ class GenericTest extends TestCase
         );
 
         $this->assertInstanceOf(Message::class, $message2);
-        $this->assertNotSame($message, $message2);
-        $this->assertFalse($message->hasContentType());
-        $this->assertTrue($message2->hasContentType());
-        $this->assertSame($expected, $message2->contentType());
+        $this->assertSame($expected, $message2->contentType()->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
     }
 
     public function testContentEncoding()
@@ -75,10 +110,10 @@ class GenericTest extends TestCase
         );
 
         $this->assertInstanceOf(Message::class, $message2);
-        $this->assertNotSame($message, $message2);
-        $this->assertFalse($message->hasContentEncoding());
-        $this->assertTrue($message2->hasContentEncoding());
-        $this->assertSame($expected, $message2->contentEncoding());
+        $this->assertSame($expected, $message2->contentEncoding()->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
     }
 
     public function testHeaders()
@@ -89,9 +124,6 @@ class GenericTest extends TestCase
         );
 
         $this->assertInstanceOf(Message::class, $message2);
-        $this->assertNotSame($message, $message2);
-        $this->assertFalse($message->hasHeaders());
-        $this->assertTrue($message2->hasHeaders());
         $this->assertSame($expected, $message2->headers());
     }
 
@@ -103,10 +135,10 @@ class GenericTest extends TestCase
         );
 
         $this->assertInstanceOf(Message::class, $message2);
-        $this->assertNotSame($message, $message2);
-        $this->assertFalse($message->hasDeliveryMode());
-        $this->assertTrue($message2->hasDeliveryMode());
-        $this->assertSame($expected, $message2->deliveryMode());
+        $this->assertSame($expected, $message2->deliveryMode()->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
     }
 
     public function testPriority()
@@ -117,10 +149,10 @@ class GenericTest extends TestCase
         );
 
         $this->assertInstanceOf(Message::class, $message2);
-        $this->assertNotSame($message, $message2);
-        $this->assertFalse($message->hasPriority());
-        $this->assertTrue($message2->hasPriority());
-        $this->assertSame($expected, $message2->priority());
+        $this->assertSame($expected, $message2->priority()->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
     }
 
     public function testCorrelationId()
@@ -131,10 +163,10 @@ class GenericTest extends TestCase
         );
 
         $this->assertInstanceOf(Message::class, $message2);
-        $this->assertNotSame($message, $message2);
-        $this->assertFalse($message->hasCorrelationId());
-        $this->assertTrue($message2->hasCorrelationId());
-        $this->assertSame($expected, $message2->correlationId());
+        $this->assertSame($expected, $message2->correlationId()->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
     }
 
     public function testReplyTo()
@@ -145,10 +177,10 @@ class GenericTest extends TestCase
         );
 
         $this->assertInstanceOf(Message::class, $message2);
-        $this->assertNotSame($message, $message2);
-        $this->assertFalse($message->hasReplyTo());
-        $this->assertTrue($message2->hasReplyTo());
-        $this->assertSame($expected, $message2->replyTo());
+        $this->assertSame($expected, $message2->replyTo()->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
     }
 
     public function testExpiration()
@@ -159,10 +191,10 @@ class GenericTest extends TestCase
         );
 
         $this->assertInstanceOf(Message::class, $message2);
-        $this->assertNotSame($message, $message2);
-        $this->assertFalse($message->hasExpiration());
-        $this->assertTrue($message2->hasExpiration());
-        $this->assertSame($expected, $message2->expiration());
+        $this->assertSame($expected, $message2->expiration()->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
     }
 
     public function testId()
@@ -173,10 +205,10 @@ class GenericTest extends TestCase
         );
 
         $this->assertInstanceOf(Message::class, $message2);
-        $this->assertNotSame($message, $message2);
-        $this->assertFalse($message->hasId());
-        $this->assertTrue($message2->hasId());
-        $this->assertSame($expected, $message2->id());
+        $this->assertSame($expected, $message2->id()->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
     }
 
     public function testTimestamp()
@@ -187,10 +219,10 @@ class GenericTest extends TestCase
         );
 
         $this->assertInstanceOf(Message::class, $message2);
-        $this->assertNotSame($message, $message2);
-        $this->assertFalse($message->hasTimestamp());
-        $this->assertTrue($message2->hasTimestamp());
-        $this->assertSame($expected, $message2->timestamp());
+        $this->assertSame($expected, $message2->timestamp()->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
     }
 
     public function testType()
@@ -201,10 +233,10 @@ class GenericTest extends TestCase
         );
 
         $this->assertInstanceOf(Message::class, $message2);
-        $this->assertNotSame($message, $message2);
-        $this->assertFalse($message->hasType());
-        $this->assertTrue($message2->hasType());
-        $this->assertSame($expected, $message2->type());
+        $this->assertSame($expected, $message2->type()->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
     }
 
     public function testUserId()
@@ -215,10 +247,10 @@ class GenericTest extends TestCase
         );
 
         $this->assertInstanceOf(Message::class, $message2);
-        $this->assertNotSame($message, $message2);
-        $this->assertFalse($message->hasUserId());
-        $this->assertTrue($message2->hasUserId());
-        $this->assertSame($expected, $message2->userId());
+        $this->assertSame($expected, $message2->userId()->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
     }
 
     public function testAppId()
@@ -229,9 +261,9 @@ class GenericTest extends TestCase
         );
 
         $this->assertInstanceOf(Message::class, $message2);
-        $this->assertNotSame($message, $message2);
-        $this->assertFalse($message->hasAppId());
-        $this->assertTrue($message2->hasAppId());
-        $this->assertSame($expected, $message2->appId());
+        $this->assertSame($expected, $message2->appId()->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
     }
 }
