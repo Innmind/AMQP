@@ -5,6 +5,9 @@ namespace Innmind\AMQP\Model\Queue;
 
 use Innmind\Immutable\Map;
 
+/**
+ * @psalm-immutable
+ */
 final class Unbinding
 {
     private string $exchange;

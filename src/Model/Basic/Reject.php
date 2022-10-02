@@ -3,6 +3,9 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Model\Basic;
 
+/**
+ * @psalm-immutable
+ */
 final class Reject
 {
     private int $deliveryTag;
@@ -16,6 +19,8 @@ final class Reject
     /**
      * This will requeue unacknowledged messages meaning they may be delivered
      * to a different consumer that the original one
+     *
+     * @psalm-pure
      */
     public static function requeue(int $deliveryTag): self
     {

@@ -5,6 +5,9 @@ namespace Innmind\AMQP\Model;
 
 use Innmind\AMQP\Exception\DomainException;
 
+/**
+ * @psalm-immutable
+ */
 final class Count
 {
     private int $value;

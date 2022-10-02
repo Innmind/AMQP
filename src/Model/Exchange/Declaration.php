@@ -6,6 +6,9 @@ namespace Innmind\AMQP\Model\Exchange;
 use Innmind\AMQP\Exception\NotWaitingPassiveDeclarationDoesNothing;
 use Innmind\Immutable\Map;
 
+/**
+ * @psalm-immutable
+ */
 final class Declaration
 {
     private string $name;
@@ -27,6 +30,8 @@ final class Declaration
 
     /**
      * Check if the exchange with the given name exists on the server
+     *
+     * @psalm-pure
      */
     public static function passive(string $name, Type $type): self
     {
@@ -38,6 +43,8 @@ final class Declaration
 
     /**
      * The exchange will survive after a server restart
+     *
+     * @psalm-pure
      */
     public static function durable(string $name, Type $type): self
     {
@@ -49,6 +56,8 @@ final class Declaration
 
     /**
      * The exchange will disappear after a server restart
+     *
+     * @psalm-pure
      */
     public static function temporary(string $name, Type $type): self
     {
@@ -57,6 +66,8 @@ final class Declaration
 
     /**
      * The exchange will disappear once it's no longer used
+     *
+     * @psalm-pure
      */
     public static function autoDelete(string $name, Type $type): self
     {

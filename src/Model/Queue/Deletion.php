@@ -3,6 +3,9 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Model\Queue;
 
+/**
+ * @psalm-immutable
+ */
 final class Deletion
 {
     private string $name;

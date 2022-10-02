@@ -7,6 +7,8 @@ namespace Innmind\AMQP\Model\Basic\Message;
  * Any string that identify the application that produce the message
  *
  * Example: webcrawler
+ *
+ * @psalm-immutable
  */
 final class AppId
 {

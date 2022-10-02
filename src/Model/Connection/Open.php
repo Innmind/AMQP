@@ -5,6 +5,9 @@ namespace Innmind\AMQP\Model\Connection;
 
 use Innmind\Url\Path;
 
+/**
+ * @psalm-immutable
+ */
 final class Open
 {
     private Path $virtualHost;

@@ -8,6 +8,9 @@ use Innmind\Url\Authority\UserInformation\{
     Password,
 };
 
+/**
+ * @psalm-immutable
+ */
 final class StartOk
 {
     private User $user;

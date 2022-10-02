@@ -8,6 +8,8 @@ use Innmind\Immutable\Str;
 
 /**
  * Same behaviour as HTTP Content-Encoding header
+ *
+ * @psalm-immutable
  */
 final class ContentEncoding
 {

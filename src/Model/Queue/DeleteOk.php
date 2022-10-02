@@ -5,6 +5,9 @@ namespace Innmind\AMQP\Model\Queue;
 
 use Innmind\AMQP\Model\Count;
 
+/**
+ * @psalm-immutable
+ */
 final class DeleteOk
 {
     private Count $message;

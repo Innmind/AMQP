@@ -11,6 +11,8 @@ use Innmind\MediaType\{
 
 /**
  * Same behaviour as HTTP Content-Type header
+ *
+ * @psalm-immutable
  */
 final class ContentType
 {

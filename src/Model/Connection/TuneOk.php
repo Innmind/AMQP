@@ -5,6 +5,9 @@ namespace Innmind\AMQP\Model\Connection;
 
 use Innmind\TimeContinuum\ElapsedPeriod;
 
+/**
+ * @psalm-immutable
+ */
 final class TuneOk
 {
     private MaxChannels $maxChannels;

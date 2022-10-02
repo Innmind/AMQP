@@ -8,6 +8,9 @@ use Innmind\AMQP\Exception\{
     FrameExceedAllowedSize,
 };
 
+/**
+ * @psalm-immutable
+ */
 final class MaxFrameSize
 {
     private int $value;

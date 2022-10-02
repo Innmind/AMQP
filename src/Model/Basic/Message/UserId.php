@@ -5,6 +5,8 @@ namespace Innmind\AMQP\Model\Basic\Message;
 
 /**
  * The AMQP user that published the message
+ *
+ * @psalm-immutable
  */
 final class UserId
 {

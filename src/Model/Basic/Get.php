@@ -3,6 +3,9 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Model\Basic;
 
+/**
+ * @psalm-immutable
+ */
 final class Get
 {
     private string $queue;

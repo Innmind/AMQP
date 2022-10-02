@@ -13,6 +13,9 @@ use Innmind\Immutable\{
     Str,
 };
 
+/**
+ * @psalm-immutable
+ */
 final class Generic implements Message
 {
     private ?ContentType $contentType = null;

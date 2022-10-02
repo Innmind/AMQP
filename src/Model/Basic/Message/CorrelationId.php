@@ -5,6 +5,8 @@ namespace Innmind\AMQP\Model\Basic\Message;
 
 /**
  * Id of the message that this message is a reply to
+ *
+ * @psalm-immutable
  */
 final class CorrelationId
 {

@@ -8,6 +8,9 @@ use Innmind\AMQP\Exception\{
     FrameChannelExceedAllowedChannelNumber,
 };
 
+/**
+ * @psalm-immutable
+ */
 final class MaxChannels
 {
     private int $value;

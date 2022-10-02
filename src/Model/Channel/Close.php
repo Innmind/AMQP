@@ -3,12 +3,18 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Model\Channel;
 
+/**
+ * @psalm-immutable
+ */
 final class Close
 {
     private ?int $replyCode = null;
     private ?string $replyText = null;
     private ?string $cause = null;
 
+    /**
+     * @psalm-pure
+     */
     public static function reply(int $code, string $text): self
     {
         $self = new self;

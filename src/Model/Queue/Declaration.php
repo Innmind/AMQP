@@ -10,6 +10,9 @@ use Innmind\AMQP\Exception\{
 };
 use Innmind\Immutable\Map;
 
+/**
+ * @psalm-immutable
+ */
 final class Declaration
 {
     private ?string $name = null;
@@ -29,6 +32,8 @@ final class Declaration
 
     /**
      * Check if the queue exists on the server
+     *
+     * @psalm-pure
      */
     public static function passive(string $name): self
     {
@@ -40,6 +45,8 @@ final class Declaration
 
     /**
      * The queue will survive after a server restart
+     *
+     * @psalm-pure
      */
     public static function durable(): self
     {
@@ -51,6 +58,8 @@ final class Declaration
 
     /**
      * The queue will disappear after a server restart
+     *
+     * @psalm-pure
      */
     public static function temporary(): self
     {
@@ -59,6 +68,8 @@ final class Declaration
 
     /**
      * The queue is deleted once all consumers have finished using it
+     *
+     * @psalm-pure
      */
     public static function autoDelete(): self
     {

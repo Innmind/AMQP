@@ -5,6 +5,8 @@ namespace Innmind\AMQP\Model\Basic;
 
 /**
  * Acknowledge
+ *
+ * @psalm-immutable
  */
 final class Ack
 {
@@ -16,6 +18,9 @@ final class Ack
         $this->deliveryTag = $deliveryTag;
     }
 
+    /**
+     * @psalm-pure
+     */
     public static function multiple(int $deliveryTag): self
     {
         $self = new self($deliveryTag);

@@ -16,6 +16,9 @@ use Innmind\Immutable\{
     Str,
 };
 
+/**
+ * @psalm-immutable
+ */
 final class Locked implements Message
 {
     private Message $message;

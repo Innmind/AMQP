@@ -3,6 +3,9 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Model\Channel;
 
+/**
+ * @psalm-immutable
+ */
 final class FlowOk
 {
     private bool $active;

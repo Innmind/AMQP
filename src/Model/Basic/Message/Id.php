@@ -5,6 +5,8 @@ namespace Innmind\AMQP\Model\Basic\Message;
 
 /**
  * Use this property in case you want to reference the message in your application
+ *
+ * @psalm-immutable
  */
 final class Id
 {

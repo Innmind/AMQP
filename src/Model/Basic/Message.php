@@ -25,6 +25,9 @@ use Innmind\Immutable\{
     Str,
 };
 
+/**
+ * @psalm-immutable
+ */
 interface Message
 {
     public function hasContentType(): bool;
