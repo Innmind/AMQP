@@ -21,30 +21,14 @@ final class Channel
      */
     public function __invoke(Method $method, Readable $arguments): Sequence
     {
-        switch (true) {
-            case Method::channelOpenOk->equals($method):
-                $chunk = $this->openOk();
-                break;
-
-            case Method::channelFlow->equals($method):
-                $chunk = $this->flow();
-                break;
-
-            case Method::channelFlowOk->equals($method):
-                $chunk = $this->flowOk();
-                break;
-
-            case Method::channelClose->equals($method):
-                $chunk = $this->close();
-                break;
-
-            case Method::channelCloseOk->equals($method):
-                $chunk = $this->closeOk();
-                break;
-
-            default:
-                throw new \RuntimeException;
-        }
+        /** @psalm-suppress UnhandledMatchCondition todo regroup everything in the Reader class */
+        $chunk = match ($method) {
+            Method::channelOpenOk => $this->openOk(),
+            Method::channelFlow => $this->flow(),
+            Method::channelFlowOk => $this->flowOk(),
+            Method::channelClose => $this->close(),
+            Method::channelCloseOk => $this->closeOk(),
+        };
 
         return $chunk($arguments);
     }

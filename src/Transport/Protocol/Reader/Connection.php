@@ -24,34 +24,15 @@ final class Connection
      */
     public function __invoke(Method $method, Readable $arguments): Sequence
     {
-        switch (true) {
-            case Method::connectionStart->equals($method):
-                $chunk = $this->start();
-                break;
-
-            case Method::connectionSecure->equals($method):
-                $chunk = $this->secure();
-                break;
-
-            case Method::connectionTune->equals($method):
-                $chunk = $this->tune();
-                break;
-
-            case Method::connectionOpenOk->equals($method):
-                $chunk = $this->openOk();
-                break;
-
-            case Method::connectionClose->equals($method):
-                $chunk = $this->close();
-                break;
-
-            case Method::connectionCloseOk->equals($method):
-                $chunk = $this->closeOk();
-                break;
-
-            default:
-                throw new \RuntimeException;
-        }
+        /** @psalm-suppress UnhandledMatchCondition todo regroup everything in the Reader class */
+        $chunk = match ($method) {
+            Method::connectionStart => $this->start(),
+            Method::connectionSecure => $this->secure(),
+            Method::connectionTune => $this->tune(),
+            Method::connectionOpenOk => $this->openOk(),
+            Method::connectionClose => $this->close(),
+            Method::connectionCloseOk => $this->closeOk(),
+        };
 
         return $chunk($arguments);
     }

@@ -20,30 +20,14 @@ final class Queue
      */
     public function __invoke(Method $method, Readable $arguments): Sequence
     {
-        switch (true) {
-            case Method::queueDeclareOk->equals($method):
-                $chunk = $this->declareOk();
-                break;
-
-            case Method::queueBindOk->equals($method):
-                $chunk = $this->bindOk();
-                break;
-
-            case Method::queueUnbindOk->equals($method):
-                $chunk = $this->unbindOk();
-                break;
-
-            case Method::queuePurgeOk->equals($method):
-                $chunk = $this->purgeOk();
-                break;
-
-            case Method::queueDeleteOk->equals($method):
-                $chunk = $this->deleteOk();
-                break;
-
-            default:
-                throw new \RuntimeException;
-        }
+        /** @psalm-suppress UnhandledMatchCondition todo regroup everything in the Reader class */
+        $chunk = match ($method) {
+            Method::queueDeclareOk => $this->declareOk(),
+            Method::queueBindOk => $this->bindOk(),
+            Method::queueUnbindOk => $this->unbindOk(),
+            Method::queuePurgeOk => $this->purgeOk(),
+            Method::queueDeleteOk => $this->deleteOk(),
+        };
 
         return $chunk($arguments);
     }

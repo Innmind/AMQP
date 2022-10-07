@@ -18,18 +18,11 @@ final class Exchange
      */
     public function __invoke(Method $method, Readable $arguments): Sequence
     {
-        switch (true) {
-            case Method::exchangeDeclareOk->equals($method):
-                $chunk = $this->declareOk();
-                break;
-
-            case Method::exchangeDeleteOk->equals($method):
-                $chunk = $this->deleteOk();
-                break;
-
-            default:
-                throw new \RuntimeException;
-        }
+        /** @psalm-suppress UnhandledMatchCondition todo regroup everything in the Reader class */
+        $chunk = match ($method) {
+            Method::exchangeDeclareOk => $this->declareOk(),
+            Method::exchangeDeleteOk => $this->deleteOk(),
+        };
 
         return $chunk($arguments);
     }

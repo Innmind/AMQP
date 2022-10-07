@@ -24,42 +24,17 @@ final class Basic
      */
     public function __invoke(Method $method, Readable $arguments): Sequence
     {
-        switch (true) {
-            case Method::basicQosOk->equals($method):
-                $chunk = $this->qosOk();
-                break;
-
-            case Method::basicConsumeOk->equals($method):
-                $chunk = $this->consumeOk();
-                break;
-
-            case Method::basicCancelOk->equals($method):
-                $chunk = $this->cancelOk();
-                break;
-
-            case Method::basicReturn->equals($method):
-                $chunk = $this->return();
-                break;
-
-            case Method::basicDeliver->equals($method):
-                $chunk = $this->deliver();
-                break;
-
-            case Method::basicGetOk->equals($method):
-                $chunk = $this->getOk();
-                break;
-
-            case Method::basicGetEmpty->equals($method):
-                $chunk = $this->getEmpty();
-                break;
-
-            case Method::basicRecoverOk->equals($method):
-                $chunk = $this->recoverOk();
-                break;
-
-            default:
-                throw new \RuntimeException;
-        }
+        /** @psalm-suppress UnhandledMatchCondition todo regroup everything in the Reader class */
+        $chunk = match ($method) {
+            Method::basicQosOk => $this->qosOk(),
+            Method::basicConsumeOk => $this->consumeOk(),
+            Method::basicCancelOk => $this->cancelOk(),
+            Method::basicReturn => $this->return(),
+            Method::basicDeliver => $this->deliver(),
+            Method::basicGetOk => $this->getOk(),
+            Method::basicGetEmpty => $this->getEmpty(),
+            Method::basicRecoverOk => $this->recoverOk(),
+        };
 
         return $chunk($arguments);
     }

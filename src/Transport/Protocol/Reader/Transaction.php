@@ -18,22 +18,12 @@ final class Transaction
      */
     public function __invoke(Method $method, Readable $arguments): Sequence
     {
-        switch (true) {
-            case Method::transactionSelectOk->equals($method):
-                $chunk = $this->selectOk();
-                break;
-
-            case Method::transactionCommitOk->equals($method):
-                $chunk = $this->commitOk();
-                break;
-
-            case Method::transactionRollbackOk->equals($method):
-                $chunk = $this->rollbackOk();
-                break;
-
-            default:
-                throw new \RuntimeException;
-        }
+        /** @psalm-suppress UnhandledMatchCondition todo regroup everything in the Reader class */
+        $chunk = match ($method) {
+            Method::transactionSelectOk => $this->selectOk(),
+            Method::transactionCommitOk => $this->commitOk(),
+            Method::transactionRollbackOk => $this->rollbackOk(),
+        };
 
         return $chunk($arguments);
     }
