@@ -7,7 +7,7 @@ use Innmind\AMQP\{
     Client\Channel\Queue\Queue,
     Client\Channel\Queue as QueueInterface,
     Transport\Connection\Connection,
-    Transport\Protocol\v091\Protocol,
+    Transport\Protocol,
     Transport\Protocol\ArgumentTranslator,
     Transport\Frame\Channel,
     Model\Queue\Declaration,

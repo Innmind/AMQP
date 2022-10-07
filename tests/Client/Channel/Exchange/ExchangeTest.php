@@ -7,7 +7,7 @@ use Innmind\AMQP\{
     Client\Channel\Exchange\Exchange,
     Client\Channel\Exchange as ExchangeInterface,
     Transport\Connection\Connection,
-    Transport\Protocol\v091\Protocol,
+    Transport\Protocol,
     Transport\Protocol\ArgumentTranslator,
     Transport\Frame\Channel,
     Model\Exchange\Declaration,

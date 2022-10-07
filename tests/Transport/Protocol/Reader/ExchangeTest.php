@@ -1,11 +1,11 @@
 <?php
 declare(strict_types = 1);
 
-namespace Tests\Innmind\AMQP\Transport\Protocol\v091\Reader;
+namespace Tests\Innmind\AMQP\Transport\Protocol\Reader;
 
 use Innmind\AMQP\{
-    Transport\Protocol\v091\Reader\Exchange,
-    Transport\Protocol\v091\Methods,
+    Transport\Protocol\Reader\Exchange,
+    Transport\Protocol\Methods,
     Transport\Frame\Method,
     Transport\Frame\Value,
     Exception\UnknownMethod,

@@ -1,7 +1,7 @@
 <?php
 declare(strict_types = 1);
 
-namespace Innmind\AMQP\Transport\Protocol\v091;
+namespace Innmind\AMQP\Transport\Protocol;
 
 use Innmind\AMQP\Transport\Frame\Method;
 

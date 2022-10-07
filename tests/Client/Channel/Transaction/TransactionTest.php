@@ -8,7 +8,7 @@ use Innmind\AMQP\{
     Client\Channel\Transaction as TransactionInterface,
     Transport\Connection\Connection,
     Transport\Frame\Channel,
-    Transport\Protocol\v091\Protocol,
+    Transport\Protocol,
     Transport\Protocol\ArgumentTranslator,
     Model\Channel\Close,
 };

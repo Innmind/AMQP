@@ -6,7 +6,7 @@ namespace Tests\Innmind\AMQP\Transport\Connection;
 use Innmind\AMQP\{
     Transport\Connection\Lazy,
     Transport\Connection,
-    Transport\Protocol\v091\Protocol,
+    Transport\Protocol,
     Transport\Protocol\ArgumentTranslator,
     Transport\Frame,
     Exception\ConnectionClosed,

@@ -1,17 +1,17 @@
 <?php
 declare(strict_types = 1);
 
-namespace Innmind\AMQP\Transport\Protocol\v091;
+namespace Innmind\AMQP\Transport\Protocol;
 
 use Innmind\AMQP\Transport\{
     Frame\Method,
     Frame\Value,
-    Protocol\v091\Reader\Connection,
-    Protocol\v091\Reader\Channel,
-    Protocol\v091\Reader\Exchange,
-    Protocol\v091\Reader\Queue,
-    Protocol\v091\Reader\Basic,
-    Protocol\v091\Reader\Transaction,
+    Protocol\Reader\Connection,
+    Protocol\Reader\Channel,
+    Protocol\Reader\Exchange,
+    Protocol\Reader\Queue,
+    Protocol\Reader\Basic,
+    Protocol\Reader\Transaction,
 };
 use Innmind\Stream\Readable;
 use Innmind\Immutable\Sequence;

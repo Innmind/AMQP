@@ -1,17 +1,16 @@
 <?php
 declare(strict_types = 1);
 
-namespace Tests\Innmind\AMQP\Transport\Protocol\v091;
+namespace Tests\Innmind\AMQP\Transport;
 
 use Innmind\AMQP\{
-    Transport\Protocol\v091\Protocol,
-    Transport\Protocol\v091\Connection,
-    Transport\Protocol\v091\Channel,
-    Transport\Protocol\v091\Exchange,
-    Transport\Protocol\v091\Queue,
-    Transport\Protocol\v091\Basic,
-    Transport\Protocol\v091\Transaction,
-    Transport\Protocol as ProtocolInterface,
+    Transport\Protocol,
+    Transport\Protocol\Connection,
+    Transport\Protocol\Channel,
+    Transport\Protocol\Exchange,
+    Transport\Protocol\Queue,
+    Transport\Protocol\Basic,
+    Transport\Protocol\Transaction,
     Transport\Protocol\Version,
     Transport\Protocol\ArgumentTranslator,
     Transport\Protocol\ArgumentTranslator\ValueTranslator,
@@ -52,7 +51,6 @@ class ProtocolTest extends TestCase
     {
         $protocol = new Protocol($this->createMock(ArgumentTranslator::class));
 
-        $this->assertInstanceOf(ProtocolInterface::class, $protocol);
         $this->assertInstanceOf(Version::class, $protocol->version());
         $this->assertSame("AMQP\x00\x00\x09\x01", $protocol->version()->toString());
         $this->assertInstanceOf(Connection::class, $protocol->connection());

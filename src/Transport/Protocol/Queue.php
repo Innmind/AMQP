@@ -11,13 +11,113 @@ use Innmind\AMQP\{
     Model\Queue\Purge,
     Transport\Frame,
     Transport\Frame\Channel as FrameChannel,
+    Transport\Frame\Type,
+    Transport\Frame\Value,
+    Transport\Frame\Value\UnsignedShortInteger,
+    Transport\Frame\Value\ShortString,
+    Transport\Frame\Value\Bits,
+    Transport\Frame\Value\Table,
+};
+use Innmind\Math\Algebra\Integer;
+use Innmind\Immutable\{
+    Str,
+    Map,
 };
 
-interface Queue
+final class Queue
 {
-    public function declare(FrameChannel $channel, Declaration $command): Frame;
-    public function delete(FrameChannel $channel, Deletion $command): Frame;
-    public function bind(FrameChannel $channel, Binding $command): Frame;
-    public function unbind(FrameChannel $channel, Unbinding $command): Frame;
-    public function purge(FrameChannel $channel, Purge $command): Frame;
+    private ArgumentTranslator $translate;
+
+    public function __construct(ArgumentTranslator $translator)
+    {
+        $this->translate = $translator;
+    }
+
+    public function declare(FrameChannel $channel, Declaration $command): Frame
+    {
+        $name = $command->name()->match(
+            static fn($name) => $name,
+            static fn() => '',
+        );
+
+        return Frame::method(
+            $channel,
+            Methods::get('queue.declare'),
+            new UnsignedShortInteger(Integer::of(0)), // ticket (reserved)
+            ShortString::of(Str::of($name)),
+            new Bits(
+                $command->isPassive(),
+                $command->isDurable(),
+                $command->isExclusive(),
+                $command->isAutoDeleted(),
+                !$command->shouldWait(),
+            ),
+            $this->translate($command->arguments()),
+        );
+    }
+
+    public function delete(FrameChannel $channel, Deletion $command): Frame
+    {
+        return Frame::method(
+            $channel,
+            Methods::get('queue.delete'),
+            new UnsignedShortInteger(Integer::of(0)), // ticket (reserved)
+            ShortString::of(Str::of($command->name())),
+            new Bits(
+                $command->onlyIfUnused(),
+                $command->onlyIfEmpty(),
+                !$command->shouldWait(),
+            ),
+        );
+    }
+
+    public function bind(FrameChannel $channel, Binding $command): Frame
+    {
+        return Frame::method(
+            $channel,
+            Methods::get('queue.bind'),
+            new UnsignedShortInteger(Integer::of(0)), // ticket (reserved)
+            ShortString::of(Str::of($command->queue())),
+            ShortString::of(Str::of($command->exchange())),
+            ShortString::of(Str::of($command->routingKey())),
+            new Bits(!$command->shouldWait()),
+            $this->translate($command->arguments()),
+        );
+    }
+
+    public function unbind(FrameChannel $channel, Unbinding $command): Frame
+    {
+        return Frame::method(
+            $channel,
+            Methods::get('queue.unbind'),
+            new UnsignedShortInteger(Integer::of(0)), // ticket (reserved)
+            ShortString::of(Str::of($command->queue())),
+            ShortString::of(Str::of($command->exchange())),
+            ShortString::of(Str::of($command->routingKey())),
+            $this->translate($command->arguments()),
+        );
+    }
+
+    public function purge(FrameChannel $channel, Purge $command): Frame
+    {
+        return Frame::method(
+            $channel,
+            Methods::get('queue.purge'),
+            new UnsignedShortInteger(Integer::of(0)), // ticket (reserved)
+            ShortString::of(Str::of($command->name())),
+            new Bits(!$command->shouldWait()),
+        );
+    }
+
+    /**
+     * @param Map<string, mixed> $arguments
+     */
+    private function translate(Map $arguments): Table
+    {
+        $table = $arguments->map(
+            fn($_, $value) => ($this->translate)($value),
+        );
+
+        return new Table($table);
+    }
 }

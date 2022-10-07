@@ -1,11 +1,10 @@
 <?php
 declare(strict_types = 1);
 
-namespace Tests\Innmind\AMQP\Transport\Protocol\v091;
+namespace Tests\Innmind\AMQP\Transport\Protocol;
 
 use Innmind\AMQP\{
-    Transport\Protocol\v091\Queue,
-    Transport\Protocol\Queue as QueueInterface,
+    Transport\Protocol\Queue,
     Transport\Protocol\ArgumentTranslator,
     Transport\Frame,
     Transport\Frame\Channel,
@@ -35,11 +34,6 @@ class QueueTest extends TestCase
         $this->queue = new Queue(
             $this->translator = $this->createMock(ArgumentTranslator::class),
         );
-    }
-
-    public function testInterface()
-    {
-        $this->assertInstanceOf(QueueInterface::class, $this->queue);
     }
 
     public function testDeclare()

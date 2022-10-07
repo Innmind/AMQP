@@ -1,11 +1,10 @@
 <?php
 declare(strict_types = 1);
 
-namespace Tests\Innmind\AMQP\Transport\Protocol\v091;
+namespace Tests\Innmind\AMQP\Transport\Protocol;
 
 use Innmind\AMQP\{
-    Transport\Protocol\v091\Basic,
-    Transport\Protocol\Basic as BasicInterface,
+    Transport\Protocol\Basic,
     Transport\Protocol\ArgumentTranslator,
     Transport\Protocol\ArgumentTranslator\ValueTranslator,
     Transport\Frame,
@@ -63,11 +62,6 @@ class BasicTest extends TestCase
         $this->basic = new Basic(
             $this->translator = $this->createMock(ArgumentTranslator::class),
         );
-    }
-
-    public function testInterface()
-    {
-        $this->assertInstanceOf(BasicInterface::class, $this->basic);
     }
 
     public function testAck()

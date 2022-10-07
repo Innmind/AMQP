@@ -1,11 +1,10 @@
 <?php
 declare(strict_types = 1);
 
-namespace Tests\Innmind\AMQP\Transport\Protocol\v091;
+namespace Tests\Innmind\AMQP\Transport\Protocol;
 
 use Innmind\AMQP\Transport\{
-    Protocol\v091\Transaction,
-    Protocol\Transaction as TransactionInterface,
+    Protocol\Transaction,
     Frame,
     Frame\Type,
     Frame\Channel,
@@ -15,11 +14,6 @@ use PHPUnit\Framework\TestCase;
 
 class TransactionTest extends TestCase
 {
-    public function testInterface()
-    {
-        $this->assertInstanceOf(TransactionInterface::class, new Transaction);
-    }
-
     public function testSelect()
     {
         $frame = (new Transaction)->select(

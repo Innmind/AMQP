@@ -1,11 +1,10 @@
 <?php
 declare(strict_types = 1);
 
-namespace Tests\Innmind\AMQP\Transport\Protocol\v091;
+namespace Tests\Innmind\AMQP\Transport\Protocol;
 
 use Innmind\AMQP\{
-    Transport\Protocol\v091\Exchange,
-    Transport\Protocol\Exchange as ExchangeInterface,
+    Transport\Protocol\Exchange,
     Transport\Protocol\ArgumentTranslator,
     Transport\Frame,
     Transport\Frame\Channel,
@@ -31,11 +30,6 @@ class ExchangeTest extends TestCase
         $this->exchange = new Exchange(
             $this->translator = $this->createMock(ArgumentTranslator::class),
         );
-    }
-
-    public function testInterface()
-    {
-        $this->assertInstanceOf(ExchangeInterface::class, $this->exchange);
     }
 
     public function testDeclare()

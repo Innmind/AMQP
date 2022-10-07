@@ -12,7 +12,7 @@ use Innmind\AMQP\{
     Client\Channel\Transaction,
     Transport\Connection\Connection,
     Transport\Protocol\ArgumentTranslator\ValueTranslator,
-    Transport\Protocol\v091\Protocol,
+    Transport\Protocol,
     Transport\Frame\Channel as Number,
 };
 use Innmind\Socket\Internet\Transport;

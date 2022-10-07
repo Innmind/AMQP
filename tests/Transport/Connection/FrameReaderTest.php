@@ -18,7 +18,7 @@ use Innmind\AMQP\{
     Transport\Frame\Value\UnsignedLongLongInteger,
     Transport\Frame\Value\UnsignedShortInteger,
     Transport\Frame\Value\Timestamp,
-    Transport\Protocol\v091\Protocol,
+    Transport\Protocol,
     Transport\Protocol\ArgumentTranslator\ValueTranslator,
     Model\Basic\Publish,
     Model\Basic\Message\Generic,

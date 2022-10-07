@@ -1,7 +1,7 @@
 <?php
 declare(strict_types = 1);
 
-namespace Innmind\AMQP\Transport\Protocol\v091\Reader;
+namespace Innmind\AMQP\Transport\Protocol\Reader;
 
 use Innmind\AMQP\{
     Transport\Frame\Method,
@@ -12,7 +12,7 @@ use Innmind\AMQP\{
     Transport\Frame\Value\UnsignedLongInteger,
     Transport\Frame\Value\UnsignedLongLongInteger,
     Transport\Frame\Value\UnsignedShortInteger,
-    Transport\Protocol\v091\Methods,
+    Transport\Protocol\Methods,
     Exception\UnknownMethod,
 };
 use Innmind\Stream\Readable;

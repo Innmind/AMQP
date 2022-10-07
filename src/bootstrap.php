@@ -47,7 +47,7 @@ function bootstrap(): array
                 $connection = new Transport\Connection\Lazy(
                     $transport,
                     $server,
-                    new Transport\Protocol\v091\Protocol(
+                    new Transport\Protocol(
                         new Transport\Protocol\ArgumentTranslator\ValueTranslator,
                     ),
                     $timeout,

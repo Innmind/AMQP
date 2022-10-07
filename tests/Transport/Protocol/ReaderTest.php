@@ -1,11 +1,11 @@
 <?php
 declare(strict_types = 1);
 
-namespace Tests\Innmind\AMQP\Transport\Protocol\v091;
+namespace Tests\Innmind\AMQP\Transport\Protocol;
 
 use Innmind\AMQP\Transport\{
-    Protocol\v091\Reader,
-    Protocol\v091\Methods,
+    Protocol\Reader,
+    Protocol\Methods,
     Frame\Method,
     Frame\Value,
     Frame\Value\ShortString,

@@ -1,11 +1,10 @@
 <?php
 declare(strict_types = 1);
 
-namespace Tests\Innmind\AMQP\Transport\Protocol\v091;
+namespace Tests\Innmind\AMQP\Transport\Protocol;
 
 use Innmind\AMQP\{
-    Transport\Protocol\v091\Channel,
-    Transport\Protocol\Channel as ChannelInterface,
+    Transport\Protocol\Channel,
     Transport\Frame,
     Transport\Frame\Type,
     Transport\Frame\Method,
@@ -21,11 +20,6 @@ use PHPUnit\Framework\TestCase;
 
 class ChannelTest extends TestCase
 {
-    public function testInterface()
-    {
-        $this->assertInstanceOf(ChannelInterface::class, new Channel);
-    }
-
     public function testOpen()
     {
         $frame = (new Channel)->open(

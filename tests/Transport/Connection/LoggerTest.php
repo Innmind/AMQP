@@ -7,6 +7,7 @@ use Innmind\AMQP\Transport\{
     Connection\Logger,
     Connection,
     Protocol,
+    Protocol\ArgumentTranslator,
     Frame,
 };
 use Psr\Log\LoggerInterface;
@@ -34,7 +35,7 @@ class LoggerTest extends TestCase
         $inner
             ->expects($this->once())
             ->method('protocol')
-            ->willReturn($expected = $this->createMock(Protocol::class));
+            ->willReturn($expected = new Protocol($this->createMock(ArgumentTranslator::class)));
 
         $this->assertSame($expected, $connection->protocol());
     }

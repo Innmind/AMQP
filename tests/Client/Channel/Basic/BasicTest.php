@@ -22,7 +22,7 @@ use Innmind\AMQP\{
     Transport\Frame\Value\UnsignedOctet,
     Transport\Frame\Value\UnsignedShortInteger,
     Transport\Frame\Value\VoidValue,
-    Transport\Protocol\v091\Protocol,
+    Transport\Protocol,
     Transport\Protocol\ArgumentTranslator\ValueTranslator,
     Model\Channel\Close,
     Model\Queue\Declaration,

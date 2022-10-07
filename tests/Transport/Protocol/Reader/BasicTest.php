@@ -1,14 +1,17 @@
 <?php
 declare(strict_types = 1);
 
-namespace Tests\Innmind\AMQP\Transport\Protocol\v091\Reader;
+namespace Tests\Innmind\AMQP\Transport\Protocol\Reader;
 
 use Innmind\AMQP\{
-    Transport\Protocol\v091\Reader\Queue,
-    Transport\Protocol\v091\Methods,
+    Transport\Protocol\Reader\Basic,
+    Transport\Protocol\Methods,
     Transport\Frame\Method,
     Transport\Frame\Value,
+    Transport\Frame\Value\UnsignedShortInteger,
     Transport\Frame\Value\ShortString,
+    Transport\Frame\Value\UnsignedLongLongInteger,
+    Transport\Frame\Value\Bits,
     Transport\Frame\Value\UnsignedLongInteger,
     Exception\UnknownMethod,
 };
@@ -20,14 +23,14 @@ use Innmind\Immutable\{
 };
 use PHPUnit\Framework\TestCase;
 
-class QueueTest extends TestCase
+class BasicTest extends TestCase
 {
     /**
      * @dataProvider cases
      */
     public function testInvokation($method, $arguments)
     {
-        $read = new Queue;
+        $read = new Basic;
 
         $args = '';
 
@@ -60,35 +63,60 @@ class QueueTest extends TestCase
         $this->expectException(UnknownMethod::class);
         $this->expectExceptionMessage('0,0');
 
-        (new Queue)(new Method(0, 0), Stream::ofContent(''));
+        (new Basic)(new Method(0, 0), Stream::ofContent(''));
     }
 
     public function cases(): array
     {
         return [
             [
-                'queue.declare-ok',
+                'basic.qos-ok',
+                [],
+            ],
+            [
+                'basic.consume-ok',
+                [new ShortString(Str::of('foo'))],
+            ],
+            [
+                'basic.cancel-ok',
+                [new ShortString(Str::of('foo'))],
+            ],
+            [
+                'basic.return',
+                [
+                    new UnsignedShortInteger(Integer::of(42)),
+                    new ShortString(Str::of('foo')),
+                    new ShortString(Str::of('bar')),
+                    new ShortString(Str::of('baz')),
+                ],
+            ],
+            [
+                'basic.deliver',
                 [
                     new ShortString(Str::of('foo')),
-                    new UnsignedLongInteger(Integer::of(42)),
+                    new UnsignedLongLongInteger(Integer::of(42)),
+                    new Bits(true),
+                    new ShortString(Str::of('bar')),
+                    new ShortString(Str::of('baz')),
+                ],
+            ],
+            [
+                'basic.get-ok',
+                [
+                    new UnsignedLongLongInteger(Integer::of(42)),
+                    new Bits(true),
+                    new ShortString(Str::of('foo')),
+                    new ShortString(Str::of('bar')),
                     new UnsignedLongInteger(Integer::of(24)),
                 ],
             ],
             [
-                'queue.bind-ok',
+                'basic.get-empty',
                 [],
             ],
             [
-                'queue.unbind-ok',
+                'basic.recover-ok',
                 [],
-            ],
-            [
-                'queue.purge-ok',
-                [new UnsignedLongInteger(Integer::of(42))],
-            ],
-            [
-                'queue.delete-ok',
-                [new UnsignedLongInteger(Integer::of(42))],
             ],
         ];
     }

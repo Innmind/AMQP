@@ -1,19 +1,19 @@
 <?php
 declare(strict_types = 1);
 
-namespace Innmind\AMQP\Transport\Protocol\v091\Reader;
+namespace Innmind\AMQP\Transport\Protocol\Reader;
 
 use Innmind\AMQP\{
     Transport\Frame\Method,
     Transport\Frame\Value,
     Transport\Frame\Visitor\ChunkArguments,
-    Transport\Protocol\v091\Methods,
+    Transport\Protocol\Methods,
     Exception\UnknownMethod,
 };
 use Innmind\Stream\Readable;
 use Innmind\Immutable\Sequence;
 
-final class Exchange
+final class Transaction
 {
     /**
      * @return Sequence<Value>
@@ -21,12 +21,16 @@ final class Exchange
     public function __invoke(Method $method, Readable $arguments): Sequence
     {
         switch (true) {
-            case Methods::get('exchange.declare-ok')->equals($method):
-                $chunk = $this->declareOk();
+            case Methods::get('tx.select-ok')->equals($method):
+                $chunk = $this->selectOk();
                 break;
 
-            case Methods::get('exchange.delete-ok')->equals($method):
-                $chunk = $this->deleteOk();
+            case Methods::get('tx.commit-ok')->equals($method):
+                $chunk = $this->commitOk();
+                break;
+
+            case Methods::get('tx.rollback-ok')->equals($method):
+                $chunk = $this->rollbackOk();
                 break;
 
             default:
@@ -36,12 +40,17 @@ final class Exchange
         return $chunk($arguments);
     }
 
-    private function declareOk(): ChunkArguments
+    private function selectOk(): ChunkArguments
     {
         return new ChunkArguments; // no arguments
     }
 
-    private function deleteOk(): ChunkArguments
+    private function commitOk(): ChunkArguments
+    {
+        return new ChunkArguments; // no arguments
+    }
+
+    private function rollbackOk(): ChunkArguments
     {
         return new ChunkArguments; // no arguments
     }

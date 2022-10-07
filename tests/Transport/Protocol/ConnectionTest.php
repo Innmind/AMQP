@@ -1,11 +1,10 @@
 <?php
 declare(strict_types = 1);
 
-namespace Tests\Innmind\AMQP\Transport\Protocol\v091;
+namespace Tests\Innmind\AMQP\Transport\Protocol;
 
 use Innmind\AMQP\{
-    Transport\Protocol\v091\Connection,
-    Transport\Protocol\Connection as ConnectionInterface,
+    Transport\Protocol\Connection,
     Transport\Frame,
     Transport\Frame\Type,
     Transport\Frame\Method,
@@ -33,11 +32,6 @@ use PHPUnit\Framework\TestCase;
 
 class ConnectionTest extends TestCase
 {
-    public function testInterface()
-    {
-        $this->assertInstanceOf(ConnectionInterface::class, new Connection);
-    }
-
     public function testStartOk()
     {
         $frame = (new Connection)->startOk(

@@ -1,15 +1,18 @@
 <?php
 declare(strict_types = 1);
 
-namespace Tests\Innmind\AMQP\Transport\Protocol\v091\Reader;
+namespace Tests\Innmind\AMQP\Transport\Protocol\Reader;
 
 use Innmind\AMQP\{
-    Transport\Protocol\v091\Reader\Transaction,
-    Transport\Protocol\v091\Methods,
+    Transport\Protocol\Reader\Queue,
+    Transport\Protocol\Methods,
     Transport\Frame\Method,
     Transport\Frame\Value,
+    Transport\Frame\Value\ShortString,
+    Transport\Frame\Value\UnsignedLongInteger,
     Exception\UnknownMethod,
 };
+use Innmind\Math\Algebra\Integer;
 use Innmind\Stream\Readable\Stream;
 use Innmind\Immutable\{
     Str,
@@ -17,18 +20,24 @@ use Innmind\Immutable\{
 };
 use PHPUnit\Framework\TestCase;
 
-class TransactionTest extends TestCase
+class QueueTest extends TestCase
 {
     /**
      * @dataProvider cases
      */
     public function testInvokation($method, $arguments)
     {
-        $read = new Transaction;
+        $read = new Queue;
+
+        $args = '';
+
+        foreach ($arguments as $arg) {
+            $args .= $arg->pack();
+        }
 
         $stream = $read(
             Methods::get($method),
-            Stream::ofContent(\implode('', $arguments)),
+            Stream::ofContent($args),
         );
 
         $this->assertInstanceOf(Sequence::class, $stream);
@@ -39,8 +48,8 @@ class TransactionTest extends TestCase
                 static fn($value) => $value,
                 static fn() => null,
             ));
-            $this->assertSame((string) $argument, $stream->get($i)->match(
-                static fn($value) => (string) $value,
+            $this->assertSame($argument->pack(), $stream->get($i)->match(
+                static fn($value) => $value->pack(),
                 static fn() => null,
             ));
         }
@@ -51,23 +60,35 @@ class TransactionTest extends TestCase
         $this->expectException(UnknownMethod::class);
         $this->expectExceptionMessage('0,0');
 
-        (new Transaction)(new Method(0, 0), Stream::ofContent(''));
+        (new Queue)(new Method(0, 0), Stream::ofContent(''));
     }
 
     public function cases(): array
     {
         return [
             [
-                'tx.select-ok',
+                'queue.declare-ok',
+                [
+                    new ShortString(Str::of('foo')),
+                    new UnsignedLongInteger(Integer::of(42)),
+                    new UnsignedLongInteger(Integer::of(24)),
+                ],
+            ],
+            [
+                'queue.bind-ok',
                 [],
             ],
             [
-                'tx.commit-ok',
+                'queue.unbind-ok',
                 [],
             ],
             [
-                'tx.rollback-ok',
-                [],
+                'queue.purge-ok',
+                [new UnsignedLongInteger(Integer::of(42))],
+            ],
+            [
+                'queue.delete-ok',
+                [new UnsignedLongInteger(Integer::of(42))],
             ],
         ];
     }
