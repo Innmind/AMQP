@@ -52,7 +52,7 @@ class ProtocolTest extends TestCase
         $protocol = new Protocol($this->createMock(ArgumentTranslator::class));
 
         $this->assertInstanceOf(Version::class, $protocol->version());
-        $this->assertSame("AMQP\x00\x00\x09\x01", $protocol->version()->toString());
+        $this->assertSame("AMQP\x00\x00\x09\x01", $protocol->version()->pack()->toString());
         $this->assertInstanceOf(Connection::class, $protocol->connection());
         $this->assertInstanceOf(Channel::class, $protocol->channel());
         $this->assertInstanceOf(Exchange::class, $protocol->exchange());

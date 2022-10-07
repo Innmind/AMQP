@@ -247,7 +247,7 @@ final class Connection implements ConnectionInterface
     private function start(): void
     {
         $this->socket->write(
-            Str::of($this->protocol->version()->toString()),
+            $this->protocol->version()->pack(),
         );
 
         try {

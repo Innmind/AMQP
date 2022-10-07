@@ -34,14 +34,7 @@ class VersionTest extends TestCase
 
     public function testStringCast()
     {
-        $this->assertSame("AMQP\x00\x00\x09\x01", (new Version(0, 9, 1))->toString());
-    }
-
-    public function testHigherThan()
-    {
-        $this->assertTrue((new Version(0, 9, 1))->higherThan(new Version(0, 8, 0)));
-        $this->assertFalse((new Version(0, 9, 1))->higherThan(new Version(0, 9, 1)));
-        $this->assertFalse((new Version(0, 9, 1))->higherThan(new Version(1, 0, 0)));
+        $this->assertSame("AMQP\x00\x00\x09\x01", (new Version(0, 9, 1))->pack()->toString());
     }
 
     public function testCompatbleWith()

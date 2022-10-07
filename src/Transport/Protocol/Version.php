@@ -4,6 +4,7 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Transport\Protocol;
 
 use Innmind\AMQP\Exception\DomainException;
+use Innmind\Immutable\Str;
 
 final class Version
 {
@@ -22,34 +23,6 @@ final class Version
         $this->fix = $fix;
     }
 
-    public function major(): int
-    {
-        return $this->major;
-    }
-
-    public function minor(): int
-    {
-        return $this->minor;
-    }
-
-    public function fix(): int
-    {
-        return $this->fix;
-    }
-
-    public function higherThan(self $version): bool
-    {
-        if ($this->major !== $version->major) {
-            return $this->major > $version->major;
-        }
-
-        if ($this->minor !== $version->minor) {
-            return $this->minor > $version->minor;
-        }
-
-        return $this->fix > $version->fix;
-    }
-
     public function compatibleWith(self $version): bool
     {
         if ($this->major === 0 && $version->major === 0) {
@@ -66,10 +39,20 @@ final class Version
     public function toString(): string
     {
         return \sprintf(
+            '%s.%s.%s',
+            $this->major,
+            $this->minor,
+            $this->fix,
+        );
+    }
+
+    public function pack(): Str
+    {
+        return Str::of(\sprintf(
             "AMQP\x00%s%s%s",
             \chr($this->major),
             \chr($this->minor),
             \chr($this->fix),
-        );
+        ));
     }
 }
