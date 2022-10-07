@@ -7,8 +7,6 @@ use Innmind\AMQP\{
     Transport\Frame\Method,
     Transport\Frame\Value,
     Transport\Frame\Visitor\ChunkArguments,
-    Transport\Protocol\Methods,
-    Exception\UnknownMethod,
 };
 use Innmind\Stream\Readable;
 use Innmind\Immutable\Sequence;
@@ -21,16 +19,16 @@ final class Exchange
     public function __invoke(Method $method, Readable $arguments): Sequence
     {
         switch (true) {
-            case Methods::get('exchange.declare-ok')->equals($method):
+            case Method::exchangeDeclareOk->equals($method):
                 $chunk = $this->declareOk();
                 break;
 
-            case Methods::get('exchange.delete-ok')->equals($method):
+            case Method::exchangeDeleteOk->equals($method):
                 $chunk = $this->deleteOk();
                 break;
 
             default:
-                throw new UnknownMethod($method);
+                throw new \RuntimeException;
         }
 
         return $chunk($arguments);

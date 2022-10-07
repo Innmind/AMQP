@@ -45,7 +45,7 @@ final class Logger implements ConnectionInterface
         $this->logger->debug('AMQP frame sent', ['uuid' => $uuid]);
     }
 
-    public function wait(string ...$names): Frame
+    public function wait(Frame\Method ...$names): Frame
     {
         $this->logger->debug('Waiting for AMQP frame', ['names' => $names]);
         $frame = $this->connection->wait(...$names);

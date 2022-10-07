@@ -18,6 +18,7 @@ use Innmind\AMQP\{
     Transport\Frame,
     Transport\Frame\Channel,
     Transport\Frame\Value,
+    Transport\Frame\Method,
 };
 
 final class Basic implements BasicInterface
@@ -53,7 +54,7 @@ final class Basic implements BasicInterface
         );
 
         if ($command->shouldWait()) {
-            $this->connection->wait('basic.cancel-ok');
+            $this->connection->wait(Method::basicCancelOk);
         }
     }
 
@@ -67,7 +68,7 @@ final class Basic implements BasicInterface
         );
 
         if ($command->shouldWait()) {
-            $frame = $this->connection->wait('basic.consume-ok');
+            $frame = $this->connection->wait(Method::basicConsumeOk);
             /** @var Value\ShortString */
             $consumerTag = $frame->values()->first()->match(
                 static fn($value) => $value,
@@ -95,9 +96,9 @@ final class Basic implements BasicInterface
             $this->channel,
             $command,
         ));
-        $frame = $this->connection->wait('basic.get-ok', 'basic.get-empty');
+        $frame = $this->connection->wait(Method::basicGetOk, Method::basicGetEmpty);
 
-        if ($frame->is($this->connection->protocol()->method('basic.get-empty'))) {
+        if ($frame->is(Method::basicGetEmpty)) {
             return new Get\GetEmpty;
         }
 
@@ -166,7 +167,7 @@ final class Basic implements BasicInterface
             $this->channel,
             $command,
         ));
-        $this->connection->wait('basic.qos-ok');
+        $this->connection->wait(Method::basicQosOk);
     }
 
     public function recover(Recover $command): void
@@ -175,7 +176,7 @@ final class Basic implements BasicInterface
             $this->channel,
             $command,
         ));
-        $this->connection->wait('basic.recover-ok');
+        $this->connection->wait(Method::basicRecoverOk);
     }
 
     public function reject(Reject $command): void

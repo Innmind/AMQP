@@ -110,7 +110,7 @@ final class Connection implements ConnectionInterface
         $this->socket->write($frame);
     }
 
-    public function wait(string ...$names): Frame
+    public function wait(Frame\Method ...$names): Frame
     {
         do {
             if (!$this->opening && $this->closed()) {
@@ -148,12 +148,12 @@ final class Connection implements ConnectionInterface
         }
 
         foreach ($names as $name) {
-            if ($frame->is($this->protocol->method($name))) {
+            if ($frame->is($name)) {
                 return $frame;
             }
         }
 
-        if ($frame->is($this->protocol->method('connection.close'))) {
+        if ($frame->is(Method::connectionClose)) {
             $this->send($this->protocol->connection()->closeOk());
             $this->closed = true;
 
@@ -167,24 +167,10 @@ final class Connection implements ConnectionInterface
                 static fn($value) => $value,
                 static fn() => throw new \LogicException,
             );
-            /** @var Value\UnsignedShortInteger */
-            $class = $frame->values()->get(2)->match(
-                static fn($value) => $value,
-                static fn() => throw new \LogicException,
-            );
-            /** @var Value\UnsignedShortInteger */
-            $method = $frame->values()->get(3)->match(
-                static fn($value) => $value,
-                static fn() => throw new \LogicException,
-            );
 
             throw ConnectionClosed::byServer(
                 $message->original()->toString(),
                 $code->original()->value(),
-                new Method(
-                    $class->original()->value(),
-                    $method->original()->value(),
-                ),
             );
         }
 
@@ -203,7 +189,7 @@ final class Connection implements ConnectionInterface
         }
 
         $this->send($this->protocol->connection()->close(new Close));
-        $this->wait('connection.close-ok');
+        $this->wait(Method::connectionCloseOk);
         $this->socket->close();
         $this->closed = true;
     }
@@ -250,7 +236,7 @@ final class Connection implements ConnectionInterface
         );
 
         try {
-            $this->wait('connection.start');
+            $this->wait(Method::connectionStart);
         } catch (NoFrameDetected $e) {
             $content = $e->content();
             $protocol = $content->read(4)->match(
@@ -289,16 +275,16 @@ final class Connection implements ConnectionInterface
 
     private function handshake(): void
     {
-        $frame = $this->wait('connection.secure', 'connection.tune');
+        $frame = $this->wait(Method::connectionSecure, Method::connectionTune);
 
-        if ($frame->is($this->protocol->method('connection.secure'))) {
+        if ($frame->is(Method::connectionSecure)) {
             $this->send($this->protocol->connection()->secureOk(
                 new SecureOk(
                     $this->authority->userInformation()->user(),
                     $this->authority->userInformation()->password(),
                 ),
             ));
-            $frame = $this->wait('connection.tune');
+            $frame = $this->wait(Method::connectionTune);
         }
 
         /** @var Value\UnsignedShortInteger */
@@ -340,6 +326,6 @@ final class Connection implements ConnectionInterface
         $this->send($this->protocol->connection()->open(
             new Open($this->vhost),
         ));
-        $this->wait('connection.open-ok');
+        $this->wait(Method::connectionOpenOk);
     }
 }

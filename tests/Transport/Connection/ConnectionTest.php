@@ -52,7 +52,7 @@ class ConnectionTest extends TestCase
                 $protocol->channel()->open(new Channel(1)),
             ),
         );
-        $this->assertInstanceOf(Frame::class, $connection->wait('channel.open-ok'));
+        $this->assertInstanceOf(Frame::class, $connection->wait(Method::channelOpenOk));
         $connection->close(); //test it closes without exception
     }
 
@@ -88,7 +88,7 @@ class ConnectionTest extends TestCase
         $this->expectException(UnexpectedFrame::class);
 
         $connection->send($protocol->channel()->open(new Channel(2)));
-        $connection->wait('connection.open');
+        $connection->wait(Method::connectionOpen);
     }
 
     public function testThrowWhenConnectionClosedByServer()
@@ -106,15 +106,14 @@ class ConnectionTest extends TestCase
         try {
             $connection->send(Frame::method(
                 new Channel(0),
-                new Method(20, 10),
+                Method::from(20, 10),
                 //missing arguments
             ));
-            $connection->wait('channel.open-ok');
+            $connection->wait(Method::channelOpenOk);
         } catch (ConnectionClosed $e) {
             $this->assertTrue($connection->closed());
             $this->assertSame('INTERNAL_ERROR', $e->getMessage());
             $this->assertSame(541, $e->getCode());
-            $this->assertTrue($e->cause()->equals(new Method(0, 0)));
         }
     }
 }

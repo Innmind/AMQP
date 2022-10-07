@@ -9,8 +9,6 @@ use Innmind\AMQP\{
     Transport\Frame\Value,
     Transport\Frame\Value\ShortString,
     Transport\Frame\Value\UnsignedLongInteger,
-    Transport\Protocol\Methods,
-    Exception\UnknownMethod,
 };
 use Innmind\Stream\Readable;
 use Innmind\Immutable\Sequence;
@@ -23,28 +21,28 @@ final class Queue
     public function __invoke(Method $method, Readable $arguments): Sequence
     {
         switch (true) {
-            case Methods::get('queue.declare-ok')->equals($method):
+            case Method::queueDeclareOk->equals($method):
                 $chunk = $this->declareOk();
                 break;
 
-            case Methods::get('queue.bind-ok')->equals($method):
+            case Method::queueBindOk->equals($method):
                 $chunk = $this->bindOk();
                 break;
 
-            case Methods::get('queue.unbind-ok')->equals($method):
+            case Method::queueUnbindOk->equals($method):
                 $chunk = $this->unbindOk();
                 break;
 
-            case Methods::get('queue.purge-ok')->equals($method):
+            case Method::queuePurgeOk->equals($method):
                 $chunk = $this->purgeOk();
                 break;
 
-            case Methods::get('queue.delete-ok')->equals($method):
+            case Method::queueDeleteOk->equals($method):
                 $chunk = $this->deleteOk();
                 break;
 
             default:
-                throw new UnknownMethod($method);
+                throw new \RuntimeException;
         }
 
         return $chunk($arguments);

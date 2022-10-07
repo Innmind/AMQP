@@ -5,7 +5,6 @@ namespace Tests\Innmind\AMQP\Transport\Protocol;
 
 use Innmind\AMQP\Transport\{
     Protocol\Reader,
-    Protocol\Methods,
     Frame\Method,
     Frame\Value,
     Frame\Value\ShortString,
@@ -42,7 +41,7 @@ class ReaderTest extends TestCase
         }
 
         $stream = $read(
-            Methods::get($method),
+            Method::of($method),
             Stream::ofContent($args),
         );
 

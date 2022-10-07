@@ -44,7 +44,7 @@ class ConnectionTest extends TestCase
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame(Type::method, $frame->type());
         $this->assertSame(0, $frame->channel()->toInt());
-        $this->assertTrue($frame->is(new Method(10, 11)));
+        $this->assertTrue($frame->is(Method::from(10, 11)));
         $this->assertCount(4, $frame->values());
         $this->assertInstanceOf(Table::class, $frame->values()->get(0)->match(
             static fn($value) => $value,
@@ -336,7 +336,7 @@ class ConnectionTest extends TestCase
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame(Type::method, $frame->type());
         $this->assertSame(0, $frame->channel()->toInt());
-        $this->assertTrue($frame->is(new Method(10, 21)));
+        $this->assertTrue($frame->is(Method::from(10, 21)));
         $this->assertCount(1, $frame->values());
         $this->assertInstanceOf(LongString::class, $frame->values()->get(0)->match(
             static fn($value) => $value,
@@ -364,7 +364,7 @@ class ConnectionTest extends TestCase
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame(Type::method, $frame->type());
         $this->assertSame(0, $frame->channel()->toInt());
-        $this->assertTrue($frame->is(new Method(10, 31)));
+        $this->assertTrue($frame->is(Method::from(10, 31)));
         $this->assertCount(3, $frame->values());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
@@ -410,7 +410,7 @@ class ConnectionTest extends TestCase
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame(Type::method, $frame->type());
         $this->assertSame(0, $frame->channel()->toInt());
-        $this->assertTrue($frame->is(new Method(10, 40)));
+        $this->assertTrue($frame->is(Method::from(10, 40)));
         $this->assertCount(3, $frame->values());
         $this->assertInstanceOf(
             ShortString::class,
@@ -459,7 +459,7 @@ class ConnectionTest extends TestCase
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame(Type::method, $frame->type());
         $this->assertSame(0, $frame->channel()->toInt());
-        $this->assertTrue($frame->is(new Method(10, 50)));
+        $this->assertTrue($frame->is(Method::from(10, 50)));
         $this->assertCount(4, $frame->values());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
@@ -535,7 +535,7 @@ class ConnectionTest extends TestCase
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame(Type::method, $frame->type());
         $this->assertSame(0, $frame->channel()->toInt());
-        $this->assertTrue($frame->is(new Method(10, 51)));
+        $this->assertTrue($frame->is(Method::from(10, 51)));
         $this->assertCount(0, $frame->values());
     }
 }

@@ -24,7 +24,7 @@ final class Channel
     {
         return Frame::method(
             $channel,
-            Methods::get('channel.open'),
+            Method::channelOpen,
             new ShortString(Str::of('')), // out of band (reserved)
         );
     }
@@ -33,7 +33,7 @@ final class Channel
     {
         return Frame::method(
             $channel,
-            Methods::get('channel.flow'),
+            Method::channelFlow,
             new Bits($command->active()),
         );
     }
@@ -42,7 +42,7 @@ final class Channel
     {
         return Frame::method(
             $channel,
-            Methods::get('channel.flow-ok'),
+            Method::channelFlowOk,
             new Bits($command->active()),
         );
     }
@@ -54,18 +54,21 @@ final class Channel
             static fn() => [0, ''],
         );
 
-        $method = $command->cause()->match(
-            static fn($cause) => Methods::get($cause),
-            static fn() => new Method(0, 0),
+        [$class, $method] = $command->cause()->match(
+            static fn($cause) => [
+                Method::of($cause)->class()->toInt(),
+                Method::of($cause)->method(),
+            ],
+            static fn() => [0, 0],
         );
 
         return Frame::method(
             $channel,
-            Methods::get('channel.close'),
+            Method::channelClose,
             UnsignedShortInteger::of(Integer::of($replyCode)),
             ShortString::of(Str::of($replyText)),
-            UnsignedShortInteger::of(Integer::of($method->class())),
-            UnsignedShortInteger::of(Integer::of($method->method())),
+            UnsignedShortInteger::of(Integer::of($class)),
+            UnsignedShortInteger::of(Integer::of($method)),
         );
     }
 
@@ -73,7 +76,7 @@ final class Channel
     {
         return Frame::method(
             $channel,
-            Methods::get('channel.close-ok'),
+            Method::channelCloseOk,
         );
     }
 }

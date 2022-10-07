@@ -10,6 +10,7 @@ use Innmind\AMQP\{
     Transport\Frame,
     Transport\Frame\Channel as FrameChannel,
     Transport\Frame\Type,
+    Transport\Frame\Method,
 };
 
 final class Transaction
@@ -18,7 +19,7 @@ final class Transaction
     {
         return Frame::method(
             $channel,
-            Methods::get('tx.select'),
+            Method::transactionSelect,
         );
     }
 
@@ -26,7 +27,7 @@ final class Transaction
     {
         return Frame::method(
             $channel,
-            Methods::get('tx.commit'),
+            Method::transactionCommit,
         );
     }
 
@@ -34,7 +35,7 @@ final class Transaction
     {
         return Frame::method(
             $channel,
-            Methods::get('tx.rollback'),
+            Method::transactionRollback,
         );
     }
 }

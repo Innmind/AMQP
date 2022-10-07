@@ -12,7 +12,6 @@ use Innmind\AMQP\{
     Transport\Protocol\Basic,
     Transport\Protocol\Transaction,
     Transport\Protocol\ArgumentTranslator,
-    Transport\Protocol\Methods,
     Transport\Protocol\Reader,
     Transport\Frame\Method,
     Transport\Frame\Visitor\ChunkArguments,
@@ -140,11 +139,6 @@ final class Protocol
         return $values->append(
             (new ChunkArguments(...$toChunk))($arguments),
         );
-    }
-
-    public function method(string $name): Method
-    {
-        return Methods::get($name);
     }
 
     public function connection(): Connection

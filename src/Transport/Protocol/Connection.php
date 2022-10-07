@@ -60,7 +60,7 @@ final class Connection
 
         return Frame::method(
             new Channel(0),
-            Methods::get('connection.start-ok'),
+            Method::connectionStartOk,
             $clientProperties,
             new ShortString(Str::of('AMQPLAIN')), // mechanism
             $this->response($command->user(), $command->password()),
@@ -72,7 +72,7 @@ final class Connection
     {
         return Frame::method(
             new Channel(0),
-            Methods::get('connection.secure-ok'),
+            Method::connectionSecureOk,
             $this->response($command->user(), $command->password()),
         );
     }
@@ -81,7 +81,7 @@ final class Connection
     {
         return Frame::method(
             new Channel(0),
-            Methods::get('connection.tune-ok'),
+            Method::connectionTuneOk,
             UnsignedShortInteger::of(Integer::of($command->maxChannels())),
             UnsignedLongInteger::of(Integer::of($command->maxFrameSize())),
             UnsignedShortInteger::of(Integer::of(
@@ -94,7 +94,7 @@ final class Connection
     {
         return Frame::method(
             new Channel(0),
-            Methods::get('connection.open'),
+            Method::connectionOpen,
             ShortString::of(Str::of($command->virtualHost()->toString())),
             new ShortString(Str::of('')), // capabilities (reserved)
             new Bits(false), // insist (reserved)
@@ -108,18 +108,21 @@ final class Connection
             static fn() => [0, ''],
         );
 
-        $method = $command->cause()->match(
-            static fn($cause) => Methods::get($cause),
-            static fn() => new Method(0, 0),
+        [$class, $method] = $command->cause()->match(
+            static fn($cause) => [
+                Method::of($cause)->class()->toInt(),
+                Method::of($cause)->method(),
+            ],
+            static fn() => [0, 0],
         );
 
         return Frame::method(
             new Channel(0),
-            Methods::get('connection.close'),
+            Method::connectionClose,
             UnsignedShortInteger::of(Integer::of($replyCode)),
             ShortString::of(Str::of($replyText)),
-            UnsignedShortInteger::of(Integer::of($method->class())),
-            UnsignedShortInteger::of(Integer::of($method->method())),
+            UnsignedShortInteger::of(Integer::of($class)),
+            UnsignedShortInteger::of(Integer::of($method)),
         );
     }
 
@@ -127,7 +130,7 @@ final class Connection
     {
         return Frame::method(
             new Channel(0),
-            Methods::get('connection.close-ok'),
+            Method::connectionCloseOk,
         );
     }
 

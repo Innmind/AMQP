@@ -13,7 +13,6 @@ use Innmind\AMQP\{
     Transport\Frame\Value\UnsignedLongLongInteger,
     Transport\Frame\Value\UnsignedShortInteger,
     Transport\Protocol\Methods,
-    Exception\UnknownMethod,
 };
 use Innmind\Stream\Readable;
 use Innmind\Immutable\Sequence;
@@ -26,40 +25,40 @@ final class Basic
     public function __invoke(Method $method, Readable $arguments): Sequence
     {
         switch (true) {
-            case Methods::get('basic.qos-ok')->equals($method):
+            case Method::basicQosOk->equals($method):
                 $chunk = $this->qosOk();
                 break;
 
-            case Methods::get('basic.consume-ok')->equals($method):
+            case Method::basicConsumeOk->equals($method):
                 $chunk = $this->consumeOk();
                 break;
 
-            case Methods::get('basic.cancel-ok')->equals($method):
+            case Method::basicCancelOk->equals($method):
                 $chunk = $this->cancelOk();
                 break;
 
-            case Methods::get('basic.return')->equals($method):
+            case Method::basicReturn->equals($method):
                 $chunk = $this->return();
                 break;
 
-            case Methods::get('basic.deliver')->equals($method):
+            case Method::basicDeliver->equals($method):
                 $chunk = $this->deliver();
                 break;
 
-            case Methods::get('basic.get-ok')->equals($method):
+            case Method::basicGetOk->equals($method):
                 $chunk = $this->getOk();
                 break;
 
-            case Methods::get('basic.get-empty')->equals($method):
+            case Method::basicGetEmpty->equals($method):
                 $chunk = $this->getEmpty();
                 break;
 
-            case Methods::get('basic.recover-ok')->equals($method):
+            case Method::basicRecoverOk->equals($method):
                 $chunk = $this->recoverOk();
                 break;
 
             default:
-                throw new UnknownMethod($method);
+                throw new \RuntimeException;
         }
 
         return $chunk($arguments);

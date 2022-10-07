@@ -61,7 +61,7 @@ final class Lazy implements ConnectionInterface
         $this->connection()->send($frame);
     }
 
-    public function wait(string ...$names): Frame
+    public function wait(Frame\Method ...$names): Frame
     {
         return $this->connection()->wait(...$names);
     }

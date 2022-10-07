@@ -17,6 +17,7 @@ use Innmind\AMQP\{
     Transport\Connection,
     Transport\Frame\Channel,
     Transport\Frame\Value,
+    Transport\Frame\Method,
 };
 
 final class Queue implements QueueInterface
@@ -43,7 +44,7 @@ final class Queue implements QueueInterface
             return null;
         }
 
-        $frame = $this->connection->wait('queue.declare-ok');
+        $frame = $this->connection->wait(Method::queueDeclareOk);
         /** @var Value\ShortString */
         $name = $frame->values()->get(0)->match(
             static fn($value) => $value,
@@ -80,7 +81,7 @@ final class Queue implements QueueInterface
             return null;
         }
 
-        $frame = $this->connection->wait('queue.delete-ok');
+        $frame = $this->connection->wait(Method::queueDeleteOk);
         /** @var Value\UnsignedLongInteger */
         $message = $frame->values()->first()->match(
             static fn($value) => $value,
@@ -102,7 +103,7 @@ final class Queue implements QueueInterface
         );
 
         if ($command->shouldWait()) {
-            $this->connection->wait('queue.bind-ok');
+            $this->connection->wait(Method::queueBindOk);
         }
     }
 
@@ -112,7 +113,7 @@ final class Queue implements QueueInterface
             $this->channel,
             $command,
         ));
-        $this->connection->wait('queue.unbind-ok');
+        $this->connection->wait(Method::queueUnbindOk);
     }
 
     public function purge(Purge $command): ?PurgeOk
@@ -128,7 +129,7 @@ final class Queue implements QueueInterface
             return null;
         }
 
-        $frame = $this->connection->wait('queue.purge-ok');
+        $frame = $this->connection->wait(Method::queuePurgeOk);
         /** @var Value\UnsignedLongInteger */
         $message = $frame->values()->first()->match(
             static fn($value) => $value,

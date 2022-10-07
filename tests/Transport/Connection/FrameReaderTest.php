@@ -71,7 +71,7 @@ class FrameReaderTest extends TestCase
             $file,
             Frame::method(
                 new Channel(0),
-                new Method(10, 10), // connection.start
+                Method::from(10, 10), // connection.start
                 new UnsignedOctet(Integer::of(0)),
                 new UnsignedOctet(Integer::of(9)),
                 new Table(Map::of()),
@@ -94,7 +94,7 @@ class FrameReaderTest extends TestCase
         $file = \tmpfile();
         $frame = Frame::method(
             new Channel(0),
-            new Method(10, 10), // connection.start
+            Method::from(10, 10), // connection.start
             new UnsignedOctet(Integer::of(0)),
             new UnsignedOctet(Integer::of(9)),
             new Table(Map::of()),
@@ -119,7 +119,7 @@ class FrameReaderTest extends TestCase
         $file = \tmpfile();
         $frame = Frame::method(
             new Channel(0),
-            new Method(10, 10), // connection.start
+            Method::from(10, 10), // connection.start
         )->toString();
         $frame = \mb_substr($frame, 0, -2, 'ASCII');
         \fwrite($file, $frame);

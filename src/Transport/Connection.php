@@ -27,7 +27,7 @@ interface Connection
      * @throws ConnectionClosed When the server sent a connection.close method
      * @throws UnexpectedFrame When the received frame is not one of the expected one
      */
-    public function wait(string ...$names): Frame;
+    public function wait(Frame\Method ...$names): Frame;
     public function maxFrameSize(): MaxFrameSize;
     public function close(): void;
     public function closed(): bool;

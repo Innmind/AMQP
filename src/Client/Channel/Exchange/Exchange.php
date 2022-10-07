@@ -9,6 +9,7 @@ use Innmind\AMQP\{
     Model\Exchange\Deletion,
     Transport\Connection,
     Transport\Frame\Channel,
+    Transport\Frame\Method,
 };
 
 final class Exchange implements ExchangeInterface
@@ -32,7 +33,7 @@ final class Exchange implements ExchangeInterface
         );
 
         if ($command->shouldWait()) {
-            $this->connection->wait('exchange.declare-ok');
+            $this->connection->wait(Method::exchangeDeclareOk);
         }
     }
 
@@ -46,7 +47,7 @@ final class Exchange implements ExchangeInterface
         );
 
         if ($command->shouldWait()) {
-            $this->connection->wait('exchange.delete-ok');
+            $this->connection->wait(Method::exchangeDeleteOk);
         }
     }
 }

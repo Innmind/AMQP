@@ -5,7 +5,6 @@ namespace Tests\Innmind\AMQP\Transport\Protocol\Reader;
 
 use Innmind\AMQP\{
     Transport\Protocol\Reader\Connection,
-    Transport\Protocol\Methods,
     Transport\Frame\Method,
     Transport\Frame\Value,
     Transport\Frame\Value\UnsignedOctet,
@@ -14,7 +13,6 @@ use Innmind\AMQP\{
     Transport\Frame\Value\UnsignedShortInteger,
     Transport\Frame\Value\UnsignedLongInteger,
     Transport\Frame\Value\ShortString,
-    Exception\UnknownMethod,
 };
 use Innmind\Math\Algebra\Integer;
 use Innmind\Stream\Readable\Stream;
@@ -41,7 +39,7 @@ class ConnectionTest extends TestCase
         }
 
         $stream = $read(
-            Methods::get($method),
+            Method::of($method),
             Stream::ofContent($args),
         );
 
@@ -58,14 +56,6 @@ class ConnectionTest extends TestCase
                 static fn() => null,
             ));
         }
-    }
-
-    public function testThrowWhenUnknownMethod()
-    {
-        $this->expectException(UnknownMethod::class);
-        $this->expectExceptionMessage('0,0');
-
-        (new Connection)(new Method(0, 0), Stream::ofContent(''));
     }
 
     public function cases(): array

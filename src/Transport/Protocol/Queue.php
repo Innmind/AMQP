@@ -12,6 +12,7 @@ use Innmind\AMQP\{
     Transport\Frame,
     Transport\Frame\Channel as FrameChannel,
     Transport\Frame\Type,
+    Transport\Frame\Method,
     Transport\Frame\Value,
     Transport\Frame\Value\UnsignedShortInteger,
     Transport\Frame\Value\ShortString,
@@ -42,7 +43,7 @@ final class Queue
 
         return Frame::method(
             $channel,
-            Methods::get('queue.declare'),
+            Method::queueDeclare,
             new UnsignedShortInteger(Integer::of(0)), // ticket (reserved)
             ShortString::of(Str::of($name)),
             new Bits(
@@ -60,7 +61,7 @@ final class Queue
     {
         return Frame::method(
             $channel,
-            Methods::get('queue.delete'),
+            Method::queueDelete,
             new UnsignedShortInteger(Integer::of(0)), // ticket (reserved)
             ShortString::of(Str::of($command->name())),
             new Bits(
@@ -75,7 +76,7 @@ final class Queue
     {
         return Frame::method(
             $channel,
-            Methods::get('queue.bind'),
+            Method::queueBind,
             new UnsignedShortInteger(Integer::of(0)), // ticket (reserved)
             ShortString::of(Str::of($command->queue())),
             ShortString::of(Str::of($command->exchange())),
@@ -89,7 +90,7 @@ final class Queue
     {
         return Frame::method(
             $channel,
-            Methods::get('queue.unbind'),
+            Method::queueUnbind,
             new UnsignedShortInteger(Integer::of(0)), // ticket (reserved)
             ShortString::of(Str::of($command->queue())),
             ShortString::of(Str::of($command->exchange())),
@@ -102,7 +103,7 @@ final class Queue
     {
         return Frame::method(
             $channel,
-            Methods::get('queue.purge'),
+            Method::queuePurge,
             new UnsignedShortInteger(Integer::of(0)), // ticket (reserved)
             ShortString::of(Str::of($command->name())),
             new Bits(!$command->shouldWait()),

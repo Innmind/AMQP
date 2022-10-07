@@ -5,10 +5,8 @@ namespace Tests\Innmind\AMQP\Transport\Protocol\Reader;
 
 use Innmind\AMQP\{
     Transport\Protocol\Reader\Exchange,
-    Transport\Protocol\Methods,
     Transport\Frame\Method,
     Transport\Frame\Value,
-    Exception\UnknownMethod,
 };
 use Innmind\Stream\Readable\Stream;
 use Innmind\Immutable\{
@@ -27,7 +25,7 @@ class ExchangeTest extends TestCase
         $read = new Exchange;
 
         $stream = $read(
-            Methods::get($method),
+            Method::of($method),
             Stream::ofContent(\implode('', $arguments)),
         );
 
@@ -44,14 +42,6 @@ class ExchangeTest extends TestCase
                 static fn() => null,
             ));
         }
-    }
-
-    public function testThrowWhenUnknownMethod()
-    {
-        $this->expectException(UnknownMethod::class);
-        $this->expectExceptionMessage('0,0');
-
-        (new Exchange)(new Method(0, 0), Stream::ofContent(''));
     }
 
     public function cases(): array

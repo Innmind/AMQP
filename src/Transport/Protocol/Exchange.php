@@ -9,6 +9,7 @@ use Innmind\AMQP\{
     Transport\Frame,
     Transport\Frame\Channel as FrameChannel,
     Transport\Frame\Type,
+    Transport\Frame\Method,
     Transport\Frame\Value,
     Transport\Frame\Value\UnsignedShortInteger,
     Transport\Frame\Value\ShortString,
@@ -38,7 +39,7 @@ final class Exchange
 
         return Frame::method(
             $channel,
-            Methods::get('exchange.declare'),
+            Method::exchangeDeclare,
             new UnsignedShortInteger(Integer::of(0)), // ticket (reserved)
             ShortString::of(Str::of($command->name())),
             ShortString::of(Str::of($command->type()->toString())),
@@ -57,7 +58,7 @@ final class Exchange
     {
         return Frame::method(
             $channel,
-            Methods::get('exchange.delete'),
+            Method::exchangeDelete,
             new UnsignedShortInteger(Integer::of(0)), // ticket (reserved)
             ShortString::of(Str::of($command->name())),
             new Bits(

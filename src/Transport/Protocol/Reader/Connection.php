@@ -13,8 +13,6 @@ use Innmind\AMQP\{
     Transport\Frame\Value\UnsignedLongInteger,
     Transport\Frame\Value\UnsignedOctet,
     Transport\Frame\Value\UnsignedShortInteger,
-    Transport\Protocol\Methods,
-    Exception\UnknownMethod,
 };
 use Innmind\Stream\Readable;
 use Innmind\Immutable\Sequence;
@@ -27,32 +25,32 @@ final class Connection
     public function __invoke(Method $method, Readable $arguments): Sequence
     {
         switch (true) {
-            case Methods::get('connection.start')->equals($method):
+            case Method::connectionStart->equals($method):
                 $chunk = $this->start();
                 break;
 
-            case Methods::get('connection.secure')->equals($method):
+            case Method::connectionSecure->equals($method):
                 $chunk = $this->secure();
                 break;
 
-            case Methods::get('connection.tune')->equals($method):
+            case Method::connectionTune->equals($method):
                 $chunk = $this->tune();
                 break;
 
-            case Methods::get('connection.open-ok')->equals($method):
+            case Method::connectionOpenOk->equals($method):
                 $chunk = $this->openOk();
                 break;
 
-            case Methods::get('connection.close')->equals($method):
+            case Method::connectionClose->equals($method):
                 $chunk = $this->close();
                 break;
 
-            case Methods::get('connection.close-ok')->equals($method):
+            case Method::connectionCloseOk->equals($method):
                 $chunk = $this->closeOk();
                 break;
 
             default:
-                throw new UnknownMethod($method);
+                throw new \RuntimeException;
         }
 
         return $chunk($arguments);

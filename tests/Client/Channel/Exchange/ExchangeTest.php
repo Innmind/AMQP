@@ -10,6 +10,7 @@ use Innmind\AMQP\{
     Transport\Protocol,
     Transport\Protocol\ArgumentTranslator,
     Transport\Frame\Channel,
+    Transport\Frame\Method,
     Model\Exchange\Declaration,
     Model\Exchange\Deletion,
     Model\Exchange\Type,
@@ -50,7 +51,7 @@ class ExchangeTest extends TestCase
         $this->connection->send(
             $this->connection->protocol()->channel()->open(new Channel(1)),
         );
-        $this->connection->wait('channel.open-ok');
+        $this->connection->wait(Method::channelOpenOk);
     }
 
     public function tearDown(): void
@@ -61,7 +62,7 @@ class ExchangeTest extends TestCase
                 new Close,
             ),
         );
-        $this->connection->wait('channel.close-ok');
+        $this->connection->wait(Method::channelCloseOk);
         $this->connection->close();
     }
 

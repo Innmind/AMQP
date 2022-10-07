@@ -8,6 +8,7 @@ use Innmind\AMQP\{
     Client\Channel\Transaction as TransactionInterface,
     Transport\Connection\Connection,
     Transport\Frame\Channel,
+    Transport\Frame\Method,
     Transport\Protocol,
     Transport\Protocol\ArgumentTranslator,
     Model\Channel\Close,
@@ -47,7 +48,7 @@ class TransactionTest extends TestCase
         $this->connection->send(
             $this->connection->protocol()->channel()->open(new Channel(1)),
         );
-        $this->connection->wait('channel.open-ok');
+        $this->connection->wait(Method::channelOpenOk);
     }
 
     public function tearDown(): void
@@ -58,7 +59,7 @@ class TransactionTest extends TestCase
                 new Close,
             ),
         );
-        $this->connection->wait('channel.close-ok');
+        $this->connection->wait(Method::channelCloseOk);
         $this->connection->close();
     }
 

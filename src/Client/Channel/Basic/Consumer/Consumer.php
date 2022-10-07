@@ -16,6 +16,7 @@ use Innmind\AMQP\{
     Transport\Frame\Channel,
     Transport\Frame\Type,
     Transport\Frame\Value,
+    Transport\Frame\Method,
     Exception\MessageFromAnotherConsumerReceived,
     Exception\Requeue,
     Exception\Reject,
@@ -55,7 +56,7 @@ final class Consumer implements ConsumerInterface
         }
 
         while ($this->shouldConsume()) {
-            $frame = $this->connection->wait('basic.deliver');
+            $frame = $this->connection->wait(Method::basicDeliver);
             $message = ($this->read)($this->connection);
             /** @var Value\ShortString */
             $consumerTag = $frame->values()->first()->match(
@@ -232,18 +233,15 @@ final class Consumer implements ConsumerInterface
             new CancelCommand($this->consumerTag),
         ));
 
-        $deliver = $this->connection->protocol()->method('basic.deliver');
-        $expected = $this->connection->protocol()->method('basic.cancel-ok');
-
         // walk over prefetched messages
         do {
             $frame = $this->connection->wait();
 
-            if ($frame->type() === Type::method && $frame->is($deliver)) {
+            if ($frame->type() === Type::method && $frame->is(Method::basicDeliver)) {
                 // read all the frames for the prefetched message
                 ($this->read)($this->connection);
             }
-        } while (!$frame->is($expected));
+        } while (!$frame->is(Method::basicCancelOk));
 
         // requeue all the messages sent right before the cancel method
         //
@@ -256,7 +254,7 @@ final class Consumer implements ConsumerInterface
             $this->channel,
             Recover::requeue(),
         ));
-        $this->connection->wait('basic.recover-ok');
+        $this->connection->wait(Method::basicRecoverOk);
 
         $this->canceled = true;
     }

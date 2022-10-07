@@ -18,6 +18,7 @@ use Innmind\AMQP\{
     Transport\Frame\Type,
     Transport\Frame\Channel as FrameChannel,
     Transport\Frame\Method,
+    Transport\Frame\MethodClass,
     Transport\Frame\Value,
     Transport\Frame\Value\UnsignedLongLongInteger,
     Transport\Frame\Value\UnsignedLongInteger,
@@ -48,7 +49,7 @@ final class Basic
     {
         return Frame::method(
             $channel,
-            Methods::get('basic.ack'),
+            Method::basicAck,
             UnsignedLongLongInteger::of(Integer::of($command->deliveryTag())),
             new Bits($command->isMultiple()),
         );
@@ -58,7 +59,7 @@ final class Basic
     {
         return Frame::method(
             $channel,
-            Methods::get('basic.cancel'),
+            Method::basicCancel,
             ShortString::of(Str::of($command->consumerTag())),
             new Bits(!$command->shouldWait()),
         );
@@ -73,7 +74,7 @@ final class Basic
 
         return Frame::method(
             $channel,
-            Methods::get('basic.consume'),
+            Method::basicConsume,
             new UnsignedShortInteger(Integer::of(0)), // ticket (reserved)
             ShortString::of(Str::of($command->queue())),
             ShortString::of(Str::of($consumerTag)),
@@ -91,7 +92,7 @@ final class Basic
     {
         return Frame::method(
             $channel,
-            Methods::get('basic.get'),
+            Method::basicGet,
             new UnsignedShortInteger(Integer::of(0)), // ticket (reserved)
             ShortString::of(Str::of($command->queue())),
             new Bits($command->shouldAutoAcknowledge()),
@@ -109,7 +110,7 @@ final class Basic
         $frames = Sequence::of(
             Frame::method(
                 $channel,
-                Methods::get('basic.publish'),
+                Method::basicPublish,
                 new UnsignedShortInteger(Integer::of(0)), // ticket (reserved)
                 ShortString::of(Str::of($command->exchange())),
                 ShortString::of(Str::of($command->routingKey())),
@@ -120,7 +121,7 @@ final class Basic
             ),
             Frame::header(
                 $channel,
-                Methods::classId('basic'),
+                MethodClass::basic->toInt(),
                 UnsignedLongLongInteger::of(Integer::of(
                     $command->message()->body()->length(),
                 )),
@@ -149,7 +150,7 @@ final class Basic
     {
         return Frame::method(
             $channel,
-            Methods::get('basic.qos'),
+            Method::basicQos,
             UnsignedLongInteger::of(Integer::of($command->prefetchSize())),
             UnsignedShortInteger::of(Integer::of($command->prefetchCount())),
             new Bits($command->isGlobal()),
@@ -160,7 +161,7 @@ final class Basic
     {
         return Frame::method(
             $channel,
-            Methods::get('basic.recover'),
+            Method::basicRecover,
             new Bits($command->shouldRequeue()),
         );
     }
@@ -169,7 +170,7 @@ final class Basic
     {
         return Frame::method(
             $channel,
-            Methods::get('basic.reject'),
+            Method::basicReject,
             UnsignedLongLongInteger::of(Integer::of($command->deliveryTag())),
             new Bits($command->shouldRequeue()),
         );

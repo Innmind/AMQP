@@ -10,8 +10,6 @@ use Innmind\AMQP\{
     Transport\Frame\Value\Bits,
     Transport\Frame\Value\ShortString,
     Transport\Frame\Value\UnsignedShortInteger,
-    Transport\Protocol\Methods,
-    Exception\UnknownMethod,
 };
 use Innmind\Stream\Readable;
 use Innmind\Immutable\Sequence;
@@ -24,28 +22,28 @@ final class Channel
     public function __invoke(Method $method, Readable $arguments): Sequence
     {
         switch (true) {
-            case Methods::get('channel.open-ok')->equals($method):
+            case Method::channelOpenOk->equals($method):
                 $chunk = $this->openOk();
                 break;
 
-            case Methods::get('channel.flow')->equals($method):
+            case Method::channelFlow->equals($method):
                 $chunk = $this->flow();
                 break;
 
-            case Methods::get('channel.flow-ok')->equals($method):
+            case Method::channelFlowOk->equals($method):
                 $chunk = $this->flowOk();
                 break;
 
-            case Methods::get('channel.close')->equals($method):
+            case Method::channelClose->equals($method):
                 $chunk = $this->close();
                 break;
 
-            case Methods::get('channel.close-ok')->equals($method):
+            case Method::channelCloseOk->equals($method):
                 $chunk = $this->closeOk();
                 break;
 
             default:
-                throw new UnknownMethod($method);
+                throw new \RuntimeException;
         }
 
         return $chunk($arguments);

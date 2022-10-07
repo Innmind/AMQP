@@ -5,6 +5,7 @@ namespace Innmind\AMQP\Transport\Protocol;
 
 use Innmind\AMQP\Transport\{
     Frame\Method,
+    Frame\MethodClass,
     Frame\Value,
     Protocol\Reader\Connection,
     Protocol\Reader\Channel,
@@ -23,7 +24,7 @@ final class Reader
     private Exchange $exchange;
     private Queue $queue;
     private Basic $basic;
-    private Transaction $tx;
+    private Transaction $transaction;
 
     public function __construct()
     {
@@ -32,7 +33,7 @@ final class Reader
         $this->exchange = new Exchange;
         $this->queue = new Queue;
         $this->basic = new Basic;
-        $this->tx = new Transaction;
+        $this->transaction = new Transaction;
     }
 
     /**
@@ -40,10 +41,13 @@ final class Reader
      */
     public function __invoke(Method $method, Readable $arguments): Sequence
     {
-        /**
-         * @psalm-suppress MixedFunctionCall
-         * @var Sequence<Value>
-         */
-        return ($this->{Methods::class($method)})($method, $arguments);
+        return match ($method->class()) {
+            MethodClass::connection => ($this->connection)($method, $arguments),
+            MethodClass::channel => ($this->channel)($method, $arguments),
+            MethodClass::exchange => ($this->exchange)($method, $arguments),
+            MethodClass::queue => ($this->queue)($method, $arguments),
+            MethodClass::basic => ($this->basic)($method, $arguments),
+            MethodClass::transaction => ($this->transaction)($method, $arguments),
+        };
     }
 }

@@ -7,6 +7,7 @@ use Innmind\AMQP\{
     Client\Channel\Transaction as TransactionInterface,
     Transport\Connection,
     Transport\Frame\Channel,
+    Transport\Frame\Method,
 };
 
 final class Transaction implements TransactionInterface
@@ -25,7 +26,7 @@ final class Transaction implements TransactionInterface
         $this->connection->send($this->connection->protocol()->transaction()->select(
             $this->channel,
         ));
-        $this->connection->wait('tx.select-ok');
+        $this->connection->wait(Method::transactionSelectOk);
     }
 
     public function commit(): void
@@ -33,7 +34,7 @@ final class Transaction implements TransactionInterface
         $this->connection->send($this->connection->protocol()->transaction()->commit(
             $this->channel,
         ));
-        $this->connection->wait('tx.commit-ok');
+        $this->connection->wait(Method::transactionCommitOk);
     }
 
     public function rollback(): void
@@ -41,6 +42,6 @@ final class Transaction implements TransactionInterface
         $this->connection->send($this->connection->protocol()->transaction()->rollback(
             $this->channel,
         ));
-        $this->connection->wait('tx.rollback-ok');
+        $this->connection->wait(Method::transactionRollbackOk);
     }
 }

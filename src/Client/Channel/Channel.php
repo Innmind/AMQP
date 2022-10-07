@@ -8,6 +8,7 @@ use Innmind\AMQP\{
     Model\Channel\Close,
     Transport\Connection,
     Transport\Frame\Channel as Number,
+    Transport\Frame\Method,
 };
 
 final class Channel implements ChannelInterfce
@@ -26,7 +27,7 @@ final class Channel implements ChannelInterfce
         $this->number = $number;
 
         $connection->send($connection->protocol()->channel()->open($number));
-        $connection->wait('channel.open-ok');
+        $connection->wait(Method::channelOpenOk);
 
         $this->exchange = new Exchange\Exchange($connection, $number);
         $this->queue = new Queue\Queue($connection, $number);
@@ -69,7 +70,7 @@ final class Channel implements ChannelInterfce
             $this->number,
             new Close,
         ));
-        $this->connection->wait('channel.close-ok');
+        $this->connection->wait(Method::channelCloseOk);
         $this->closed = true;
     }
 }

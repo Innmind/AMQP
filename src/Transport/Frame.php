@@ -76,7 +76,7 @@ final class Frame
         $self = new self(
             Type::method,
             $channel,
-            new UnsignedShortInteger(Integer::of($method->class())),
+            new UnsignedShortInteger(Integer::of($method->class()->toInt())),
             new UnsignedShortInteger(Integer::of($method->method())),
             ...$values,
         );

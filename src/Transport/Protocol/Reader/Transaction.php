@@ -7,8 +7,6 @@ use Innmind\AMQP\{
     Transport\Frame\Method,
     Transport\Frame\Value,
     Transport\Frame\Visitor\ChunkArguments,
-    Transport\Protocol\Methods,
-    Exception\UnknownMethod,
 };
 use Innmind\Stream\Readable;
 use Innmind\Immutable\Sequence;
@@ -21,20 +19,20 @@ final class Transaction
     public function __invoke(Method $method, Readable $arguments): Sequence
     {
         switch (true) {
-            case Methods::get('tx.select-ok')->equals($method):
+            case Method::transactionSelectOk->equals($method):
                 $chunk = $this->selectOk();
                 break;
 
-            case Methods::get('tx.commit-ok')->equals($method):
+            case Method::transactionCommitOk->equals($method):
                 $chunk = $this->commitOk();
                 break;
 
-            case Methods::get('tx.rollback-ok')->equals($method):
+            case Method::transactionRollbackOk->equals($method):
                 $chunk = $this->rollbackOk();
                 break;
 
             default:
-                throw new UnknownMethod($method);
+                throw new \RuntimeException;
         }
 
         return $chunk($arguments);

@@ -9,6 +9,7 @@ use Innmind\AMQP\Transport\{
     Protocol,
     Protocol\ArgumentTranslator,
     Frame,
+    Frame\Method,
 };
 use Psr\Log\LoggerInterface;
 use PHPUnit\Framework\TestCase;
@@ -87,7 +88,7 @@ class LoggerTest extends TestCase
         $inner
             ->expects($this->once())
             ->method('wait')
-            ->with('foo', 'bar')
+            ->with(Method::basicGetOk, Method::basicGetEmpty)
             ->willReturn($frame);
         $logger
             ->expects($this->exactly(2))
@@ -95,7 +96,7 @@ class LoggerTest extends TestCase
             ->withConsecutive(
                 [
                     'Waiting for AMQP frame',
-                    ['names' => ['foo', 'bar']],
+                    ['names' => [Method::basicGetOk, Method::basicGetEmpty]],
                 ],
                 [
                     'AMQP frame received',
@@ -106,7 +107,7 @@ class LoggerTest extends TestCase
                 ],
             );
 
-        $this->assertSame($frame, $connection->wait('foo', 'bar'));
+        $this->assertSame($frame, $connection->wait(Method::basicGetOk, Method::basicGetEmpty));
     }
 
     public function testClose()

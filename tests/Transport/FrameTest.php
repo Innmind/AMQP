@@ -24,7 +24,7 @@ class FrameTest extends TestCase
     {
         $frame = Frame::method(
             $channel = new Channel(42),
-            $method = new Method(10, 10),
+            $method = Method::from(10, 10),
             $bit = new Bits(true),
             $text = new Text(Str::of('foobar')),
         );
@@ -52,7 +52,6 @@ class FrameTest extends TestCase
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame(Type::header, $frame->type());
         $this->assertSame($channel, $frame->channel());
-        $this->assertFalse($frame->is(new Method(0, 0)));
         $this->assertInstanceOf(Sequence::class, $frame->values());
         $this->assertSame([$value], $frame->values()->toList());
         $this->assertSame(
@@ -70,7 +69,6 @@ class FrameTest extends TestCase
 
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame($channel, $frame->channel());
-        $this->assertFalse($frame->is(new Method(0, 0)));
         $this->assertInstanceOf(Sequence::class, $frame->values());
         $this->assertCount(1, $frame->values());
         $this->assertInstanceOf(Text::class, $frame->values()->first()->match(
@@ -94,7 +92,6 @@ class FrameTest extends TestCase
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertInstanceOf(Channel::class, $frame->channel());
         $this->assertSame(0, $frame->channel()->toInt());
-        $this->assertFalse($frame->is(new Method(0, 0)));
         $this->assertInstanceOf(Sequence::class, $frame->values());
         $this->assertCount(0, $frame->values());
         $this->assertSame(
