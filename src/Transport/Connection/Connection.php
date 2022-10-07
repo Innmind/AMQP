@@ -7,7 +7,6 @@ use Innmind\AMQP\{
     Transport\Connection as ConnectionInterface,
     Transport\Frame,
     Transport\Protocol,
-    Transport\Protocol\Version,
     Transport\Frame\Type,
     Transport\Frame\Method,
     Transport\Frame\Value,
@@ -269,11 +268,9 @@ final class Connection implements ConnectionInterface
             ); // there is a zero between AMQP and version number
 
             $this->protocol->use(
-                new Version(
-                    UnsignedOctet::unpack($content)->original()->value(),
-                    UnsignedOctet::unpack($content)->original()->value(),
-                    UnsignedOctet::unpack($content)->original()->value(),
-                ),
+                UnsignedOctet::unpack($content)->original()->value(),
+                UnsignedOctet::unpack($content)->original()->value(),
+                UnsignedOctet::unpack($content)->original()->value(),
             );
             // socket rebuilt as the server close the connection on version mismatch
             $this->buildSocket();

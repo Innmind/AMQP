@@ -76,8 +76,8 @@ class ProtocolTest extends TestCase
     {
         $protocol = new Protocol($this->createMock(ArgumentTranslator::class));
 
-        $this->assertNull($protocol->use(new Version(0, 9, 0)));
-        $this->assertNull($protocol->use(new Version(0, 9, 1)));
+        $this->assertNull($protocol->use(0, 9, 0));
+        $this->assertNull($protocol->use(0, 9, 1));
     }
 
     public function testReadHeader()
@@ -151,7 +151,7 @@ class ProtocolTest extends TestCase
         $this->expectException(VersionNotUsable::class);
         $this->expectExceptionMessage('1.0.0');
 
-        (new Protocol($this->createMock(ArgumentTranslator::class)))->use(new Version(1, 0, 0));
+        (new Protocol($this->createMock(ArgumentTranslator::class)))->use(1, 0, 0);
     }
 
     public function testThrowWhenUsingLowerVersion()
@@ -159,7 +159,7 @@ class ProtocolTest extends TestCase
         $this->expectException(VersionNotUsable::class);
         $this->expectExceptionMessage('0.8.0');
 
-        (new Protocol($this->createMock(ArgumentTranslator::class)))->use(new Version(0, 8, 0));
+        (new Protocol($this->createMock(ArgumentTranslator::class)))->use(0, 8, 0);
     }
 
     public function methods(): array

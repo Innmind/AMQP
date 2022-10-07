@@ -41,7 +41,7 @@ final class Protocol
 
     public function __construct(ArgumentTranslator $translator)
     {
-        $this->version = new Version(0, 9, 1);
+        $this->version = Version::v091;
         $this->read = new Reader;
         $this->connection = new Connection;
         $this->channel = new Channel;
@@ -56,10 +56,10 @@ final class Protocol
         return $this->version;
     }
 
-    public function use(Version $version): void
+    public function use(int $major, int $minor, int $fix): void
     {
-        if (!$version->compatibleWith($this->version)) {
-            throw new VersionNotUsable($version);
+        if (!$this->version->compatibleWith($major, $minor, $fix)) {
+            throw new VersionNotUsable("$major.$minor.$fix");
         }
     }
 
