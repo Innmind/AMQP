@@ -26,18 +26,18 @@ final class Bits implements Value
 
     public static function unpack(Readable $stream): self
     {
-        $chunk = $stream->read(1)->match(
-            static fn($chunk) => $chunk,
-            static fn() => throw new \LogicException,
-        );
+        $chunk = $stream
+            ->read(1)
+            ->map(static fn($chunk) => $chunk->toEncoding('ASCII'))
+            ->filter(static fn($chunk) => $chunk->length() === 1)
+            ->match(
+                static fn($chunk) => $chunk,
+                static fn() => throw new \LogicException,
+            );
         $bits = $chunk
-            ->toEncoding('ASCII')
+            ->map(static fn($chunk) => \decbin(\ord($chunk)))
             ->chunk()
-            ->flatMap(
-                static fn($bits) => Str::of(\decbin(\ord($bits->toString())))
-                    ->chunk()
-                    ->map(static fn($bit) => (bool) (int) $bit->toString()),
-            )
+            ->map(static fn($bit) => (bool) (int) $bit->toString())
             ->reverse()
             ->toList();
 

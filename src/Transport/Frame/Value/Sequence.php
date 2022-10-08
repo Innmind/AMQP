@@ -54,10 +54,14 @@ final class Sequence implements Value
         $values = [];
 
         while ($position < $boundary) {
-            $chunk = $stream->read(1)->match(
-                static fn($chunk) => $chunk,
-                static fn() => throw new \LogicException,
-            );
+            $chunk = $stream
+                ->read(1)
+                ->map(static fn($chunk) => $chunk->toEncoding('ASCII'))
+                ->filter(static fn($chunk) => $chunk->length() === 1)
+                ->match(
+                    static fn($chunk) => $chunk,
+                    static fn() => throw new \LogicException,
+                );
             $class = Symbols::class($chunk->toString());
             /** @var Value */
             $value = [$class, 'unpack']($stream);

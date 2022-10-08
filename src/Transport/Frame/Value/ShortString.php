@@ -35,10 +35,14 @@ final class ShortString implements Value
     {
         $length = UnsignedOctet::unpack($stream)->original();
         /** @psalm-suppress ArgumentTypeCoercion */
-        $string = $stream->read($length->value())->match(
-            static fn($string) => $string,
-            static fn() => throw new \LogicException,
-        );
+        $string = $stream
+            ->read($length->value())
+            ->map(static fn($chunk) => $chunk->toEncoding('ASCII'))
+            ->filter(static fn($chunk) => $chunk->length() === $length->value())
+            ->match(
+                static fn($string) => $string,
+                static fn() => throw new \LogicException,
+            );
 
         return new self($string);
     }

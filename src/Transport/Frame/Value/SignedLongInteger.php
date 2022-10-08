@@ -36,10 +36,14 @@ final class SignedLongInteger implements Value
 
     public static function unpack(Readable $stream): self
     {
-        $chunk = $stream->read(4)->match(
-            static fn($chunk) => $chunk,
-            static fn() => throw new \LogicException,
-        );
+        $chunk = $stream
+            ->read(4)
+            ->map(static fn($chunk) => $chunk->toEncoding('ASCII'))
+            ->filter(static fn($chunk) => $chunk->length() === 4)
+            ->match(
+                static fn($chunk) => $chunk,
+                static fn() => throw new \LogicException,
+            );
         /** @var int $value */
         [, $value] = \unpack('l', $chunk->toString());
 
