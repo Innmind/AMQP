@@ -41,7 +41,7 @@ class ReaderTest extends TestCase
         }
 
         $stream = $read(
-            Method::of($method),
+            $method,
             Stream::ofContent($args),
         );
 
@@ -64,19 +64,19 @@ class ReaderTest extends TestCase
     {
         return [
             [
-                'basic.qos-ok',
+                Method::basicQosOk,
                 [],
             ],
             [
-                'basic.consume-ok',
+                Method::basicConsumeOk,
                 [new ShortString(Str::of('foo'))],
             ],
             [
-                'basic.cancel-ok',
+                Method::basicCancelOk,
                 [new ShortString(Str::of('foo'))],
             ],
             [
-                'basic.return',
+                Method::basicReturn,
                 [
                     new UnsignedShortInteger(Integer::of(42)),
                     new ShortString(Str::of('foo')),
@@ -85,7 +85,7 @@ class ReaderTest extends TestCase
                 ],
             ],
             [
-                'basic.deliver',
+                Method::basicDeliver,
                 [
                     new ShortString(Str::of('foo')),
                     new UnsignedLongLongInteger(Integer::of(42)),
@@ -95,7 +95,7 @@ class ReaderTest extends TestCase
                 ],
             ],
             [
-                'basic.get-ok',
+                Method::basicGetOk,
                 [
                     new UnsignedLongLongInteger(Integer::of(42)),
                     new Bits(true),
@@ -105,27 +105,27 @@ class ReaderTest extends TestCase
                 ],
             ],
             [
-                'basic.get-empty',
+                Method::basicGetEmpty,
                 [],
             ],
             [
-                'basic.recover-ok',
+                Method::basicRecoverOk,
                 [],
             ],
             [
-                'channel.open-ok',
+                Method::channelOpenOk,
                 [],
             ],
             [
-                'channel.flow',
+                Method::channelFlow,
                 [new Bits(true)],
             ],
             [
-                'channel.flow-ok',
+                Method::channelFlowOk,
                 [new Bits(true)],
             ],
             [
-                'channel.close',
+                Method::channelClose,
                 [
                     new UnsignedShortInteger(Integer::of(42)),
                     new ShortString(Str::of('foo')),
@@ -134,11 +134,11 @@ class ReaderTest extends TestCase
                 ],
             ],
             [
-                'channel.close-ok',
+                Method::channelCloseOk,
                 [],
             ],
             [
-                'connection.start',
+                Method::connectionStart,
                 [
                     new UnsignedOctet(Integer::of(0)),
                     new UnsignedOctet(Integer::of(9)),
@@ -148,11 +148,11 @@ class ReaderTest extends TestCase
                 ],
             ],
             [
-                'connection.secure',
+                Method::connectionSecure,
                 [new LongString(Str::of('foo'))],
             ],
             [
-                'connection.tune',
+                Method::connectionTune,
                 [
                     new UnsignedShortInteger(Integer::of(1)),
                     new UnsignedLongInteger(Integer::of(2)),
@@ -160,13 +160,13 @@ class ReaderTest extends TestCase
                 ],
             ],
             [
-                'connection.open-ok',
+                Method::connectionOpenOk,
                 [
                     new ShortString(Str::of('foo')),
                 ],
             ],
             [
-                'connection.close',
+                Method::connectionClose,
                 [
                     new UnsignedShortInteger(Integer::of(0)),
                     new ShortString(Str::of('foo')),
@@ -175,19 +175,19 @@ class ReaderTest extends TestCase
                 ],
             ],
             [
-                'connection.close-ok',
+                Method::connectionCloseOk,
                 [],
             ],
             [
-                'exchange.declare-ok',
+                Method::exchangeDeclareOk,
                 [],
             ],
             [
-                'exchange.delete-ok',
+                Method::exchangeDeleteOk,
                 [],
             ],
             [
-                'queue.declare-ok',
+                Method::queueDeclareOk,
                 [
                     new ShortString(Str::of('foo')),
                     new UnsignedLongInteger(Integer::of(42)),
@@ -195,31 +195,31 @@ class ReaderTest extends TestCase
                 ],
             ],
             [
-                'queue.bind-ok',
+                Method::queueBindOk,
                 [],
             ],
             [
-                'queue.unbind-ok',
+                Method::queueUnbindOk,
                 [],
             ],
             [
-                'queue.purge-ok',
+                Method::queuePurgeOk,
                 [new UnsignedLongInteger(Integer::of(42))],
             ],
             [
-                'queue.delete-ok',
+                Method::queueDeleteOk,
                 [new UnsignedLongInteger(Integer::of(42))],
             ],
             [
-                'tx.select-ok',
+                Method::transactionSelectOk,
                 [],
             ],
             [
-                'tx.commit-ok',
+                Method::transactionCommitOk,
                 [],
             ],
             [
-                'tx.rollback-ok',
+                Method::transactionRollbackOk,
                 [],
             ],
         ];
