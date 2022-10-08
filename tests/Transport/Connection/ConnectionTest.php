@@ -114,6 +114,10 @@ class ConnectionTest extends TestCase
             $this->assertTrue($connection->closed());
             $this->assertSame('INTERNAL_ERROR', $e->getMessage());
             $this->assertSame(541, $e->getCode());
+            $this->assertNull($e->cause()->match(
+                static fn($method) => $method,
+                static fn() => null,
+            ));
         }
     }
 }

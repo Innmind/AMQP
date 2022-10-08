@@ -46,6 +46,7 @@ use Innmind\OperatingSystem\{
 use Innmind\Immutable\{
     Str,
     Set,
+    Maybe,
 };
 
 final class Connection implements ConnectionInterface
@@ -167,10 +168,33 @@ final class Connection implements ConnectionInterface
                 static fn($value) => $value,
                 static fn() => throw new \LogicException,
             );
+            /**
+             * @psalm-suppress MixedReturnStatement
+             * @psalm-suppress MixedInferredReturnType
+             * @psalm-suppress MixedMethodCall
+             */
+            $class = $frame
+                ->values()
+                ->get(2)
+                ->map(static fn($value): int => $value->original()->value())
+                ->filter(static fn($class) => $class !== 0);
+            /**
+             * @psalm-suppress MixedReturnStatement
+             * @psalm-suppress MixedInferredReturnType
+             * @psalm-suppress MixedMethodCall
+             */
+            $method = $frame
+                ->values()
+                ->get(3)
+                ->map(static fn($value): int => $value->original()->value())
+                ->filter(static fn($method) => $method !== 0);
 
             throw ConnectionClosed::byServer(
                 $message->original()->toString(),
                 $code->original()->value(),
+                Maybe::all($class, $method)->map(
+                    static fn(int $class, int $method) => Method::of($class, $method),
+                ),
             );
         }
 
