@@ -65,7 +65,7 @@ enum Method
     /**
      * @psalm-pure
      */
-    public static function from(int $class, int $method): self
+    public static function of(int $class, int $method): self
     {
         return match ([$class, $method]) {
             [10, 10] => self::connectionStart,

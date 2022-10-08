@@ -73,7 +73,7 @@ final class FrameReader
 
         switch ($type) {
             case Type::method:
-                $method = Method::from(
+                $method = Method::of(
                     UnsignedShortInteger::unpack($payload)
                         ->original()
                         ->value(),

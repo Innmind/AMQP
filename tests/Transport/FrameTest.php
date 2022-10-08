@@ -24,7 +24,7 @@ class FrameTest extends TestCase
     {
         $frame = Frame::method(
             $channel = new Channel(42),
-            $method = Method::from(10, 10),
+            $method = Method::of(10, 10),
             $bit = new Bits(true),
             $text = new Text(Str::of('foobar')),
         );

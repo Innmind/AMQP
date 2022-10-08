@@ -29,7 +29,7 @@ class ChannelTest extends TestCase
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame(Type::method, $frame->type());
         $this->assertSame($channel, $frame->channel());
-        $this->assertTrue($frame->is(Method::from(20, 10)));
+        $this->assertTrue($frame->is(Method::of(20, 10)));
         $this->assertCount(1, $frame->values());
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(0)->match(
             static fn($value) => $value,
@@ -51,7 +51,7 @@ class ChannelTest extends TestCase
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame(Type::method, $frame->type());
         $this->assertSame($channel, $frame->channel());
-        $this->assertTrue($frame->is(Method::from(20, 20)));
+        $this->assertTrue($frame->is(Method::of(20, 20)));
         $this->assertCount(1, $frame->values());
         $this->assertInstanceOf(Bits::class, $frame->values()->get(0)->match(
             static fn($value) => $value,
@@ -89,7 +89,7 @@ class ChannelTest extends TestCase
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame(Type::method, $frame->type());
         $this->assertSame($channel, $frame->channel());
-        $this->assertTrue($frame->is(Method::from(20, 21)));
+        $this->assertTrue($frame->is(Method::of(20, 21)));
         $this->assertCount(1, $frame->values());
         $this->assertInstanceOf(Bits::class, $frame->values()->get(0)->match(
             static fn($value) => $value,
@@ -127,7 +127,7 @@ class ChannelTest extends TestCase
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame(Type::method, $frame->type());
         $this->assertSame($channel, $frame->channel());
-        $this->assertTrue($frame->is(Method::from(20, 40)));
+        $this->assertTrue($frame->is(Method::of(20, 40)));
         $this->assertCount(4, $frame->values());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
@@ -203,7 +203,7 @@ class ChannelTest extends TestCase
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame(Type::method, $frame->type());
         $this->assertSame($channel, $frame->channel());
-        $this->assertTrue($frame->is(Method::from(20, 41)));
+        $this->assertTrue($frame->is(Method::of(20, 41)));
         $this->assertCount(0, $frame->values());
     }
 }

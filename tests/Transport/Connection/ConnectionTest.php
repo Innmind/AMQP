@@ -106,7 +106,7 @@ class ConnectionTest extends TestCase
         try {
             $connection->send(Frame::method(
                 new Channel(0),
-                Method::from(20, 10),
+                Method::of(20, 10),
                 //missing arguments
             ));
             $connection->wait(Method::channelOpenOk);
