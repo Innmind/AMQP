@@ -62,10 +62,7 @@ final class Sequence implements Value
                     static fn($chunk) => $chunk,
                     static fn() => throw new \LogicException,
                 );
-            $class = Symbols::class($chunk->toString());
-            /** @var Value */
-            $value = [$class, 'unpack']($stream);
-            $values[] = $value;
+            $values[] = Symbols::unpack($chunk->toString(), $stream);
             $position = $stream->position()->toInt();
         }
 

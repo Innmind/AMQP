@@ -60,11 +60,11 @@ final class Table implements Value
                     static fn($chunk) => $chunk,
                     static fn() => throw new \LogicException,
                 );
-            $class = Symbols::class($chunk->toString());
-            /** @var Value */
-            $value = [$class, 'unpack']($stream);
 
-            $map = ($map)($key->toString(), $value);
+            $map = ($map)(
+                $key->toString(),
+                Symbols::unpack($chunk->toString(), $stream),
+            );
 
             $position = $stream->position()->toInt();
         }

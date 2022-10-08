@@ -4,6 +4,7 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
+use Innmind\Stream\Readable;
 
 final class Symbols
 {
@@ -34,30 +35,25 @@ final class Symbols
         };
     }
 
-    /**
-     * @psalm-pure
-     *
-     * @return class-string<Value>
-     */
-    public static function class(string $symbol): string
+    public static function unpack(string $symbol, Readable $stream): Value
     {
         return match ($symbol) {
-            'b' => SignedOctet::class,
-            'B' => UnsignedOctet::class,
-            'U' => SignedShortInteger::class,
-            'u' => UnsignedShortInteger::class,
-            'I' => SignedLongInteger::class,
-            'i' => UnsignedLongInteger::class,
-            'L' => SignedLongLongInteger::class,
-            'l' => UnsignedLongLongInteger::class,
-            'D' => Decimal::class,
-            'T' => Timestamp::class,
-            'V' => VoidValue::class,
-            't' => Bits::class,
-            's' => ShortString::class,
-            'S' => LongString::class,
-            'A' => Sequence::class,
-            'F' => Table::class,
+            'b' => SignedOctet::unpack($stream),
+            'B' => UnsignedOctet::unpack($stream),
+            'U' => SignedShortInteger::unpack($stream),
+            'u' => UnsignedShortInteger::unpack($stream),
+            'I' => SignedLongInteger::unpack($stream),
+            'i' => UnsignedLongInteger::unpack($stream),
+            'L' => SignedLongLongInteger::unpack($stream),
+            'l' => UnsignedLongLongInteger::unpack($stream),
+            'D' => Decimal::unpack($stream),
+            'T' => Timestamp::unpack($stream),
+            'V' => VoidValue::unpack($stream),
+            't' => Bits::unpack($stream),
+            's' => ShortString::unpack($stream),
+            'S' => LongString::unpack($stream),
+            'A' => Sequence::unpack($stream),
+            'F' => Table::unpack($stream),
         };
     }
 }
