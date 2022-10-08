@@ -184,6 +184,9 @@ enum Method
         };
     }
 
+    /**
+     * @return int<10, 111>
+     */
     public function method(): int
     {
         return match ($this) {

@@ -21,13 +21,13 @@ class TimestampTest extends TestCase
     {
         $this->assertInstanceOf(
             Value::class,
-            new Timestamp(new Now),
+            Timestamp::of(new Now),
         );
     }
 
     public function testStringCast()
     {
-        $value = new Timestamp($now = new Now);
+        $value = Timestamp::of($now = new Now);
         $this->assertSame(\pack('J', \time()), $value->pack());
         $this->assertSame($now, $value->original());
     }

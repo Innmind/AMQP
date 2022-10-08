@@ -8,9 +8,13 @@ namespace Innmind\AMQP\Model\Basic;
  */
 final class Reject
 {
+    /** @var int<0, max> */
     private int $deliveryTag;
     private bool $requeue = false;
 
+    /**
+     * @param int<0, max> $deliveryTag
+     */
     public function __construct(int $deliveryTag)
     {
         $this->deliveryTag = $deliveryTag;
@@ -21,6 +25,8 @@ final class Reject
      * to a different consumer that the original one
      *
      * @psalm-pure
+     *
+     * @param int<0, max> $deliveryTag
      */
     public static function requeue(int $deliveryTag): self
     {
@@ -30,6 +36,9 @@ final class Reject
         return $self;
     }
 
+    /**
+     * @return int<0, max>
+     */
     public function deliveryTag(): int
     {
         return $this->deliveryTag;

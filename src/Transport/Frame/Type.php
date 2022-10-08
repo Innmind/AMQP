@@ -26,6 +26,9 @@ enum Type
         };
     }
 
+    /**
+     * @return 1|2|3|8
+     */
     public function toInt(): int
     {
         return match ($this) {

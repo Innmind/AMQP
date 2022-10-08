@@ -7,10 +7,7 @@ use Innmind\AMQP\{
     Transport\Frame\Value\SignedLongInteger,
     Transport\Frame\Value,
 };
-use Innmind\Math\{
-    Algebra\Integer,
-    Exception\OutOfDefinitionSet,
-};
+use Innmind\Math\Exception\OutOfDefinitionSet;
 use Innmind\Stream\Readable\Stream;
 use PHPUnit\Framework\TestCase;
 
@@ -20,7 +17,7 @@ class SignedLongIntegerTest extends TestCase
     {
         $this->assertInstanceOf(
             Value::class,
-            new SignedLongInteger(Integer::of(0)),
+            SignedLongInteger::of(0),
         );
     }
 
@@ -29,7 +26,7 @@ class SignedLongIntegerTest extends TestCase
      */
     public function testStringCast($int, $expected)
     {
-        $value = new SignedLongInteger($int = Integer::of($int));
+        $value = SignedLongInteger::of($int);
         $this->assertSame($expected, $value->pack());
         $this->assertSame($int, $value->original());
     }
@@ -42,7 +39,7 @@ class SignedLongIntegerTest extends TestCase
         $value = SignedLongInteger::unpack(Stream::ofContent($string));
 
         $this->assertInstanceOf(SignedLongInteger::class, $value);
-        $this->assertSame($expected, $value->original()->value());
+        $this->assertSame($expected, $value->original());
         $this->assertSame($string, $value->pack());
     }
 
@@ -51,7 +48,7 @@ class SignedLongIntegerTest extends TestCase
         $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('2147483648 ∉ [-2147483648;2147483647]');
 
-        SignedLongInteger::of(Integer::of(2147483648));
+        SignedLongInteger::of(2147483648);
     }
 
     public function testThrowWhenIntegerTooLow()
@@ -59,7 +56,7 @@ class SignedLongIntegerTest extends TestCase
         $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('-2147483649 ∉ [-2147483648;2147483647]');
 
-        SignedLongInteger::of(Integer::of(-2147483649));
+        SignedLongInteger::of(-2147483649);
     }
 
     public function cases(): array

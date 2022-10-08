@@ -21,7 +21,7 @@ class SequenceTest extends TestCase
 {
     public function testInterface()
     {
-        $this->assertInstanceOf(Value::class, new Sequence);
+        $this->assertInstanceOf(Value::class, Sequence::of());
     }
 
     /**
@@ -29,7 +29,7 @@ class SequenceTest extends TestCase
      */
     public function testStringCast($expected, $values)
     {
-        $value = new Sequence(...$values);
+        $value = Sequence::of(...$values);
         $this->assertSame($expected, $value->pack());
         $this->assertInstanceOf(Seq::class, $value->original());
         $this->assertSame($values, $value->original()->toList());
@@ -69,7 +69,7 @@ class SequenceTest extends TestCase
     {
         $this->expectException(UnboundedTextCannotBeWrapped::class);
 
-        new Sequence(new Text(Str::of('')));
+        Sequence::of(Text::of(Str::of('')));
     }
 
     public function cases(): array
@@ -77,13 +77,13 @@ class SequenceTest extends TestCase
         return [
             [
                 \pack('N', 8).'S'.\pack('N', 3).'foo',
-                [new LongString(Str::of('foo'))],
+                [LongString::of(Str::of('foo'))],
             ],
             [
                 \pack('N', 20).'S'.\pack('N', 3).'fooS'.\pack('N', 7).'🙏bar',
                 [
-                    new LongString(Str::of('foo')),
-                    new LongString(Str::of('🙏bar')),
+                    LongString::of(Str::of('foo')),
+                    LongString::of(Str::of('🙏bar')),
                 ],
             ],
         ];

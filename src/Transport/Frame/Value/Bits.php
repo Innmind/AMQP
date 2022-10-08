@@ -7,21 +7,33 @@ use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\Stream\Readable;
 use Innmind\Immutable\{
     Str,
-    Sequence as Seq,
+    Sequence,
 };
 
 /**
- * @implements Value<Seq<bool>>
+ * @implements Value<Sequence<bool>>
  * @psalm-immutable
  */
 final class Bits implements Value
 {
-    /** @var Seq<bool> */
-    private Seq $original;
+    /** @var Sequence<bool> */
+    private Sequence $original;
 
-    public function __construct(bool $first, bool ...$bits)
+    /**
+     * @param Sequence<bool> $original
+     */
+    private function __construct(Sequence $original)
     {
-        $this->original = Seq::of($first, ...$bits);
+        $this->original = $original;
+    }
+
+    /**
+     * @psalm-pure
+     * @no-named-arguments
+     */
+    public static function of(bool $first, bool ...$bits): self
+    {
+        return new self(Sequence::of($first, ...$bits));
     }
 
     public static function unpack(Readable $stream): self
@@ -38,28 +50,34 @@ final class Bits implements Value
             ->map(static fn($chunk) => \decbin(\ord($chunk)))
             ->chunk()
             ->map(static fn($bit) => (bool) (int) $bit->toString())
-            ->reverse()
-            ->toList();
+            ->reverse();
 
-        return new self(...$bits);
+        if ($bits->empty()) {
+            throw new \LogicException;
+        }
+
+        return new self($bits);
     }
 
     /**
-     * @return Seq<bool>
+     * @return Sequence<bool>
      */
-    public function original(): Seq
+    public function original(): Sequence
     {
         return $this->original;
     }
 
     public function pack(): string
     {
-        $value = 0;
-
-        foreach ($this->original->toList() as $i => $bit) {
-            $bit = (int) $bit;
-            $value |= $bit << $i;
-        }
+        $value = $this
+            ->original
+            ->indices()
+            ->zip($this->original)
+            ->map(static fn($pair) => ((int) $pair[1]) << $pair[0])
+            ->reduce(
+                0,
+                static fn(int $value, int $bit) => $value | $bit,
+            );
 
         return \chr($value);
     }

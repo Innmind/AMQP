@@ -15,7 +15,7 @@ class BitsTest extends TestCase
 {
     public function testInterface()
     {
-        $this->assertInstanceOf(Value::class, new Bits(true));
+        $this->assertInstanceOf(Value::class, Bits::of(true));
     }
 
     /**
@@ -23,7 +23,7 @@ class BitsTest extends TestCase
      */
     public function testStringCast($bits, $expected)
     {
-        $value = new Bits(...$bits);
+        $value = Bits::of(...$bits);
         $this->assertSame($expected, $value->pack());
         $this->assertInstanceOf(Sequence::class, $value->original());
         $this->assertSame($bits, $value->original()->toList());

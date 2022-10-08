@@ -4,7 +4,6 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
-use Innmind\Math\Algebra\Integer;
 use Innmind\Stream\Readable;
 use Innmind\Immutable\Str;
 
@@ -16,7 +15,7 @@ final class LongString implements Value
 {
     private Str $original;
 
-    public function __construct(Str $string)
+    private function __construct(Str $string)
     {
         $this->original = $string;
     }
@@ -26,7 +25,8 @@ final class LongString implements Value
      */
     public static function of(Str $string): self
     {
-        $_ = UnsignedLongInteger::of(Integer::of($string->toEncoding('ASCII')->length()));
+        /** @psalm-suppress ArgumentTypeCoercion */
+        $_ = UnsignedLongInteger::of($string->toEncoding('ASCII')->length());
 
         return new self($string);
     }
@@ -34,11 +34,11 @@ final class LongString implements Value
     public static function unpack(Readable $stream): self
     {
         $length = UnsignedLongInteger::unpack($stream)->original();
-        /** @psalm-suppress ArgumentTypeCoercion */
+        /** @psalm-suppress InvalidArgument */
         $string = $stream
-            ->read($length->value())
+            ->read($length)
             ->map(static fn($chunk) => $chunk->toEncoding('ASCII'))
-            ->filter(static fn($string) => $string->length() === $length->value())
+            ->filter(static fn($string) => $string->length() === $length)
             ->match(
                 static fn($string) => $string,
                 static fn() => throw new \LogicException,
@@ -54,8 +54,9 @@ final class LongString implements Value
 
     public function pack(): string
     {
-        return (new UnsignedLongInteger(
-            Integer::of($this->original->toEncoding('ASCII')->length()),
-        ))->pack().$this->original->toString();
+        /** @psalm-suppress ArgumentTypeCoercion */
+        return UnsignedLongInteger::of(
+            $this->original->toEncoding('ASCII')->length(),
+        )->pack().$this->original->toString();
     }
 }

@@ -19,7 +19,6 @@ use Innmind\AMQP\{
     Transport\Frame\Value\Bits,
     Transport\Frame\Value\Table,
 };
-use Innmind\Math\Algebra\Integer;
 use Innmind\Immutable\{
     Str,
     Map,
@@ -44,9 +43,9 @@ final class Queue
         return Frame::method(
             $channel,
             Method::queueDeclare,
-            new UnsignedShortInteger(Integer::of(0)), // ticket (reserved)
+            UnsignedShortInteger::of(0), // ticket (reserved)
             ShortString::of(Str::of($name)),
-            new Bits(
+            Bits::of(
                 $command->isPassive(),
                 $command->isDurable(),
                 $command->isExclusive(),
@@ -62,9 +61,9 @@ final class Queue
         return Frame::method(
             $channel,
             Method::queueDelete,
-            new UnsignedShortInteger(Integer::of(0)), // ticket (reserved)
+            UnsignedShortInteger::of(0), // ticket (reserved)
             ShortString::of(Str::of($command->name())),
-            new Bits(
+            Bits::of(
                 $command->onlyIfUnused(),
                 $command->onlyIfEmpty(),
                 !$command->shouldWait(),
@@ -77,11 +76,11 @@ final class Queue
         return Frame::method(
             $channel,
             Method::queueBind,
-            new UnsignedShortInteger(Integer::of(0)), // ticket (reserved)
+            UnsignedShortInteger::of(0), // ticket (reserved)
             ShortString::of(Str::of($command->queue())),
             ShortString::of(Str::of($command->exchange())),
             ShortString::of(Str::of($command->routingKey())),
-            new Bits(!$command->shouldWait()),
+            Bits::of(!$command->shouldWait()),
             $this->translate($command->arguments()),
         );
     }
@@ -91,7 +90,7 @@ final class Queue
         return Frame::method(
             $channel,
             Method::queueUnbind,
-            new UnsignedShortInteger(Integer::of(0)), // ticket (reserved)
+            UnsignedShortInteger::of(0), // ticket (reserved)
             ShortString::of(Str::of($command->queue())),
             ShortString::of(Str::of($command->exchange())),
             ShortString::of(Str::of($command->routingKey())),
@@ -104,9 +103,9 @@ final class Queue
         return Frame::method(
             $channel,
             Method::queuePurge,
-            new UnsignedShortInteger(Integer::of(0)), // ticket (reserved)
+            UnsignedShortInteger::of(0), // ticket (reserved)
             ShortString::of(Str::of($command->name())),
-            new Bits(!$command->shouldWait()),
+            Bits::of(!$command->shouldWait()),
         );
     }
 
@@ -119,6 +118,6 @@ final class Queue
             fn($_, $value) => ($this->translate)($value),
         );
 
-        return new Table($table);
+        return Table::of($table);
     }
 }

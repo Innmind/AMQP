@@ -21,6 +21,7 @@ final class GetOk implements Get
     private Channel $channel;
     private Command $command;
     private Message $message;
+    /** @var int<0, max> */
     private int $deliveryTag;
     private bool $redelivered;
     private string $exchange;
@@ -28,6 +29,9 @@ final class GetOk implements Get
     private int $messageCount;
     private bool $consumed = false;
 
+    /**
+     * @param int<0, max> $deliveryTag
+     */
     public function __construct(
         Connection $connection,
         Channel $channel,

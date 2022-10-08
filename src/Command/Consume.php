@@ -64,13 +64,27 @@ USAGE;
     private function qos(Console $console, Channel\Basic $basic): void
     {
         if ($console->arguments()->contains('prefetch')) {
-            $basic->qos(new Qos(0, (int) $console->arguments()->get('prefetch')));
+            $prefetch = (int) $console->arguments()->get('prefetch');
+
+            if ($prefetch < 0 || $prefetch > 65535) {
+                return;
+            }
+
+            /** @psalm-suppress InvalidArgument */
+            $basic->qos(new Qos(0, $prefetch));
 
             return;
         }
 
         if ($console->arguments()->contains('number')) {
-            $basic->qos(new Qos(0, (int) $console->arguments()->get('number')));
+            $prefetch = (int) $console->arguments()->get('number');
+
+            if ($prefetch < 0 || $prefetch > 65535) {
+                return;
+            }
+
+            /** @psalm-suppress InvalidArgument */
+            $basic->qos(new Qos(0, $prefetch));
 
             return;
         }

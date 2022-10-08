@@ -65,7 +65,6 @@ use Innmind\OperatingSystem\{
     Sockets,
 };
 use Innmind\Server\Control\Server;
-use Innmind\Math\Algebra\Integer;
 use Innmind\Immutable\{
     Str,
     Map,
@@ -147,8 +146,7 @@ class BasicTest extends TestCase
                 static fn($value) => $value,
                 static fn() => null,
             )
-            ->original()
-            ->value();
+            ->original();
         $this->connection->wait(); //header
         $this->connection->wait(); //body
 
@@ -683,18 +681,18 @@ class BasicTest extends TestCase
             ->withContentEncoding(new ContentEncoding('gzip'))
             ->withHeaders(
                 Map::of(
-                    ['bits', new Bits(true)],
-                    ['decimal', new Decimal(Integer::of(1), Integer::of(1))],
-                    ['longstr', new LongString(Str::of('bar'))],
-                    ['array', new Sequence(new Bits(true))],
-                    ['long', new SignedLongInteger(Integer::of(2))],
-                    ['octet', new SignedOctet(Integer::of(4))],
-                    ['table', new Table(Map::of(['inner', new Bits(true)]))],
-                    ['timestamp', new Timestamp($ts = new Now)],
-                    ['ulong', new UnsignedLongInteger(Integer::of(6))],
-                    ['ulonglong', new UnsignedLongLongInteger(Integer::of(7))],
-                    ['uoctet', new UnsignedOctet(Integer::of(8))],
-                    ['ushort', new UnsignedShortInteger(Integer::of(9))],
+                    ['bits', Bits::of(true)],
+                    ['decimal', Decimal::of(1, 1)],
+                    ['longstr', LongString::of(Str::of('bar'))],
+                    ['array', Sequence::of(Bits::of(true))],
+                    ['long', SignedLongInteger::of(2)],
+                    ['octet', SignedOctet::of(4)],
+                    ['table', Table::of(Map::of(['inner', Bits::of(true)]))],
+                    ['timestamp', Timestamp::of($ts = new Now)],
+                    ['ulong', UnsignedLongInteger::of(6)],
+                    ['ulonglong', UnsignedLongLongInteger::of(7)],
+                    ['uoctet', UnsignedOctet::of(8)],
+                    ['ushort', UnsignedShortInteger::of(9)],
                     ['void', new VoidValue],
                 ),
             )
@@ -748,7 +746,7 @@ class BasicTest extends TestCase
                         static fn() => null,
                     ));
                     $this->assertSame(0.1, $message->headers()->get('decimal')->match(
-                        static fn($value) => $value->value(),
+                        static fn($value) => $value,
                         static fn() => null,
                     ));
                     $this->assertSame('bar', $message->headers()->get('longstr')->match(
@@ -766,11 +764,11 @@ class BasicTest extends TestCase
                         static fn() => null,
                     ));
                     $this->assertSame(2, $message->headers()->get('long')->match(
-                        static fn($value) => $value->value(),
+                        static fn($value) => $value,
                         static fn() => null,
                     ));
                     $this->assertSame(4, $message->headers()->get('octet')->match(
-                        static fn($value) => $value->value(),
+                        static fn($value) => $value,
                         static fn() => null,
                     ));
                     $this->assertSame(true, $message->headers()->get('table')->match(
@@ -791,19 +789,19 @@ class BasicTest extends TestCase
                         ),
                     );
                     $this->assertSame(6, $message->headers()->get('ulong')->match(
-                        static fn($value) => $value->value(),
+                        static fn($value) => $value,
                         static fn() => null,
                     ));
                     $this->assertSame(7, $message->headers()->get('ulonglong')->match(
-                        static fn($value) => $value->value(),
+                        static fn($value) => $value,
                         static fn() => null,
                     ));
                     $this->assertSame(8, $message->headers()->get('uoctet')->match(
-                        static fn($value) => $value->value(),
+                        static fn($value) => $value,
                         static fn() => null,
                     ));
                     $this->assertSame(9, $message->headers()->get('ushort')->match(
-                        static fn($value) => $value->value(),
+                        static fn($value) => $value,
                         static fn() => null,
                     ));
                     $this->assertNull($message->headers()->get('void')->match(
@@ -1095,8 +1093,7 @@ class BasicTest extends TestCase
                 static fn($value) => $value,
                 static fn() => null,
             )
-            ->original()
-            ->value();
+            ->original();
         $this->connection->wait(); //header
         $this->connection->wait(); //body
 
@@ -1134,8 +1131,7 @@ class BasicTest extends TestCase
                 static fn($value) => $value,
                 static fn() => null,
             )
-            ->original()
-            ->value();
+            ->original();
         $this->connection->wait(); //header
         $this->connection->wait(); //body
 

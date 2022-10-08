@@ -54,6 +54,9 @@ enum Priority
         };
     }
 
+    /**
+     * @return int<0, 9>
+     */
     public function toInt(): int
     {
         return match ($this) {

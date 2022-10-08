@@ -24,7 +24,7 @@ enum MethodClass
     }
 
     /**
-     * @return positive-int
+     * @return 10|20|30|40|50|60|90
      */
     public function toInt(): int
     {

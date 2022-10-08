@@ -374,7 +374,7 @@ class ConnectionTest extends TestCase
             ),
         );
         $this->assertSame(1, $frame->values()->get(0)->match(
-            static fn($value) => $value->original()->value(),
+            static fn($value) => $value->original(),
             static fn() => null,
         ));
         $this->assertInstanceOf(
@@ -385,7 +385,7 @@ class ConnectionTest extends TestCase
             ),
         );
         $this->assertSame(10, $frame->values()->get(1)->match(
-            static fn($value) => $value->original()->value(),
+            static fn($value) => $value->original(),
             static fn() => null,
         ));
         $this->assertInstanceOf(
@@ -396,7 +396,7 @@ class ConnectionTest extends TestCase
             ),
         );
         $this->assertSame(3, $frame->values()->get(2)->match(
-            static fn($value) => $value->original()->value(),
+            static fn($value) => $value->original(),
             static fn() => null,
         ));
     }
@@ -469,7 +469,7 @@ class ConnectionTest extends TestCase
             ),
         );
         $this->assertSame(0, $frame->values()->get(0)->match(
-            static fn($value) => $value->original()->value(),
+            static fn($value) => $value->original(),
             static fn() => null,
         ));
         $this->assertInstanceOf(
@@ -491,7 +491,7 @@ class ConnectionTest extends TestCase
             ),
         );
         $this->assertSame(0, $frame->values()->get(2)->match(
-            static fn($value) => $value->original()->value(),
+            static fn($value) => $value->original(),
             static fn() => null,
         ));
         $this->assertInstanceOf(
@@ -502,7 +502,7 @@ class ConnectionTest extends TestCase
             ),
         );
         $this->assertSame(0, $frame->values()->get(3)->match(
-            static fn($value) => $value->original()->value(),
+            static fn($value) => $value->original(),
             static fn() => null,
         ));
 
@@ -511,7 +511,7 @@ class ConnectionTest extends TestCase
         );
 
         $this->assertSame(1, $frame->values()->get(0)->match(
-            static fn($value) => $value->original()->value(),
+            static fn($value) => $value->original(),
             static fn() => null,
         ));
         $this->assertSame('foo', $frame->values()->get(1)->match(
@@ -519,11 +519,11 @@ class ConnectionTest extends TestCase
             static fn() => null,
         ));
         $this->assertSame(0, $frame->values()->get(2)->match(
-            static fn($value) => $value->original()->value(),
+            static fn($value) => $value->original(),
             static fn() => null,
         ));
         $this->assertSame(0, $frame->values()->get(3)->match(
-            static fn($value) => $value->original()->value(),
+            static fn($value) => $value->original(),
             static fn() => null,
         ));
     }

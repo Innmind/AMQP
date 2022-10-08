@@ -69,7 +69,7 @@ final class Consumer implements ConsumerInterface
                 static fn($value) => $value,
                 static fn() => throw new \LogicException,
             );
-            $deliveryTag = $deliveryTag->original()->value();
+            $deliveryTag = $deliveryTag->original();
             /** @var Value\Bits */
             $redelivered = $frame->values()->get(2)->match(
                 static fn($value) => $value,
@@ -179,6 +179,9 @@ final class Consumer implements ConsumerInterface
         --$this->take;
     }
 
+    /**
+     * @param int<0, max> $deliveryTag
+     */
     private function ack(int $deliveryTag): void
     {
         if ($this->command->shouldAutoAcknowledge()) {
@@ -193,6 +196,9 @@ final class Consumer implements ConsumerInterface
         );
     }
 
+    /**
+     * @param int<0, max> $deliveryTag
+     */
     private function reject(int $deliveryTag): void
     {
         $this->connection->send(
@@ -203,6 +209,9 @@ final class Consumer implements ConsumerInterface
         );
     }
 
+    /**
+     * @param int<0, max> $deliveryTag
+     */
     private function requeue(int $deliveryTag): void
     {
         $this->connection->send(

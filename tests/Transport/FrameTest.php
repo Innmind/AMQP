@@ -25,8 +25,8 @@ class FrameTest extends TestCase
         $frame = Frame::method(
             $channel = new Channel(42),
             $method = Method::of(10, 10),
-            $bit = new Bits(true),
-            $text = new Text(Str::of('foobar')),
+            $bit = Bits::of(true),
+            $text = Text::of(Str::of('foobar')),
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -46,7 +46,7 @@ class FrameTest extends TestCase
         $frame = Frame::header(
             $channel = new Channel(42),
             60,
-            $value = new Text(Str::of('foobar')),
+            $value = Text::of(Str::of('foobar')),
         );
 
         $this->assertInstanceOf(Frame::class, $frame);

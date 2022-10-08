@@ -81,7 +81,7 @@ class ProtocolTest extends TestCase
                         ->withContentType(new ContentType('application', 'json'))
                         ->withContentEncoding(new ContentEncoding('gzip'))
                         ->withHeaders(
-                            Map::of(['foo', new ShortString(Str::of('bar'))]),
+                            Map::of(['foo', ShortString::of(Str::of('bar'))]),
                         )
                         ->withDeliveryMode(DeliveryMode::persistent)
                         ->withPriority(Priority::five)

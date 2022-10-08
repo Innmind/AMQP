@@ -42,7 +42,6 @@ use Innmind\Stream\{
     Readable\Stream,
     Readable,
 };
-use Innmind\Math\Algebra\Integer;
 use Innmind\TimeContinuum\Earth\{
     ElapsedPeriod,
     PointInTime\Now,
@@ -72,11 +71,11 @@ class FrameReaderTest extends TestCase
             Frame::method(
                 new Channel(0),
                 Method::of(10, 10), // connection.start
-                new UnsignedOctet(Integer::of(0)),
-                new UnsignedOctet(Integer::of(9)),
-                new Table(Map::of()),
-                new LongString(Str::of('AMQPLAIN')),
-                new LongString(Str::of('en_US')),
+                UnsignedOctet::of(0),
+                UnsignedOctet::of(9),
+                Table::of(Map::of()),
+                LongString::of(Str::of('AMQPLAIN')),
+                LongString::of(Str::of('en_US')),
             )->toString(),
         );
         \fseek($file, 0);
@@ -95,14 +94,14 @@ class FrameReaderTest extends TestCase
         $frame = Frame::method(
             new Channel(0),
             Method::of(10, 10), // connection.start
-            new UnsignedOctet(Integer::of(0)),
-            new UnsignedOctet(Integer::of(9)),
-            new Table(Map::of()),
-            new LongString(Str::of('AMQPLAIN')),
-            new LongString(Str::of('en_US')),
+            UnsignedOctet::of(0),
+            UnsignedOctet::of(9),
+            Table::of(Map::of()),
+            LongString::of(Str::of('AMQPLAIN')),
+            LongString::of(Str::of('en_US')),
         )->toString();
         $frame = \mb_substr($frame, 0, -1, 'ASCII'); //remove end marker
-        $frame .= (new UnsignedOctet(Integer::of(0xCD)))->pack();
+        $frame .= (UnsignedOctet::of(0xCD))->pack();
         \fwrite($file, $frame);
         \fseek($file, 0);
         $stream = Stream::of($file);
@@ -162,7 +161,7 @@ class FrameReaderTest extends TestCase
                         ->withContentType(new ContentType('application', 'json'))
                         ->withContentEncoding(new ContentEncoding('gzip'))
                         ->withHeaders(
-                            Map::of(['foo', new ShortString(Str::of('bar'))]),
+                            Map::of(['foo', ShortString::of(Str::of('bar'))]),
                         )
                         ->withDeliveryMode(DeliveryMode::persistent)
                         ->withPriority(Priority::five)
@@ -200,7 +199,7 @@ class FrameReaderTest extends TestCase
             ),
         );
         $this->assertSame(6, $frame->values()->first()->match(
-            static fn($value) => $value->original()->value(),
+            static fn($value) => $value->original(),
             static fn() => null,
         )); //body size
         $this->assertInstanceOf(
@@ -225,7 +224,7 @@ class FrameReaderTest extends TestCase
         $bits |= 1 << 4;
         $bits |= 1 << 3;
         $this->assertSame($bits, $frame->values()->get(1)->match(
-            static fn($value) => $value->original()->value(),
+            static fn($value) => $value->original(),
             static fn() => null,
         ));
         $this->assertInstanceOf(
@@ -295,7 +294,7 @@ class FrameReaderTest extends TestCase
         $this->assertSame(
             2,
             $frame->values()->get(5)->match(
-                static fn($value) => $value->original()->value(),
+                static fn($value) => $value->original(),
                 static fn() => null,
             ),
         );
@@ -309,7 +308,7 @@ class FrameReaderTest extends TestCase
         $this->assertSame(
             5,
             $frame->values()->get(6)->match(
-                static fn($value) => $value->original()->value(),
+                static fn($value) => $value->original(),
                 static fn() => null,
             ),
         );

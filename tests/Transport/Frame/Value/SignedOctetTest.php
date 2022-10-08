@@ -7,10 +7,7 @@ use Innmind\AMQP\{
     Transport\Frame\Value\SignedOctet,
     Transport\Frame\Value,
 };
-use Innmind\Math\{
-    Algebra\Integer,
-    Exception\OutOfDefinitionSet,
-};
+use Innmind\Math\Exception\OutOfDefinitionSet;
 use Innmind\Stream\Readable\Stream;
 use PHPUnit\Framework\TestCase;
 
@@ -18,7 +15,7 @@ class SignedOctetTest extends TestCase
 {
     public function testInterface()
     {
-        $this->assertInstanceOf(Value::class, new SignedOctet(Integer::of(0)));
+        $this->assertInstanceOf(Value::class, SignedOctet::of(0));
     }
 
     /**
@@ -26,9 +23,9 @@ class SignedOctetTest extends TestCase
      */
     public function testStringCast($expected, $octet)
     {
-        $value = new SignedOctet($int = Integer::of($octet));
+        $value = SignedOctet::of($octet);
         $this->assertSame($expected, $value->pack());
-        $this->assertSame($int, $value->original());
+        $this->assertSame($octet, $value->original());
     }
 
     /**
@@ -39,7 +36,7 @@ class SignedOctetTest extends TestCase
         $value = SignedOctet::unpack(Stream::ofContent($string));
 
         $this->assertInstanceOf(SignedOctet::class, $value);
-        $this->assertSame($expected, $value->original()->value());
+        $this->assertSame($expected, $value->original());
         $this->assertSame($string, $value->pack());
     }
 
@@ -48,7 +45,7 @@ class SignedOctetTest extends TestCase
         $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('128 ∉ [-128;127]');
 
-        SignedOctet::of(Integer::of(128));
+        SignedOctet::of(128);
     }
 
     public function testThrowWhenStringTooLow()
@@ -56,7 +53,7 @@ class SignedOctetTest extends TestCase
         $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('-129 ∉ [-128;127]');
 
-        SignedOctet::of(Integer::of(-129));
+        SignedOctet::of(-129);
     }
 
     public function cases(): array

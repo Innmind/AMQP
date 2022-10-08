@@ -35,17 +35,13 @@ final class MessageReader
             static fn($value) => $value,
             static fn() => throw new \LogicException,
         );
-        $bodySize = $value
-            ->original()
-            ->value();
+        $bodySize = $value->original();
         /** @var Value\UnsignedShortInteger */
         $value = $header->values()->get(1)->match(
             static fn($value) => $value,
             static fn() => throw new \LogicException,
         );
-        $flagBits = $value
-            ->original()
-            ->value();
+        $flagBits = $value->original();
         $payload = Str::of('');
 
         while ($payload->length() !== $bodySize) {
@@ -116,7 +112,7 @@ final class MessageReader
                 static fn() => throw new \LogicException,
             );
             $message = $message->withDeliveryMode(
-                $value->original()->value() === DeliveryMode::persistent->toInt() ?
+                $value->original() === DeliveryMode::persistent->toInt() ?
                     DeliveryMode::persistent : DeliveryMode::nonPersistent,
             );
         }
@@ -128,7 +124,7 @@ final class MessageReader
                 static fn() => throw new \LogicException,
             );
             $message = $message->withPriority(Priority::of(
-                $value->original()->value(),
+                $value->original(),
             ));
         }
 

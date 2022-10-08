@@ -13,8 +13,12 @@ use Innmind\AMQP\Exception\{
  */
 final class MaxFrameSize
 {
+    /** @var int<0, 4294967295> */
     private int $value;
 
+    /**
+     * @param int<0, 4294967295> $value
+     */
     public function __construct(int $value)
     {
         if ($value !== 0 && $value < 9) {
@@ -48,6 +52,9 @@ final class MaxFrameSize
         }
     }
 
+    /**
+     * @return int<0, 4294967295>
+     */
     public function toInt(): int
     {
         return $this->value;

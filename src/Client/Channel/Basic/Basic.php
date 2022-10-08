@@ -134,14 +134,14 @@ final class Basic implements BasicInterface
             $this->channel,
             $command,
             $message,
-            $deliveryTag->original()->value(),
+            $deliveryTag->original(),
             $redelivered->original()->first()->match(
                 static fn($bool) => $bool,
                 static fn() => throw new \LogicException,
             ),
             $exchange->original()->toString(),
             $routingKey->original()->toString(),
-            $messageCount->original()->value(),
+            $messageCount->original(),
         );
     }
 

@@ -16,7 +16,6 @@ use Innmind\AMQP\Transport\{
     Frame\Value\Table,
     Frame\Value\LongString
 };
-use Innmind\Math\Algebra\Integer;
 use Innmind\Stream\Readable\Stream;
 use Innmind\Immutable\{
     Str,
@@ -69,39 +68,39 @@ class ReaderTest extends TestCase
             ],
             [
                 Method::basicConsumeOk,
-                [new ShortString(Str::of('foo'))],
+                [ShortString::of(Str::of('foo'))],
             ],
             [
                 Method::basicCancelOk,
-                [new ShortString(Str::of('foo'))],
+                [ShortString::of(Str::of('foo'))],
             ],
             [
                 Method::basicReturn,
                 [
-                    new UnsignedShortInteger(Integer::of(42)),
-                    new ShortString(Str::of('foo')),
-                    new ShortString(Str::of('bar')),
-                    new ShortString(Str::of('baz')),
+                    UnsignedShortInteger::of(42),
+                    ShortString::of(Str::of('foo')),
+                    ShortString::of(Str::of('bar')),
+                    ShortString::of(Str::of('baz')),
                 ],
             ],
             [
                 Method::basicDeliver,
                 [
-                    new ShortString(Str::of('foo')),
-                    new UnsignedLongLongInteger(Integer::of(42)),
-                    new Bits(true),
-                    new ShortString(Str::of('bar')),
-                    new ShortString(Str::of('baz')),
+                    ShortString::of(Str::of('foo')),
+                    UnsignedLongLongInteger::of(42),
+                    Bits::of(true),
+                    ShortString::of(Str::of('bar')),
+                    ShortString::of(Str::of('baz')),
                 ],
             ],
             [
                 Method::basicGetOk,
                 [
-                    new UnsignedLongLongInteger(Integer::of(42)),
-                    new Bits(true),
-                    new ShortString(Str::of('foo')),
-                    new ShortString(Str::of('bar')),
-                    new UnsignedLongInteger(Integer::of(24)),
+                    UnsignedLongLongInteger::of(42),
+                    Bits::of(true),
+                    ShortString::of(Str::of('foo')),
+                    ShortString::of(Str::of('bar')),
+                    UnsignedLongInteger::of(24),
                 ],
             ],
             [
@@ -118,19 +117,19 @@ class ReaderTest extends TestCase
             ],
             [
                 Method::channelFlow,
-                [new Bits(true)],
+                [Bits::of(true)],
             ],
             [
                 Method::channelFlowOk,
-                [new Bits(true)],
+                [Bits::of(true)],
             ],
             [
                 Method::channelClose,
                 [
-                    new UnsignedShortInteger(Integer::of(42)),
-                    new ShortString(Str::of('foo')),
-                    new UnsignedShortInteger(Integer::of(24)),
-                    new UnsignedShortInteger(Integer::of(66)),
+                    UnsignedShortInteger::of(42),
+                    ShortString::of(Str::of('foo')),
+                    UnsignedShortInteger::of(24),
+                    UnsignedShortInteger::of(66),
                 ],
             ],
             [
@@ -140,38 +139,38 @@ class ReaderTest extends TestCase
             [
                 Method::connectionStart,
                 [
-                    new UnsignedOctet(Integer::of(0)),
-                    new UnsignedOctet(Integer::of(9)),
-                    new Table(Map::of()),
-                    new LongString(Str::of('foo')),
-                    new LongString(Str::of('bar')),
+                    UnsignedOctet::of(0),
+                    UnsignedOctet::of(9),
+                    Table::of(Map::of()),
+                    LongString::of(Str::of('foo')),
+                    LongString::of(Str::of('bar')),
                 ],
             ],
             [
                 Method::connectionSecure,
-                [new LongString(Str::of('foo'))],
+                [LongString::of(Str::of('foo'))],
             ],
             [
                 Method::connectionTune,
                 [
-                    new UnsignedShortInteger(Integer::of(1)),
-                    new UnsignedLongInteger(Integer::of(2)),
-                    new UnsignedShortInteger(Integer::of(3)),
+                    UnsignedShortInteger::of(1),
+                    UnsignedLongInteger::of(2),
+                    UnsignedShortInteger::of(3),
                 ],
             ],
             [
                 Method::connectionOpenOk,
                 [
-                    new ShortString(Str::of('foo')),
+                    ShortString::of(Str::of('foo')),
                 ],
             ],
             [
                 Method::connectionClose,
                 [
-                    new UnsignedShortInteger(Integer::of(0)),
-                    new ShortString(Str::of('foo')),
-                    new UnsignedShortInteger(Integer::of(1)),
-                    new UnsignedShortInteger(Integer::of(2)),
+                    UnsignedShortInteger::of(0),
+                    ShortString::of(Str::of('foo')),
+                    UnsignedShortInteger::of(1),
+                    UnsignedShortInteger::of(2),
                 ],
             ],
             [
@@ -189,9 +188,9 @@ class ReaderTest extends TestCase
             [
                 Method::queueDeclareOk,
                 [
-                    new ShortString(Str::of('foo')),
-                    new UnsignedLongInteger(Integer::of(42)),
-                    new UnsignedLongInteger(Integer::of(24)),
+                    ShortString::of(Str::of('foo')),
+                    UnsignedLongInteger::of(42),
+                    UnsignedLongInteger::of(24),
                 ],
             ],
             [
@@ -204,11 +203,11 @@ class ReaderTest extends TestCase
             ],
             [
                 Method::queuePurgeOk,
-                [new UnsignedLongInteger(Integer::of(42))],
+                [UnsignedLongInteger::of(42)],
             ],
             [
                 Method::queueDeleteOk,
-                [new UnsignedLongInteger(Integer::of(42))],
+                [UnsignedLongInteger::of(42)],
             ],
             [
                 Method::transactionSelectOk,

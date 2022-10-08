@@ -10,17 +10,19 @@ use Innmind\Immutable\Maybe;
  */
 final class Close
 {
-    /** @var Maybe<array{int, string}> */
+    /** @var Maybe<array{int<0, 65535>, string}> */
     private Maybe $reply;
 
     public function __construct()
     {
-        /** @var Maybe<array{int, string}> */
+        /** @var Maybe<array{int<0, 65535>, string}> */
         $this->reply = Maybe::nothing();
     }
 
     /**
      * @psalm-pure
+     *
+     * @param int<0, 65535> $code
      */
     public static function reply(int $code, string $text): self
     {
@@ -31,7 +33,7 @@ final class Close
     }
 
     /**
-     * @return Maybe<array{int, string}>
+     * @return Maybe<array{int<0, 65535>, string}>
      */
     public function response(): Maybe
     {

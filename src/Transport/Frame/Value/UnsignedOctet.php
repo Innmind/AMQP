@@ -14,24 +14,30 @@ use Innmind\Stream\Readable;
 /**
  * Same as unsigned shortshort
  *
- * @implements Value<Integer>
+ * @implements Value<int<0, 255>>
  * @psalm-immutable
  */
 final class UnsignedOctet implements Value
 {
-    private Integer $original;
+    /** @var int<0, 255> */
+    private int $original;
 
-    public function __construct(Integer $octet)
+    /**
+     * @param int<0, 255> $octet
+     */
+    private function __construct(int $octet)
     {
         $this->original = $octet;
     }
 
     /**
      * @psalm-pure
+     *
+     * @param int<0, 255> $octet
      */
-    public static function of(Integer $octet): self
+    public static function of(int $octet): self
     {
-        self::definitionSet()->accept($octet);
+        self::definitionSet()->accept(Integer::of($octet));
 
         return new self($octet);
     }
@@ -47,20 +53,23 @@ final class UnsignedOctet implements Value
                 static fn() => throw new \LogicException,
             );
 
-        /** @var int $octet */
+        /** @var int<0, 255> $octet */
         [, $octet] = \unpack('C', $chunk->toString());
 
-        return new self(Integer::of($octet));
+        return new self($octet);
     }
 
-    public function original(): Integer
+    /**
+     * @return int<0, 255>
+     */
+    public function original(): int
     {
         return $this->original;
     }
 
     public function pack(): string
     {
-        return \chr($this->original->value());
+        return \chr($this->original);
     }
 
     /**

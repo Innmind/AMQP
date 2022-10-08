@@ -16,7 +16,6 @@ use Innmind\AMQP\{
     Transport\Frame\Value\Bits,
     Transport\Frame\Value\Table,
 };
-use Innmind\Math\Algebra\Integer;
 use Innmind\Immutable\{
     Str,
     Map,
@@ -40,17 +39,17 @@ final class Exchange
         return Frame::method(
             $channel,
             Method::exchangeDeclare,
-            new UnsignedShortInteger(Integer::of(0)), // ticket (reserved)
+            UnsignedShortInteger::of(0), // ticket (reserved)
             ShortString::of(Str::of($command->name())),
             ShortString::of(Str::of($command->type()->toString())),
-            new Bits(
+            Bits::of(
                 $command->isPassive(),
                 $command->isDurable(),
                 $command->isAutoDeleted(), // reserved
                 false, // internal (reserved)
                 !$command->shouldWait(),
             ),
-            new Table($arguments),
+            Table::of($arguments),
         );
     }
 
@@ -59,9 +58,9 @@ final class Exchange
         return Frame::method(
             $channel,
             Method::exchangeDelete,
-            new UnsignedShortInteger(Integer::of(0)), // ticket (reserved)
+            UnsignedShortInteger::of(0), // ticket (reserved)
             ShortString::of(Str::of($command->name())),
-            new Bits(
+            Bits::of(
                 $command->onlyIfUnused(),
                 !$command->shouldWait(),
             ),

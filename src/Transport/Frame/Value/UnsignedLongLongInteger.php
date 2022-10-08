@@ -13,24 +13,30 @@ use Innmind\Math\{
 use Innmind\Stream\Readable;
 
 /**
- * @implements Value<Integer>
+ * @implements Value<int<0, max>>
  * @psalm-immutable
  */
 final class UnsignedLongLongInteger implements Value
 {
-    private Integer $original;
+    /** @var int<0, max> */
+    private int $original;
 
-    public function __construct(Integer $value)
+    /**
+     * @param int<0, max> $value
+     */
+    private function __construct(int $value)
     {
         $this->original = $value;
     }
 
     /**
      * @psalm-pure
+     *
+     * @param int<0, max> $value
      */
-    public static function of(Integer $value): self
+    public static function of(int $value): self
     {
-        self::definitionSet()->accept($value);
+        self::definitionSet()->accept(Integer::of($value));
 
         return new self($value);
     }
@@ -46,20 +52,23 @@ final class UnsignedLongLongInteger implements Value
                 static fn() => throw new \LogicException,
             );
 
-        /** @var int $value */
+        /** @var int<0, max> $value */
         [, $value] = \unpack('J', $chunk->toString());
 
-        return new self(Integer::of($value));
+        return new self($value);
     }
 
-    public function original(): Integer
+    /**
+     * @return int<0, max>
+     */
+    public function original(): int
     {
         return $this->original;
     }
 
     public function pack(): string
     {
-        return \pack('J', $this->original->value());
+        return \pack('J', $this->original);
     }
 
     /**

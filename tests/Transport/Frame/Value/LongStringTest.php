@@ -15,7 +15,7 @@ class LongStringTest extends TestCase
 {
     public function testInterface()
     {
-        $this->assertInstanceOf(Value::class, new LongString(Str::of('')));
+        $this->assertInstanceOf(Value::class, LongString::of(Str::of('')));
     }
 
     /**
@@ -23,7 +23,7 @@ class LongStringTest extends TestCase
      */
     public function testStringCast($string, $expected)
     {
-        $value = new LongString($str = Str::of($string));
+        $value = LongString::of($str = Str::of($string));
         $this->assertSame($expected, $value->pack());
         $this->assertSame($str, $value->original());
     }

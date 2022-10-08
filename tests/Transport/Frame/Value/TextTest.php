@@ -15,7 +15,7 @@ class TextTest extends TestCase
 {
     public function testInterface()
     {
-        $this->assertInstanceOf(Value::class, new Text(Str::of('')));
+        $this->assertInstanceOf(Value::class, Text::of(Str::of('')));
     }
 
     /**
@@ -23,7 +23,7 @@ class TextTest extends TestCase
      */
     public function testStringCast($string, $expected)
     {
-        $value = new Text($str = Str::of($string));
+        $value = Text::of($str = Str::of($string));
         $this->assertSame($expected, $value->pack());
         $this->assertSame($str, $value->original());
     }

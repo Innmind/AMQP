@@ -25,7 +25,6 @@ use Innmind\Url\Authority\UserInformation\{
     User,
     Password,
 };
-use Innmind\Math\Algebra\Integer;
 use Innmind\Immutable\{
     Str,
     Map,
@@ -36,22 +35,22 @@ final class Connection
     public function startOk(StartOk $command): Frame
     {
         /** @psalm-suppress InvalidArgument */
-        $clientProperties = new Table(
+        $clientProperties = Table::of(
             Map::of(
-                ['product', new LongString(Str::of('InnmindAMQP'))],
-                ['platform', new LongString(Str::of('PHP'))],
-                ['version', new LongString(Str::of('1.0'))],
-                ['information', new LongString(Str::of(''))],
-                ['copyright', new LongString(Str::of(''))],
+                ['product', LongString::of(Str::of('InnmindAMQP'))],
+                ['platform', LongString::of(Str::of('PHP'))],
+                ['version', LongString::of(Str::of('1.0'))],
+                ['information', LongString::of(Str::of(''))],
+                ['copyright', LongString::of(Str::of(''))],
                 [
                     'capabilities',
-                    new Table(
+                    Table::of(
                         Map::of(
-                            ['authentication_failure_close', new Bits(true)],
-                            ['publisher_confirms', new Bits(true)],
-                            ['consumer_cancel_notify', new Bits(true)],
-                            ['exchange_exchange_bindings', new Bits(true)],
-                            ['connection.blocked', new Bits(true)],
+                            ['authentication_failure_close', Bits::of(true)],
+                            ['publisher_confirms', Bits::of(true)],
+                            ['consumer_cancel_notify', Bits::of(true)],
+                            ['exchange_exchange_bindings', Bits::of(true)],
+                            ['connection.blocked', Bits::of(true)],
                         ),
                     ),
                 ],
@@ -62,9 +61,9 @@ final class Connection
             new Channel(0),
             Method::connectionStartOk,
             $clientProperties,
-            new ShortString(Str::of('AMQPLAIN')), // mechanism
+            ShortString::of(Str::of('AMQPLAIN')), // mechanism
             $this->response($command->user(), $command->password()),
-            new ShortString(Str::of('en_US')), // locale
+            ShortString::of(Str::of('en_US')), // locale
         );
     }
 
@@ -79,14 +78,15 @@ final class Connection
 
     public function tuneOk(TuneOk $command): Frame
     {
+        /** @psalm-suppress ArgumentTypeCoercion */
         return Frame::method(
             new Channel(0),
             Method::connectionTuneOk,
-            UnsignedShortInteger::of(Integer::of($command->maxChannels())),
-            UnsignedLongInteger::of(Integer::of($command->maxFrameSize())),
-            UnsignedShortInteger::of(Integer::of(
+            UnsignedShortInteger::of($command->maxChannels()),
+            UnsignedLongInteger::of($command->maxFrameSize()),
+            UnsignedShortInteger::of(
                 (int) ($command->heartbeat()->milliseconds() / 1000),
-            )),
+            ),
         );
     }
 
@@ -96,8 +96,8 @@ final class Connection
             new Channel(0),
             Method::connectionOpen,
             ShortString::of(Str::of($command->virtualHost()->toString())),
-            new ShortString(Str::of('')), // capabilities (reserved)
-            new Bits(false), // insist (reserved)
+            ShortString::of(Str::of('')), // capabilities (reserved)
+            Bits::of(false), // insist (reserved)
         );
     }
 
@@ -111,13 +111,13 @@ final class Connection
         return Frame::method(
             new Channel(0),
             Method::connectionClose,
-            UnsignedShortInteger::of(Integer::of($replyCode)),
+            UnsignedShortInteger::of($replyCode),
             ShortString::of(Str::of($replyText)),
             // we don't offer the user to specify the cause of the close because
             // it implies exposing the transport details at the model level and
             // it also depends on the state of the connection
-            UnsignedShortInteger::of(Integer::of(0)), // class
-            UnsignedShortInteger::of(Integer::of(0)), // method
+            UnsignedShortInteger::of(0), // class
+            UnsignedShortInteger::of(0), // method
         );
     }
 
@@ -136,11 +136,11 @@ final class Connection
             ['LOGIN', LongString::of(Str::of($user->toString()))],
             ['PASSWORD', LongString::of(Str::of($password->toString()))],
         );
-        $response = new Table($arguments);
+        $response = Table::of($arguments);
         $response = Str::of($response->pack())
             ->toEncoding('ASCII')
             ->substring(4); // skip the encoded table length integer
 
-        return new LongString($response);
+        return LongString::of($response);
     }
 }

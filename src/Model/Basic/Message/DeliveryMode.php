@@ -18,6 +18,9 @@ enum DeliveryMode
      */
     case persistent;
 
+    /**
+     * @return int<1, 2>
+     */
     public function toInt(): int
     {
         return match ($this) {

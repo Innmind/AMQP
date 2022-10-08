@@ -21,7 +21,6 @@ use Innmind\AMQP\{
     Model\Queue\Unbinding,
     Model\Queue\Purge,
 };
-use Innmind\Math\Algebra\Integer;
 use PHPUnit\Framework\TestCase;
 
 class QueueTest extends TestCase
@@ -44,8 +43,8 @@ class QueueTest extends TestCase
             ->method('__invoke')
             ->withConsecutive([24], [42])
             ->will($this->onConsecutiveCalls(
-                $firstArgument = new UnsignedShortInteger(Integer::of(24)),
-                $secondArgument = new UnsignedShortInteger(Integer::of(42)),
+                $firstArgument = UnsignedShortInteger::of(24),
+                $secondArgument = UnsignedShortInteger::of(42),
             ));
         $frame = $this->queue->declare(
             $channel = new Channel(1),
@@ -67,7 +66,7 @@ class QueueTest extends TestCase
             ),
         );
         $this->assertSame(0, $frame->values()->get(0)->match(
-            static fn($value) => $value->original()->value(),
+            static fn($value) => $value->original(),
             static fn() => null,
         ));
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(1)->match(
@@ -228,7 +227,7 @@ class QueueTest extends TestCase
             ),
         );
         $this->assertSame(0, $frame->values()->get(0)->match(
-            static fn($value) => $value->original()->value(),
+            static fn($value) => $value->original(),
             static fn() => null,
         ));
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(1)->match(
@@ -299,8 +298,8 @@ class QueueTest extends TestCase
             ->method('__invoke')
             ->withConsecutive([24], [42])
             ->will($this->onConsecutiveCalls(
-                $firstArgument = new UnsignedShortInteger(Integer::of(24)),
-                $secondArgument = new UnsignedShortInteger(Integer::of(42)),
+                $firstArgument = UnsignedShortInteger::of(24),
+                $secondArgument = UnsignedShortInteger::of(42),
             ));
         $frame = $this->queue->bind(
             $channel = new Channel(1),
@@ -322,7 +321,7 @@ class QueueTest extends TestCase
             ),
         );
         $this->assertSame(0, $frame->values()->get(0)->match(
-            static fn($value) => $value->original()->value(),
+            static fn($value) => $value->original(),
             static fn() => null,
         ));
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(1)->match(
@@ -405,8 +404,8 @@ class QueueTest extends TestCase
             ->method('__invoke')
             ->withConsecutive([24], [42])
             ->will($this->onConsecutiveCalls(
-                $firstArgument = new UnsignedShortInteger(Integer::of(24)),
-                $secondArgument = new UnsignedShortInteger(Integer::of(42)),
+                $firstArgument = UnsignedShortInteger::of(24),
+                $secondArgument = UnsignedShortInteger::of(42),
             ));
         $frame = $this->queue->unbind(
             $channel = new Channel(1),
@@ -428,7 +427,7 @@ class QueueTest extends TestCase
             ),
         );
         $this->assertSame(0, $frame->values()->get(0)->match(
-            static fn($value) => $value->original()->value(),
+            static fn($value) => $value->original(),
             static fn() => null,
         ));
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(1)->match(
@@ -499,7 +498,7 @@ class QueueTest extends TestCase
             ),
         );
         $this->assertSame(0, $frame->values()->get(0)->match(
-            static fn($value) => $value->original()->value(),
+            static fn($value) => $value->original(),
             static fn() => null,
         ));
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(1)->match(

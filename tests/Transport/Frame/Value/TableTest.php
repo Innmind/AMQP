@@ -11,7 +11,6 @@ use Innmind\AMQP\{
     Transport\Frame\Value,
     Exception\UnboundedTextCannotBeWrapped,
 };
-use Innmind\Math\Algebra\Integer;
 use Innmind\Stream\Readable\Stream;
 use Innmind\Immutable\{
     Map,
@@ -25,7 +24,7 @@ class TableTest extends TestCase
     {
         $this->assertInstanceOf(
             Value::class,
-            new Table(Map::of()),
+            Table::of(Map::of()),
         );
     }
 
@@ -34,7 +33,7 @@ class TableTest extends TestCase
      */
     public function testStringCast($expected, $map)
     {
-        $value = new Table($map);
+        $value = Table::of($map);
         $this->assertSame($expected, $value->pack());
         $this->assertSame($map, $value->original());
     }
@@ -67,14 +66,14 @@ class TableTest extends TestCase
     {
         $this->expectException(UnboundedTextCannotBeWrapped::class);
 
-        new Table(
-            Map::of(['foo', new Text(Str::of(''))]),
+        Table::of(
+            Map::of(['foo', Text::of(Str::of(''))]),
         );
     }
 
     public function cases(): array
     {
-        $map = Map::of(['foo', new SignedOctet(Integer::of(1))]);
+        $map = Map::of(['foo', SignedOctet::of(1)]);
 
         return [
             [
@@ -83,7 +82,7 @@ class TableTest extends TestCase
             ],
             [
                 \pack('N', 28).\chr(3).'foob'.\chr(1).\chr(6).'foobarS'.\pack('N', 10).'foo🙏bar',
-                $map->put('foobar', new LongString(Str::of('foo🙏bar'))),
+                $map->put('foobar', LongString::of(Str::of('foo🙏bar'))),
             ],
         ];
     }

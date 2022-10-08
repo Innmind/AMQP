@@ -24,11 +24,17 @@ final class TuneOk
         $this->heartbeat = $heartbeat;
     }
 
+    /**
+     * @return int<0, 65535>
+     */
     public function maxChannels(): int
     {
         return $this->maxChannels->toInt();
     }
 
+    /**
+     * @return int<0, 4294967295>
+     */
     public function maxFrameSize(): int
     {
         return $this->maxFrameSize->toInt();

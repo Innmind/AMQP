@@ -5,7 +5,6 @@ namespace Tests\Innmind\AMQP\Model\Connection;
 
 use Innmind\AMQP\{
     Model\Connection\MaxChannels,
-    Exception\DomainException,
     Exception\FrameChannelExceedAllowedChannelNumber,
 };
 use PHPUnit\Framework\TestCase;
@@ -107,12 +106,5 @@ class MaxChannelsTest extends TestCase
 
                 $max->verify($above);
             });
-    }
-
-    public function testThrowWhenNegativeValue()
-    {
-        $this->expectException(DomainException::class);
-
-        new MaxChannels(-1);
     }
 }

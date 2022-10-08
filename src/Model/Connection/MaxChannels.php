@@ -3,24 +3,21 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Model\Connection;
 
-use Innmind\AMQP\Exception\{
-    DomainException,
-    FrameChannelExceedAllowedChannelNumber,
-};
+use Innmind\AMQP\Exception\FrameChannelExceedAllowedChannelNumber;
 
 /**
  * @psalm-immutable
  */
 final class MaxChannels
 {
+    /** @var int<0, 65535> */
     private int $value;
 
+    /**
+     * @param int<0, 65535> $value
+     */
     public function __construct(int $value)
     {
-        if ($value < 0) {
-            throw new DomainException((string) $value);
-        }
-
         $this->value = $value;
     }
 
@@ -43,6 +40,9 @@ final class MaxChannels
         }
     }
 
+    /**
+     * @return int<0, 65535>
+     */
     public function toInt(): int
     {
         return $this->value;

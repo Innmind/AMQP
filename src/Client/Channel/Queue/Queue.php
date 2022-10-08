@@ -63,8 +63,8 @@ final class Queue implements QueueInterface
 
         return new DeclareOk(
             $name->original()->toString(),
-            new Count($message->original()->value()),
-            new Count($consumer->original()->value()),
+            new Count($message->original()),
+            new Count($consumer->original()),
         );
     }
 
@@ -89,7 +89,7 @@ final class Queue implements QueueInterface
         );
 
         return new DeleteOk(new Count(
-            $message->original()->value(),
+            $message->original(),
         ));
     }
 
@@ -137,7 +137,7 @@ final class Queue implements QueueInterface
         );
 
         return new PurgeOk(new Count(
-            $message->original()->value(),
+            $message->original(),
         ));
     }
 }

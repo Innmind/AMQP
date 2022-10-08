@@ -15,7 +15,6 @@ use Innmind\AMQP\{
     Transport\Frame\Value\Bits,
     Transport\Frame\Value\UnsignedShortInteger,
 };
-use Innmind\Math\Algebra\Integer;
 use Innmind\Immutable\Str;
 
 final class Channel
@@ -25,7 +24,7 @@ final class Channel
         return Frame::method(
             $channel,
             Method::channelOpen,
-            new ShortString(Str::of('')), // out of band (reserved)
+            ShortString::of(Str::of('')), // out of band (reserved)
         );
     }
 
@@ -34,7 +33,7 @@ final class Channel
         return Frame::method(
             $channel,
             Method::channelFlow,
-            new Bits($command->active()),
+            Bits::of($command->active()),
         );
     }
 
@@ -43,7 +42,7 @@ final class Channel
         return Frame::method(
             $channel,
             Method::channelFlowOk,
-            new Bits($command->active()),
+            Bits::of($command->active()),
         );
     }
 
@@ -57,13 +56,13 @@ final class Channel
         return Frame::method(
             $channel,
             Method::channelClose,
-            UnsignedShortInteger::of(Integer::of($replyCode)),
+            UnsignedShortInteger::of($replyCode),
             ShortString::of(Str::of($replyText)),
             // we don't offer the user to specify the cause of the close because
             // it implies exposing the transport details at the model level and
             // it also depends on the state of the connection
-            UnsignedShortInteger::of(Integer::of(0)), // class
-            UnsignedShortInteger::of(Integer::of(0)), // method
+            UnsignedShortInteger::of(0), // class
+            UnsignedShortInteger::of(0), // method
         );
     }
 

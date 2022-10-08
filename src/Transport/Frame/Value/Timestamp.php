@@ -12,7 +12,6 @@ use Innmind\TimeContinuum\{
     Earth\PointInTime\PointInTime,
     Earth\Format\ISO8601,
 };
-use Innmind\Math\Algebra\Integer;
 use Innmind\Stream\Readable;
 
 /**
@@ -23,16 +22,22 @@ final class Timestamp implements Value
 {
     private PointInTimeInterface $original;
 
-    public function __construct(PointInTimeInterface $point)
+    private function __construct(PointInTimeInterface $point)
     {
         $this->original = $point;
     }
 
+    /**
+     * @psalm-pure
+     */
+    public static function of(PointInTimeInterface $point): self
+    {
+        return new self($point);
+    }
+
     public static function unpack(Readable $stream): self
     {
-        $time = UnsignedLongLongInteger::unpack($stream)
-            ->original()
-            ->value();
+        $time = UnsignedLongLongInteger::unpack($stream)->original();
 
         return new self(new PointInTime(
             \date((new ISO8601)->toString(), $time),
@@ -46,8 +51,9 @@ final class Timestamp implements Value
 
     public function pack(): string
     {
-        return (new UnsignedLongLongInteger(
-            Integer::of((int) $this->original->format(new TimestampFormat)),
-        ))->pack();
+        /** @psalm-suppress ArgumentTypeCoercion */
+        return UnsignedLongLongInteger::of(
+            (int) $this->original->format(new TimestampFormat),
+        )->pack();
     }
 }

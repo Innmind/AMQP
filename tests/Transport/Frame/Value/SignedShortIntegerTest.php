@@ -7,10 +7,7 @@ use Innmind\AMQP\{
     Transport\Frame\Value\SignedShortInteger,
     Transport\Frame\Value,
 };
-use Innmind\Math\{
-    Algebra\Integer,
-    Exception\OutOfDefinitionSet,
-};
+use Innmind\Math\Exception\OutOfDefinitionSet;
 use Innmind\Stream\Readable\Stream;
 use PHPUnit\Framework\TestCase;
 
@@ -20,7 +17,7 @@ class SignedShortIntegerTest extends TestCase
     {
         $this->assertInstanceOf(
             Value::class,
-            new SignedShortInteger(Integer::of(0)),
+            SignedShortInteger::of(0),
         );
     }
 
@@ -29,7 +26,7 @@ class SignedShortIntegerTest extends TestCase
      */
     public function testStringCast($int, $expected)
     {
-        $value = new SignedShortInteger($int = Integer::of($int));
+        $value = SignedShortInteger::of($int);
         $this->assertSame($expected, $value->pack());
         $this->assertSame($int, $value->original());
     }
@@ -42,7 +39,7 @@ class SignedShortIntegerTest extends TestCase
         $value = SignedShortInteger::unpack(Stream::ofContent($string));
 
         $this->assertInstanceOf(SignedShortInteger::class, $value);
-        $this->assertSame($expected, $value->original()->value());
+        $this->assertSame($expected, $value->original());
         $this->assertSame($string, $value->pack());
     }
 
@@ -51,7 +48,7 @@ class SignedShortIntegerTest extends TestCase
         $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('32768 ∉ [-32768;32767]');
 
-        SignedShortInteger::of(Integer::of(32768));
+        SignedShortInteger::of(32768);
     }
 
     public function testThrowWhenIntegerTooLow()
@@ -59,7 +56,7 @@ class SignedShortIntegerTest extends TestCase
         $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('-32769 ∉ [-32768;32767]');
 
-        SignedShortInteger::of(Integer::of(-32769));
+        SignedShortInteger::of(-32769);
     }
 
     public function cases(): array

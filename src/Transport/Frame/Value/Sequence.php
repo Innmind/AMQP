@@ -7,7 +7,6 @@ use Innmind\AMQP\{
     Transport\Frame\Value,
     Exception\UnboundedTextCannotBeWrapped,
 };
-use Innmind\Math\Algebra\Integer;
 use Innmind\Stream\Readable;
 use Innmind\Immutable\{
     Sequence as Seq,
@@ -29,7 +28,7 @@ final class Sequence implements Value
     /**
      * @no-named-arguments
      */
-    public function __construct(Value ...$values)
+    private function __construct(Value ...$values)
     {
         $values = Seq::of(...$values);
 
@@ -44,11 +43,20 @@ final class Sequence implements Value
         $this->original = $values;
     }
 
+    /**
+     * @psalm-pure
+     * @no-named-arguments
+     */
+    public static function of(Value ...$values): self
+    {
+        return new self(...$values);
+    }
+
     public static function unpack(Readable $stream): self
     {
         $length = UnsignedLongInteger::unpack($stream)->original();
         $position = $stream->position()->toInt();
-        $boundary = $position + $length->value();
+        $boundary = $position + $length;
 
         /** @var list<Value> */
         $values = [];
@@ -88,9 +96,8 @@ final class Sequence implements Value
             ->map(Str::of(...))
             ->fold(new Concat)
             ->toEncoding('ASCII');
-        $value = (new UnsignedLongInteger(
-            Integer::of($data->length()),
-        ))->pack();
+        /** @psalm-suppress ArgumentTypeCoercion */
+        $value = UnsignedLongInteger::of($data->length())->pack();
 
         return $value.$data->toString();
     }

@@ -173,18 +173,18 @@ final class Connection implements ConnectionInterface
                 ->values()
                 ->get(2)
                 ->keep(Instance::of(Value\UnsignedShortInteger::class))
-                ->map(static fn($value) => $value->original()->value())
+                ->map(static fn($value) => $value->original())
                 ->filter(static fn($class) => $class !== 0);
             $method = $frame
                 ->values()
                 ->get(3)
                 ->keep(Instance::of(Value\UnsignedShortInteger::class))
-                ->map(static fn($value) => $value->original()->value())
+                ->map(static fn($value) => $value->original())
                 ->filter(static fn($method) => $method !== 0);
 
             throw ConnectionClosed::byServer(
                 $message->original()->toString(),
-                $code->original()->value(),
+                $code->original(),
                 Maybe::all($class, $method)->map(
                     static fn(int $class, int $method) => Method::of($class, $method),
                 ),
@@ -271,9 +271,9 @@ final class Connection implements ConnectionInterface
             ); // there is a zero between AMQP and version number
 
             $this->protocol->use(
-                UnsignedOctet::unpack($content)->original()->value(),
-                UnsignedOctet::unpack($content)->original()->value(),
-                UnsignedOctet::unpack($content)->original()->value(),
+                UnsignedOctet::unpack($content)->original(),
+                UnsignedOctet::unpack($content)->original(),
+                UnsignedOctet::unpack($content)->original(),
             );
             // socket rebuilt as the server close the connection on version mismatch
             $this->buildSocket();
@@ -310,23 +310,21 @@ final class Connection implements ConnectionInterface
             static fn() => throw new \LogicException,
         );
         $this->maxChannels = new MaxChannels(
-            $maxChannels->original()->value(),
+            $maxChannels->original(),
         );
         /** @var Value\UnsignedLongInteger */
         $maxFrameSize = $frame->values()->get(1)->match(
             static fn($value) => $value,
             static fn() => throw new \LogicException,
         );
-        $this->maxFrameSize = new MaxFrameSize(
-            $maxFrameSize->original()->value(),
-        );
+        $this->maxFrameSize = new MaxFrameSize($maxFrameSize->original());
         /** @var Value\UnsignedShortInteger */
         $heartbeat = $frame->values()->get(2)->match(
             static fn($value) => $value,
             static fn() => throw new \LogicException,
         );
         $this->heartbeat = new Earth\ElapsedPeriod(
-            $heartbeat->original()->value(),
+            $heartbeat->original(),
         );
         $this->watch = $this->sockets->watch($this->heartbeat)->forRead($this->socket);
         $this->send($this->protocol->connection()->tuneOk(

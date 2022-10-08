@@ -40,7 +40,6 @@ use Innmind\AMQP\{
     Model\Basic\Message\UserId,
     Model\Connection\MaxFrameSize,
 };
-use Innmind\Math\Algebra\Integer;
 use Innmind\TimeContinuum\Earth\{
     PointInTime\Now,
     ElapsedPeriod,
@@ -84,7 +83,7 @@ class BasicTest extends TestCase
             ),
         );
         $this->assertSame(42, $frame->values()->get(0)->match(
-            static fn($value) => $value->original()->value(),
+            static fn($value) => $value->original(),
             static fn() => null,
         ));
         $this->assertInstanceOf(Bits::class, $frame->values()->get(1)->match(
@@ -167,8 +166,8 @@ class BasicTest extends TestCase
             ->method('__invoke')
             ->withConsecutive([24], [42])
             ->will($this->onConsecutiveCalls(
-                $firstArgument = new UnsignedShortInteger(Integer::of(24)),
-                $secondArgument = new UnsignedShortInteger(Integer::of(42)),
+                $firstArgument = UnsignedShortInteger::of(24),
+                $secondArgument = UnsignedShortInteger::of(42),
             ));
         $frame = $this->basic->consume(
             $channel = new Channel(1),
@@ -190,7 +189,7 @@ class BasicTest extends TestCase
             ),
         );
         $this->assertSame(0, $frame->values()->get(0)->match(
-            static fn($value) => $value->original()->value(),
+            static fn($value) => $value->original(),
             static fn() => null,
         ));
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(1)->match(
@@ -328,7 +327,7 @@ class BasicTest extends TestCase
             ),
         );
         $this->assertSame(0, $frame->values()->get(0)->match(
-            static fn($value) => $value->original()->value(),
+            static fn($value) => $value->original(),
             static fn() => null,
         ));
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(1)->match(
@@ -392,7 +391,7 @@ class BasicTest extends TestCase
             ),
         );
         $this->assertSame(0, $frame->values()->get(0)->match(
-            static fn($value) => $value->original()->value(),
+            static fn($value) => $value->original(),
             static fn() => null,
         ));
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(1)->match(
@@ -438,7 +437,7 @@ class BasicTest extends TestCase
             ),
         );
         $this->assertSame(6, $frame->values()->get(0)->match(
-            static fn($value) => $value->original()->value(),
+            static fn($value) => $value->original(),
             static fn() => null,
         ));
         $this->assertInstanceOf(
@@ -449,7 +448,7 @@ class BasicTest extends TestCase
             ),
         );
         $this->assertSame(0, $frame->values()->get(1)->match(
-            static fn($value) => $value->original()->value(),
+            static fn($value) => $value->original(),
             static fn() => null,
         ));
 
@@ -484,7 +483,7 @@ class BasicTest extends TestCase
             static fn() => null,
         );
         $this->assertSame(6, $frame->values()->get(0)->match(
-            static fn($value) => $value->original()->value(),
+            static fn($value) => $value->original(),
             static fn() => null,
         )); //message length
 
@@ -528,7 +527,7 @@ class BasicTest extends TestCase
                     ->withContentType(new ContentType('application', 'json'))
                     ->withContentEncoding(new ContentEncoding('gzip'))
                     ->withHeaders(
-                        Map::of(['foo', new ShortString(Str::of('bar'))]),
+                        Map::of(['foo', ShortString::of(Str::of('bar'))]),
                     )
                     ->withDeliveryMode(DeliveryMode::persistent)
                     ->withPriority(Priority::five)
@@ -562,7 +561,7 @@ class BasicTest extends TestCase
             ),
         );
         $this->assertSame(6, $frame->values()->get(0)->match(
-            static fn($value) => $value->original()->value(),
+            static fn($value) => $value->original(),
             static fn() => null,
         ));
         $this->assertInstanceOf(
@@ -587,7 +586,7 @@ class BasicTest extends TestCase
         $bits |= 1 << 4;
         $bits |= 1 << 3;
         $this->assertSame($bits, $frame->values()->get(1)->match(
-            static fn($value) => $value->original()->value(),
+            static fn($value) => $value->original(),
             static fn() => null,
         ));
         $this->assertInstanceOf(
@@ -655,7 +654,7 @@ class BasicTest extends TestCase
             ),
         );
         $this->assertSame(2, $frame->values()->get(5)->match(
-            static fn($value) => $value->original()->value(),
+            static fn($value) => $value->original(),
             static fn() => null,
         ));
         $this->assertInstanceOf(
@@ -666,7 +665,7 @@ class BasicTest extends TestCase
             ),
         );
         $this->assertSame(5, $frame->values()->get(6)->match(
-            static fn($value) => $value->original()->value(),
+            static fn($value) => $value->original(),
             static fn() => null,
         ));
         $this->assertInstanceOf(
@@ -878,7 +877,7 @@ class BasicTest extends TestCase
             ),
         );
         $this->assertSame(1, $frame->values()->get(0)->match(
-            static fn($value) => $value->original()->value(),
+            static fn($value) => $value->original(),
             static fn() => null,
         ));
         $this->assertInstanceOf(
@@ -889,7 +888,7 @@ class BasicTest extends TestCase
             ),
         );
         $this->assertSame(2, $frame->values()->get(1)->match(
-            static fn($value) => $value->original()->value(),
+            static fn($value) => $value->original(),
             static fn() => null,
         ));
         $this->assertInstanceOf(Bits::class, $frame->values()->get(2)->match(
@@ -976,7 +975,7 @@ class BasicTest extends TestCase
             ),
         );
         $this->assertSame(42, $frame->values()->get(0)->match(
-            static fn($value) => $value->original()->value(),
+            static fn($value) => $value->original(),
             static fn() => null,
         ));
         $this->assertInstanceOf(Bits::class, $frame->values()->get(1)->match(

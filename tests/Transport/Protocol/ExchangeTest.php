@@ -17,7 +17,6 @@ use Innmind\AMQP\{
     Model\Exchange\Deletion,
     Model\Exchange\Type,
 };
-use Innmind\Math\Algebra\Integer;
 use PHPUnit\Framework\TestCase;
 
 class ExchangeTest extends TestCase
@@ -40,8 +39,8 @@ class ExchangeTest extends TestCase
             ->method('__invoke')
             ->withConsecutive([24], [42])
             ->will($this->onConsecutiveCalls(
-                $firstArgument = new UnsignedShortInteger(Integer::of(24)),
-                $secondArgument = new UnsignedShortInteger(Integer::of(42)),
+                $firstArgument = UnsignedShortInteger::of(24),
+                $secondArgument = UnsignedShortInteger::of(42),
             ));
         $frame = $this->exchange->declare(
             $channel = new Channel(1),
@@ -63,7 +62,7 @@ class ExchangeTest extends TestCase
             ),
         );
         $this->assertSame(0, $frame->values()->get(0)->match(
-            static fn($value) => $value->original()->value(),
+            static fn($value) => $value->original(),
             static fn() => null,
         ));
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(1)->match(
@@ -189,7 +188,7 @@ class ExchangeTest extends TestCase
             ),
         );
         $this->assertSame(0, $frame->values()->get(0)->match(
-            static fn($value) => $value->original()->value(),
+            static fn($value) => $value->original(),
             static fn() => null,
         ));
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(1)->match(

@@ -3,8 +3,6 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Model\Basic;
 
-use Innmind\AMQP\Exception\DomainException;
-
 /**
  * Quality of service
  *
@@ -15,16 +13,18 @@ use Innmind\AMQP\Exception\DomainException;
  */
 final class Qos
 {
+    /** @var int<0, 4294967295> */
     private int $prefetchSize;
+    /** @var int<0, 65535> */
     private int $prefetchCount;
     private bool $global = false;
 
+    /**
+     * @param int<0, 4294967295> $prefetchSize
+     * @param int<0, 65535> $prefetchCount
+     */
     public function __construct(int $prefetchSize, int $prefetchCount)
     {
-        if ($prefetchSize < 0 || $prefetchCount < 0) {
-            throw new DomainException("$prefetchSize, $prefetchCount");
-        }
-
         $this->prefetchSize = $prefetchSize;
         $this->prefetchCount = $prefetchCount;
     }
@@ -33,6 +33,9 @@ final class Qos
      * Will apply the definition for the whole connection
      *
      * @psalm-immutable
+     *
+     * @param int<0, 4294967295> $prefetchSize
+     * @param int<0, 65535> $prefetchCount
      */
     public static function global(int $prefetchSize, int $prefetchCount): self
     {
@@ -42,11 +45,17 @@ final class Qos
         return $self;
     }
 
+    /**
+     * @return int<0, 4294967295>
+     */
     public function prefetchSize(): int
     {
         return $this->prefetchSize;
     }
 
+    /**
+     * @return int<0, 65535>
+     */
     public function prefetchCount(): int
     {
         return $this->prefetchCount;

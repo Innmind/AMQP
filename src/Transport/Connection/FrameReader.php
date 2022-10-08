@@ -29,7 +29,7 @@ final class FrameReader
         $octet = UnsignedOctet::unpack($stream);
 
         try {
-            $type = Type::of($octet->original()->value());
+            $type = Type::of($octet->original());
         } catch (\UnhandledMatchError $e) {
             $data = $stream->read()->match(
                 static fn($data) => $data,
@@ -42,11 +42,11 @@ final class FrameReader
         }
 
         $channel = new Channel(
-            UnsignedShortInteger::unpack($stream)->original()->value(),
+            UnsignedShortInteger::unpack($stream)->original(),
         );
-        /** @psalm-suppress ArgumentTypeCoercion */
+        /** @psalm-suppress InvalidArgument */
         $payload = $stream
-            ->read(UnsignedLongInteger::unpack($stream)->original()->value())
+            ->read(UnsignedLongInteger::unpack($stream)->original())
             ->match(
                 static fn($payload) => $payload,
                 static fn() => throw new \LogicException,
@@ -63,7 +63,7 @@ final class FrameReader
             throw new PayloadTooShort((string) $payload->length());
         }
 
-        $end = UnsignedOctet::unpack($stream)->original()->value();
+        $end = UnsignedOctet::unpack($stream)->original();
 
         if ($end !== Frame::end()) {
             throw new ReceivedFrameNotDelimitedCorrectly;
@@ -74,12 +74,8 @@ final class FrameReader
         switch ($type) {
             case Type::method:
                 $method = Method::of(
-                    UnsignedShortInteger::unpack($payload)
-                        ->original()
-                        ->value(),
-                    UnsignedShortInteger::unpack($payload)
-                        ->original()
-                        ->value(),
+                    UnsignedShortInteger::unpack($payload)->original(),
+                    UnsignedShortInteger::unpack($payload)->original(),
                 );
 
                 return Frame::method(
@@ -89,9 +85,7 @@ final class FrameReader
                 );
 
             case Type::header:
-                $class = UnsignedShortInteger::unpack($payload)
-                    ->original()
-                    ->value();
+                $class = UnsignedShortInteger::unpack($payload)->original();
                 $_ = $payload->read(2)->match(
                     static fn() => null,
                     static fn() => throw new \LogicException,

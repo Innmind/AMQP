@@ -4,20 +4,27 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
-use Innmind\Math\Algebra\Integer;
 use Innmind\Stream\Readable;
 
 /**
- * @implements Value<Integer>
+ * @implements Value<int>
  * @psalm-immutable
  */
 final class SignedLongLongInteger implements Value
 {
-    private Integer $original;
+    private int $original;
 
-    public function __construct(Integer $value)
+    private function __construct(int $value)
     {
         $this->original = $value;
+    }
+
+    /**
+     * @psalm-pure
+     */
+    public static function of(int $value): self
+    {
+        return new self($value);
     }
 
     public static function unpack(Readable $stream): self
@@ -33,16 +40,16 @@ final class SignedLongLongInteger implements Value
         /** @var int $value */
         [, $value] = \unpack('q', $chunk->toString());
 
-        return new self(Integer::of($value));
+        return new self($value);
     }
 
-    public function original(): Integer
+    public function original(): int
     {
         return $this->original;
     }
 
     public function pack(): string
     {
-        return \pack('q', $this->original->value());
+        return \pack('q', $this->original);
     }
 }

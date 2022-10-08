@@ -78,7 +78,7 @@ final class Protocol
         $bodySize = UnsignedLongLongInteger::unpack($arguments);
         $flags = UnsignedShortInteger::unpack($arguments);
 
-        $flagBits = $flags->original()->value();
+        $flagBits = $flags->original();
         $toChunk = [];
 
         if ($flagBits & (1 << 15)) {

@@ -10,9 +10,13 @@ namespace Innmind\AMQP\Model\Basic;
  */
 final class Ack
 {
+    /** @var int<0, max> */
     private int $deliveryTag;
     private bool $multiple = false;
 
+    /**
+     * @param int<0, max> $deliveryTag
+     */
     public function __construct(int $deliveryTag)
     {
         $this->deliveryTag = $deliveryTag;
@@ -20,6 +24,8 @@ final class Ack
 
     /**
      * @psalm-pure
+     *
+     * @param int<0, max> $deliveryTag
      */
     public static function multiple(int $deliveryTag): self
     {
@@ -29,6 +35,9 @@ final class Ack
         return $self;
     }
 
+    /**
+     * @return int<0, max>
+     */
     public function deliveryTag(): int
     {
         return $this->deliveryTag;

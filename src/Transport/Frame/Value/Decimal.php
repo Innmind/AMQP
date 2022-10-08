@@ -4,64 +4,49 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
-use Innmind\Math\{
-    Algebra\Number,
-    Algebra\Integer,
-    DefinitionSet\Set,
-    DefinitionSet\NaturalNumbers,
-};
 use Innmind\Stream\Readable;
 
 /**
- * @implements Value<Number>
+ * @implements Value<int|float>
  * @psalm-immutable
  */
 final class Decimal implements Value
 {
-    private Integer $value;
-    private Integer $scale;
-    private Number $original;
+    private SignedLongInteger $value;
+    private UnsignedOctet $scale;
 
-    public function __construct(Integer $value, Integer $scale)
+    private function __construct(SignedLongInteger $value, UnsignedOctet $scale)
     {
         $this->scale = $scale;
         $this->value = $value;
-        $this->original = $value->divideBy(
-            Integer::of(10)->power($scale),
-        );
     }
 
     /**
      * @psalm-pure
+     *
+     * @param int<-2147483648, 2147483647> $value
+     * @param int<0, 255> $scale
      */
-    public static function of(Integer $value, Integer $scale): self
+    public static function of(int $value, int $scale): self
     {
-        $_ = SignedLongInteger::of($value);
-        $_ = UnsignedOctet::of($scale);
-
-        return new self($value, $scale);
+        return new self(SignedLongInteger::of($value), UnsignedOctet::of($scale));
     }
 
     public static function unpack(Readable $stream): self
     {
-        $scale = UnsignedOctet::unpack($stream)->original();
-        $value = SignedLongInteger::unpack($stream)->original();
+        $scale = UnsignedOctet::unpack($stream);
+        $value = SignedLongInteger::unpack($stream);
 
         return new self($value, $scale);
     }
 
-    public function original(): Number
+    public function original(): int|float
     {
-        return $this->original;
+        return $this->value->original() / (10 ** $this->scale->original());
     }
 
     public function pack(): string
     {
-        return (new UnsignedOctet($this->scale))->pack().(new SignedLongInteger($this->value))->pack();
-    }
-
-    public static function definitionSet(): Set
-    {
-        return new NaturalNumbers;
+        return $this->scale->pack().$this->value->pack();
     }
 }

@@ -20,7 +20,7 @@ class UnsignedLongIntegerTest extends TestCase
     {
         $this->assertInstanceOf(
             Value::class,
-            new UnsignedLongInteger(Integer::of(0)),
+            UnsignedLongInteger::of(0),
         );
     }
 
@@ -29,7 +29,7 @@ class UnsignedLongIntegerTest extends TestCase
         $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('4294967296 ∉ [0;4294967295]');
 
-        UnsignedLongInteger::of(Integer::of(4294967296));
+        UnsignedLongInteger::of(4294967296);
     }
 
     public function testThrowWhenIntegerTooLow()
@@ -37,7 +37,7 @@ class UnsignedLongIntegerTest extends TestCase
         $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('-1 ∉ [0;4294967295]');
 
-        UnsignedLongInteger::of(Integer::of(-1));
+        UnsignedLongInteger::of(-1);
     }
 
     /**
@@ -47,7 +47,7 @@ class UnsignedLongIntegerTest extends TestCase
     {
         $this->assertSame(
             $expected,
-            (new UnsignedLongInteger(Integer::of($int)))->pack(),
+            UnsignedLongInteger::of($int)->pack(),
         );
     }
 
@@ -59,8 +59,7 @@ class UnsignedLongIntegerTest extends TestCase
         $value = UnsignedLongInteger::unpack(Stream::ofContent($string));
 
         $this->assertInstanceOf(UnsignedLongInteger::class, $value);
-        $this->assertInstanceOf(Integer::class, $value->original());
-        $this->assertSame($expected, $value->original()->value());
+        $this->assertSame($expected, $value->original());
         $this->assertSame($string, $value->pack());
     }
 

@@ -20,7 +20,7 @@ class UnsignedOctetTest extends TestCase
     {
         $this->assertInstanceOf(
             Value::class,
-            new UnsignedOctet(Integer::of(0)),
+            UnsignedOctet::of(0),
         );
     }
 
@@ -29,9 +29,9 @@ class UnsignedOctetTest extends TestCase
      */
     public function testStringCast($expected, $octet)
     {
-        $value = new UnsignedOctet($int = Integer::of($octet));
+        $value = UnsignedOctet::of($octet);
         $this->assertSame($expected, $value->pack());
-        $this->assertSame($int, $value->original());
+        $this->assertSame($octet, $value->original());
     }
 
     /**
@@ -42,7 +42,7 @@ class UnsignedOctetTest extends TestCase
         $value = UnsignedOctet::unpack(Stream::ofContent($string));
 
         $this->assertInstanceOf(UnsignedOctet::class, $value);
-        $this->assertSame($expected, $value->original()->value());
+        $this->assertSame($expected, $value->original());
         $this->assertSame($string, $value->pack());
     }
 
@@ -51,7 +51,7 @@ class UnsignedOctetTest extends TestCase
         $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('256 ∉ [0;255]');
 
-        UnsignedOctet::of(Integer::of(256));
+        UnsignedOctet::of(256);
     }
 
     public function testThrowWhenStringTooLow()
@@ -59,7 +59,7 @@ class UnsignedOctetTest extends TestCase
         $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('-1 ∉ [0;255]');
 
-        UnsignedOctet::of(Integer::of(-1));
+        UnsignedOctet::of(-1);
     }
 
     public function cases(): array

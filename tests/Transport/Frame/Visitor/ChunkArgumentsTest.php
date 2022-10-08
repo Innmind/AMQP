@@ -25,7 +25,7 @@ class ChunkArgumentsTest extends TestCase
             LongString::class,
         );
 
-        $arguments = (new Bits(true))->pack().(new LongString(Str::of('foo')))->pack();
+        $arguments = Bits::of(true)->pack().LongString::of(Str::of('foo'))->pack();
 
         $stream = $visit(Stream::ofContent($arguments));
 

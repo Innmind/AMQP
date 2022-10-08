@@ -12,24 +12,30 @@ use Innmind\Math\{
 use Innmind\Stream\Readable;
 
 /**
- * @implements Value<Integer>
+ * @implements Value<int<-32768, 32767>>
  * @psalm-immutable
  */
 final class SignedShortInteger implements Value
 {
-    private Integer $original;
+    /** @var int<-32768, 32767> */
+    private int $original;
 
-    public function __construct(Integer $value)
+    /**
+     * @param int<-32768, 32767> $value
+     */
+    private function __construct(int $value)
     {
         $this->original = $value;
     }
 
     /**
      * @psalm-pure
+     *
+     * @param int<-32768, 32767> $value
      */
-    public static function of(Integer $value): self
+    public static function of(int $value): self
     {
-        self::definitionSet()->accept($value);
+        self::definitionSet()->accept(Integer::of($value));
 
         return new self($value);
     }
@@ -44,20 +50,23 @@ final class SignedShortInteger implements Value
                 static fn($chunk) => $chunk,
                 static fn() => throw new \LogicException,
             );
-        /** @var int $value */
+        /** @var int<-32768, 32767> $value */
         [, $value] = \unpack('s', $chunk->toString());
 
-        return new self(Integer::of($value));
+        return new self($value);
     }
 
-    public function original(): Integer
+    /**
+     * @return int<-32768, 32767>
+     */
+    public function original(): int
     {
         return $this->original;
     }
 
     public function pack(): string
     {
-        return \pack('s', $this->original->value());
+        return \pack('s', $this->original);
     }
 
     /**

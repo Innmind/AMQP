@@ -29,7 +29,6 @@ use Innmind\AMQP\{
     Transport\Frame\Value\UnsignedOctet,
     Transport\Frame\Value\Timestamp,
 };
-use Innmind\Math\Algebra\Integer;
 use Innmind\Immutable\{
     Str,
     Map,
@@ -50,8 +49,8 @@ final class Basic
         return Frame::method(
             $channel,
             Method::basicAck,
-            UnsignedLongLongInteger::of(Integer::of($command->deliveryTag())),
-            new Bits($command->isMultiple()),
+            UnsignedLongLongInteger::of($command->deliveryTag()),
+            Bits::of($command->isMultiple()),
         );
     }
 
@@ -61,7 +60,7 @@ final class Basic
             $channel,
             Method::basicCancel,
             ShortString::of(Str::of($command->consumerTag())),
-            new Bits(!$command->shouldWait()),
+            Bits::of(!$command->shouldWait()),
         );
     }
 
@@ -75,10 +74,10 @@ final class Basic
         return Frame::method(
             $channel,
             Method::basicConsume,
-            new UnsignedShortInteger(Integer::of(0)), // ticket (reserved)
+            UnsignedShortInteger::of(0), // ticket (reserved)
             ShortString::of(Str::of($command->queue())),
             ShortString::of(Str::of($consumerTag)),
-            new Bits(
+            Bits::of(
                 !$command->isLocal(),
                 $command->shouldAutoAcknowledge(),
                 $command->isExclusive(),
@@ -93,9 +92,9 @@ final class Basic
         return Frame::method(
             $channel,
             Method::basicGet,
-            new UnsignedShortInteger(Integer::of(0)), // ticket (reserved)
+            UnsignedShortInteger::of(0), // ticket (reserved)
             ShortString::of(Str::of($command->queue())),
-            new Bits($command->shouldAutoAcknowledge()),
+            Bits::of($command->shouldAutoAcknowledge()),
         );
     }
 
@@ -111,10 +110,10 @@ final class Basic
             Frame::method(
                 $channel,
                 Method::basicPublish,
-                new UnsignedShortInteger(Integer::of(0)), // ticket (reserved)
+                UnsignedShortInteger::of(0), // ticket (reserved)
                 ShortString::of(Str::of($command->exchange())),
                 ShortString::of(Str::of($command->routingKey())),
-                new Bits(
+                Bits::of(
                     $command->mandatory(),
                     $command->immediate(),
                 ),
@@ -122,21 +121,22 @@ final class Basic
             Frame::header(
                 $channel,
                 MethodClass::basic->toInt(),
-                UnsignedLongLongInteger::of(Integer::of(
+                UnsignedLongLongInteger::of(
                     $command->message()->body()->length(),
-                )),
+                ),
                 ...$this->serializeProperties($command->message()),
             ),
         );
 
         // the "-8" is due to the content frame extra informations (type, channel and end flag)
+        /** @var int<0, 4294967287> */
         $chunk = $maxFrameSize->isLimited() ? ($maxFrameSize->toInt() - 8) : $command->message()->body()->length();
 
         if ($chunk === 0) {
             return $frames;
         }
 
-        /** @psalm-suppress ArgumentTypeCoercion */
+        /** @psalm-suppress InvalidArgument */
         $payloadFrames = $command
             ->message()
             ->body()
@@ -151,9 +151,9 @@ final class Basic
         return Frame::method(
             $channel,
             Method::basicQos,
-            UnsignedLongInteger::of(Integer::of($command->prefetchSize())),
-            UnsignedShortInteger::of(Integer::of($command->prefetchCount())),
-            new Bits($command->isGlobal()),
+            UnsignedLongInteger::of($command->prefetchSize()),
+            UnsignedShortInteger::of($command->prefetchCount()),
+            Bits::of($command->isGlobal()),
         );
     }
 
@@ -162,7 +162,7 @@ final class Basic
         return Frame::method(
             $channel,
             Method::basicRecover,
-            new Bits($command->shouldRequeue()),
+            Bits::of($command->shouldRequeue()),
         );
     }
 
@@ -171,8 +171,8 @@ final class Basic
         return Frame::method(
             $channel,
             Method::basicReject,
-            UnsignedLongLongInteger::of(Integer::of($command->deliveryTag())),
-            new Bits($command->shouldRequeue()),
+            UnsignedLongLongInteger::of($command->deliveryTag()),
+            Bits::of($command->shouldRequeue()),
         );
     }
 
@@ -181,7 +181,7 @@ final class Basic
      */
     private function arguments(Map $arguments): Table
     {
-        return new Table($arguments->map(
+        return Table::of($arguments->map(
             fn($_, $value) => ($this->translate)($value),
         ));
     }
@@ -218,14 +218,14 @@ final class Basic
         [$flagBits, $properties] = $message->deliveryMode()->match(
             static fn($deliveryMode) => [
                 $flagBits | (1 << 12),
-                ($properties)(UnsignedOctet::of(Integer::of($deliveryMode->toInt()))),
+                ($properties)(UnsignedOctet::of($deliveryMode->toInt())),
             ],
             static fn() => [$flagBits, $properties],
         );
         [$flagBits, $properties] = $message->priority()->match(
             static fn($priority) => [
                 $flagBits | (1 << 11),
-                ($properties)(UnsignedOctet::of(Integer::of($priority->toInt()))),
+                ($properties)(UnsignedOctet::of($priority->toInt())),
             ],
             static fn() => [$flagBits, $properties],
         );
@@ -260,7 +260,7 @@ final class Basic
         [$flagBits, $properties] = $message->timestamp()->match(
             static fn($timestamp) => [
                 $flagBits | (1 << 6),
-                ($properties)(new Timestamp($timestamp)),
+                ($properties)(Timestamp::of($timestamp)),
             ],
             static fn() => [$flagBits, $properties],
         );
@@ -286,8 +286,9 @@ final class Basic
             static fn() => [$flagBits, $properties],
         );
 
+        /** @psalm-suppress ArgumentTypeCoercion */
         return [
-            new UnsignedShortInteger(Integer::of($flagBits)),
+            UnsignedShortInteger::of($flagBits),
             ...$properties->toList(),
         ];
     }

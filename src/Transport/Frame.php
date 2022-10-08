@@ -13,7 +13,6 @@ use Innmind\AMQP\Transport\Frame\{
     Value\UnsignedLongInteger,
     Value\Text,
 };
-use Innmind\Math\Algebra\Integer;
 use Innmind\Immutable\{
     Sequence,
     Str,
@@ -51,14 +50,15 @@ final class Frame
         );
         $payload = Str::of(\implode('', $values))->toEncoding('ASCII');
 
+        /** @psalm-suppress ArgumentTypeCoercion */
         $frame = \array_map(
             static fn(Value $value): string => $value->pack(),
             [
-                new UnsignedOctet(Integer::of($type->toInt())),
-                new UnsignedShortInteger(Integer::of($channel->toInt())),
-                new UnsignedLongInteger(Integer::of($payload->length())),
-                new Text($payload),
-                new UnsignedOctet(Integer::of(self::end())),
+                UnsignedOctet::of($type->toInt()),
+                UnsignedShortInteger::of($channel->toInt()),
+                UnsignedLongInteger::of($payload->length()),
+                Text::of($payload),
+                UnsignedOctet::of(self::end()),
             ],
         );
         $this->string = \implode('', $frame);
@@ -76,8 +76,8 @@ final class Frame
         $self = new self(
             Type::method,
             $channel,
-            new UnsignedShortInteger(Integer::of($method->class()->toInt())),
-            new UnsignedShortInteger(Integer::of($method->method())),
+            UnsignedShortInteger::of($method->class()->toInt()),
+            UnsignedShortInteger::of($method->method()),
             ...$values,
         );
         $self->method = Maybe::just($method);
@@ -89,6 +89,8 @@ final class Frame
     /**
      * @no-named-arguments
      * @psalm-pure
+     *
+     * @param int<0, 65535> $class
      */
     public static function header(
         Channel $channel,
@@ -98,8 +100,8 @@ final class Frame
         $self = new self(
             Type::header,
             $channel,
-            new UnsignedShortInteger(Integer::of($class)),
-            new UnsignedShortInteger(Integer::of(0)), // weight
+            UnsignedShortInteger::of($class),
+            UnsignedShortInteger::of(0), // weight
             ...$values,
         );
         $self->values = Sequence::of(...$values);
@@ -115,7 +117,7 @@ final class Frame
         $self = new self(
             Type::body,
             $channel,
-            $value = new Text($payload),
+            $value = Text::of($payload),
         );
         /** @var Sequence<Value> */
         $self->values = Sequence::of($value);
@@ -167,6 +169,8 @@ final class Frame
 
     /**
      * @psalm-pure
+     *
+     * @return 206
      */
     public static function end(): int
     {

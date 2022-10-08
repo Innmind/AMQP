@@ -13,13 +13,19 @@ use Innmind\Immutable\Str;
  */
 final class Text implements Value
 {
-    private string $value;
     private Str $original;
 
-    public function __construct(Str $string)
+    private function __construct(Str $string)
     {
-        $this->value = $string->toString();
         $this->original = $string;
+    }
+
+    /**
+     * @psalm-pure
+     */
+    public static function of(Str $string): self
+    {
+        return new self($string);
     }
 
     public static function unpack(Readable $stream): self
@@ -39,6 +45,6 @@ final class Text implements Value
 
     public function pack(): string
     {
-        return $this->value;
+        return $this->original->toString();
     }
 }

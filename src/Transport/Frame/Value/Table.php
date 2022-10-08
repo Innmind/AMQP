@@ -7,7 +7,6 @@ use Innmind\AMQP\{
     Transport\Frame\Value,
     Exception\UnboundedTextCannotBeWrapped,
 };
-use Innmind\Math\Algebra\Integer;
 use Innmind\Stream\Readable;
 use Innmind\Immutable\{
     Str,
@@ -28,7 +27,7 @@ final class Table implements Value
     /**
      * @param Map<string, Value> $map
      */
-    public function __construct(Map $map)
+    private function __construct(Map $map)
     {
         $texts = $map->filter(static function(string $_, Value $value): bool {
             return $value instanceof Text;
@@ -41,11 +40,21 @@ final class Table implements Value
         $this->original = $map;
     }
 
+    /**
+     * @psalm-pure
+     *
+     * @param Map<string, Value> $map
+     */
+    public static function of(Map $map): self
+    {
+        return new self($map);
+    }
+
     public static function unpack(Readable $stream): self
     {
         $length = UnsignedLongInteger::unpack($stream)->original();
         $position = $stream->position()->toInt();
-        $boundary = $position + $length->value();
+        $boundary = $position + $length;
 
         /** @var Map<string, Value> */
         $map = Map::of();
@@ -88,7 +97,7 @@ final class Table implements Value
             ->reduce(
                 Seq::strings(),
                 static fn(Seq $data, string $key, Value $value) => ($data)
-                    ((new ShortString(Str::of($key)))->pack())
+                    (ShortString::of(Str::of($key))->pack())
                     (Symbols::symbol(\get_class($value)))
                     ($value->pack()),
             )
@@ -96,9 +105,8 @@ final class Table implements Value
             ->fold(new Concat)
             ->toEncoding('ASCII');
 
-        $value = UnsignedLongInteger::of(
-            Integer::of($data->length()),
-        )->pack();
+        /** @psalm-suppress ArgumentTypeCoercion */
+        $value = UnsignedLongInteger::of($data->length())->pack();
 
         return $value.$data->toString();
     }
