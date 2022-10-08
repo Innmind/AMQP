@@ -16,10 +16,6 @@ class CloseTest extends TestCase
             static fn($info) => $info,
             static fn() => null,
         ));
-        $this->assertNull($command->cause()->match(
-            static fn($cause) => $cause,
-            static fn() => null,
-        ));
     }
 
     public function testReply()
@@ -29,22 +25,6 @@ class CloseTest extends TestCase
         $this->assertInstanceOf(Close::class, $command);
         $this->assertSame([42, 'foo'], $command->response()->match(
             static fn($info) => $info,
-            static fn() => null,
-        ));
-        $this->assertNull($command->cause()->match(
-            static fn($cause) => $cause,
-            static fn() => null,
-        ));
-    }
-
-    public function testCausedBy()
-    {
-        $command = new Close;
-        $command2 = $command->causedBy('connection.open');
-
-        $this->assertInstanceOf(Close::class, $command2);
-        $this->assertSame('connection.open', $command2->cause()->match(
-            static fn($cause) => $cause,
             static fn() => null,
         ));
     }

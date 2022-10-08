@@ -125,68 +125,6 @@ enum Method
         };
     }
 
-    /**
-     * @psalm-pure
-     */
-    public static function of(string $method): self
-    {
-        return match ($method) {
-            'connection.start' => self::connectionStart,
-            'connection.start-ok' => self::connectionStartOk,
-            'connection.secure' => self::connectionSecure,
-            'connection.secure-ok' => self::connectionSecureOk,
-            'connection.tune' => self::connectionTune,
-            'connection.tune-ok' => self::connectionTuneOk,
-            'connection.open' => self::connectionOpen,
-            'connection.open-ok' => self::connectionOpenOk,
-            'connection.close' => self::connectionClose,
-            'connection.close-ok' => self::connectionCloseOk,
-            'channel.open' => self::channelOpen,
-            'channel.open-ok' => self::channelOpenOk,
-            'channel.flow' => self::channelFlow,
-            'channel.flow-ok' => self::channelFlowOk,
-            'channel.close' => self::channelClose,
-            'channel.close-ok' => self::channelCloseOk,
-            'exchange.declare' => self::exchangeDeclare,
-            'exchange.declare-ok' => self::exchangeDeclareOk,
-            'exchange.delete' => self::exchangeDelete,
-            'exchange.delete-ok' => self::exchangeDeleteOk,
-            'queue.declare' => self::queueDeclare,
-            'queue.declare-ok' => self::queueDeclareOk,
-            'queue.bind' => self::queueBind,
-            'queue.bind-ok' => self::queueBindOk,
-            'queue.unbind' => self::queueUnbind,
-            'queue.unbind-ok' => self::queueUnbindOk,
-            'queue.purge' => self::queuePurge,
-            'queue.purge-ok' => self::queuePurgeOk,
-            'queue.delete' => self::queueDelete,
-            'queue.delete-ok' => self::queueDeleteOk,
-            'basic.qos' => self::basicQos,
-            'basic.qos-ok' => self::basicQosOk,
-            'basic.consume' => self::basicConsume,
-            'basic.consume-ok' => self::basicConsumeOk,
-            'basic.cancel' => self::basicCancel,
-            'basic.cancel-ok' => self::basicCancelOk,
-            'basic.publish' => self::basicPublish,
-            'basic.return' => self::basicReturn,
-            'basic.deliver' => self::basicDeliver,
-            'basic.get' => self::basicGet,
-            'basic.get-ok' => self::basicGetOk,
-            'basic.get-empty' => self::basicGetEmpty,
-            'basic.ack' => self::basicAck,
-            'basic.reject' => self::basicReject,
-            'basic.recover-async' => self::basicRecoverAsync,
-            'basic.recover' => self::basicRecover,
-            'basic.recover-ok' => self::basicRecoverOk,
-            'tx.select' => self::transactionSelect,
-            'tx.select-ok' => self::transactionSelectOk,
-            'tx.commit' => self::transactionCommit,
-            'tx.commit-ok' => self::transactionCommitOk,
-            'tx.rollback' => self::transactionRollback,
-            'tx.rollback-ok' => self::transactionRollbackOk,
-        };
-    }
-
     public function class(): MethodClass
     {
         return match ($this) {

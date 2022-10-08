@@ -108,21 +108,16 @@ final class Connection
             static fn() => [0, ''],
         );
 
-        [$class, $method] = $command->cause()->match(
-            static fn($cause) => [
-                Method::of($cause)->class()->toInt(),
-                Method::of($cause)->method(),
-            ],
-            static fn() => [0, 0],
-        );
-
         return Frame::method(
             new Channel(0),
             Method::connectionClose,
             UnsignedShortInteger::of(Integer::of($replyCode)),
             ShortString::of(Str::of($replyText)),
-            UnsignedShortInteger::of(Integer::of($class)),
-            UnsignedShortInteger::of(Integer::of($method)),
+            // we don't offer the user to specify the cause of the close because
+            // it implies exposing the transport details at the model level and
+            // it also depends on the state of the connection
+            UnsignedShortInteger::of(Integer::of(0)), // class
+            UnsignedShortInteger::of(Integer::of(0)), // method
         );
     }
 

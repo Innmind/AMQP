@@ -173,7 +173,7 @@ class ChannelTest extends TestCase
 
         $frame = (new Channel)->close(
             $channel = new FrameChannel(1),
-            Close::reply(1, 'foo')->causedBy('channel.close'),
+            Close::reply(1, 'foo'),
         );
 
         $this->assertSame(1, $frame->values()->get(0)->match(
@@ -184,11 +184,11 @@ class ChannelTest extends TestCase
             static fn($value) => $value->original()->toString(),
             static fn() => null,
         ));
-        $this->assertSame(20, $frame->values()->get(2)->match(
+        $this->assertSame(0, $frame->values()->get(2)->match(
             static fn($value) => $value->original()->value(),
             static fn() => null,
         ));
-        $this->assertSame(40, $frame->values()->get(3)->match(
+        $this->assertSame(0, $frame->values()->get(3)->match(
             static fn($value) => $value->original()->value(),
             static fn() => null,
         ));
