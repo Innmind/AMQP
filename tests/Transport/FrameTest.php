@@ -36,7 +36,7 @@ class FrameTest extends TestCase
         $this->assertInstanceOf(Sequence::class, $frame->values());
         $this->assertSame([$bit, $text], $frame->values()->toList());
         $this->assertSame(
-            \chr(1).\pack('n', 42).\pack('N', 15).\pack('n', 10).\pack('n', 10).$bit->pack().$text->pack().\chr(0xCE),
+            \chr(1).\pack('n', 42).\pack('N', 15).\pack('n', 10).\pack('n', 10).$bit->pack()->toString().$text->pack()->toString().\chr(0xCE),
             $frame->pack()->toString(),
         );
     }
@@ -55,7 +55,7 @@ class FrameTest extends TestCase
         $this->assertInstanceOf(Sequence::class, $frame->values());
         $this->assertSame([$value], $frame->values()->toList());
         $this->assertSame(
-            \chr(2).\pack('n', 42).\pack('N', 14).\pack('n', 60).\pack('n', 0).$value->pack().\chr(0xCE),
+            \chr(2).\pack('n', 42).\pack('N', 14).\pack('n', 60).\pack('n', 0).$value->pack()->toString().\chr(0xCE),
             $frame->pack()->toString(),
         );
     }

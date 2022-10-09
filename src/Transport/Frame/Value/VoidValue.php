@@ -5,6 +5,7 @@ namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\Stream\Readable;
+use Innmind\Immutable\Str;
 
 /**
  * @implements Value<void>
@@ -21,8 +22,8 @@ final class VoidValue implements Value
     {
     }
 
-    public function pack(): string
+    public function pack(): Str
     {
-        return '';
+        return Str::of('');
     }
 }

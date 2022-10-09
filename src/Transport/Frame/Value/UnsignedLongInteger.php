@@ -10,6 +10,7 @@ use Innmind\Math\{
     DefinitionSet\Range,
 };
 use Innmind\Stream\Readable;
+use Innmind\Immutable\Str;
 
 /**
  * @implements Value<int<0, 4294967295>>
@@ -76,9 +77,9 @@ final class UnsignedLongInteger implements Value
         return $this->original;
     }
 
-    public function pack(): string
+    public function pack(): Str
     {
-        return \pack('N', $this->original);
+        return Str::of(\pack('N', $this->original));
     }
 
     /**

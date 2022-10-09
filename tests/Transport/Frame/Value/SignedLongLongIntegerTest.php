@@ -26,7 +26,7 @@ class SignedLongLongIntegerTest extends TestCase
     public function testStringCast($int, $expected)
     {
         $value = SignedLongLongInteger::of($int);
-        $this->assertSame($expected, $value->pack());
+        $this->assertSame($expected, $value->pack()->toString());
         $this->assertSame($int, $value->original());
     }
 
@@ -39,7 +39,7 @@ class SignedLongLongIntegerTest extends TestCase
 
         $this->assertInstanceOf(SignedLongLongInteger::class, $value);
         $this->assertSame($expected, $value->original());
-        $this->assertSame($string, $value->pack());
+        $this->assertSame($string, $value->pack()->toString());
     }
 
     public function cases(): array

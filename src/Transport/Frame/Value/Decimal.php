@@ -5,6 +5,7 @@ namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\Stream\Readable;
+use Innmind\Immutable\Str;
 
 /**
  * @implements Value<int|float>
@@ -45,8 +46,8 @@ final class Decimal implements Value
         return $this->value->original() / (10 ** $this->scale->original());
     }
 
-    public function pack(): string
+    public function pack(): Str
     {
-        return $this->scale->pack().$this->value->pack();
+        return $this->scale->pack()->append($this->value->pack()->toString());
     }
 }

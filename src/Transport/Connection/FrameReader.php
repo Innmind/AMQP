@@ -37,7 +37,7 @@ final class FrameReader
             );
 
             throw new NoFrameDetected(Stream::ofContent(
-                $data->prepend($octet->pack())->toString(),
+                $data->prepend($octet->pack()->toString())->toString(),
             ));
         }
 

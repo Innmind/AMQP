@@ -101,7 +101,7 @@ class FrameReaderTest extends TestCase
             LongString::literal('en_US'),
         )->pack()->toString();
         $frame = \mb_substr($frame, 0, -1, 'ASCII'); //remove end marker
-        $frame .= (UnsignedOctet::of(0xCD))->pack();
+        $frame .= (UnsignedOctet::of(0xCD))->pack()->toString();
         \fwrite($file, $frame);
         \fseek($file, 0);
         $stream = Stream::of($file);

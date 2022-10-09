@@ -30,7 +30,7 @@ class UnsignedOctetTest extends TestCase
     public function testStringCast($expected, $octet)
     {
         $value = UnsignedOctet::of($octet);
-        $this->assertSame($expected, $value->pack());
+        $this->assertSame($expected, $value->pack()->toString());
         $this->assertSame($octet, $value->original());
     }
 
@@ -43,7 +43,7 @@ class UnsignedOctetTest extends TestCase
 
         $this->assertInstanceOf(UnsignedOctet::class, $value);
         $this->assertSame($expected, $value->original());
-        $this->assertSame($string, $value->pack());
+        $this->assertSame($string, $value->pack()->toString());
     }
 
     public function testThrowWhenStringTooHigh()

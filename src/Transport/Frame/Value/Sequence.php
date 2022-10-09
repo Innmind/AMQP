@@ -72,20 +72,19 @@ final class Sequence implements Value
         return $this->original;
     }
 
-    public function pack(): string
+    public function pack(): Str
     {
         $data = $this
             ->original
             ->flatMap(static fn($value) => Seq::of(
-                Symbols::symbol(\get_class($value)),
+                Str::of(Symbols::symbol(\get_class($value))),
                 $value->pack(),
             ))
-            ->map(Str::of(...))
             ->fold(new Concat)
             ->toEncoding('ASCII');
         /** @psalm-suppress ArgumentTypeCoercion */
         $value = UnsignedLongInteger::of($data->length())->pack();
 
-        return $value.$data->toString();
+        return $value->append($data->toString());
     }
 }

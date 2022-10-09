@@ -173,7 +173,6 @@ final class Frame
         $payload = $this
             ->values
             ->map(static fn($value) => $value->pack())
-            ->map(Str::of(...))
             ->fold(new Concat)
             ->toEncoding('ASCII');
 
@@ -185,7 +184,6 @@ final class Frame
         $payload = $this
             ->values
             ->map(static fn($value) => $value->pack())
-            ->map(Str::of(...))
             ->fold(new Concat)
             ->toEncoding('ASCII');
 
@@ -213,11 +211,11 @@ final class Frame
 
         /** @psalm-suppress ArgumentTypeCoercion */
         return Sequence::of(
-            Str::of(UnsignedOctet::internal($this->type->toInt())->pack()),
-            Str::of(UnsignedShortInteger::internal($this->channel->toInt())->pack()),
-            Str::of(UnsignedLongInteger::internal($payload->length())->pack()),
+            UnsignedOctet::internal($this->type->toInt())->pack(),
+            UnsignedShortInteger::internal($this->channel->toInt())->pack(),
+            UnsignedLongInteger::internal($payload->length())->pack(),
             $payload,
-            Str::of(UnsignedOctet::internal(self::end())->pack()),
+            UnsignedOctet::internal(self::end())->pack(),
         )
             ->fold(new Concat)
             ->toEncoding('ASCII');

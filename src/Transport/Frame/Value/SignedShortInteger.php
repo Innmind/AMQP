@@ -10,6 +10,7 @@ use Innmind\Math\{
     DefinitionSet\Range,
 };
 use Innmind\Stream\Readable;
+use Innmind\Immutable\Str;
 
 /**
  * @implements Value<int<-32768, 32767>>
@@ -64,9 +65,9 @@ final class SignedShortInteger implements Value
         return $this->original;
     }
 
-    public function pack(): string
+    public function pack(): Str
     {
-        return \pack('s', $this->original);
+        return Str::of(\pack('s', $this->original));
     }
 
     /**

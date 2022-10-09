@@ -16,6 +16,6 @@ class VoidValueTest extends TestCase
     {
         $this->assertInstanceOf(Value::class, new VoidValue);
         $this->assertInstanceOf(VoidValue::class, VoidValue::unpack(Stream::ofContent('')));
-        $this->assertSame('', (new VoidValue)->pack());
+        $this->assertSame('', (new VoidValue)->pack()->toString());
     }
 }

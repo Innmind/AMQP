@@ -5,6 +5,7 @@ namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\Stream\Readable;
+use Innmind\Immutable\Str;
 
 /**
  * @implements Value<int>
@@ -48,8 +49,8 @@ final class SignedLongLongInteger implements Value
         return $this->original;
     }
 
-    public function pack(): string
+    public function pack(): Str
     {
-        return \pack('q', $this->original);
+        return Str::of(\pack('q', $this->original));
     }
 }

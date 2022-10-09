@@ -11,6 +11,7 @@ use Innmind\Math\{
     DefinitionSet\Range,
 };
 use Innmind\Stream\Readable;
+use Innmind\Immutable\Str;
 
 /**
  * @implements Value<int<0, max>>
@@ -77,9 +78,9 @@ final class UnsignedLongLongInteger implements Value
         return $this->original;
     }
 
-    public function pack(): string
+    public function pack(): Str
     {
-        return \pack('J', $this->original);
+        return Str::of(\pack('J', $this->original));
     }
 
     /**

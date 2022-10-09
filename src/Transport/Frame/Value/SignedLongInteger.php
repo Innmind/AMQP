@@ -10,6 +10,7 @@ use Innmind\Math\{
     DefinitionSet\Range,
 };
 use Innmind\Stream\Readable;
+use Innmind\Immutable\Str;
 
 /**
  * @implements Value<int<-2147483648, 2147483647>>
@@ -64,9 +65,9 @@ final class SignedLongInteger implements Value
         return $this->original;
     }
 
-    public function pack(): string
+    public function pack(): Str
     {
-        return \pack('l', $this->original);
+        return Str::of(\pack('l', $this->original));
     }
 
     /**

@@ -33,7 +33,7 @@ class TableTest extends TestCase
     public function testStringCast($expected, $map)
     {
         $value = Table::of($map);
-        $this->assertSame($expected, $value->pack());
+        $this->assertSame($expected, $value->pack()->toString());
         $this->assertSame($map, $value->original());
     }
 
@@ -53,12 +53,12 @@ class TableTest extends TestCase
                 $value->original()->get($i),
             );
             $this->assertSame(
-                $v->pack(),
-                $value->original()->get($i)->pack(),
+                $v->pack()->toString(),
+                $value->original()->get($i)->pack()->toString(),
             );
         }
 
-        $this->assertSame($string, $value->pack());
+        $this->assertSame($string, $value->pack()->toString());
     }
 
     public function cases(): array

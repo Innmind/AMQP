@@ -137,7 +137,8 @@ final class Connection
             ['PASSWORD', LongString::of(Str::of($password->toString()))],
         );
         $response = Table::of($arguments);
-        $response = Str::of($response->pack())
+        $response = $response
+            ->pack()
             ->toEncoding('ASCII')
             ->substring(4); // skip the encoded table length integer
 

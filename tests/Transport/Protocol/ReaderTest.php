@@ -36,7 +36,7 @@ class ReaderTest extends TestCase
         $args = '';
 
         foreach ($arguments as $arg) {
-            $args .= $arg->pack();
+            $args .= $arg->pack()->toString();
         }
 
         $stream = $read(
@@ -52,10 +52,13 @@ class ReaderTest extends TestCase
                 static fn($value) => $value,
                 static fn() => null,
             ));
-            $this->assertSame($argument->pack(), $stream->get($i)->match(
-                static fn($value) => $value->pack(),
-                static fn() => null,
-            ));
+            $this->assertSame(
+                $argument->pack()->toString(),
+                $stream->get($i)->match(
+                    static fn($value) => $value->pack()->toString(),
+                    static fn() => null,
+                ),
+            );
         }
     }
 

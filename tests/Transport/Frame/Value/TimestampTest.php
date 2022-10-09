@@ -28,7 +28,7 @@ class TimestampTest extends TestCase
     public function testStringCast()
     {
         $value = Timestamp::of($now = new Now);
-        $this->assertSame(\pack('J', \time()), $value->pack());
+        $this->assertSame(\pack('J', \time()), $value->pack()->toString());
         $this->assertSame($now, $value->original());
     }
 
@@ -43,6 +43,6 @@ class TimestampTest extends TestCase
                 new PointInTime(\date(\DateTime::ATOM, $time)),
             ),
         );
-        $this->assertSame(\pack('J', $time), $value->pack());
+        $this->assertSame(\pack('J', $time), $value->pack()->toString());
     }
 }

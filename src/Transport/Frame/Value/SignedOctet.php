@@ -10,6 +10,7 @@ use Innmind\Math\{
     DefinitionSet\Range,
 };
 use Innmind\Stream\Readable;
+use Innmind\Immutable\Str;
 
 /**
  * Same as shortshort
@@ -66,9 +67,9 @@ final class SignedOctet implements Value
         return $this->original;
     }
 
-    public function pack(): string
+    public function pack(): Str
     {
-        return \pack('c', $this->original);
+        return Str::of(\pack('c', $this->original));
     }
 
     /**

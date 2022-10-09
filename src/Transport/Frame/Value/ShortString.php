@@ -62,11 +62,13 @@ final class ShortString implements Value
         return $this->original;
     }
 
-    public function pack(): string
+    public function pack(): Str
     {
         /** @psalm-suppress ArgumentTypeCoercion */
         return UnsignedOctet::of(
             $this->original->toEncoding('ASCII')->length(),
-        )->pack().$this->original->toString();
+        )
+            ->pack()
+            ->append($this->original->toString());
     }
 }

@@ -13,6 +13,7 @@ use Innmind\TimeContinuum\{
     Earth\Format\ISO8601,
 };
 use Innmind\Stream\Readable;
+use Innmind\Immutable\Str;
 
 /**
  * @implements Value<PointInTimeInterface>
@@ -49,7 +50,7 @@ final class Timestamp implements Value
         return $this->original;
     }
 
-    public function pack(): string
+    public function pack(): Str
     {
         /** @psalm-suppress ArgumentTypeCoercion */
         return UnsignedLongLongInteger::of(

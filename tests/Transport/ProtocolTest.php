@@ -108,7 +108,7 @@ class ProtocolTest extends TestCase
                     ->join(
                         $header
                             ->values()
-                            ->map(static fn($v) => $v->pack()),
+                            ->map(static fn($v) => $v->pack()->toString()),
                     )
                     ->toString(),
             ),
@@ -120,14 +120,14 @@ class ProtocolTest extends TestCase
             Str::of('')
                 ->join(
                     $values->map(
-                        static fn($v) => $v->pack(),
+                        static fn($v) => $v->pack()->toString(),
                     ),
                 )
                 ->toString(),
             Str::of('')
                 ->join(
                     $header->values()->map(
-                        static fn($v) => $v->pack(),
+                        static fn($v) => $v->pack()->toString(),
                     ),
                 )
                 ->toString(),

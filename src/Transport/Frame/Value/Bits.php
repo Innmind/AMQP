@@ -67,7 +67,7 @@ final class Bits implements Value
         return $this->original;
     }
 
-    public function pack(): string
+    public function pack(): Str
     {
         $value = $this
             ->original
@@ -79,6 +79,6 @@ final class Bits implements Value
                 static fn(int $value, int $bit) => $value | $bit,
             );
 
-        return \chr($value);
+        return Str::of(\chr($value));
     }
 }

@@ -10,6 +10,7 @@ use Innmind\Math\{
     DefinitionSet\Range,
 };
 use Innmind\Stream\Readable;
+use Innmind\Immutable\Str;
 
 /**
  * @implements Value<int<0, 65535>>
@@ -76,9 +77,9 @@ final class UnsignedShortInteger implements Value
         return $this->original;
     }
 
-    public function pack(): string
+    public function pack(): Str
     {
-        return \pack('n', $this->original);
+        return Str::of(\pack('n', $this->original));
     }
 
     /**

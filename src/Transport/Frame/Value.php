@@ -4,6 +4,7 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Transport\Frame;
 
 use Innmind\Stream\Readable;
+use Innmind\Immutable\Str;
 
 /**
  * @template T
@@ -20,5 +21,5 @@ interface Value
      * @return T
      */
     public function original();
-    public function pack(): string;
+    public function pack(): Str;
 }

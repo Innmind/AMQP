@@ -78,25 +78,24 @@ final class Table implements Value
         return $this->original;
     }
 
-    public function pack(): string
+    public function pack(): Str
     {
         /** @psalm-suppress MixedArgumentTypeCoercion */
         $data = $this
             ->original
-            ->reduce(
-                Seq::strings(),
-                static fn(Seq $data, string $key, Value $value) => ($data)
-                    (ShortString::of(Str::of($key))->pack())
-                    (Symbols::symbol(\get_class($value)))
-                    ($value->pack()),
-            )
-            ->map(Str::of(...))
+            ->map(static fn($key, $value) => [$key, $value])
+            ->values()
+            ->flatMap(static fn($pair) => Seq::of(
+                ShortString::of(Str::of($pair[0]))->pack(),
+                Str::of(Symbols::symbol(\get_class($pair[1]))),
+                $pair[1]->pack(),
+            ))
             ->fold(new Concat)
             ->toEncoding('ASCII');
 
         /** @psalm-suppress ArgumentTypeCoercion */
         $value = UnsignedLongInteger::of($data->length())->pack();
 
-        return $value.$data->toString();
+        return $value->append($data->toString());
     }
 }

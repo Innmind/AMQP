@@ -24,7 +24,7 @@ class BitsTest extends TestCase
     public function testStringCast($bits, $expected)
     {
         $value = Bits::of(...$bits);
-        $this->assertSame($expected, $value->pack());
+        $this->assertSame($expected, $value->pack()->toString());
         $this->assertInstanceOf(Sequence::class, $value->original());
         $this->assertSame($bits, $value->original()->toList());
     }
@@ -38,7 +38,7 @@ class BitsTest extends TestCase
 
         $this->assertInstanceOf(Bits::class, $value);
         $this->assertSame($expected, $value->original()->toList());
-        $this->assertSame($string, $value->pack());
+        $this->assertSame($string, $value->pack()->toString());
     }
 
     public function cases(): array

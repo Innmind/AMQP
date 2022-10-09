@@ -29,7 +29,7 @@ class SequenceTest extends TestCase
     public function testStringCast($expected, $values)
     {
         $value = Sequence::of(...$values);
-        $this->assertSame($expected, $value->pack());
+        $this->assertSame($expected, $value->pack()->toString());
         $this->assertInstanceOf(Seq::class, $value->original());
         $this->assertSame($values, $value->original()->toList());
     }
@@ -53,15 +53,15 @@ class SequenceTest extends TestCase
                 ),
             );
             $this->assertSame(
-                $v->pack(),
+                $v->pack()->toString(),
                 $value->original()->get($i)->match(
-                    static fn($value) => $value->pack(),
+                    static fn($value) => $value->pack()->toString(),
                     static fn() => null,
                 ),
             );
         }
 
-        $this->assertSame($string, $value->pack());
+        $this->assertSame($string, $value->pack()->toString());
     }
 
     public function cases(): array

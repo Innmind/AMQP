@@ -10,6 +10,7 @@ use Innmind\Math\{
     DefinitionSet\Range,
 };
 use Innmind\Stream\Readable;
+use Innmind\Immutable\Str;
 
 /**
  * Same as unsigned shortshort
@@ -78,9 +79,9 @@ final class UnsignedOctet implements Value
         return $this->original;
     }
 
-    public function pack(): string
+    public function pack(): Str
     {
-        return \chr($this->original);
+        return Str::of(\chr($this->original));
     }
 
     /**

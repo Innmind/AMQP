@@ -38,7 +38,7 @@ class UnsignedLongLongIntegerTest extends TestCase
     public function testStringCast($int, $expected)
     {
         $value = UnsignedLongLongInteger::of($int);
-        $this->assertSame($expected, $value->pack());
+        $this->assertSame($expected, $value->pack()->toString());
         $this->assertSame($int, $value->original());
     }
 
@@ -51,7 +51,7 @@ class UnsignedLongLongIntegerTest extends TestCase
 
         $this->assertInstanceOf(UnsignedLongLongInteger::class, $value);
         $this->assertSame($expected, $value->original());
-        $this->assertSame($string, $value->pack());
+        $this->assertSame($string, $value->pack()->toString());
     }
 
     public function cases(): array

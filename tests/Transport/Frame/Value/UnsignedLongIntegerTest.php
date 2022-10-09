@@ -47,7 +47,7 @@ class UnsignedLongIntegerTest extends TestCase
     {
         $this->assertSame(
             $expected,
-            UnsignedLongInteger::of($int)->pack(),
+            UnsignedLongInteger::of($int)->pack()->toString(),
         );
     }
 
@@ -60,7 +60,7 @@ class UnsignedLongIntegerTest extends TestCase
 
         $this->assertInstanceOf(UnsignedLongInteger::class, $value);
         $this->assertSame($expected, $value->original());
-        $this->assertSame($string, $value->pack());
+        $this->assertSame($string, $value->pack()->toString());
     }
 
     public function cases(): array
