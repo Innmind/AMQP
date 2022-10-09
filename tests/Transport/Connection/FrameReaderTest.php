@@ -76,7 +76,7 @@ class FrameReaderTest extends TestCase
                 Table::of(Map::of()),
                 LongString::literal('AMQPLAIN'),
                 LongString::literal('en_US'),
-            )->toString(),
+            )->pack()->toString(),
         );
         \fseek($file, 0);
         $stream = Stream::of($file);
@@ -99,7 +99,7 @@ class FrameReaderTest extends TestCase
             Table::of(Map::of()),
             LongString::literal('AMQPLAIN'),
             LongString::literal('en_US'),
-        )->toString();
+        )->pack()->toString();
         $frame = \mb_substr($frame, 0, -1, 'ASCII'); //remove end marker
         $frame .= (UnsignedOctet::of(0xCD))->pack();
         \fwrite($file, $frame);
@@ -119,7 +119,7 @@ class FrameReaderTest extends TestCase
         $frame = Frame::method(
             new Channel(0),
             Method::of(10, 10), // connection.start
-        )->toString();
+        )->pack()->toString();
         $frame = \mb_substr($frame, 0, -2, 'ASCII');
         \fwrite($file, $frame);
         \fseek($file, 0);
@@ -182,7 +182,7 @@ class FrameReaderTest extends TestCase
                 static fn() => null,
             );
         $file = \tmpfile();
-        \fwrite($file, $header->toString());
+        \fwrite($file, $header->pack()->toString());
         \fseek($file, 0);
 
         $frame = (new FrameReader)(Stream::of($file), $this->protocol);
@@ -432,7 +432,7 @@ class FrameReaderTest extends TestCase
         \fwrite($file, Frame::body(
             new Channel(1),
             Str::of('foobar'),
-        )->toString());
+        )->pack()->toString());
         \fseek($file, 0);
 
         $frame = (new FrameReader)(Stream::of($file), $this->protocol);
@@ -440,13 +440,9 @@ class FrameReaderTest extends TestCase
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame(Type::body, $frame->type());
         $this->assertSame(1, $frame->channel()->toInt());
-        $this->assertCount(1, $frame->values());
-        $this->assertInstanceOf(Text::class, $frame->values()->first()->match(
-            static fn($value) => $value,
-            static fn() => null,
-        ));
-        $this->assertSame('foobar', $frame->values()->first()->match(
-            static fn($value) => $value->original()->toString(),
+        $this->assertCount(0, $frame->values());
+        $this->assertSame('foobar', $frame->content()->match(
+            static fn($value) => $value->toString(),
             static fn() => null,
         ));
     }
@@ -454,7 +450,7 @@ class FrameReaderTest extends TestCase
     public function testReadHeartbeat()
     {
         $file = \tmpfile();
-        \fwrite($file, Frame::heartbeat()->toString());
+        \fwrite($file, Frame::heartbeat()->pack()->toString());
         \fseek($file, 0);
 
         $frame = (new FrameReader)(Stream::of($file), $this->protocol);

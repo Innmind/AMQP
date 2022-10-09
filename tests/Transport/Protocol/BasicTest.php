@@ -460,8 +460,8 @@ class BasicTest extends TestCase
         $this->assertSame($channel, $frame->channel());
         $this->assertSame(
             'foobar',
-            $frame->values()->first()->match(
-                static fn($value) => $value->original()->toString(),
+            $frame->content()->match(
+                static fn($value) => $value->toString(),
                 static fn() => null,
             ),
         );
@@ -495,8 +495,8 @@ class BasicTest extends TestCase
         $this->assertSame($channel, $frame->channel());
         $this->assertSame(
             'foo',
-            $frame->values()->first()->match(
-                static fn($value) => $value->original()->toString(),
+            $frame->content()->match(
+                static fn($value) => $value->toString(),
                 static fn() => null,
             ),
         );
@@ -509,8 +509,8 @@ class BasicTest extends TestCase
         $this->assertSame($channel, $frame->channel());
         $this->assertSame(
             'bar',
-            $frame->values()->first()->match(
-                static fn($value) => $value->original()->toString(),
+            $frame->content()->match(
+                static fn($value) => $value->toString(),
                 static fn() => null,
             ),
         );

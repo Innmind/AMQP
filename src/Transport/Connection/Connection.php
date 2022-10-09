@@ -106,7 +106,7 @@ final class Connection implements ConnectionInterface
     {
         $this->maxChannels->verify($frame->channel()->toInt());
 
-        $frame = Str::of($frame->toString())->toEncoding('ASCII');
+        $frame = $frame->pack()->toEncoding('ASCII');
 
         $this->maxFrameSize->verify($frame->length());
         $this->socket->write($frame);

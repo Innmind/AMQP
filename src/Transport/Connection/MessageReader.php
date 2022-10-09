@@ -45,19 +45,15 @@ final class MessageReader
         $payload = Str::of('');
 
         while ($payload->length() !== $bodySize) {
-            /** @var Value\Text */
             $value = $connection
                 ->wait()
-                ->values()
-                ->first()
+                ->content()
                 ->match(
                     static fn($value) => $value,
                     static fn() => throw new \LogicException,
                 );
             $payload = $payload->append(
-                $value
-                    ->original()
-                    ->toString(),
+                $value->toString(),
             );
         }
 

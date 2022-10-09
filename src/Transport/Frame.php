@@ -17,6 +17,7 @@ use Innmind\Immutable\{
     Sequence,
     Str,
     Maybe,
+    Monoid\Concat,
 };
 
 /**
@@ -30,8 +31,12 @@ final class Frame
     private Maybe $method;
     /** @var Sequence<Value> */
     private Sequence $values;
-    private string $string;
+    /** @var Maybe<Str> */
+    private Maybe $body;
 
+    /**
+     * @no-named-arguments
+     */
     private function __construct(
         Type $type,
         Channel $channel,
@@ -41,27 +46,9 @@ final class Frame
         $this->channel = $channel;
         /** @var Maybe<Method> */
         $this->method = Maybe::nothing();
-        /** @var Sequence<Value> */
-        $this->values = Sequence::of();
-
-        $values = \array_map(
-            static fn(Value $value): string => $value->pack(),
-            $values,
-        );
-        $payload = Str::of(\implode('', $values))->toEncoding('ASCII');
-
-        /** @psalm-suppress ArgumentTypeCoercion */
-        $frame = \array_map(
-            static fn(Value $value): string => $value->pack(),
-            [
-                UnsignedOctet::of($type->toInt()),
-                UnsignedShortInteger::internal($channel->toInt()),
-                UnsignedLongInteger::of($payload->length()),
-                Text::of($payload),
-                UnsignedOctet::of(self::end()),
-            ],
-        );
-        $this->string = \implode('', $frame);
+        $this->values = Sequence::of(...$values);
+        /** @var Maybe<Str> */
+        $this->body = Maybe::nothing();
     }
 
     /**
@@ -81,7 +68,6 @@ final class Frame
             ...$values,
         );
         $self->method = Maybe::just($method);
-        $self->values = Sequence::of(...$values);
 
         return $self;
     }
@@ -97,16 +83,13 @@ final class Frame
         int $class,
         Value ...$values,
     ): self {
-        $self = new self(
+        return new self(
             Type::header,
             $channel,
             UnsignedShortInteger::internal($class),
             UnsignedShortInteger::internal(0), // weight
             ...$values,
         );
-        $self->values = Sequence::of(...$values);
-
-        return $self;
     }
 
     /**
@@ -114,13 +97,8 @@ final class Frame
      */
     public static function body(Channel $channel, Str $payload): self
     {
-        $self = new self(
-            Type::body,
-            $channel,
-            $value = Text::of($payload),
-        );
-        /** @var Sequence<Value> */
-        $self->values = Sequence::of($value);
+        $self = new self(Type::body, $channel);
+        $self->body = Maybe::just($payload);
 
         return $self;
     }
@@ -130,10 +108,7 @@ final class Frame
      */
     public static function heartbeat(): self
     {
-        return new self(
-            Type::heartbeat,
-            new Channel(0),
-        );
+        return new self(Type::heartbeat, new Channel(0));
     }
 
     public function type(): Type
@@ -159,12 +134,28 @@ final class Frame
      */
     public function values(): Sequence
     {
-        return $this->values;
+        // only Type::method and Type::header have values and the first 2 are
+        // the values describing the method or the class so we drop them here
+        // because the outside user doesn't need to access them this way
+        return $this->values->drop(2);
     }
 
-    public function toString(): string
+    /**
+     * @return Maybe<Str> The content of a Type::body frame
+     */
+    public function content(): Maybe
     {
-        return $this->string;
+        return $this->body;
+    }
+
+    public function pack(): Str
+    {
+        return match ($this->type) {
+            Type::method => $this->packMethod(),
+            Type::header => $this->packHeader(),
+            Type::body => $this->packBody(),
+            Type::heartbeat => $this->packHeartbeat(),
+        };
     }
 
     /**
@@ -175,5 +166,60 @@ final class Frame
     public static function end(): int
     {
         return 0xCE;
+    }
+
+    private function packMethod(): Str
+    {
+        $payload = $this
+            ->values
+            ->map(static fn($value) => $value->pack())
+            ->map(Str::of(...))
+            ->fold(new Concat)
+            ->toEncoding('ASCII');
+
+        return $this->doPack($payload);
+    }
+
+    private function packHeader(): Str
+    {
+        $payload = $this
+            ->values
+            ->map(static fn($value) => $value->pack())
+            ->map(Str::of(...))
+            ->fold(new Concat)
+            ->toEncoding('ASCII');
+
+        return $this->doPack($payload);
+    }
+
+    private function packBody(): Str
+    {
+        $body = $this->body->match(
+            static fn($body) => $body,
+            static fn() => throw new \LogicException('Type::body set without a body'),
+        );
+
+        return $this->doPack($body);
+    }
+
+    private function packHeartbeat(): Str
+    {
+        return $this->doPack(Str::of(''));
+    }
+
+    private function doPack(Str $payload): Str
+    {
+        $payload = $payload->toEncoding('ASCII');
+
+        /** @psalm-suppress ArgumentTypeCoercion */
+        return Sequence::of(
+            Str::of(UnsignedOctet::internal($this->type->toInt())->pack()),
+            Str::of(UnsignedShortInteger::internal($this->channel->toInt())->pack()),
+            Str::of(UnsignedLongInteger::internal($payload->length())->pack()),
+            $payload,
+            Str::of(UnsignedOctet::internal(self::end())->pack()),
+        )
+            ->fold(new Concat)
+            ->toEncoding('ASCII');
     }
 }

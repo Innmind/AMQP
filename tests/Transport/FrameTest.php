@@ -37,7 +37,7 @@ class FrameTest extends TestCase
         $this->assertSame([$bit, $text], $frame->values()->toList());
         $this->assertSame(
             \chr(1).\pack('n', 42).\pack('N', 11).\pack('n', 10).\pack('n', 10).$bit->pack().$text->pack().\chr(0xCE),
-            $frame->toString(),
+            $frame->pack()->toString(),
         );
     }
 
@@ -56,7 +56,7 @@ class FrameTest extends TestCase
         $this->assertSame([$value], $frame->values()->toList());
         $this->assertSame(
             \chr(2).\pack('n', 42).\pack('N', 10).\pack('n', 60).\pack('n', 0).'foobar'.\chr(0xCE),
-            $frame->toString(),
+            $frame->pack()->toString(),
         );
     }
 
@@ -70,18 +70,14 @@ class FrameTest extends TestCase
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame($channel, $frame->channel());
         $this->assertInstanceOf(Sequence::class, $frame->values());
-        $this->assertCount(1, $frame->values());
-        $this->assertInstanceOf(Text::class, $frame->values()->first()->match(
+        $this->assertCount(0, $frame->values());
+        $this->assertSame($text, $frame->content()->match(
             static fn($value) => $value,
-            static fn() => null,
-        ));
-        $this->assertSame($text, $frame->values()->first()->match(
-            static fn($value) => $value->original(),
             static fn() => null,
         ));
         $this->assertSame(
             \chr(3).\pack('n', 42).\pack('N', 6).'foobar'.\chr(0xCE),
-            $frame->toString(),
+            $frame->pack()->toString(),
         );
     }
 
@@ -96,7 +92,7 @@ class FrameTest extends TestCase
         $this->assertCount(0, $frame->values());
         $this->assertSame(
             \chr(8).\pack('n', 0).\pack('N', 0).\chr(0xCE),
-            $frame->toString(),
+            $frame->pack()->toString(),
         );
     }
 }

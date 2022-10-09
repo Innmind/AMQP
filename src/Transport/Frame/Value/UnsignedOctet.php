@@ -32,6 +32,17 @@ final class UnsignedOctet implements Value
 
     /**
      * @psalm-pure
+     * @internal
+     *
+     * @param int<0, 255> $octet
+     */
+    public static function internal(int $octet): self
+    {
+        return new self($octet);
+    }
+
+    /**
+     * @psalm-pure
      *
      * @param int<0, 255> $octet
      */
