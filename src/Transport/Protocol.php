@@ -82,55 +82,55 @@ final class Protocol
         $toChunk = [];
 
         if ($flagBits & (1 << 15)) {
-            $toChunk[] = ShortString::class; // content type
+            $toChunk[] = ShortString::unpack(...); // content type
         }
 
         if ($flagBits & (1 << 14)) {
-            $toChunk[] = ShortString::class; // content encoding
+            $toChunk[] = ShortString::unpack(...); // content encoding
         }
 
         if ($flagBits & (1 << 13)) {
-            $toChunk[] = Table::class; // headers
+            $toChunk[] = Table::unpack(...); // headers
         }
 
         if ($flagBits & (1 << 12)) {
-            $toChunk[] = UnsignedOctet::class; // delivery mode
+            $toChunk[] = UnsignedOctet::unpack(...); // delivery mode
         }
 
         if ($flagBits & (1 << 11)) {
-            $toChunk[] = UnsignedOctet::class; // priority
+            $toChunk[] = UnsignedOctet::unpack(...); // priority
         }
 
         if ($flagBits & (1 << 10)) {
-            $toChunk[] = ShortString::class; // correlation id
+            $toChunk[] = ShortString::unpack(...); // correlation id
         }
 
         if ($flagBits & (1 << 9)) {
-            $toChunk[] = ShortString::class; // reply to
+            $toChunk[] = ShortString::unpack(...); // reply to
         }
 
         if ($flagBits & (1 << 8)) {
-            $toChunk[] = ShortString::class; // expiration
+            $toChunk[] = ShortString::unpack(...); // expiration
         }
 
         if ($flagBits & (1 << 7)) {
-            $toChunk[] = ShortString::class; // id
+            $toChunk[] = ShortString::unpack(...); // id
         }
 
         if ($flagBits & (1 << 6)) {
-            $toChunk[] = Timestamp::class; // timestamp
+            $toChunk[] = Timestamp::unpack(...); // timestamp
         }
 
         if ($flagBits & (1 << 5)) {
-            $toChunk[] = ShortString::class; // type
+            $toChunk[] = ShortString::unpack(...); // type
         }
 
         if ($flagBits & (1 << 4)) {
-            $toChunk[] = ShortString::class; // user id
+            $toChunk[] = ShortString::unpack(...); // user id
         }
 
         if ($flagBits & (1 << 3)) {
-            $toChunk[] = ShortString::class; // app id
+            $toChunk[] = ShortString::unpack(...); // app id
         }
 
         /** @var Sequence<Value> */

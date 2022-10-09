@@ -21,8 +21,8 @@ class ChunkArgumentsTest extends TestCase
     public function testInvokation()
     {
         $visit = new ChunkArguments(
-            Bits::class,
-            LongString::class,
+            Bits::unpack(...),
+            LongString::unpack(...),
         );
 
         $arguments = Bits::of(true)->pack()->toString().LongString::literal('foo')->pack()->toString();

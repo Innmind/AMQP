@@ -93,46 +93,46 @@ final class Reader
     private function basicConsumeOk(): ChunkArguments
     {
         return new ChunkArguments(
-            ShortString::class, // consumer tag
+            ShortString::unpack(...), // consumer tag
         );
     }
 
     private function basicCancelOk(): ChunkArguments
     {
         return new ChunkArguments(
-            ShortString::class, // consumer tag
+            ShortString::unpack(...), // consumer tag
         );
     }
 
     private function basicReturn(): ChunkArguments
     {
         return new ChunkArguments(
-            UnsignedShortInteger::class, // reply code
-            ShortString::class, // reply text
-            ShortString::class, // exchange
-            ShortString::class, // routing key
+            UnsignedShortInteger::unpack(...), // reply code
+            ShortString::unpack(...), // reply text
+            ShortString::unpack(...), // exchange
+            ShortString::unpack(...), // routing key
         );
     }
 
     private function basicDeliver(): ChunkArguments
     {
         return new ChunkArguments(
-            ShortString::class, // consumer tag
-            UnsignedLongLongInteger::class, // delivery tag
-            Bits::class, // redelivered
-            ShortString::class, // exchange
-            ShortString::class, // routing key
+            ShortString::unpack(...), // consumer tag
+            UnsignedLongLongInteger::unpack(...), // delivery tag
+            Bits::unpack(...), // redelivered
+            ShortString::unpack(...), // exchange
+            ShortString::unpack(...), // routing key
         );
     }
 
     private function basicGetOk(): ChunkArguments
     {
         return new ChunkArguments(
-            UnsignedLongLongInteger::class, // delivery tag
-            Bits::class, // redelivered
-            ShortString::class, // exchange
-            ShortString::class, // routing key
-            UnsignedLongInteger::class, // message count
+            UnsignedLongLongInteger::unpack(...), // delivery tag
+            Bits::unpack(...), // redelivered
+            ShortString::unpack(...), // exchange
+            ShortString::unpack(...), // routing key
+            UnsignedLongInteger::unpack(...), // message count
         );
     }
 
@@ -154,24 +154,24 @@ final class Reader
     private function channelFlow(): ChunkArguments
     {
         return new ChunkArguments(
-            Bits::class, // active
+            Bits::unpack(...), // active
         );
     }
 
     private function channelFlowOk(): ChunkArguments
     {
         return new ChunkArguments(
-            Bits::class, // active
+            Bits::unpack(...), // active
         );
     }
 
     private function channelClose(): ChunkArguments
     {
         return new ChunkArguments(
-            UnsignedShortInteger::class, // reply code
-            ShortString::class, // reply text
-            UnsignedShortInteger::class, // failing class id
-            UnsignedShortInteger::class, // failing method id
+            UnsignedShortInteger::unpack(...), // reply code
+            ShortString::unpack(...), // reply text
+            UnsignedShortInteger::unpack(...), // failing class id
+            UnsignedShortInteger::unpack(...), // failing method id
         );
     }
 
@@ -183,44 +183,44 @@ final class Reader
     private function connectionStart(): ChunkArguments
     {
         return new ChunkArguments(
-            UnsignedOctet::class, // major version
-            UnsignedOctet::class, // minor version
-            Table::class, // server properties
-            LongString::class, // mechanisms
-            LongString::class, // locales
+            UnsignedOctet::unpack(...), // major version
+            UnsignedOctet::unpack(...), // minor version
+            Table::unpack(...), // server properties
+            LongString::unpack(...), // mechanisms
+            LongString::unpack(...), // locales
         );
     }
 
     private function connectionSecure(): ChunkArguments
     {
         return new ChunkArguments(
-            LongString::class, // challenge
+            LongString::unpack(...), // challenge
         );
     }
 
     private function connectionTune(): ChunkArguments
     {
         return new ChunkArguments(
-            UnsignedShortInteger::class, // max channels
-            UnsignedLongInteger::class, // max frame size
-            UnsignedShortInteger::class, // heartbeat delay
+            UnsignedShortInteger::unpack(...), // max channels
+            UnsignedLongInteger::unpack(...), // max frame size
+            UnsignedShortInteger::unpack(...), // heartbeat delay
         );
     }
 
     private function connectionOpenOk(): ChunkArguments
     {
         return new ChunkArguments(
-            ShortString::class, // known hosts
+            ShortString::unpack(...), // known hosts
         );
     }
 
     private function connectionClose(): ChunkArguments
     {
         return new ChunkArguments(
-            UnsignedShortInteger::class, // reply code
-            ShortString::class, // reply text
-            UnsignedShortInteger::class, // failing class id
-            UnsignedShortInteger::class, // failing method id
+            UnsignedShortInteger::unpack(...), // reply code
+            ShortString::unpack(...), // reply text
+            UnsignedShortInteger::unpack(...), // failing class id
+            UnsignedShortInteger::unpack(...), // failing method id
         );
     }
 
@@ -242,9 +242,9 @@ final class Reader
     private function queueDeclareOk(): ChunkArguments
     {
         return new ChunkArguments(
-            ShortString::class, // queue
-            UnsignedLongInteger::class, // message count
-            UnsignedLongInteger::class, // consumer count
+            ShortString::unpack(...), // queue
+            UnsignedLongInteger::unpack(...), // message count
+            UnsignedLongInteger::unpack(...), // consumer count
         );
     }
 
@@ -261,14 +261,14 @@ final class Reader
     private function queuePurgeOk(): ChunkArguments
     {
         return new ChunkArguments(
-            UnsignedLongInteger::class, // message count
+            UnsignedLongInteger::unpack(...), // message count
         );
     }
 
     private function queueDeleteOk(): ChunkArguments
     {
         return new ChunkArguments(
-            UnsignedLongInteger::class, // message count
+            UnsignedLongInteger::unpack(...), // message count
         );
     }
 
