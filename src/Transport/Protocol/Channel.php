@@ -56,13 +56,13 @@ final class Channel
         return Frame::method(
             $channel,
             Method::channelClose,
-            UnsignedShortInteger::of($replyCode),
+            UnsignedShortInteger::internal($replyCode),
             ShortString::of(Str::of($replyText)),
             // we don't offer the user to specify the cause of the close because
             // it implies exposing the transport details at the model level and
             // it also depends on the state of the connection
-            UnsignedShortInteger::of(0), // class
-            UnsignedShortInteger::of(0), // method
+            UnsignedShortInteger::internal(0), // class
+            UnsignedShortInteger::internal(0), // method
         );
     }
 

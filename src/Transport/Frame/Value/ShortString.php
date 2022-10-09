@@ -22,6 +22,16 @@ final class ShortString implements Value
 
     /**
      * @psalm-pure
+     *
+     * @param literal-string $string Of maximum 255 length
+     */
+    public static function literal(string $string): self
+    {
+        return new self(Str::of($string));
+    }
+
+    /**
+     * @psalm-pure
      */
     public static function of(Str $string): self
     {

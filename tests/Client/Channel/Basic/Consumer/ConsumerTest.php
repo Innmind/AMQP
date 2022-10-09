@@ -131,6 +131,7 @@ class ConsumerTest extends TestCase
 
         $this->assertSame(\range(0, 99), $expected);
     }
+
     protected function client(): Client
     {
         $os = Factory::build();

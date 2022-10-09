@@ -30,6 +30,17 @@ final class UnsignedShortInteger implements Value
 
     /**
      * @psalm-pure
+     * @internal
+     *
+     * @param int<0, 65535> $value
+     */
+    public static function internal(int $value): self
+    {
+        return new self($value);
+    }
+
+    /**
+     * @psalm-pure
      *
      * @param int<0, 65535> $value
      */

@@ -31,6 +31,17 @@ final class UnsignedLongLongInteger implements Value
 
     /**
      * @psalm-pure
+     * @internal
+     *
+     * @param int<0, max> $value
+     */
+    public static function internal(int $value): self
+    {
+        return new self($value);
+    }
+
+    /**
+     * @psalm-pure
      *
      * @param int<0, max> $value
      */

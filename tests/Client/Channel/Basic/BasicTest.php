@@ -683,7 +683,7 @@ class BasicTest extends TestCase
                 Map::of(
                     ['bits', Bits::of(true)],
                     ['decimal', Decimal::of(1, 1)],
-                    ['longstr', LongString::of(Str::of('bar'))],
+                    ['longstr', LongString::literal('bar')],
                     ['array', Sequence::of(Bits::of(true))],
                     ['long', SignedLongInteger::of(2)],
                     ['octet', SignedOctet::of(4)],

@@ -39,7 +39,7 @@ final class Exchange
         return Frame::method(
             $channel,
             Method::exchangeDeclare,
-            UnsignedShortInteger::of(0), // ticket (reserved)
+            UnsignedShortInteger::internal(0), // ticket (reserved)
             ShortString::of(Str::of($command->name())),
             ShortString::of(Str::of($command->type()->toString())),
             Bits::of(
@@ -58,7 +58,7 @@ final class Exchange
         return Frame::method(
             $channel,
             Method::exchangeDelete,
-            UnsignedShortInteger::of(0), // ticket (reserved)
+            UnsignedShortInteger::internal(0), // ticket (reserved)
             ShortString::of(Str::of($command->name())),
             Bits::of(
                 $command->onlyIfUnused(),

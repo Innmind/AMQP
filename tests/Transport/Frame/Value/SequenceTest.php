@@ -77,13 +77,13 @@ class SequenceTest extends TestCase
         return [
             [
                 \pack('N', 8).'S'.\pack('N', 3).'foo',
-                [LongString::of(Str::of('foo'))],
+                [LongString::literal('foo')],
             ],
             [
                 \pack('N', 20).'S'.\pack('N', 3).'fooS'.\pack('N', 7).'🙏bar',
                 [
-                    LongString::of(Str::of('foo')),
-                    LongString::of(Str::of('🙏bar')),
+                    LongString::literal('foo'),
+                    LongString::literal('🙏bar'),
                 ],
             ],
         ];

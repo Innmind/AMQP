@@ -38,6 +38,7 @@ final class Client implements ClientInterface
             );
         }
 
+        /** @psalm-suppress ArgumentTypeCoercion */
         $channel = new Channel\Channel(
             $this->connection,
             new Number($this->channel++),

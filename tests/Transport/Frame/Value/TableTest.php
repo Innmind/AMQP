@@ -82,7 +82,7 @@ class TableTest extends TestCase
             ],
             [
                 \pack('N', 28).\chr(3).'foob'.\chr(1).\chr(6).'foobarS'.\pack('N', 10).'foo🙏bar',
-                $map->put('foobar', LongString::of(Str::of('foo🙏bar'))),
+                $map->put('foobar', LongString::literal('foo🙏bar')),
             ],
         ];
     }

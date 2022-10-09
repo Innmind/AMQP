@@ -43,7 +43,7 @@ final class Queue
         return Frame::method(
             $channel,
             Method::queueDeclare,
-            UnsignedShortInteger::of(0), // ticket (reserved)
+            UnsignedShortInteger::internal(0), // ticket (reserved)
             ShortString::of(Str::of($name)),
             Bits::of(
                 $command->isPassive(),
@@ -61,7 +61,7 @@ final class Queue
         return Frame::method(
             $channel,
             Method::queueDelete,
-            UnsignedShortInteger::of(0), // ticket (reserved)
+            UnsignedShortInteger::internal(0), // ticket (reserved)
             ShortString::of(Str::of($command->name())),
             Bits::of(
                 $command->onlyIfUnused(),
@@ -76,7 +76,7 @@ final class Queue
         return Frame::method(
             $channel,
             Method::queueBind,
-            UnsignedShortInteger::of(0), // ticket (reserved)
+            UnsignedShortInteger::internal(0), // ticket (reserved)
             ShortString::of(Str::of($command->queue())),
             ShortString::of(Str::of($command->exchange())),
             ShortString::of(Str::of($command->routingKey())),
@@ -90,7 +90,7 @@ final class Queue
         return Frame::method(
             $channel,
             Method::queueUnbind,
-            UnsignedShortInteger::of(0), // ticket (reserved)
+            UnsignedShortInteger::internal(0), // ticket (reserved)
             ShortString::of(Str::of($command->queue())),
             ShortString::of(Str::of($command->exchange())),
             ShortString::of(Str::of($command->routingKey())),
@@ -103,7 +103,7 @@ final class Queue
         return Frame::method(
             $channel,
             Method::queuePurge,
-            UnsignedShortInteger::of(0), // ticket (reserved)
+            UnsignedShortInteger::internal(0), // ticket (reserved)
             ShortString::of(Str::of($command->name())),
             Bits::of(!$command->shouldWait()),
         );

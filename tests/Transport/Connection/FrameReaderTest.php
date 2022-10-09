@@ -74,8 +74,8 @@ class FrameReaderTest extends TestCase
                 UnsignedOctet::of(0),
                 UnsignedOctet::of(9),
                 Table::of(Map::of()),
-                LongString::of(Str::of('AMQPLAIN')),
-                LongString::of(Str::of('en_US')),
+                LongString::literal('AMQPLAIN'),
+                LongString::literal('en_US'),
             )->toString(),
         );
         \fseek($file, 0);
@@ -97,8 +97,8 @@ class FrameReaderTest extends TestCase
             UnsignedOctet::of(0),
             UnsignedOctet::of(9),
             Table::of(Map::of()),
-            LongString::of(Str::of('AMQPLAIN')),
-            LongString::of(Str::of('en_US')),
+            LongString::literal('AMQPLAIN'),
+            LongString::literal('en_US'),
         )->toString();
         $frame = \mb_substr($frame, 0, -1, 'ASCII'); //remove end marker
         $frame .= (UnsignedOctet::of(0xCD))->pack();

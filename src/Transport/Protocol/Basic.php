@@ -49,7 +49,7 @@ final class Basic
         return Frame::method(
             $channel,
             Method::basicAck,
-            UnsignedLongLongInteger::of($command->deliveryTag()),
+            UnsignedLongLongInteger::internal($command->deliveryTag()),
             Bits::of($command->isMultiple()),
         );
     }
@@ -74,7 +74,7 @@ final class Basic
         return Frame::method(
             $channel,
             Method::basicConsume,
-            UnsignedShortInteger::of(0), // ticket (reserved)
+            UnsignedShortInteger::internal(0), // ticket (reserved)
             ShortString::of(Str::of($command->queue())),
             ShortString::of(Str::of($consumerTag)),
             Bits::of(
@@ -92,7 +92,7 @@ final class Basic
         return Frame::method(
             $channel,
             Method::basicGet,
-            UnsignedShortInteger::of(0), // ticket (reserved)
+            UnsignedShortInteger::internal(0), // ticket (reserved)
             ShortString::of(Str::of($command->queue())),
             Bits::of($command->shouldAutoAcknowledge()),
         );
@@ -110,7 +110,7 @@ final class Basic
             Frame::method(
                 $channel,
                 Method::basicPublish,
-                UnsignedShortInteger::of(0), // ticket (reserved)
+                UnsignedShortInteger::internal(0), // ticket (reserved)
                 ShortString::of(Str::of($command->exchange())),
                 ShortString::of(Str::of($command->routingKey())),
                 Bits::of(
@@ -151,8 +151,8 @@ final class Basic
         return Frame::method(
             $channel,
             Method::basicQos,
-            UnsignedLongInteger::of($command->prefetchSize()),
-            UnsignedShortInteger::of($command->prefetchCount()),
+            UnsignedLongInteger::internal($command->prefetchSize()),
+            UnsignedShortInteger::internal($command->prefetchCount()),
             Bits::of($command->isGlobal()),
         );
     }
@@ -171,7 +171,7 @@ final class Basic
         return Frame::method(
             $channel,
             Method::basicReject,
-            UnsignedLongLongInteger::of($command->deliveryTag()),
+            UnsignedLongLongInteger::internal($command->deliveryTag()),
             Bits::of($command->shouldRequeue()),
         );
     }
@@ -193,6 +193,7 @@ final class Basic
     {
         /** @var Sequence<Value> */
         $properties = Sequence::of();
+        /** @var int<0, 65535> */
         $flagBits = 0;
 
         [$flagBits, $properties] = $message->contentType()->match(
@@ -288,7 +289,7 @@ final class Basic
 
         /** @psalm-suppress ArgumentTypeCoercion */
         return [
-            UnsignedShortInteger::of($flagBits),
+            UnsignedShortInteger::internal($flagBits),
             ...$properties->toList(),
         ];
     }

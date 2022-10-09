@@ -68,29 +68,29 @@ class ReaderTest extends TestCase
             ],
             [
                 Method::basicConsumeOk,
-                [ShortString::of(Str::of('foo'))],
+                [ShortString::literal('foo')],
             ],
             [
                 Method::basicCancelOk,
-                [ShortString::of(Str::of('foo'))],
+                [ShortString::literal('foo')],
             ],
             [
                 Method::basicReturn,
                 [
                     UnsignedShortInteger::of(42),
-                    ShortString::of(Str::of('foo')),
-                    ShortString::of(Str::of('bar')),
-                    ShortString::of(Str::of('baz')),
+                    ShortString::literal('foo'),
+                    ShortString::literal('bar'),
+                    ShortString::literal('baz'),
                 ],
             ],
             [
                 Method::basicDeliver,
                 [
-                    ShortString::of(Str::of('foo')),
+                    ShortString::literal('foo'),
                     UnsignedLongLongInteger::of(42),
                     Bits::of(true),
-                    ShortString::of(Str::of('bar')),
-                    ShortString::of(Str::of('baz')),
+                    ShortString::literal('bar'),
+                    ShortString::literal('baz'),
                 ],
             ],
             [
@@ -98,8 +98,8 @@ class ReaderTest extends TestCase
                 [
                     UnsignedLongLongInteger::of(42),
                     Bits::of(true),
-                    ShortString::of(Str::of('foo')),
-                    ShortString::of(Str::of('bar')),
+                    ShortString::literal('foo'),
+                    ShortString::literal('bar'),
                     UnsignedLongInteger::of(24),
                 ],
             ],
@@ -127,7 +127,7 @@ class ReaderTest extends TestCase
                 Method::channelClose,
                 [
                     UnsignedShortInteger::of(42),
-                    ShortString::of(Str::of('foo')),
+                    ShortString::literal('foo'),
                     UnsignedShortInteger::of(24),
                     UnsignedShortInteger::of(66),
                 ],
@@ -161,14 +161,14 @@ class ReaderTest extends TestCase
             [
                 Method::connectionOpenOk,
                 [
-                    ShortString::of(Str::of('foo')),
+                    ShortString::literal('foo'),
                 ],
             ],
             [
                 Method::connectionClose,
                 [
                     UnsignedShortInteger::of(0),
-                    ShortString::of(Str::of('foo')),
+                    ShortString::literal('foo'),
                     UnsignedShortInteger::of(1),
                     UnsignedShortInteger::of(2),
                 ],
@@ -188,7 +188,7 @@ class ReaderTest extends TestCase
             [
                 Method::queueDeclareOk,
                 [
-                    ShortString::of(Str::of('foo')),
+                    ShortString::literal('foo'),
                     UnsignedLongInteger::of(42),
                     UnsignedLongInteger::of(24),
                 ],

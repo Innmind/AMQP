@@ -3,24 +3,25 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport\Frame;
 
-use Innmind\AMQP\Exception\DomainException;
-
 /**
  * @psalm-immutable
  */
 final class Channel
 {
+    /** @var int<0, 65535> */
     private int $value;
 
+    /**
+     * @param int<0, 65535> $value
+     */
     public function __construct(int $value)
     {
-        if ($value < 0) {
-            throw new DomainException((string) $value);
-        }
-
         $this->value = $value;
     }
 
+    /**
+     * @return int<0, 65535>
+     */
     public function toInt(): int
     {
         return $this->value;

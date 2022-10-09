@@ -55,7 +55,7 @@ final class Frame
             static fn(Value $value): string => $value->pack(),
             [
                 UnsignedOctet::of($type->toInt()),
-                UnsignedShortInteger::of($channel->toInt()),
+                UnsignedShortInteger::internal($channel->toInt()),
                 UnsignedLongInteger::of($payload->length()),
                 Text::of($payload),
                 UnsignedOctet::of(self::end()),
@@ -76,8 +76,8 @@ final class Frame
         $self = new self(
             Type::method,
             $channel,
-            UnsignedShortInteger::of($method->class()->toInt()),
-            UnsignedShortInteger::of($method->method()),
+            UnsignedShortInteger::internal($method->class()->toInt()),
+            UnsignedShortInteger::internal($method->method()),
             ...$values,
         );
         $self->method = Maybe::just($method);
@@ -100,8 +100,8 @@ final class Frame
         $self = new self(
             Type::header,
             $channel,
-            UnsignedShortInteger::of($class),
-            UnsignedShortInteger::of(0), // weight
+            UnsignedShortInteger::internal($class),
+            UnsignedShortInteger::internal(0), // weight
             ...$values,
         );
         $self->values = Sequence::of(...$values);

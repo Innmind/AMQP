@@ -16,7 +16,7 @@ class ShortStringTest extends TestCase
 {
     public function testInterface()
     {
-        $this->assertInstanceOf(Value::class, ShortString::of(Str::of('')));
+        $this->assertInstanceOf(Value::class, ShortString::literal(''));
     }
 
     /**
@@ -24,9 +24,9 @@ class ShortStringTest extends TestCase
      */
     public function testStringCast($string, $expected)
     {
-        $value = ShortString::of($str = Str::of($string));
+        $value = ShortString::literal($string);
         $this->assertSame($expected, $value->pack());
-        $this->assertSame($str, $value->original());
+        $this->assertSame($string, $value->original()->toString());
     }
 
     /**

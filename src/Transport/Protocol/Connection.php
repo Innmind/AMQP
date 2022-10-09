@@ -37,11 +37,11 @@ final class Connection
         /** @psalm-suppress InvalidArgument */
         $clientProperties = Table::of(
             Map::of(
-                ['product', LongString::of(Str::of('InnmindAMQP'))],
-                ['platform', LongString::of(Str::of('PHP'))],
-                ['version', LongString::of(Str::of('1.0'))],
-                ['information', LongString::of(Str::of(''))],
-                ['copyright', LongString::of(Str::of(''))],
+                ['product', LongString::literal('InnmindAMQP')],
+                ['platform', LongString::literal('PHP')],
+                ['version', LongString::literal('1.0')],
+                ['information', LongString::literal('')],
+                ['copyright', LongString::literal('')],
                 [
                     'capabilities',
                     Table::of(
@@ -61,9 +61,9 @@ final class Connection
             new Channel(0),
             Method::connectionStartOk,
             $clientProperties,
-            ShortString::of(Str::of('AMQPLAIN')), // mechanism
+            ShortString::literal('AMQPLAIN'), // mechanism
             $this->response($command->user(), $command->password()),
-            ShortString::of(Str::of('en_US')), // locale
+            ShortString::literal('en_US'), // locale
         );
     }
 
@@ -82,8 +82,8 @@ final class Connection
         return Frame::method(
             new Channel(0),
             Method::connectionTuneOk,
-            UnsignedShortInteger::of($command->maxChannels()),
-            UnsignedLongInteger::of($command->maxFrameSize()),
+            UnsignedShortInteger::internal($command->maxChannels()),
+            UnsignedLongInteger::internal($command->maxFrameSize()),
             UnsignedShortInteger::of(
                 (int) ($command->heartbeat()->milliseconds() / 1000),
             ),
@@ -96,7 +96,7 @@ final class Connection
             new Channel(0),
             Method::connectionOpen,
             ShortString::of(Str::of($command->virtualHost()->toString())),
-            ShortString::of(Str::of('')), // capabilities (reserved)
+            ShortString::literal(''), // capabilities (reserved)
             Bits::of(false), // insist (reserved)
         );
     }
@@ -111,13 +111,13 @@ final class Connection
         return Frame::method(
             new Channel(0),
             Method::connectionClose,
-            UnsignedShortInteger::of($replyCode),
+            UnsignedShortInteger::internal($replyCode),
             ShortString::of(Str::of($replyText)),
             // we don't offer the user to specify the cause of the close because
             // it implies exposing the transport details at the model level and
             // it also depends on the state of the connection
-            UnsignedShortInteger::of(0), // class
-            UnsignedShortInteger::of(0), // method
+            UnsignedShortInteger::internal(0), // class
+            UnsignedShortInteger::internal(0), // method
         );
     }
 
