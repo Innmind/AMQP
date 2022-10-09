@@ -5,7 +5,10 @@ namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\Stream\Readable;
-use Innmind\Immutable\Str;
+use Innmind\Immutable\{
+    Str,
+    Maybe,
+};
 
 /**
  * @psalm-immutable
@@ -29,8 +32,12 @@ enum Symbol
     case sequence;
     case table;
 
-    public static function unpack(string $symbol, Readable $stream): Value
+    /**
+     * @return Maybe<Value>
+     */
+    public static function unpack(string $symbol, Readable $stream): Maybe
     {
+        /** @var Maybe<Value> */
         return match ($symbol) {
             'b' => SignedOctet::unpack($stream),
             'B' => UnsignedOctet::unpack($stream),

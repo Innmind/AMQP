@@ -42,7 +42,10 @@ class TableTest extends TestCase
      */
     public function testFromStream($string, $expected)
     {
-        $value = Table::unpack(Stream::ofContent($string));
+        $value = Table::unpack(Stream::ofContent($string))->match(
+            static fn($value) => $value,
+            static fn() => null,
+        );
 
         $this->assertInstanceOf(Table::class, $value);
         $this->assertCount($expected->size(), $value->original());

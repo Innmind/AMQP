@@ -34,7 +34,10 @@ class ShortStringTest extends TestCase
      */
     public function testFromStream($expected, $string)
     {
-        $value = ShortString::unpack(Stream::ofContent($string));
+        $value = ShortString::unpack(Stream::ofContent($string))->match(
+            static fn($value) => $value,
+            static fn() => null,
+        );
 
         $this->assertInstanceOf(ShortString::class, $value);
         $this->assertSame($expected, $value->original()->toString());

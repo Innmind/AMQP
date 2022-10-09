@@ -39,7 +39,10 @@ class UnsignedOctetTest extends TestCase
      */
     public function testFromStream($string, $expected)
     {
-        $value = UnsignedOctet::unpack(Stream::ofContent($string));
+        $value = UnsignedOctet::unpack(Stream::ofContent($string))->match(
+            static fn($value) => $value,
+            static fn() => null,
+        );
 
         $this->assertInstanceOf(UnsignedOctet::class, $value);
         $this->assertSame($expected, $value->original());

@@ -92,6 +92,7 @@ final class Reader
 
     private function basicConsumeOk(): ChunkArguments
     {
+        /** @psalm-suppress InvalidArgument Because it doesn't understand it accepts subtypes */
         return new ChunkArguments(
             ShortString::unpack(...), // consumer tag
         );
@@ -99,6 +100,7 @@ final class Reader
 
     private function basicCancelOk(): ChunkArguments
     {
+        /** @psalm-suppress InvalidArgument Because it doesn't understand it accepts subtypes */
         return new ChunkArguments(
             ShortString::unpack(...), // consumer tag
         );
@@ -106,6 +108,7 @@ final class Reader
 
     private function basicReturn(): ChunkArguments
     {
+        /** @psalm-suppress InvalidArgument Because it doesn't understand it accepts subtypes */
         return new ChunkArguments(
             UnsignedShortInteger::unpack(...), // reply code
             ShortString::unpack(...), // reply text
@@ -116,6 +119,7 @@ final class Reader
 
     private function basicDeliver(): ChunkArguments
     {
+        /** @psalm-suppress InvalidArgument Because it doesn't understand it accepts subtypes */
         return new ChunkArguments(
             ShortString::unpack(...), // consumer tag
             UnsignedLongLongInteger::unpack(...), // delivery tag
@@ -127,6 +131,7 @@ final class Reader
 
     private function basicGetOk(): ChunkArguments
     {
+        /** @psalm-suppress InvalidArgument Because it doesn't understand it accepts subtypes */
         return new ChunkArguments(
             UnsignedLongLongInteger::unpack(...), // delivery tag
             Bits::unpack(...), // redelivered
@@ -153,6 +158,7 @@ final class Reader
 
     private function channelFlow(): ChunkArguments
     {
+        /** @psalm-suppress InvalidArgument Because it doesn't understand it accepts subtypes */
         return new ChunkArguments(
             Bits::unpack(...), // active
         );
@@ -160,6 +166,7 @@ final class Reader
 
     private function channelFlowOk(): ChunkArguments
     {
+        /** @psalm-suppress InvalidArgument Because it doesn't understand it accepts subtypes */
         return new ChunkArguments(
             Bits::unpack(...), // active
         );
@@ -167,6 +174,7 @@ final class Reader
 
     private function channelClose(): ChunkArguments
     {
+        /** @psalm-suppress InvalidArgument Because it doesn't understand it accepts subtypes */
         return new ChunkArguments(
             UnsignedShortInteger::unpack(...), // reply code
             ShortString::unpack(...), // reply text
@@ -182,6 +190,7 @@ final class Reader
 
     private function connectionStart(): ChunkArguments
     {
+        /** @psalm-suppress InvalidArgument Because it doesn't understand it accepts subtypes */
         return new ChunkArguments(
             UnsignedOctet::unpack(...), // major version
             UnsignedOctet::unpack(...), // minor version
@@ -193,6 +202,7 @@ final class Reader
 
     private function connectionSecure(): ChunkArguments
     {
+        /** @psalm-suppress InvalidArgument Because it doesn't understand it accepts subtypes */
         return new ChunkArguments(
             LongString::unpack(...), // challenge
         );
@@ -200,6 +210,7 @@ final class Reader
 
     private function connectionTune(): ChunkArguments
     {
+        /** @psalm-suppress InvalidArgument Because it doesn't understand it accepts subtypes */
         return new ChunkArguments(
             UnsignedShortInteger::unpack(...), // max channels
             UnsignedLongInteger::unpack(...), // max frame size
@@ -209,6 +220,7 @@ final class Reader
 
     private function connectionOpenOk(): ChunkArguments
     {
+        /** @psalm-suppress InvalidArgument Because it doesn't understand it accepts subtypes */
         return new ChunkArguments(
             ShortString::unpack(...), // known hosts
         );
@@ -216,6 +228,7 @@ final class Reader
 
     private function connectionClose(): ChunkArguments
     {
+        /** @psalm-suppress InvalidArgument Because it doesn't understand it accepts subtypes */
         return new ChunkArguments(
             UnsignedShortInteger::unpack(...), // reply code
             ShortString::unpack(...), // reply text
@@ -241,6 +254,7 @@ final class Reader
 
     private function queueDeclareOk(): ChunkArguments
     {
+        /** @psalm-suppress InvalidArgument Because it doesn't understand it accepts subtypes */
         return new ChunkArguments(
             ShortString::unpack(...), // queue
             UnsignedLongInteger::unpack(...), // message count
@@ -260,6 +274,7 @@ final class Reader
 
     private function queuePurgeOk(): ChunkArguments
     {
+        /** @psalm-suppress InvalidArgument Because it doesn't understand it accepts subtypes */
         return new ChunkArguments(
             UnsignedLongInteger::unpack(...), // message count
         );
@@ -267,6 +282,7 @@ final class Reader
 
     private function queueDeleteOk(): ChunkArguments
     {
+        /** @psalm-suppress InvalidArgument Because it doesn't understand it accepts subtypes */
         return new ChunkArguments(
             UnsignedLongInteger::unpack(...), // message count
         );

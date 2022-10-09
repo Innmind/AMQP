@@ -10,7 +10,10 @@ use Innmind\Math\{
     DefinitionSet\Range,
 };
 use Innmind\Stream\Readable;
-use Innmind\Immutable\Str;
+use Innmind\Immutable\{
+    Str,
+    Maybe,
+};
 
 /**
  * @implements Value<int<0, 4294967295>>
@@ -52,21 +55,22 @@ final class UnsignedLongInteger implements Value
         return new self($value);
     }
 
-    public static function unpack(Readable $stream): self
+    /**
+     * @return Maybe<self>
+     */
+    public static function unpack(Readable $stream): Maybe
     {
-        $chunk = $stream
+        return $stream
             ->read(4)
             ->map(static fn($chunk) => $chunk->toEncoding('ASCII'))
             ->filter(static fn($chunk) => $chunk->length() === 4)
-            ->match(
-                static fn($chunk) => $chunk,
-                static fn() => throw new \LogicException,
-            );
+            ->map(static function($chunk) {
+                /** @var int<0, 4294967295> $value */
+                [, $value] = \unpack('N', $chunk->toString());
 
-        /** @var int<0, 4294967295> $value */
-        [, $value] = \unpack('N', $chunk->toString());
-
-        return new self($value);
+                return $value;
+            })
+            ->map(static fn($value) => new self($value));
     }
 
     /**

@@ -27,7 +27,10 @@ final class FrameReader
 {
     public function __invoke(Readable $stream, Protocol $protocol): Frame
     {
-        $octet = UnsignedOctet::unpack($stream);
+        $octet = UnsignedOctet::unpack($stream)->match(
+            static fn($value) => $value,
+            static fn() => throw new \LogicException,
+        );
 
         try {
             $type = Type::of($octet->original());
@@ -43,11 +46,18 @@ final class FrameReader
         }
 
         $channel = new Channel(
-            UnsignedShortInteger::unpack($stream)->original(),
+            UnsignedShortInteger::unpack($stream)->match(
+                static fn($value) => $value->original(),
+                static fn() => throw new \LogicException,
+            ),
+        );
+        $payloadLength = UnsignedLongInteger::unpack($stream)->match(
+            static fn($value) => $value->original(),
+            static fn() => throw new \LogicException,
         );
         /** @psalm-suppress InvalidArgument */
         $payload = $stream
-            ->read(UnsignedLongInteger::unpack($stream)->original())
+            ->read($payloadLength)
             ->match(
                 static fn($payload) => $payload,
                 static fn() => throw new \LogicException,
@@ -64,7 +74,10 @@ final class FrameReader
             throw new PayloadTooShort((string) $payload->length());
         }
 
-        $end = UnsignedOctet::unpack($stream)->original();
+        $end = UnsignedOctet::unpack($stream)->match(
+            static fn($value) => $value->original(),
+            static fn() => throw new \LogicException,
+        );
 
         if ($end !== Frame::end()) {
             throw new ReceivedFrameNotDelimitedCorrectly;
@@ -86,8 +99,14 @@ final class FrameReader
         Channel $channel,
     ): Frame {
         $method = Method::of(
-            UnsignedShortInteger::unpack($payload)->original(),
-            UnsignedShortInteger::unpack($payload)->original(),
+            UnsignedShortInteger::unpack($payload)->match(
+                static fn($value) => $value->original(),
+                static fn() => throw new \LogicException,
+            ),
+            UnsignedShortInteger::unpack($payload)->match(
+                static fn($value) => $value->original(),
+                static fn() => throw new \LogicException,
+            ),
         );
 
         return Frame::method(
@@ -102,7 +121,10 @@ final class FrameReader
         Protocol $protocol,
         Channel $channel,
     ): Frame {
-        $class = UnsignedShortInteger::unpack($payload)->original();
+        $class = UnsignedShortInteger::unpack($payload)->match(
+            static fn($value) => $value->original(),
+            static fn() => throw new \LogicException,
+        );
         $_ = $payload->read(2)->match(
             static fn() => null,
             static fn() => throw new \LogicException,

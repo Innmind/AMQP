@@ -25,7 +25,10 @@ use Innmind\AMQP\{
     Exception\VersionNotUsable,
 };
 use Innmind\Stream\Readable;
-use Innmind\Immutable\Sequence;
+use Innmind\Immutable\{
+    Sequence,
+    Maybe,
+};
 
 final class Protocol
 {
@@ -75,8 +78,14 @@ final class Protocol
      */
     public function readHeader(Readable $arguments): Sequence
     {
-        $bodySize = UnsignedLongLongInteger::unpack($arguments);
-        $flags = UnsignedShortInteger::unpack($arguments);
+        $bodySize = UnsignedLongLongInteger::unpack($arguments)->match(
+            static fn($bodySize) => $bodySize,
+            static fn() => throw new \LogicException,
+        );
+        $flags = UnsignedShortInteger::unpack($arguments)->match(
+            static fn($bodySize) => $bodySize,
+            static fn() => throw new \LogicException,
+        );
 
         $flagBits = $flags->original();
         $toChunk = [];
@@ -133,12 +142,15 @@ final class Protocol
             $toChunk[] = ShortString::unpack(...); // app id
         }
 
-        /** @var Sequence<Value> */
         $values = Sequence::of($bodySize, $flags);
+        /** @psalm-suppress InvalidArgument */
+        $parsedArguments = (new ChunkArguments(...$toChunk))($arguments);
 
-        return $values->append(
-            (new ChunkArguments(...$toChunk))($arguments),
-        );
+        /**
+         * @psalm-suppress ArgumentTypeCoercion
+         * @var Sequence<Value>
+         */
+        return $values->append($parsedArguments);
     }
 
     public function connection(): Connection

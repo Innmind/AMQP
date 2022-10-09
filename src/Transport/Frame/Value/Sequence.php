@@ -9,6 +9,7 @@ use Innmind\Immutable\{
     Sequence as Seq,
     Monoid\Concat,
     Str,
+    Maybe,
 };
 
 /**
@@ -23,11 +24,11 @@ final class Sequence implements Value
     private Seq $original;
 
     /**
-     * @no-named-arguments
+     * @param Seq<Value> $values
      */
-    private function __construct(Value ...$values)
+    private function __construct(Seq $values)
     {
-        $this->original = Seq::of(...$values);
+        $this->original = $values;
     }
 
     /**
@@ -36,32 +37,28 @@ final class Sequence implements Value
      */
     public static function of(Value ...$values): self
     {
-        return new self(...$values);
+        return new self(Seq::of(...$values));
     }
 
-    public static function unpack(Readable $stream): self
+    /**
+     * @return Maybe<self>
+     */
+    public static function unpack(Readable $stream): Maybe
     {
-        $length = UnsignedLongInteger::unpack($stream)->original();
-        $position = $stream->position()->toInt();
-        $boundary = $position + $length;
+        /** @var Seq<Value> */
+        $values = Seq::of();
 
-        /** @var list<Value> */
-        $values = [];
-
-        while ($position < $boundary) {
-            $chunk = $stream
-                ->read(1)
-                ->map(static fn($chunk) => $chunk->toEncoding('ASCII'))
-                ->filter(static fn($chunk) => $chunk->length() === 1)
-                ->match(
-                    static fn($chunk) => $chunk,
-                    static fn() => throw new \LogicException,
-                );
-            $values[] = Symbol::unpack($chunk->toString(), $stream);
-            $position = $stream->position()->toInt();
-        }
-
-        return new self(...$values);
+        return UnsignedLongInteger::unpack($stream)
+            ->map(static fn($length) => $length->original())
+            ->flatMap(static fn($length) => match ($length) {
+                0 => Maybe::just($values),
+                default => self::unpackNested(
+                    $length + $stream->position()->toInt(),
+                    $stream,
+                    $values,
+                ),
+            })
+            ->map(static fn($values) => new self($values));
     }
 
     /**
@@ -91,5 +88,30 @@ final class Sequence implements Value
         $value = UnsignedLongInteger::of($data->length())->pack();
 
         return $value->append($data->toString());
+    }
+
+    /**
+     * @param Seq<Value> $values
+     *
+     * @return Maybe<Seq<Value>>
+     */
+    private static function unpackNested(
+        int $boundary,
+        Readable $stream,
+        Seq $values,
+    ): Maybe {
+        return $stream
+            ->read(1)
+            ->map(static fn($chunk) => $chunk->toEncoding('ASCII'))
+            ->filter(static fn($chunk) => $chunk->length() === 1)
+            ->flatMap(static fn($chunk) => Symbol::unpack($chunk->toString(), $stream))
+            ->flatMap(static fn($value) => match ($stream->position()->toInt() < $boundary) {
+                true => self::unpackNested(
+                    $boundary,
+                    $stream,
+                    ($values)($value),
+                ),
+                false => Maybe::just(($values)($value)),
+            });
     }
 }

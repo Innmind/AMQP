@@ -8,6 +8,7 @@ use Innmind\Stream\Readable;
 use Innmind\Immutable\{
     Str,
     Sequence,
+    Maybe,
 };
 
 /**
@@ -36,27 +37,24 @@ final class Bits implements Value
         return new self(Sequence::of($first, ...$bits));
     }
 
-    public static function unpack(Readable $stream): self
+    /**
+     * @return Maybe<self>
+     */
+    public static function unpack(Readable $stream): Maybe
     {
-        $chunk = $stream
+        return $stream
             ->read(1)
             ->map(static fn($chunk) => $chunk->toEncoding('ASCII'))
             ->filter(static fn($chunk) => $chunk->length() === 1)
-            ->match(
-                static fn($chunk) => $chunk,
-                static fn() => throw new \LogicException,
-            );
-        $bits = $chunk
-            ->map(static fn($chunk) => \decbin(\ord($chunk)))
-            ->chunk()
-            ->map(static fn($bit) => (bool) (int) $bit->toString())
-            ->reverse();
-
-        if ($bits->empty()) {
-            throw new \LogicException;
-        }
-
-        return new self($bits);
+            ->map(
+                static fn($chunk) => $chunk
+                    ->map(static fn($chunk) => \decbin(\ord($chunk)))
+                    ->chunk()
+                    ->map(static fn($bit) => (bool) (int) $bit->toString())
+                    ->reverse(),
+            )
+            ->exclude(static fn($bits) => $bits->empty())
+            ->map(static fn($bits) => new self($bits));
     }
 
     /**

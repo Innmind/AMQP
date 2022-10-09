@@ -10,7 +10,10 @@ use Innmind\Math\{
     DefinitionSet\Range,
 };
 use Innmind\Stream\Readable;
-use Innmind\Immutable\Str;
+use Innmind\Immutable\{
+    Str,
+    Maybe,
+};
 
 /**
  * Same as unsigned shortshort
@@ -54,21 +57,22 @@ final class UnsignedOctet implements Value
         return new self($octet);
     }
 
-    public static function unpack(Readable $stream): self
+    /**
+     * @return Maybe<self>
+     */
+    public static function unpack(Readable $stream): Maybe
     {
-        $chunk = $stream
+        return $stream
             ->read(1)
             ->map(static fn($chunk) => $chunk->toEncoding('ASCII'))
             ->filter(static fn($chunk) => $chunk->length() === 1)
-            ->match(
-                static fn($chunk) => $chunk,
-                static fn() => throw new \LogicException,
-            );
+            ->map(static function($chunk) {
+                /** @var int<0, 255> $octet */
+                [, $octet] = \unpack('C', $chunk->toString());
 
-        /** @var int<0, 255> $octet */
-        [, $octet] = \unpack('C', $chunk->toString());
-
-        return new self($octet);
+                return $octet;
+            })
+            ->map(static fn($octet) => new self($octet));
     }
 
     /**

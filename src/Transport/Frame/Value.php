@@ -3,7 +3,6 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport\Frame;
 
-use Innmind\Stream\Readable;
 use Innmind\Immutable\Str;
 
 /**
@@ -13,8 +12,6 @@ use Innmind\Immutable\Str;
  */
 interface Value
 {
-    public static function unpack(Readable $stream): self;
-
     /**
      * Original value
      *

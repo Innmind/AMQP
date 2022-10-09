@@ -5,7 +5,10 @@ namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\Stream\Readable;
-use Innmind\Immutable\Str;
+use Innmind\Immutable\{
+    Str,
+    Maybe,
+};
 
 /**
  * @implements Value<Str>
@@ -41,20 +44,21 @@ final class LongString implements Value
         return new self($string);
     }
 
-    public static function unpack(Readable $stream): self
+    /**
+     * @return Maybe<self>
+     */
+    public static function unpack(Readable $stream): Maybe
     {
-        $length = UnsignedLongInteger::unpack($stream)->original();
         /** @psalm-suppress InvalidArgument */
-        $string = $stream
-            ->read($length)
-            ->map(static fn($chunk) => $chunk->toEncoding('ASCII'))
-            ->filter(static fn($string) => $string->length() === $length)
-            ->match(
-                static fn($string) => $string,
-                static fn() => throw new \LogicException,
-            );
-
-        return new self($string);
+        return UnsignedLongInteger::unpack($stream)
+            ->map(static fn($length) => $length->original())
+            ->flatMap(
+                static fn($length) => $stream
+                    ->read($length)
+                    ->map(static fn($string) => $string->toEncoding('ASCII'))
+                    ->filter(static fn($string) => $string->length() === $length),
+            )
+            ->map(static fn($string) => new self($string));
     }
 
     public function original(): Str

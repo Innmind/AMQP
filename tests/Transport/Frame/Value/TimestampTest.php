@@ -34,7 +34,10 @@ class TimestampTest extends TestCase
 
     public function testFromStream()
     {
-        $value = Timestamp::unpack(Stream::ofContent(\pack('J', $time = \time())));
+        $value = Timestamp::unpack(Stream::ofContent(\pack('J', $time = \time())))->match(
+            static fn($value) => $value,
+            static fn() => null,
+        );
 
         $this->assertInstanceOf(Timestamp::class, $value);
         $this->assertInstanceOf(PointInTimeInterface::class, $value->original());

@@ -33,7 +33,10 @@ class LongStringTest extends TestCase
      */
     public function testFromStream($expected, $string)
     {
-        $value = LongString::unpack(Stream::ofContent($string));
+        $value = LongString::unpack(Stream::ofContent($string))->match(
+            static fn($value) => $value,
+            static fn() => null,
+        );
 
         $this->assertInstanceOf(LongString::class, $value);
         $this->assertInstanceOf(Str::class, $value->original());

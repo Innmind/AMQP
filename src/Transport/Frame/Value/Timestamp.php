@@ -13,7 +13,10 @@ use Innmind\TimeContinuum\{
     Earth\Format\ISO8601,
 };
 use Innmind\Stream\Readable;
-use Innmind\Immutable\Str;
+use Innmind\Immutable\{
+    Str,
+    Maybe,
+};
 
 /**
  * @implements Value<PointInTimeInterface>
@@ -36,13 +39,16 @@ final class Timestamp implements Value
         return new self($point);
     }
 
-    public static function unpack(Readable $stream): self
+    /**
+     * @return Maybe<self>
+     */
+    public static function unpack(Readable $stream): Maybe
     {
-        $time = UnsignedLongLongInteger::unpack($stream)->original();
-
-        return new self(new PointInTime(
-            \date((new ISO8601)->toString(), $time),
-        ));
+        return UnsignedLongLongInteger::unpack($stream)
+            ->map(static fn($time) => $time->original())
+            ->map(static fn($time) => \date((new ISO8601)->toString(), $time))
+            ->map(static fn($time) => new PointInTime($time))
+            ->map(static fn($point) => new self($point));
     }
 
     public function original(): PointInTimeInterface

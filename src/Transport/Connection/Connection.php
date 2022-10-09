@@ -271,9 +271,18 @@ final class Connection implements ConnectionInterface
             ); // there is a zero between AMQP and version number
 
             $this->protocol->use(
-                UnsignedOctet::unpack($content)->original(),
-                UnsignedOctet::unpack($content)->original(),
-                UnsignedOctet::unpack($content)->original(),
+                UnsignedOctet::unpack($content)->match(
+                    static fn($value) => $value->original(),
+                    static fn() => throw new \LogicException,
+                ),
+                UnsignedOctet::unpack($content)->match(
+                    static fn($value) => $value->original(),
+                    static fn() => throw new \LogicException,
+                ),
+                UnsignedOctet::unpack($content)->match(
+                    static fn($value) => $value->original(),
+                    static fn() => throw new \LogicException,
+                ),
             );
             // socket rebuilt as the server close the connection on version mismatch
             $this->buildSocket();

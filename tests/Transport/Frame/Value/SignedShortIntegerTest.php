@@ -36,7 +36,10 @@ class SignedShortIntegerTest extends TestCase
      */
     public function testFromStream($expected, $string)
     {
-        $value = SignedShortInteger::unpack(Stream::ofContent($string));
+        $value = SignedShortInteger::unpack(Stream::ofContent($string))->match(
+            static fn($value) => $value,
+            static fn() => null,
+        );
 
         $this->assertInstanceOf(SignedShortInteger::class, $value);
         $this->assertSame($expected, $value->original());

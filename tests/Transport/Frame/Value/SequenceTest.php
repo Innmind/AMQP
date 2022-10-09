@@ -39,7 +39,10 @@ class SequenceTest extends TestCase
      */
     public function testFromStream($string, $expected)
     {
-        $value = Sequence::unpack(Stream::ofContent($string));
+        $value = Sequence::unpack(Stream::ofContent($string))->match(
+            static fn($value) => $value,
+            static fn() => null,
+        );
 
         $this->assertInstanceOf(Sequence::class, $value);
         $this->assertCount(\count($expected), $value->original());

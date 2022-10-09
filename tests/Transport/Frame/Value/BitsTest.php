@@ -34,7 +34,10 @@ class BitsTest extends TestCase
      */
     public function testFromStream($expected, $string)
     {
-        $value = Bits::unpack(Stream::ofContent($string));
+        $value = Bits::unpack(Stream::ofContent($string))->match(
+            static fn($value) => $value,
+            static fn() => null,
+        );
 
         $this->assertInstanceOf(Bits::class, $value);
         $this->assertSame($expected, $value->original()->toList());

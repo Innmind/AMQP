@@ -36,7 +36,10 @@ class SignedLongIntegerTest extends TestCase
      */
     public function testFromStream($expected, $string)
     {
-        $value = SignedLongInteger::unpack(Stream::ofContent($string));
+        $value = SignedLongInteger::unpack(Stream::ofContent($string))->match(
+            static fn($value) => $value,
+            static fn() => null,
+        );
 
         $this->assertInstanceOf(SignedLongInteger::class, $value);
         $this->assertSame($expected, $value->original());

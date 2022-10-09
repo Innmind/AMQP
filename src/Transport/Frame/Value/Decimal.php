@@ -5,7 +5,10 @@ namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\Stream\Readable;
-use Innmind\Immutable\Str;
+use Innmind\Immutable\{
+    Str,
+    Maybe,
+};
 
 /**
  * @implements Value<int|float>
@@ -33,12 +36,16 @@ final class Decimal implements Value
         return new self(SignedLongInteger::of($value), UnsignedOctet::of($scale));
     }
 
-    public static function unpack(Readable $stream): self
+    /**
+     * @return Maybe<self>
+     */
+    public static function unpack(Readable $stream): Maybe
     {
-        $scale = UnsignedOctet::unpack($stream);
-        $value = SignedLongInteger::unpack($stream);
-
-        return new self($value, $scale);
+        return UnsignedOctet::unpack($stream)->flatMap(
+            static fn($scale) => SignedLongInteger::unpack($stream)->map(
+                static fn($value) => new self($value, $scale),
+            ),
+        );
     }
 
     public function original(): int|float

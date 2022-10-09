@@ -33,7 +33,10 @@ class SignedOctetTest extends TestCase
      */
     public function testFromStream($string, $expected)
     {
-        $value = SignedOctet::unpack(Stream::ofContent($string));
+        $value = SignedOctet::unpack(Stream::ofContent($string))->match(
+            static fn($value) => $value,
+            static fn() => null,
+        );
 
         $this->assertInstanceOf(SignedOctet::class, $value);
         $this->assertSame($expected, $value->original());

@@ -47,7 +47,10 @@ class UnsignedLongLongIntegerTest extends TestCase
      */
     public function testFromStream($expected, $string)
     {
-        $value = UnsignedLongLongInteger::unpack(Stream::ofContent($string));
+        $value = UnsignedLongLongInteger::unpack(Stream::ofContent($string))->match(
+            static fn($value) => $value,
+            static fn() => null,
+        );
 
         $this->assertInstanceOf(UnsignedLongLongInteger::class, $value);
         $this->assertSame($expected, $value->original());

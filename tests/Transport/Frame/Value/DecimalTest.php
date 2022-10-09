@@ -36,7 +36,10 @@ class DecimalTest extends TestCase
      */
     public function testFromStream($number, $scale, $string)
     {
-        $value = Decimal::unpack(Stream::ofContent($string));
+        $value = Decimal::unpack(Stream::ofContent($string))->match(
+            static fn($value) => $value,
+            static fn() => null,
+        );
 
         $this->assertInstanceOf(Decimal::class, $value);
         $this->assertSame(($number / (10**$scale)), $value->original());

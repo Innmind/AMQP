@@ -10,6 +10,7 @@ use Innmind\Immutable\{
     Sequence as Seq,
     Map,
     Monoid\Concat,
+    Maybe,
 };
 
 /**
@@ -39,35 +40,25 @@ final class Table implements Value
         return new self($map);
     }
 
-    public static function unpack(Readable $stream): self
+    /**
+     * @return Maybe<self>
+     */
+    public static function unpack(Readable $stream): Maybe
     {
-        $length = UnsignedLongInteger::unpack($stream)->original();
-        $position = $stream->position()->toInt();
-        $boundary = $position + $length;
-
         /** @var Map<string, Value> */
-        $map = Map::of();
+        $values = Map::of();
 
-        while ($position < $boundary) {
-            $key = ShortString::unpack($stream)->original();
-            $chunk = $stream
-                ->read(1)
-                ->map(static fn($chunk) => $chunk->toEncoding('ASCII'))
-                ->filter(static fn($chunk) => $chunk->length() === 1)
-                ->match(
-                    static fn($chunk) => $chunk,
-                    static fn() => throw new \LogicException,
-                );
-
-            $map = ($map)(
-                $key->toString(),
-                Symbol::unpack($chunk->toString(), $stream),
-            );
-
-            $position = $stream->position()->toInt();
-        }
-
-        return new self($map);
+        return UnsignedLongInteger::unpack($stream)
+            ->map(static fn($length) => $length->original())
+            ->flatMap(static fn($length) => match ($length) {
+                0 => Maybe::just($values),
+                default => self::unpackNested(
+                    $length + $stream->position()->toInt(),
+                    $stream,
+                    $values,
+                ),
+            })
+            ->map(static fn($map) => new self($map));
     }
 
     /**
@@ -102,5 +93,38 @@ final class Table implements Value
         $value = UnsignedLongInteger::of($data->length())->pack();
 
         return $value->append($data->toString());
+    }
+
+    /**
+     * @param Map<string, Value> $values
+     *
+     * @return Maybe<Map<string, Value>>
+     */
+    private static function unpackNested(
+        int $boundary,
+        Readable $stream,
+        Map $values,
+    ): Maybe {
+        return ShortString::unpack($stream)
+            ->map(static fn($key) => $key->original()->toString())
+            ->flatMap(
+                static fn($key) => $stream
+                    ->read(1)
+                    ->map(static fn($chunk) => $chunk->toEncoding('ASCII'))
+                    ->filter(static fn($chunk) => $chunk->length() === 1)
+                    ->flatMap(static fn($chunk) => Symbol::unpack(
+                        $chunk->toString(),
+                        $stream,
+                    ))
+                    ->map(static fn($value) => ($values)($key, $value)),
+            )
+            ->flatMap(static fn($values) => match ($stream->position()->toInt() < $boundary) {
+                true => self::unpackNested(
+                    $boundary,
+                    $stream,
+                    $values,
+                ),
+                false => Maybe::just($values),
+            });
     }
 }

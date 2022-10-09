@@ -10,7 +10,10 @@ use Innmind\Math\{
     DefinitionSet\Range,
 };
 use Innmind\Stream\Readable;
-use Innmind\Immutable\Str;
+use Innmind\Immutable\{
+    Str,
+    Maybe,
+};
 
 /**
  * @implements Value<int<-32768, 32767>>
@@ -41,20 +44,22 @@ final class SignedShortInteger implements Value
         return new self($value);
     }
 
-    public static function unpack(Readable $stream): self
+    /**
+     * @return Maybe<self>
+     */
+    public static function unpack(Readable $stream): Maybe
     {
-        $chunk = $stream
+        return $stream
             ->read(2)
             ->map(static fn($chunk) => $chunk->toEncoding('ASCII'))
             ->filter(static fn($chunk) => $chunk->length() === 2)
-            ->match(
-                static fn($chunk) => $chunk,
-                static fn() => throw new \LogicException,
-            );
-        /** @var int<-32768, 32767> $value */
-        [, $value] = \unpack('s', $chunk->toString());
+            ->map(static function($chunk) {
+                /** @var int<-32768, 32767> $value */
+                [, $value] = \unpack('s', $chunk->toString());
 
-        return new self($value);
+                return $value;
+            })
+            ->map(static fn($value) => new self($value));
     }
 
     /**

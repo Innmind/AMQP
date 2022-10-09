@@ -5,21 +5,24 @@ namespace Innmind\AMQP\Transport\Frame\Visitor;
 
 use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\Stream\Readable;
-use Innmind\Immutable\Sequence;
+use Innmind\Immutable\{
+    Sequence,
+    Maybe,
+};
 
 final class ChunkArguments
 {
-    /** @var list<callable(Readable): Value> */
-    private array $types;
+    /** @var Sequence<callable(Readable): Maybe<Value>> */
+    private Sequence $types;
 
     /**
      * @no-named-arguments
      *
-     * @param list<callable(Readable): Value> $types
+     * @param list<callable(Readable): Maybe<Value>> $types
      */
     public function __construct(callable ...$types)
     {
-        $this->types = $types;
+        $this->types = Sequence::of(...$types);
     }
 
     /**
@@ -28,12 +31,40 @@ final class ChunkArguments
     public function __invoke(Readable $arguments): Sequence
     {
         /** @var Sequence<Value> */
-        $sequence = Sequence::of();
+        $values = Sequence::of();
 
-        foreach ($this->types as $unpack) {
-            $sequence = ($sequence)($unpack($arguments));
-        }
+        /** @psalm-suppress MixedArgumentTypeCoercion */
+        return $this
+            ->types
+            ->reduce(
+                Maybe::just($values),
+                fn(Maybe $maybe, $unpack) => $this->unpack(
+                    $maybe,
+                    $unpack,
+                    $arguments,
+                ),
+            )
+            ->match(
+                static fn($values) => $values,
+                static fn() => throw new \LogicException,
+            );
+    }
 
-        return $sequence;
+    /**
+     * @param Maybe<Sequence<Value>> $maybe
+     * @param callable(Readable): Maybe<Value> $unpack
+     *
+     * @return Maybe<Sequence<Value>>
+     */
+    private function unpack(
+        Maybe $maybe,
+        callable $unpack,
+        Readable $arguments,
+    ): Maybe {
+        return $maybe->flatMap(
+            static fn($values) => $unpack($arguments)->map(
+                static fn($value) => ($values)($value),
+            ),
+        );
     }
 }
