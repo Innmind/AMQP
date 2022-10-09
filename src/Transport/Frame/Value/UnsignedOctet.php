@@ -79,6 +79,11 @@ final class UnsignedOctet implements Value
         return $this->original;
     }
 
+    public function symbol(): Symbol
+    {
+        return Symbol::unsignedOctet;
+    }
+
     public function pack(): Str
     {
         return Str::of(\chr($this->original));

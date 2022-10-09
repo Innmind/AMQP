@@ -62,6 +62,11 @@ final class ShortString implements Value
         return $this->original;
     }
 
+    public function symbol(): Symbol
+    {
+        return Symbol::shortString;
+    }
+
     public function pack(): Str
     {
         /** @psalm-suppress ArgumentTypeCoercion */

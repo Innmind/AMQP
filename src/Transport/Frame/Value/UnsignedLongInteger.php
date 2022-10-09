@@ -77,6 +77,11 @@ final class UnsignedLongInteger implements Value
         return $this->original;
     }
 
+    public function symbol(): Symbol
+    {
+        return Symbol::unsignedLongInteger;
+    }
+
     public function pack(): Str
     {
         return Str::of(\pack('N', $this->original));

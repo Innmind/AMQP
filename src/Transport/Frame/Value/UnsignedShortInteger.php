@@ -77,6 +77,11 @@ final class UnsignedShortInteger implements Value
         return $this->original;
     }
 
+    public function symbol(): Symbol
+    {
+        return Symbol::unsignedShortInteger;
+    }
+
     public function pack(): Str
     {
         return Str::of(\pack('n', $this->original));

@@ -50,6 +50,11 @@ final class Timestamp implements Value
         return $this->original;
     }
 
+    public function symbol(): Symbol
+    {
+        return Symbol::timestamp;
+    }
+
     public function pack(): Str
     {
         /** @psalm-suppress ArgumentTypeCoercion */

@@ -61,7 +61,7 @@ final class Table implements Value
 
             $map = ($map)(
                 $key->toString(),
-                Symbols::unpack($chunk->toString(), $stream),
+                Symbol::unpack($chunk->toString(), $stream),
             );
 
             $position = $stream->position()->toInt();
@@ -78,6 +78,11 @@ final class Table implements Value
         return $this->original;
     }
 
+    public function symbol(): Symbol
+    {
+        return Symbol::table;
+    }
+
     public function pack(): Str
     {
         /** @psalm-suppress MixedArgumentTypeCoercion */
@@ -87,7 +92,7 @@ final class Table implements Value
             ->values()
             ->flatMap(static fn($pair) => Seq::of(
                 ShortString::of(Str::of($pair[0]))->pack(),
-                Str::of(Symbols::symbol(\get_class($pair[1]))),
+                $pair[1]->symbol()->pack(),
                 $pair[1]->pack(),
             ))
             ->fold(new Concat)

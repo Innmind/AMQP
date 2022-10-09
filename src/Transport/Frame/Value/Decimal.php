@@ -46,6 +46,11 @@ final class Decimal implements Value
         return $this->value->original() / (10 ** $this->scale->original());
     }
 
+    public function symbol(): Symbol
+    {
+        return Symbol::decimal;
+    }
+
     public function pack(): Str
     {
         return $this->scale->pack()->append($this->value->pack()->toString());

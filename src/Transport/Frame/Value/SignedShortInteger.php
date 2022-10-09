@@ -65,6 +65,11 @@ final class SignedShortInteger implements Value
         return $this->original;
     }
 
+    public function symbol(): Symbol
+    {
+        return Symbol::signedShortInteger;
+    }
+
     public function pack(): Str
     {
         return Str::of(\pack('s', $this->original));

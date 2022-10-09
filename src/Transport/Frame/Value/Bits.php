@@ -67,6 +67,11 @@ final class Bits implements Value
         return $this->original;
     }
 
+    public function symbol(): Symbol
+    {
+        return Symbol::bits;
+    }
+
     public function pack(): Str
     {
         $value = $this

@@ -22,6 +22,11 @@ final class VoidValue implements Value
     {
     }
 
+    public function symbol(): Symbol
+    {
+        return Symbol::void;
+    }
+
     public function pack(): Str
     {
         return Str::of('');

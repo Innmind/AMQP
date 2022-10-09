@@ -62,6 +62,11 @@ final class LongString implements Value
         return $this->original;
     }
 
+    public function symbol(): Symbol
+    {
+        return Symbol::longString;
+    }
+
     public function pack(): Str
     {
         /** @psalm-suppress ArgumentTypeCoercion */

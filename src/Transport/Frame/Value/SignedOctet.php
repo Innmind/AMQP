@@ -67,6 +67,11 @@ final class SignedOctet implements Value
         return $this->original;
     }
 
+    public function symbol(): Symbol
+    {
+        return Symbol::signedOctet;
+    }
+
     public function pack(): Str
     {
         return Str::of(\pack('c', $this->original));

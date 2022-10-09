@@ -57,7 +57,7 @@ final class Sequence implements Value
                     static fn($chunk) => $chunk,
                     static fn() => throw new \LogicException,
                 );
-            $values[] = Symbols::unpack($chunk->toString(), $stream);
+            $values[] = Symbol::unpack($chunk->toString(), $stream);
             $position = $stream->position()->toInt();
         }
 
@@ -72,12 +72,17 @@ final class Sequence implements Value
         return $this->original;
     }
 
+    public function symbol(): Symbol
+    {
+        return Symbol::sequence;
+    }
+
     public function pack(): Str
     {
         $data = $this
             ->original
             ->flatMap(static fn($value) => Seq::of(
-                Str::of(Symbols::symbol(\get_class($value))),
+                $value->symbol()->pack(),
                 $value->pack(),
             ))
             ->fold(new Concat)

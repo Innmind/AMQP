@@ -21,5 +21,6 @@ interface Value
      * @return T
      */
     public function original();
+    public function symbol(): Value\Symbol;
     public function pack(): Str;
 }

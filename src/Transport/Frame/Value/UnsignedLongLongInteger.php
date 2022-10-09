@@ -78,6 +78,11 @@ final class UnsignedLongLongInteger implements Value
         return $this->original;
     }
 
+    public function symbol(): Symbol
+    {
+        return Symbol::unsignedLongLongInteger;
+    }
+
     public function pack(): Str
     {
         return Str::of(\pack('J', $this->original));

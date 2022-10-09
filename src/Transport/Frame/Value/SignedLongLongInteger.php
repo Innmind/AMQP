@@ -49,6 +49,11 @@ final class SignedLongLongInteger implements Value
         return $this->original;
     }
 
+    public function symbol(): Symbol
+    {
+        return Symbol::signedLongLongInteger;
+    }
+
     public function pack(): Str
     {
         return Str::of(\pack('q', $this->original));
