@@ -7,6 +7,7 @@ use Innmind\AMQP\Transport\Frame\{
     Type,
     Channel,
     Method,
+    MethodClass,
     Value,
     Value\UnsignedOctet,
     Value\UnsignedShortInteger,
@@ -75,18 +76,16 @@ final class Frame
     /**
      * @no-named-arguments
      * @psalm-pure
-     *
-     * @param int<0, 65535> $class
      */
     public static function header(
         Channel $channel,
-        int $class,
+        MethodClass $class,
         Value ...$values,
     ): self {
         return new self(
             Type::header,
             $channel,
-            UnsignedShortInteger::internal($class),
+            UnsignedShortInteger::internal($class->toInt()),
             UnsignedShortInteger::internal(0), // weight
             ...$values,
         );

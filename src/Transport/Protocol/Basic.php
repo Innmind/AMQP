@@ -120,7 +120,7 @@ final class Basic
             ),
             Frame::header(
                 $channel,
-                MethodClass::basic->toInt(),
+                MethodClass::basic,
                 UnsignedLongLongInteger::of(
                     $command->message()->body()->length(),
                 ),

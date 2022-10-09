@@ -7,6 +7,7 @@ use Innmind\AMQP\{
     Transport\Protocol,
     Transport\Frame,
     Transport\Frame\Method,
+    Transport\Frame\MethodClass,
     Transport\Frame\Type,
     Transport\Frame\Channel,
     Transport\Frame\Value\UnsignedOctet,
@@ -109,7 +110,7 @@ final class FrameReader
 
         return Frame::header(
             $channel,
-            $class,
+            MethodClass::of($class),
             ...$protocol->readHeader($payload)->toList(),
         );
     }

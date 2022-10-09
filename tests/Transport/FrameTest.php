@@ -8,6 +8,7 @@ use Innmind\AMQP\Transport\{
     Frame\Type,
     Frame\Channel,
     Frame\Method,
+    Frame\MethodClass,
     Frame\Value,
     Frame\Value\Bits,
     Frame\Value\LongString,
@@ -45,7 +46,7 @@ class FrameTest extends TestCase
     {
         $frame = Frame::header(
             $channel = new Channel(42),
-            60,
+            MethodClass::basic,
             $value = LongString::of(Str::of('foobar')),
         );
 

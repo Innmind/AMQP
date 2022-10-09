@@ -15,6 +15,21 @@ enum MethodClass
     case basic;
     case transaction;
 
+    /**
+     * @psalm-pure
+     */
+    public static function of(int $value): self
+    {
+        return match ($value) {
+            10 => self::connection,
+            20 => self::channel,
+            40 => self::exchange,
+            50 => self::queue,
+            60 => self::basic,
+            90 => self::transaction,
+        };
+    }
+
     public function toString(): string
     {
         return match ($this) {
