@@ -9,7 +9,6 @@ use Innmind\AMQP\{
     Transport\Frame\Value\LongString,
     Transport\Frame\Value\Text,
     Transport\Frame\Value,
-    Exception\UnboundedTextCannotBeWrapped,
 };
 use Innmind\Stream\Readable\Stream;
 use Innmind\Immutable\{
@@ -60,15 +59,6 @@ class TableTest extends TestCase
         }
 
         $this->assertSame($string, $value->pack());
-    }
-
-    public function testThrowWhenUsingUnboundedText()
-    {
-        $this->expectException(UnboundedTextCannotBeWrapped::class);
-
-        Table::of(
-            Map::of(['foo', Text::of(Str::of(''))]),
-        );
     }
 
     public function cases(): array

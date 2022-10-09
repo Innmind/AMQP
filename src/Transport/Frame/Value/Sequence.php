@@ -3,10 +3,7 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport\Frame\Value;
 
-use Innmind\AMQP\{
-    Transport\Frame\Value,
-    Exception\UnboundedTextCannotBeWrapped,
-};
+use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\Stream\Readable;
 use Innmind\Immutable\{
     Sequence as Seq,
@@ -30,17 +27,7 @@ final class Sequence implements Value
      */
     private function __construct(Value ...$values)
     {
-        $values = Seq::of(...$values);
-
-        $texts = $values->filter(static function(Value $value): bool {
-            return $value instanceof Text;
-        });
-
-        if (!$texts->empty()) {
-            throw new UnboundedTextCannotBeWrapped;
-        }
-
-        $this->original = $values;
+        $this->original = Seq::of(...$values);
     }
 
     /**

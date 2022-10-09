@@ -10,7 +10,7 @@ use Innmind\AMQP\Transport\{
     Frame\Method,
     Frame\Value,
     Frame\Value\Bits,
-    Frame\Value\Text,
+    Frame\Value\LongString,
 };
 use Innmind\Immutable\{
     Str,
@@ -26,7 +26,7 @@ class FrameTest extends TestCase
             $channel = new Channel(42),
             $method = Method::of(10, 10),
             $bit = Bits::of(true),
-            $text = Text::of(Str::of('foobar')),
+            $text = LongString::of(Str::of('foobar')),
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -36,7 +36,7 @@ class FrameTest extends TestCase
         $this->assertInstanceOf(Sequence::class, $frame->values());
         $this->assertSame([$bit, $text], $frame->values()->toList());
         $this->assertSame(
-            \chr(1).\pack('n', 42).\pack('N', 11).\pack('n', 10).\pack('n', 10).$bit->pack().$text->pack().\chr(0xCE),
+            \chr(1).\pack('n', 42).\pack('N', 15).\pack('n', 10).\pack('n', 10).$bit->pack().$text->pack().\chr(0xCE),
             $frame->pack()->toString(),
         );
     }
@@ -46,7 +46,7 @@ class FrameTest extends TestCase
         $frame = Frame::header(
             $channel = new Channel(42),
             60,
-            $value = Text::of(Str::of('foobar')),
+            $value = LongString::of(Str::of('foobar')),
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -55,7 +55,7 @@ class FrameTest extends TestCase
         $this->assertInstanceOf(Sequence::class, $frame->values());
         $this->assertSame([$value], $frame->values()->toList());
         $this->assertSame(
-            \chr(2).\pack('n', 42).\pack('N', 10).\pack('n', 60).\pack('n', 0).'foobar'.\chr(0xCE),
+            \chr(2).\pack('n', 42).\pack('N', 14).\pack('n', 60).\pack('n', 0).$value->pack().\chr(0xCE),
             $frame->pack()->toString(),
         );
     }

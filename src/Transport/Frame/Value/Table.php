@@ -3,10 +3,7 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport\Frame\Value;
 
-use Innmind\AMQP\{
-    Transport\Frame\Value,
-    Exception\UnboundedTextCannotBeWrapped,
-};
+use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\Stream\Readable;
 use Innmind\Immutable\{
     Str,
@@ -29,14 +26,6 @@ final class Table implements Value
      */
     private function __construct(Map $map)
     {
-        $texts = $map->filter(static function(string $_, Value $value): bool {
-            return $value instanceof Text;
-        });
-
-        if (!$texts->empty()) {
-            throw new UnboundedTextCannotBeWrapped;
-        }
-
         $this->original = $map;
     }
 

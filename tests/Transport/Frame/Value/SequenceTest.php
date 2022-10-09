@@ -8,7 +8,6 @@ use Innmind\AMQP\{
     Transport\Frame\Value\LongString,
     Transport\Frame\Value\Text,
     Transport\Frame\Value,
-    Exception\UnboundedTextCannotBeWrapped,
 };
 use Innmind\Stream\Readable\Stream;
 use Innmind\Immutable\{
@@ -63,13 +62,6 @@ class SequenceTest extends TestCase
         }
 
         $this->assertSame($string, $value->pack());
-    }
-
-    public function testThrowWhenUsingUnboundedText()
-    {
-        $this->expectException(UnboundedTextCannotBeWrapped::class);
-
-        Sequence::of(Text::of(Str::of('')));
     }
 
     public function cases(): array
