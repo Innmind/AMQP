@@ -71,43 +71,54 @@ final class FrameReader
 
         $payload = Stream::ofContent($payload->toString());
 
-        switch ($type) {
-            case Type::method:
-                $method = Method::of(
-                    UnsignedShortInteger::unpack($payload)->original(),
-                    UnsignedShortInteger::unpack($payload)->original(),
-                );
+        return match ($type) {
+            Type::method => $this->readMethod($payload, $protocol, $channel),
+            Type::header => $this->readHeader($payload, $protocol, $channel),
+            Type::body => $this->readBody($payload, $channel),
+            Type::heartbeat => Frame::heartbeat(),
+        };
+    }
 
-                return Frame::method(
-                    $channel,
-                    $method,
-                    ...$protocol->read($method, $payload)->toList(),
-                );
+    private function readMethod(
+        Readable $payload,
+        Protocol $protocol,
+        Channel $channel,
+    ): Frame {
+        $method = Method::of(
+            UnsignedShortInteger::unpack($payload)->original(),
+            UnsignedShortInteger::unpack($payload)->original(),
+        );
 
-            case Type::header:
-                $class = UnsignedShortInteger::unpack($payload)->original();
-                $_ = $payload->read(2)->match(
-                    static fn() => null,
-                    static fn() => throw new \LogicException,
-                ); // walk over the weight definition
+        return Frame::method(
+            $channel,
+            $method,
+            ...$protocol->read($method, $payload)->toList(),
+        );
+    }
 
-                return Frame::header(
-                    $channel,
-                    $class,
-                    ...$protocol->readHeader($payload)->toList(),
-                );
+    private function readHeader(
+        Readable $payload,
+        Protocol $protocol,
+        Channel $channel,
+    ): Frame {
+        $class = UnsignedShortInteger::unpack($payload)->original();
+        $_ = $payload->read(2)->match(
+            static fn() => null,
+            static fn() => throw new \LogicException,
+        ); // walk over the weight definition
 
-            case Type::body:
-                return Frame::body($channel, $payload->read()->match(
-                    static fn($data) => $data,
-                    static fn() => throw new \LogicException,
-                ));
+        return Frame::header(
+            $channel,
+            $class,
+            ...$protocol->readHeader($payload)->toList(),
+        );
+    }
 
-            case Type::heartbeat:
-                return Frame::heartbeat();
-
-            default:
-                throw new LogicException((string) $type->toInt()); // if reached then there's an implementation error
-        }
+    private function readBody(Readable $payload, Channel $channel): Frame
+    {
+        return Frame::body($channel, $payload->read()->match(
+            static fn($data) => $data,
+            static fn() => throw new \LogicException,
+        ));
     }
 }
