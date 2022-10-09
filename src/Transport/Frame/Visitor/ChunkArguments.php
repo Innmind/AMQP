@@ -26,9 +26,9 @@ final class ChunkArguments
     }
 
     /**
-     * @return Sequence<Value>
+     * @return Maybe<Sequence<Value>>
      */
-    public function __invoke(Readable $arguments): Sequence
+    public function __invoke(Readable $arguments): Maybe
     {
         /** @var Sequence<Value> */
         $values = Sequence::of();
@@ -43,10 +43,6 @@ final class ChunkArguments
                     $unpack,
                     $arguments,
                 ),
-            )
-            ->match(
-                static fn($values) => $values,
-                static fn() => throw new \LogicException,
             );
     }
 

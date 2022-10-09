@@ -82,7 +82,10 @@ final class Reader
             Method::transactionSelect => throw new \LogicException('Server should never send this method'),
         };
 
-        return $chunk($arguments);
+        return $chunk($arguments)->match(
+            static fn($arguments) => $arguments,
+            static fn() => throw new \LogicException,
+        );
     }
 
     private function basicQosOk(): ChunkArguments

@@ -144,7 +144,10 @@ final class Protocol
 
         $values = Sequence::of($bodySize, $flags);
         /** @psalm-suppress InvalidArgument */
-        $parsedArguments = (new ChunkArguments(...$toChunk))($arguments);
+        $parsedArguments = (new ChunkArguments(...$toChunk))($arguments)->match(
+            static fn($arguments) => $arguments,
+            static fn() => throw new \LogicException,
+        );
 
         /**
          * @psalm-suppress ArgumentTypeCoercion

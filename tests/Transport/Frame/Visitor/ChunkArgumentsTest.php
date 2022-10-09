@@ -27,7 +27,10 @@ class ChunkArgumentsTest extends TestCase
 
         $arguments = Bits::of(true)->pack()->toString().LongString::literal('foo')->pack()->toString();
 
-        $stream = $visit(Stream::ofContent($arguments));
+        $stream = $visit(Stream::ofContent($arguments))->match(
+            static fn($arguments) => $arguments,
+            static fn() => null,
+        );
 
         $this->assertInstanceOf(Sequence::class, $stream);
         $this->assertCount(2, $stream);
