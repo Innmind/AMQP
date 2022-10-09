@@ -8,7 +8,7 @@ use Innmind\AMQP\{
     Client\Client,
     Transport\Connection\Connection,
     Transport\Protocol\ArgumentTranslator\ValueTranslator,
-    Transport\Protocol\v091\Protocol,
+    Transport\Protocol,
 };
 use Innmind\Socket\Internet\Transport;
 use Innmind\TimeContinuum\Earth\ElapsedPeriod;

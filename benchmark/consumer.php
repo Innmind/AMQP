@@ -22,7 +22,7 @@ $channel
 $channel
     ->exchange()
     ->declare(
-        Exchange::temporary('bench_exchange', Type::direct())
+        Exchange::temporary('bench_exchange', Type::direct)
     );
 $channel
     ->queue()
