@@ -137,16 +137,9 @@ class FrameReaderTest extends TestCase
         \fseek($file, 0);
         $stream = Stream::of($file);
 
-        try {
-            (new FrameReader)($stream, $this->protocol);
-            $this->fail('it should throw an exception');
-        } catch (NoFrameDetected $e) {
-            $this->assertInstanceOf(Readable::class, $e->content());
-            $this->assertSame($content, $e->content()->toString()->match(
-                static fn($value) => $value,
-                static fn() => null,
-            ));
-        }
+        $this->expectException(NoFrameDetected::class);
+
+        (new FrameReader)($stream, $this->protocol);
     }
 
     public function testReadHeader()

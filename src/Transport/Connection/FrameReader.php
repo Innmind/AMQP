@@ -35,14 +35,7 @@ final class FrameReader
         try {
             $type = Type::of($octet->original());
         } catch (\UnhandledMatchError $e) {
-            $data = $stream->read()->match(
-                static fn($data) => $data,
-                static fn() => throw new \LogicException,
-            );
-
-            throw new NoFrameDetected(Stream::ofContent(
-                $data->prepend($octet->pack()->toString())->toString(),
-            ));
+            throw new NoFrameDetected;
         }
 
         $channel = new Channel(
