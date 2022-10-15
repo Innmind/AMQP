@@ -126,11 +126,15 @@ final class FrameReader
                     ->read(2) // walk over the weight definition
                     ->map(static fn() => $class),
             )
-            ->map(static fn($class) => Frame::header(
-                $channel,
-                $class,
-                ...$protocol->readHeader($payload)->toList(),
-            ));
+            ->flatMap(
+                static fn($class) => $protocol
+                    ->readHeader($payload)
+                    ->map(static fn($arguments) => Frame::header(
+                        $channel,
+                        $class,
+                        ...$arguments->toList(),
+                    )),
+            );
     }
 
     /**

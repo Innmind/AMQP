@@ -74,19 +74,55 @@ final class Protocol
     }
 
     /**
-     * @return Sequence<Value>
+     * @return Maybe<Sequence<Value>>
      */
-    public function readHeader(Readable $arguments): Sequence
+    public function readHeader(Readable $arguments): Maybe
     {
-        $bodySize = UnsignedLongLongInteger::unpack($arguments)->match(
-            static fn($bodySize) => $bodySize,
-            static fn() => throw new \LogicException,
+        return UnsignedLongLongInteger::unpack($arguments)->flatMap(
+            fn($bodySize) => UnsignedShortInteger::unpack($arguments)->flatMap(
+                fn($flags) => $this->parseHeader($bodySize, $flags, $arguments),
+            ),
         );
-        $flags = UnsignedShortInteger::unpack($arguments)->match(
-            static fn($bodySize) => $bodySize,
-            static fn() => throw new \LogicException,
-        );
+    }
 
+    public function connection(): Connection
+    {
+        return $this->connection;
+    }
+
+    public function channel(): Channel
+    {
+        return $this->channel;
+    }
+
+    public function exchange(): Exchange
+    {
+        return $this->exchange;
+    }
+
+    public function queue(): Queue
+    {
+        return $this->queue;
+    }
+
+    public function basic(): Basic
+    {
+        return $this->basic;
+    }
+
+    public function transaction(): Transaction
+    {
+        return $this->transaction;
+    }
+
+    /**
+     * @return Maybe<Sequence<Value>>
+     */
+    private function parseHeader(
+        UnsignedLongLongInteger $bodySize,
+        UnsignedShortInteger $flags,
+        Readable $arguments,
+    ): Maybe {
         $flagBits = $flags->original();
         $toChunk = [];
 
@@ -142,47 +178,13 @@ final class Protocol
             $toChunk[] = ShortString::unpack(...); // app id
         }
 
-        $values = Sequence::of($bodySize, $flags);
-        /** @psalm-suppress InvalidArgument */
-        $parsedArguments = (new ChunkArguments(...$toChunk))($arguments)->match(
-            static fn($arguments) => $arguments,
-            static fn() => throw new \LogicException,
-        );
-
         /**
+         * @psalm-suppress InvalidArgument
          * @psalm-suppress ArgumentTypeCoercion
-         * @var Sequence<Value>
+         * @var Maybe<Sequence<Value>>
          */
-        return $values->append($parsedArguments);
-    }
-
-    public function connection(): Connection
-    {
-        return $this->connection;
-    }
-
-    public function channel(): Channel
-    {
-        return $this->channel;
-    }
-
-    public function exchange(): Exchange
-    {
-        return $this->exchange;
-    }
-
-    public function queue(): Queue
-    {
-        return $this->queue;
-    }
-
-    public function basic(): Basic
-    {
-        return $this->basic;
-    }
-
-    public function transaction(): Transaction
-    {
-        return $this->transaction;
+        return (new ChunkArguments(...$toChunk))($arguments)->map(
+            static fn($arguments) => Sequence::of($bodySize, $flags)->append($arguments),
+        );
     }
 }

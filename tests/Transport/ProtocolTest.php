@@ -112,6 +112,9 @@ class ProtocolTest extends TestCase
                     )
                     ->toString(),
             ),
+        )->match(
+            static fn($values) => $values,
+            static fn() => null,
         );
 
         $this->assertInstanceOf(Sequence::class, $values);
