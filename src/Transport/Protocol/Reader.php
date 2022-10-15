@@ -3,18 +3,18 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport\Protocol;
 
-use Innmind\AMQP\Transport\{
-    Frame\Method,
-    Frame\Value,
-    Frame\Visitor\ChunkArguments,
-    Frame\Value\Bits,
-    Frame\Value\LongString,
-    Frame\Value\ShortString,
-    Frame\Value\UnsignedLongInteger,
-    Frame\Value\UnsignedLongLongInteger,
-    Frame\Value\UnsignedOctet,
-    Frame\Value\UnsignedShortInteger,
-    Frame\Value\Table,
+use Innmind\AMQP\Transport\Frame\{
+    Method,
+    Value,
+    Visitor\ChunkArguments,
+    Value\Bits,
+    Value\LongString,
+    Value\ShortString,
+    Value\UnsignedLongInteger,
+    Value\UnsignedLongLongInteger,
+    Value\UnsignedOctet,
+    Value\UnsignedShortInteger,
+    Value\Table,
 };
 use Innmind\Stream\Readable;
 use Innmind\Immutable\{
