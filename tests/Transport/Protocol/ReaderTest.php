@@ -108,7 +108,9 @@ class ReaderTest extends TestCase
             ],
             [
                 Method::basicGetEmpty,
-                [],
+                [
+                    ShortString::literal('foo'),
+                ],
             ],
             [
                 Method::basicRecoverOk,
@@ -116,7 +118,9 @@ class ReaderTest extends TestCase
             ],
             [
                 Method::channelOpenOk,
-                [],
+                [
+                    LongString::literal('foo'),
+                ],
             ],
             [
                 Method::channelFlow,

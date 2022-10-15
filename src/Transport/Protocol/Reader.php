@@ -146,7 +146,10 @@ final class Reader
 
     private function basicGetEmpty(): ChunkArguments
     {
-        return new ChunkArguments; // no arguments
+        /** @psalm-suppress InvalidArgument Because it doesn't understand it accepts subtypes */
+        return new ChunkArguments(
+            ShortString::unpack(...), // reserved
+        );
     }
 
     private function basicRecoverOk(): ChunkArguments
@@ -156,7 +159,10 @@ final class Reader
 
     private function channelOpenOk(): ChunkArguments
     {
-        return new ChunkArguments; // no arguments
+        /** @psalm-suppress InvalidArgument Because it doesn't understand it accepts subtypes */
+        return new ChunkArguments(
+            LongString::unpack(...), // reserved
+        );
     }
 
     private function channelFlow(): ChunkArguments
