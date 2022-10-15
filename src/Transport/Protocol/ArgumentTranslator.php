@@ -11,9 +11,7 @@ use Innmind\AMQP\{
 interface ArgumentTranslator
 {
     /**
-     * @param mixed $value
-     *
      * @throws ValueNotTranslatable
      */
-    public function __invoke($value): Value;
+    public function __invoke(mixed $value): Value;
 }

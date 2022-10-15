@@ -25,10 +25,7 @@ final class Unbinding
         $this->arguments = Map::of();
     }
 
-    /**
-     * @param mixed $value
-     */
-    public function withArgument(string $key, $value): self
+    public function withArgument(string $key, mixed $value): self
     {
         $self = clone $this;
         $self->arguments = ($self->arguments)($key, $value);

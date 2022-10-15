@@ -5,22 +5,15 @@ namespace Innmind\AMQP\Exception;
 
 final class ValueNotTranslatable extends LogicException
 {
-    /** @var mixed */
-    private $value;
+    private mixed $value;
 
-    /**
-     * @param mixed $value
-     */
-    public function __construct($value)
+    public function __construct(mixed $value)
     {
         parent::__construct();
         $this->value = $value;
     }
 
-    /**
-     * @return mixed
-     */
-    public function value()
+    public function value(): mixed
     {
         return $this->value;
     }

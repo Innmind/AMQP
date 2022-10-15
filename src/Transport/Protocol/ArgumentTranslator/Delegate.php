@@ -22,7 +22,7 @@ final class Delegate implements ArgumentTranslator
         $this->translators = $translators;
     }
 
-    public function __invoke($value): Value
+    public function __invoke(mixed $value): Value
     {
         foreach ($this->translators as $translate) {
             try {
