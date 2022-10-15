@@ -42,6 +42,9 @@ class ReaderTest extends TestCase
         $stream = $read(
             $method,
             Stream::ofContent($args),
+        )->match(
+            static fn($values) => $values,
+            static fn() => null,
         );
 
         $this->assertInstanceOf(Sequence::class, $stream);

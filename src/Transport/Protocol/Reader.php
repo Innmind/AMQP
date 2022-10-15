@@ -17,14 +17,17 @@ use Innmind\AMQP\Transport\{
     Frame\Value\Table,
 };
 use Innmind\Stream\Readable;
-use Innmind\Immutable\Sequence;
+use Innmind\Immutable\{
+    Sequence,
+    Maybe,
+};
 
 final class Reader
 {
     /**
-     * @return Sequence<Value>
+     * @return Maybe<Sequence<Value>>
      */
-    public function __invoke(Method $method, Readable $arguments): Sequence
+    public function __invoke(Method $method, Readable $arguments): Maybe
     {
         $chunk = match ($method) {
             Method::basicQosOk => $this->basicQosOk(),
@@ -82,10 +85,7 @@ final class Reader
             Method::transactionSelect => throw new \LogicException('Server should never send this method'),
         };
 
-        return $chunk($arguments)->match(
-            static fn($arguments) => $arguments,
-            static fn() => throw new \LogicException,
-        );
+        return $chunk($arguments);
     }
 
     private function basicQosOk(): ChunkArguments

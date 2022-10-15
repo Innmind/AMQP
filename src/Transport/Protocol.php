@@ -66,9 +66,9 @@ final class Protocol
     }
 
     /**
-     * @return Sequence<Value>
+     * @return Maybe<Sequence<Value>>
      */
-    public function read(Method $method, Readable $arguments): Sequence
+    public function read(Method $method, Readable $arguments): Maybe
     {
         return ($this->read)($method, $arguments);
     }

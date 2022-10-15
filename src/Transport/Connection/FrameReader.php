@@ -99,11 +99,15 @@ final class FrameReader
                     ->map(static fn($value) => $value->original())
                     ->flatMap(static fn($method) => Method::maybe($class, $method)),
             )
-            ->map(static fn($method) => Frame::method(
-                $channel,
-                $method,
-                ...$protocol->read($method, $payload)->toList(),
-            ));
+            ->flatMap(
+                static fn($method) => $protocol
+                    ->read($method, $payload)
+                    ->map(static fn($values) => Frame::method(
+                        $channel,
+                        $method,
+                        ...$values->toList(),
+                    )),
+            );
     }
 
     /**
