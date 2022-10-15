@@ -63,7 +63,10 @@ final class MessageReader
             ->drop(2);
 
         if ($flagBits & (1 << 15)) {
-            /** @var Value\ShortString $value */
+            /**
+             * @psalm-suppress UnnecessaryVarAnnotation
+             * @var Value\ShortString $value
+             */
             [$value, $properties] = $properties->match(
                 static fn($value, $properties) => [$value, $properties],
                 static fn() => throw new \LogicException,
@@ -79,7 +82,10 @@ final class MessageReader
         }
 
         if ($flagBits & (1 << 14)) {
-            /** @var Value\ShortString $value */
+            /**
+             * @psalm-suppress UnnecessaryVarAnnotation
+             * @var Value\ShortString $value
+             */
             [$value, $properties] = $properties->match(
                 static fn($value, $properties) => [$value, $properties],
                 static fn() => throw new \LogicException,
@@ -90,7 +96,10 @@ final class MessageReader
         }
 
         if ($flagBits & (1 << 13)) {
-            /** @var Value\Table $value */
+            /**
+             * @psalm-suppress UnnecessaryVarAnnotation
+             * @var Value\Table $value
+             */
             [$value, $properties] = $properties->match(
                 static fn($value, $properties) => [$value, $properties],
                 static fn() => throw new \LogicException,
@@ -102,7 +111,10 @@ final class MessageReader
         }
 
         if ($flagBits & (1 << 12)) {
-            /** @var Value\UnsignedOctet $value */
+            /**
+             * @psalm-suppress UnnecessaryVarAnnotation
+             * @var Value\UnsignedOctet $value
+             */
             [$value, $properties] = $properties->match(
                 static fn($value, $properties) => [$value, $properties],
                 static fn() => throw new \LogicException,
@@ -114,7 +126,10 @@ final class MessageReader
         }
 
         if ($flagBits & (1 << 11)) {
-            /** @var Value\UnsignedOctet $value */
+            /**
+             * @psalm-suppress UnnecessaryVarAnnotation
+             * @var Value\UnsignedOctet $value
+             */
             [$value, $properties] = $properties->match(
                 static fn($value, $properties) => [$value, $properties],
                 static fn() => throw new \LogicException,
@@ -125,7 +140,10 @@ final class MessageReader
         }
 
         if ($flagBits & (1 << 10)) {
-            /** @var Value\ShortString $value */
+            /**
+             * @psalm-suppress UnnecessaryVarAnnotation
+             * @var Value\ShortString $value
+             */
             [$value, $properties] = $properties->match(
                 static fn($value, $properties) => [$value, $properties],
                 static fn() => throw new \LogicException,
@@ -136,7 +154,10 @@ final class MessageReader
         }
 
         if ($flagBits & (1 << 9)) {
-            /** @var Value\ShortString $value */
+            /**
+             * @psalm-suppress UnnecessaryVarAnnotation
+             * @var Value\ShortString $value
+             */
             [$value, $properties] = $properties->match(
                 static fn($value, $properties) => [$value, $properties],
                 static fn() => throw new \LogicException,
@@ -147,7 +168,10 @@ final class MessageReader
         }
 
         if ($flagBits & (1 << 8)) {
-            /** @var Value\ShortString $value */
+            /**
+             * @psalm-suppress UnnecessaryVarAnnotation
+             * @var Value\ShortString $value
+             */
             [$value, $properties] = $properties->match(
                 static fn($value, $properties) => [$value, $properties],
                 static fn() => throw new \LogicException,
@@ -158,7 +182,10 @@ final class MessageReader
         }
 
         if ($flagBits & (1 << 7)) {
-            /** @var Value\ShortString $value */
+            /**
+             * @psalm-suppress UnnecessaryVarAnnotation
+             * @var Value\ShortString $value
+             */
             [$value, $properties] = $properties->match(
                 static fn($value, $properties) => [$value, $properties],
                 static fn() => throw new \LogicException,
@@ -169,7 +196,10 @@ final class MessageReader
         }
 
         if ($flagBits & (1 << 6)) {
-            /** @var Value\Timestamp $value */
+            /**
+             * @psalm-suppress UnnecessaryVarAnnotation
+             * @var Value\Timestamp $value
+             */
             [$value, $properties] = $properties->match(
                 static fn($value, $properties) => [$value, $properties],
                 static fn() => throw new \LogicException,
@@ -180,7 +210,10 @@ final class MessageReader
         }
 
         if ($flagBits & (1 << 5)) {
-            /** @var Value\ShortString $value */
+            /**
+             * @psalm-suppress UnnecessaryVarAnnotation
+             * @var Value\ShortString $value
+             */
             [$value, $properties] = $properties->match(
                 static fn($value, $properties) => [$value, $properties],
                 static fn() => throw new \LogicException,
@@ -191,7 +224,10 @@ final class MessageReader
         }
 
         if ($flagBits & (1 << 4)) {
-            /** @var Value\ShortString $value */
+            /**
+             * @psalm-suppress UnnecessaryVarAnnotation
+             * @var Value\ShortString $value
+             */
             [$value, $properties] = $properties->match(
                 static fn($value, $properties) => [$value, $properties],
                 static fn() => throw new \LogicException,
@@ -202,7 +238,10 @@ final class MessageReader
         }
 
         if ($flagBits & (1 << 3)) {
-            /** @var Value\ShortString $value */
+            /**
+             * @psalm-suppress UnnecessaryVarAnnotation
+             * @var Value\ShortString $value
+             */
             $value = $properties->match(
                 static fn($value) => $value,
                 static fn() => throw new \LogicException,
