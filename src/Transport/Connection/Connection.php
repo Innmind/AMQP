@@ -65,9 +65,7 @@ final class Connection implements ConnectionInterface
     private State $state;
     private MaxChannels $maxChannels;
     private MaxFrameSize $maxFrameSize;
-    private ElapsedPeriod $heartbeat;
-    private Clock $clock;
-    private PointInTime $lastReceivedData;
+    private Heartbeat $heartbeat;
 
     public function __construct(
         Transport $transport,
@@ -90,9 +88,7 @@ final class Connection implements ConnectionInterface
         $this->read = new FrameReader;
         $this->maxChannels = new MaxChannels(0);
         $this->maxFrameSize = new MaxFrameSize(0);
-        $this->heartbeat = $timeout;
-        $this->clock = $clock;
-        $this->lastReceivedData = $clock->now();
+        $this->heartbeat = new Heartbeat($clock, $timeout);
 
         $this->open();
     }
@@ -119,12 +115,7 @@ final class Connection implements ConnectionInterface
                 throw new ConnectionClosed;
             }
 
-            $now = $this->clock->now();
-            $elapsedPeriod = $now->elapsedSince($this->lastReceivedData);
-
-            if ($elapsedPeriod->longerThan($this->heartbeat)) {
-                $this->send(Frame::heartbeat());
-            }
+            $this->heartbeat->ping($this);
 
             /** @var Set<Socket> */
             $toRead = ($this->watch)()->match(
@@ -134,7 +125,7 @@ final class Connection implements ConnectionInterface
         } while (!$toRead->contains($this->socket));
 
         $frame = ($this->read)($this->socket, $this->protocol);
-        $this->lastReceivedData = $this->clock->now();
+        $this->heartbeat->active();
 
         if ($frame->type() === Type::heartbeat) {
             return $this->wait(...$names);
@@ -330,15 +321,14 @@ final class Connection implements ConnectionInterface
             static fn($value) => $value,
             static fn() => throw new \LogicException,
         );
-        $this->heartbeat = new Earth\ElapsedPeriod(
-            $heartbeat->original(),
-        );
-        $this->watch = $this->sockets->watch($this->heartbeat)->forRead($this->socket);
+        $threshold = new Earth\ElapsedPeriod($heartbeat->original());
+        $this->heartbeat->adjust($threshold);
+        $this->watch = $this->sockets->watch($threshold)->forRead($this->socket);
         $this->send($this->protocol->connection()->tuneOk(
             new TuneOk(
                 $this->maxChannels,
                 $this->maxFrameSize,
-                $this->heartbeat,
+                $threshold,
             ),
         ));
     }
