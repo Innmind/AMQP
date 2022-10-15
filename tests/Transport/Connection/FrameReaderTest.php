@@ -34,9 +34,6 @@ use Innmind\AMQP\{
     Model\Basic\Message\UserId,
     Model\Connection\MaxFrameSize,
     TimeContinuum\Format\Timestamp as TimestampFormat,
-    Exception\NoFrameDetected,
-    Exception\ReceivedFrameNotDelimitedCorrectly,
-    Exception\PayloadTooShort,
 };
 use Innmind\Stream\{
     Readable\Stream,
@@ -81,12 +78,15 @@ class FrameReaderTest extends TestCase
         \fseek($file, 0);
         $stream = Stream::of($file);
 
-        $frame = $read($stream, $this->protocol);
+        $frame = $read($stream, $this->protocol)->match(
+            static fn($frame) => $frame,
+            static fn() => null,
+        );
 
         $this->assertInstanceOf(Frame::class, $frame);
     }
 
-    public function testThrowWhenFrameEndMarkerInvalid()
+    public function testReturnNothingWhenFrameEndMarkerInvalid()
     {
         $read = new FrameReader;
 
@@ -106,12 +106,13 @@ class FrameReaderTest extends TestCase
         \fseek($file, 0);
         $stream = Stream::of($file);
 
-        $this->expectException(ReceivedFrameNotDelimitedCorrectly::class);
-
-        $read($stream, $this->protocol);
+        $this->assertNull($read($stream, $this->protocol)->match(
+            static fn($frame) => $frame,
+            static fn() => null,
+        ));
     }
 
-    public function testThrowWhenPayloadTooShort()
+    public function testReturnNothingWhenPayloadTooShort()
     {
         $read = new FrameReader;
 
@@ -125,21 +126,23 @@ class FrameReaderTest extends TestCase
         \fseek($file, 0);
         $stream = Stream::of($file);
 
-        $this->expectException(PayloadTooShort::class);
-
-        $read($stream, $this->protocol);
+        $this->assertNull($read($stream, $this->protocol)->match(
+            static fn($frame) => $frame,
+            static fn() => null,
+        ));
     }
 
-    public function testThrowWhenNoFrameDeteted()
+    public function testReturnNothingWhenNoFrameDeteted()
     {
         $file = \tmpfile();
         \fwrite($file, $content = "AMQP\x00\x00\x09\x01");
         \fseek($file, 0);
         $stream = Stream::of($file);
 
-        $this->expectException(NoFrameDetected::class);
-
-        (new FrameReader)($stream, $this->protocol);
+        $this->assertNull((new FrameReader)($stream, $this->protocol)->match(
+            static fn($frame) => $frame,
+            static fn() => null,
+        ));
     }
 
     public function testReadHeader()
@@ -178,7 +181,10 @@ class FrameReaderTest extends TestCase
         \fwrite($file, $header->pack()->toString());
         \fseek($file, 0);
 
-        $frame = (new FrameReader)(Stream::of($file), $this->protocol);
+        $frame = (new FrameReader)(Stream::of($file), $this->protocol)->match(
+            static fn($frame) => $frame,
+            static fn() => null,
+        );
 
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame(Type::header, $frame->type());
@@ -428,7 +434,10 @@ class FrameReaderTest extends TestCase
         )->pack()->toString());
         \fseek($file, 0);
 
-        $frame = (new FrameReader)(Stream::of($file), $this->protocol);
+        $frame = (new FrameReader)(Stream::of($file), $this->protocol)->match(
+            static fn($frame) => $frame,
+            static fn() => null,
+        );
 
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame(Type::body, $frame->type());
@@ -446,7 +455,10 @@ class FrameReaderTest extends TestCase
         \fwrite($file, Frame::heartbeat()->pack()->toString());
         \fseek($file, 0);
 
-        $frame = (new FrameReader)(Stream::of($file), $this->protocol);
+        $frame = (new FrameReader)(Stream::of($file), $this->protocol)->match(
+            static fn($frame) => $frame,
+            static fn() => null,
+        );
 
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame(Type::heartbeat, $frame->type());

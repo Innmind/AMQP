@@ -13,37 +13,45 @@ use Innmind\AMQP\{
     Transport\Frame\Value\UnsignedOctet,
     Transport\Frame\Value\UnsignedShortInteger,
     Transport\Frame\Value\UnsignedLongInteger,
-    Exception\ReceivedFrameNotDelimitedCorrectly,
-    Exception\PayloadTooShort,
-    Exception\NoFrameDetected,
-    Exception\LogicException,
 };
 use Innmind\Stream\{
     Readable,
     Readable\Stream,
 };
+use Innmind\Immutable\Maybe;
 
 final class FrameReader
 {
-    public function __invoke(Readable $stream, Protocol $protocol): Frame
+    /**
+     * @return Maybe<Frame>
+     */
+    public function __invoke(Readable $stream, Protocol $protocol): Maybe
     {
-        $type = UnsignedOctet::unpack($stream)
-            ->map(static fn($octet) => $octet->original())
-            ->flatMap(Type::maybe(...))
-            ->match(
-                static fn($type) => $type,
-                static fn() => throw new NoFrameDetected,
+        return $this
+            ->readType($stream)
+            ->flatMap(
+                fn($type) => $this
+                    ->readChannel($stream)
+                    ->flatMap(fn($channel) => $this->readFrame(
+                        $type,
+                        $channel,
+                        $stream,
+                        $protocol,
+                    )),
             );
+    }
 
-        $channel = UnsignedShortInteger::unpack($stream)
-            ->map(static fn($value) => $value->original())
-            ->map(static fn($value) => new Channel($value))
-            ->match(
-                static fn($channel) => $channel,
-                static fn() => throw new \LogicException,
-            );
+    /**
+     * @return Maybe<Frame>
+     */
+    private function readFrame(
+        Type $type,
+        Channel $channel,
+        Readable $stream,
+        Protocol $protocol,
+    ): Maybe {
         /** @psalm-suppress InvalidArgument */
-        $payload = UnsignedLongInteger::unpack($stream)
+        return UnsignedLongInteger::unpack($stream)
             ->map(static fn($value) => $value->original())
             ->flatMap(static fn($length) => $stream->read($length))
             ->map(static fn($payload) => $payload->toEncoding('ASCII'))
@@ -53,76 +61,92 @@ final class FrameReader
             })
             ->map(static fn($payload) => $payload->toString())
             ->map(Stream::ofContent(...))
-            ->match(
-                static fn($payload) => $payload,
-                static fn() => throw new PayloadTooShort,
+            ->flatMap(fn($payload) => match ($type) {
+                Type::method => $this->readMethod($payload, $protocol, $channel),
+                Type::header => $this->readHeader($payload, $protocol, $channel),
+                Type::body => $this->readBody($payload, $channel),
+                Type::heartbeat => Maybe::just(Frame::heartbeat()),
+            })
+            ->flatMap(
+                static fn($frame) => UnsignedOctet::unpack($stream)
+                    ->map(static fn($end) => $end->original())
+                    ->filter(static fn($end) => $end === Frame::end())
+                    ->map(static fn() => $frame),
             );
-
-        $_ = UnsignedOctet::unpack($stream)
-            ->map(static fn($end) => $end->original())
-            ->filter(static fn($end) => $end === Frame::end())
-            ->match(
-                static fn() => null,
-                static fn() => throw new ReceivedFrameNotDelimitedCorrectly,
-            );
-
-        return match ($type) {
-            Type::method => $this->readMethod($payload, $protocol, $channel),
-            Type::header => $this->readHeader($payload, $protocol, $channel),
-            Type::body => $this->readBody($payload, $channel),
-            Type::heartbeat => Frame::heartbeat(),
-        };
     }
 
+    /**
+     * @return Maybe<Type>
+     */
+    private function readType(Readable $stream): Maybe
+    {
+        return UnsignedOctet::unpack($stream)
+            ->map(static fn($octet) => $octet->original())
+            ->flatMap(Type::maybe(...));
+    }
+
+    /**
+     * @return Maybe<Channel>
+     */
+    private function readChannel(Readable $stream): Maybe
+    {
+        return UnsignedShortInteger::unpack($stream)
+            ->map(static fn($value) => $value->original())
+            ->map(static fn($value) => new Channel($value));
+    }
+
+    /**
+     * @return Maybe<Frame>
+     */
     private function readMethod(
         Readable $payload,
         Protocol $protocol,
         Channel $channel,
-    ): Frame {
-        $method = Method::of(
-            UnsignedShortInteger::unpack($payload)->match(
-                static fn($value) => $value->original(),
-                static fn() => throw new \LogicException,
-            ),
-            UnsignedShortInteger::unpack($payload)->match(
-                static fn($value) => $value->original(),
-                static fn() => throw new \LogicException,
-            ),
-        );
-
-        return Frame::method(
-            $channel,
-            $method,
-            ...$protocol->read($method, $payload)->toList(),
-        );
+    ): Maybe {
+        return UnsignedShortInteger::unpack($payload)
+            ->map(static fn($value) => $value->original())
+            ->flatMap(
+                static fn($class) => UnsignedShortInteger::unpack($payload)
+                    ->map(static fn($value) => $value->original())
+                    ->flatMap(static fn($method) => Method::maybe($class, $method)),
+            )
+            ->map(static fn($method) => Frame::method(
+                $channel,
+                $method,
+                ...$protocol->read($method, $payload)->toList(),
+            ));
     }
 
+    /**
+     * @return Maybe<Frame>
+     */
     private function readHeader(
         Readable $payload,
         Protocol $protocol,
         Channel $channel,
-    ): Frame {
-        $class = UnsignedShortInteger::unpack($payload)->match(
-            static fn($value) => $value->original(),
-            static fn() => throw new \LogicException,
-        );
-        $_ = $payload->read(2)->match(
-            static fn() => null,
-            static fn() => throw new \LogicException,
-        ); // walk over the weight definition
-
-        return Frame::header(
-            $channel,
-            MethodClass::of($class),
-            ...$protocol->readHeader($payload)->toList(),
-        );
+    ): Maybe {
+        return UnsignedShortInteger::unpack($payload)
+            ->map(static fn($value) => $value->original())
+            ->flatMap(MethodClass::maybe(...))
+            ->flatMap(
+                static fn($class) => $payload
+                    ->read(2) // walk over the weight definition
+                    ->map(static fn() => $class),
+            )
+            ->map(static fn($class) => Frame::header(
+                $channel,
+                $class,
+                ...$protocol->readHeader($payload)->toList(),
+            ));
     }
 
-    private function readBody(Readable $payload, Channel $channel): Frame
+    /**
+     * @return Maybe<Frame>
+     */
+    private function readBody(Readable $payload, Channel $channel): Maybe
     {
-        return Frame::body($channel, $payload->read()->match(
-            static fn($data) => $data,
-            static fn() => throw new \LogicException,
-        ));
+        return $payload
+            ->read()
+            ->map(static fn($data) => Frame::body($channel, $data));
     }
 }

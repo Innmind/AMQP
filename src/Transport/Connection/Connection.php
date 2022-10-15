@@ -120,7 +120,10 @@ final class Connection implements ConnectionInterface
             );
         } while (!$toRead->contains($this->socket));
 
-        $frame = ($this->read)($this->socket, $this->protocol);
+        $frame = ($this->read)($this->socket, $this->protocol)->match(
+            static fn($frame) => $frame,
+            static fn() => throw new \RuntimeException,
+        );
         $this->heartbeat->active();
 
         if ($frame->type() === Type::heartbeat) {

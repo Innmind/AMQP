@@ -3,6 +3,8 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport\Frame;
 
+use Innmind\Immutable\Maybe;
+
 /**
  * @psalm-immutable
  */
@@ -67,7 +69,21 @@ enum Method
      */
     public static function of(int $class, int $method): self
     {
-        return match ([$class, $method]) {
+        return self::maybe($class, $method)->match(
+            static fn($self) => $self,
+            static fn() => throw new \RuntimeException("$class,$method"),
+        );
+    }
+
+    /**
+     * @psalm-pure
+     *
+     * @return Maybe<self>
+     */
+    public static function maybe(int $class, int $method): Maybe
+    {
+        /** @var Maybe<self> */
+        return Maybe::of((match ([$class, $method]) {
             [10, 10] => self::connectionStart,
             [10, 11] => self::connectionStartOk,
             [10, 20] => self::connectionSecure,
@@ -121,8 +137,8 @@ enum Method
             [90, 21] => self::transactionCommitOk,
             [90, 30] => self::transactionRollback,
             [90, 31] => self::transactionRollbackOk,
-            default => throw new \RuntimeException("$class,$method"),
-        };
+            default => null,
+        }));
     }
 
     public function class(): MethodClass

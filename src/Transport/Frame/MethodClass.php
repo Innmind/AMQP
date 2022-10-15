@@ -3,6 +3,8 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport\Frame;
 
+use Innmind\Immutable\Maybe;
+
 /**
  * @psalm-immutable
  */
@@ -17,17 +19,21 @@ enum MethodClass
 
     /**
      * @psalm-pure
+     *
+     * @return Maybe<self>
      */
-    public static function of(int $value): self
+    public static function maybe(int $value): Maybe
     {
-        return match ($value) {
+        /** @var Maybe<self> */
+        return Maybe::of((match ($value) {
             10 => self::connection,
             20 => self::channel,
             40 => self::exchange,
             50 => self::queue,
             60 => self::basic,
             90 => self::transaction,
-        };
+            default => null,
+        }));
     }
 
     public function toString(): string
