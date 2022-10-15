@@ -14,10 +14,7 @@ use Innmind\AMQP\{
     Transport\Frame\Value\UnsignedShortInteger,
     Transport\Frame\Value\UnsignedLongInteger,
 };
-use Innmind\Stream\{
-    Readable,
-    Readable\Stream,
-};
+use Innmind\Stream\Readable;
 use Innmind\Immutable\Maybe;
 
 final class FrameReader
@@ -53,18 +50,10 @@ final class FrameReader
         /** @psalm-suppress InvalidArgument */
         return UnsignedLongInteger::unpack($stream)
             ->map(static fn($value) => $value->original())
-            ->flatMap(static fn($length) => $stream->read($length))
-            ->map(static fn($payload) => $payload->toEncoding('ASCII'))
-            ->filter(static fn($payload) => match ($type) {
-                Type::method, Type::header => $payload->length() >= 4,
-                default => true,
-            })
-            ->map(static fn($payload) => $payload->toString())
-            ->map(Stream::ofContent(...))
-            ->flatMap(fn($payload) => match ($type) {
-                Type::method => $this->readMethod($payload, $protocol, $channel),
-                Type::header => $this->readHeader($payload, $protocol, $channel),
-                Type::body => $this->readBody($payload, $channel),
+            ->flatMap(fn($length) => match ($type) {
+                Type::method => $this->readMethod($stream, $protocol, $channel),
+                Type::header => $this->readHeader($stream, $protocol, $channel),
+                Type::body => $this->readBody($stream, $channel, $length),
                 Type::heartbeat => Maybe::just(Frame::heartbeat()),
             })
             ->flatMap(
@@ -141,12 +130,18 @@ final class FrameReader
     }
 
     /**
+     * @param int<0, 4294967295> $length
+     *
      * @return Maybe<Frame>
      */
-    private function readBody(Readable $payload, Channel $channel): Maybe
-    {
+    private function readBody(
+        Readable $payload,
+        Channel $channel,
+        int $length,
+    ): Maybe {
+        /** @psalm-suppress InvalidArgument */
         return $payload
-            ->read()
+            ->read($length)
             ->map(static fn($data) => Frame::body($channel, $data));
     }
 }
