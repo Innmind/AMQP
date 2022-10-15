@@ -27,56 +27,44 @@ final class FrameReader
 {
     public function __invoke(Readable $stream, Protocol $protocol): Frame
     {
-        $octet = UnsignedOctet::unpack($stream)->match(
-            static fn($value) => $value,
-            static fn() => throw new \LogicException,
-        );
+        $type = UnsignedOctet::unpack($stream)
+            ->map(static fn($octet) => $octet->original())
+            ->flatMap(Type::maybe(...))
+            ->match(
+                static fn($type) => $type,
+                static fn() => throw new NoFrameDetected,
+            );
 
-        try {
-            $type = Type::of($octet->original());
-        } catch (\UnhandledMatchError $e) {
-            throw new NoFrameDetected;
-        }
-
-        $channel = new Channel(
-            UnsignedShortInteger::unpack($stream)->match(
-                static fn($value) => $value->original(),
+        $channel = UnsignedShortInteger::unpack($stream)
+            ->map(static fn($value) => $value->original())
+            ->map(static fn($value) => new Channel($value))
+            ->match(
+                static fn($channel) => $channel,
                 static fn() => throw new \LogicException,
-            ),
-        );
-        $payloadLength = UnsignedLongInteger::unpack($stream)->match(
-            static fn($value) => $value->original(),
-            static fn() => throw new \LogicException,
-        );
+            );
         /** @psalm-suppress InvalidArgument */
-        $payload = $stream
-            ->read($payloadLength)
+        $payload = UnsignedLongInteger::unpack($stream)
+            ->map(static fn($value) => $value->original())
+            ->flatMap(static fn($length) => $stream->read($length))
+            ->map(static fn($payload) => $payload->toEncoding('ASCII'))
+            ->filter(static fn($payload) => match ($type) {
+                Type::method, Type::header => $payload->length() >= 4,
+                default => true,
+            })
+            ->map(static fn($payload) => $payload->toString())
+            ->map(Stream::ofContent(...))
             ->match(
                 static fn($payload) => $payload,
-                static fn() => throw new \LogicException,
-            )
-            ->toEncoding('ASCII');
+                static fn() => throw new PayloadTooShort,
+            );
 
-        if (
-            (
-                $type === Type::method ||
-                $type === Type::header
-            ) &&
-            $payload->length() < 4
-        ) {
-            throw new PayloadTooShort((string) $payload->length());
-        }
-
-        $end = UnsignedOctet::unpack($stream)->match(
-            static fn($value) => $value->original(),
-            static fn() => throw new \LogicException,
-        );
-
-        if ($end !== Frame::end()) {
-            throw new ReceivedFrameNotDelimitedCorrectly;
-        }
-
-        $payload = Stream::ofContent($payload->toString());
+        $_ = UnsignedOctet::unpack($stream)
+            ->map(static fn($end) => $end->original())
+            ->filter(static fn($end) => $end === Frame::end())
+            ->match(
+                static fn() => null,
+                static fn() => throw new ReceivedFrameNotDelimitedCorrectly,
+            );
 
         return match ($type) {
             Type::method => $this->readMethod($payload, $protocol, $channel),
