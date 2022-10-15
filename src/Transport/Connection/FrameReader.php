@@ -3,16 +3,16 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport\Connection;
 
-use Innmind\AMQP\{
-    Transport\Protocol,
-    Transport\Frame,
-    Transport\Frame\Method,
-    Transport\Frame\MethodClass,
-    Transport\Frame\Type,
-    Transport\Frame\Channel,
-    Transport\Frame\Value\UnsignedOctet,
-    Transport\Frame\Value\UnsignedShortInteger,
-    Transport\Frame\Value\UnsignedLongInteger,
+use Innmind\AMQP\Transport\{
+    Protocol,
+    Frame,
+    Frame\Method,
+    Frame\MethodClass,
+    Frame\Type,
+    Frame\Channel,
+    Frame\Value\UnsignedOctet,
+    Frame\Value\UnsignedShortInteger,
+    Frame\Value\UnsignedLongInteger,
 };
 use Innmind\Stream\Readable;
 use Innmind\Immutable\Maybe;
