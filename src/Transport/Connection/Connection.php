@@ -228,7 +228,6 @@ final class Connection implements ConnectionInterface
                 static fn($socket) => $socket,
                 static fn() => throw new \RuntimeException,
             );
-        /** @psalm-suppress InvalidArgument */
         $this->watch = $this->sockets->watch($this->timeout)->forRead($this->socket);
     }
 
