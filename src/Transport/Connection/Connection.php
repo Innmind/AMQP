@@ -57,7 +57,6 @@ final class Connection implements ConnectionInterface
     private Path $vhost;
     private Protocol $protocol;
     private Socket $socket;
-    private ElapsedPeriod $timeout;
     private Remote $remote;
     private Sockets $sockets;
     private Watch $watch;
@@ -81,16 +80,15 @@ final class Connection implements ConnectionInterface
         $this->authority = $server->authority();
         $this->vhost = $server->path();
         $this->protocol = $protocol;
-        $this->timeout = $timeout;
         $this->remote = $remote;
         $this->sockets = $sockets;
-        $this->buildSocket();
+        $this->buildSocket($timeout);
         $this->read = new FrameReader;
         $this->maxChannels = new MaxChannels(0);
         $this->maxFrameSize = new MaxFrameSize(0);
         $this->heartbeat = new Heartbeat($clock, $timeout);
 
-        $this->open();
+        $this->open($timeout);
     }
 
     public function protocol(): Protocol
@@ -207,7 +205,7 @@ final class Connection implements ConnectionInterface
         return $this->state->closed($this->socket);
     }
 
-    private function buildSocket(): void
+    private function buildSocket(ElapsedPeriod $timeout): void
     {
         $this->socket = $this
             ->remote
@@ -219,23 +217,23 @@ final class Connection implements ConnectionInterface
                 static fn($socket) => $socket,
                 static fn() => throw new \RuntimeException,
             );
-        $this->watch = $this->sockets->watch($this->timeout)->forRead($this->socket);
+        $this->watch = $this->sockets->watch($timeout)->forRead($this->socket);
     }
 
-    private function open(): void
+    private function open(ElapsedPeriod $timeout): void
     {
         if (!$this->state->openable($this->socket)) {
             return;
         }
 
-        $this->start();
+        $this->start($timeout);
         $this->handshake();
         $this->openVHost();
 
         $this->state = State::opened;
     }
 
-    private function start(): void
+    private function start(ElapsedPeriod $timeout): void
     {
         $this->socket->write(
             $this->protocol->version()->pack(),
@@ -274,8 +272,8 @@ final class Connection implements ConnectionInterface
                 ),
             );
             // socket rebuilt as the server close the connection on version mismatch
-            $this->buildSocket();
-            $this->start();
+            $this->buildSocket($timeout);
+            $this->start($timeout);
 
             return;
         }
