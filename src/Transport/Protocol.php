@@ -3,26 +3,25 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport;
 
-use Innmind\AMQP\{
-    Transport\Protocol\Version,
-    Transport\Protocol\Connection,
-    Transport\Protocol\Channel,
-    Transport\Protocol\Exchange,
-    Transport\Protocol\Queue,
-    Transport\Protocol\Basic,
-    Transport\Protocol\Transaction,
-    Transport\Protocol\ArgumentTranslator,
-    Transport\Protocol\Reader,
-    Transport\Frame\Method,
-    Transport\Frame\Visitor\ChunkArguments,
-    Transport\Frame\Value\UnsignedOctet,
-    Transport\Frame\Value\UnsignedShortInteger,
-    Transport\Frame\Value\UnsignedLongLongInteger,
-    Transport\Frame\Value\Timestamp,
-    Transport\Frame\Value\Table,
-    Transport\Frame\Value\ShortString,
-    Transport\Frame\Value,
-    Exception\VersionNotUsable,
+use Innmind\AMQP\Transport\{
+    Protocol\Version,
+    Protocol\Connection,
+    Protocol\Channel,
+    Protocol\Exchange,
+    Protocol\Queue,
+    Protocol\Basic,
+    Protocol\Transaction,
+    Protocol\ArgumentTranslator,
+    Protocol\Reader,
+    Frame\Method,
+    Frame\Visitor\ChunkArguments,
+    Frame\Value\UnsignedOctet,
+    Frame\Value\UnsignedShortInteger,
+    Frame\Value\UnsignedLongLongInteger,
+    Frame\Value\Timestamp,
+    Frame\Value\Table,
+    Frame\Value\ShortString,
+    Frame\Value,
 };
 use Innmind\Stream\Readable;
 use Innmind\Immutable\{
@@ -56,13 +55,6 @@ final class Protocol
     public function version(): Version
     {
         return $this->version;
-    }
-
-    public function use(int $major, int $minor, int $fix): void
-    {
-        if (!$this->version->compatibleWith($major, $minor, $fix)) {
-            throw new VersionNotUsable("$major.$minor.$fix");
-        }
     }
 
     /**

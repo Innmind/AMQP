@@ -13,15 +13,6 @@ enum Version
     case v091;
     case v090;
 
-    public function compatibleWith(int $major, int $minor, int $fix): bool
-    {
-        return match ([$major, $minor, $fix]) {
-            [0, 9, 1] => true,
-            [0, 9, 0] => true,
-            default => false,
-        };
-    }
-
     public function pack(): Str
     {
         return Str::of((match ($this) {

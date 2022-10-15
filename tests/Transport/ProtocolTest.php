@@ -30,7 +30,6 @@ use Innmind\AMQP\{
     Model\Basic\Message\Type,
     Model\Basic\Message\UserId,
     Model\Connection\MaxFrameSize,
-    Exception\VersionNotUsable,
 };
 use Innmind\TimeContinuum\Earth\{
     ElapsedPeriod,
@@ -58,14 +57,6 @@ class ProtocolTest extends TestCase
         $this->assertInstanceOf(Queue::class, $protocol->queue());
         $this->assertInstanceOf(Basic::class, $protocol->basic());
         $this->assertInstanceOf(Transaction::class, $protocol->transaction());
-    }
-
-    public function testUse()
-    {
-        $protocol = new Protocol($this->createMock(ArgumentTranslator::class));
-
-        $this->assertNull($protocol->use(0, 9, 0));
-        $this->assertNull($protocol->use(0, 9, 1));
     }
 
     public function testReadHeader()
@@ -135,21 +126,5 @@ class ProtocolTest extends TestCase
                 )
                 ->toString(),
         );
-    }
-
-    public function testThrowWhenUsingHigherVersion()
-    {
-        $this->expectException(VersionNotUsable::class);
-        $this->expectExceptionMessage('1.0.0');
-
-        (new Protocol($this->createMock(ArgumentTranslator::class)))->use(1, 0, 0);
-    }
-
-    public function testThrowWhenUsingLowerVersion()
-    {
-        $this->expectException(VersionNotUsable::class);
-        $this->expectExceptionMessage('0.8.0');
-
-        (new Protocol($this->createMock(ArgumentTranslator::class)))->use(0, 8, 0);
     }
 }
