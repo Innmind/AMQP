@@ -62,8 +62,7 @@ final class Connection implements ConnectionInterface
     private Sockets $sockets;
     private Watch $watch;
     private FrameReader $read;
-    private bool $closed = true;
-    private bool $opening = true;
+    private State $state;
     private MaxChannels $maxChannels;
     private MaxFrameSize $maxFrameSize;
     private ElapsedPeriod $heartbeat;
@@ -79,6 +78,7 @@ final class Connection implements ConnectionInterface
         Remote $remote,
         Sockets $sockets,
     ) {
+        $this->state = State::opening;
         $this->transport = $transport;
         $this->authority = $server->authority();
         $this->vhost = $server->path();
@@ -115,7 +115,7 @@ final class Connection implements ConnectionInterface
     public function wait(Frame\Method ...$names): Frame
     {
         do {
-            if (!$this->opening && $this->closed()) {
+            if ($this->state !== State::opening && $this->closed()) {
                 throw new ConnectionClosed;
             }
 
@@ -157,7 +157,7 @@ final class Connection implements ConnectionInterface
 
         if ($frame->is(Method::connectionClose)) {
             $this->send($this->protocol->connection()->closeOk());
-            $this->closed = true;
+            $this->state = State::closed;
 
             /** @var Value\ShortString */
             $message = $frame->values()->get(1)->match(
@@ -208,12 +208,16 @@ final class Connection implements ConnectionInterface
         $this->send($this->protocol->connection()->close(new Close));
         $this->wait(Method::connectionCloseOk);
         $this->socket->close();
-        $this->closed = true;
+        $this->state = State::closed;
     }
 
     public function closed(): bool
     {
-        return $this->closed || $this->socket->closed();
+        return match ($this->state) {
+            State::opening => true,
+            State::opened => $this->socket->closed(),
+            State::closed => true,
+        };
     }
 
     private function buildSocket(): void
@@ -242,8 +246,7 @@ final class Connection implements ConnectionInterface
         $this->handshake();
         $this->openVHost();
 
-        $this->closed = false;
-        $this->opening = false;
+        $this->state = State::opened;
     }
 
     private function start(): void
