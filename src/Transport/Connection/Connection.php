@@ -115,7 +115,7 @@ final class Connection implements ConnectionInterface
     public function wait(Frame\Method ...$names): Frame
     {
         do {
-            if ($this->state !== State::opening && $this->closed()) {
+            if (!$this->state->listenable($this->socket)) {
                 throw new ConnectionClosed;
             }
 
@@ -201,7 +201,7 @@ final class Connection implements ConnectionInterface
 
     public function close(): void
     {
-        if ($this->closed()) {
+        if (!$this->state->usable($this->socket)) {
             return;
         }
 
@@ -213,11 +213,7 @@ final class Connection implements ConnectionInterface
 
     public function closed(): bool
     {
-        return match ($this->state) {
-            State::opening => true,
-            State::opened => $this->socket->closed(),
-            State::closed => true,
-        };
+        return $this->state->closed($this->socket);
     }
 
     private function buildSocket(): void
@@ -238,7 +234,7 @@ final class Connection implements ConnectionInterface
 
     private function open(): void
     {
-        if (!$this->closed()) {
+        if (!$this->state->openable($this->socket)) {
             return;
         }
 
