@@ -10,7 +10,6 @@ use Innmind\AMQP\{
     Transport\Frame\Type,
     Transport\Frame\Method,
     Transport\Frame\Value,
-    Transport\Frame\Value\UnsignedOctet,
     Model\Connection\StartOk,
     Model\Connection\SecureOk,
     Model\Connection\TuneOk,
@@ -19,7 +18,6 @@ use Innmind\AMQP\{
     Model\Connection\MaxChannels,
     Model\Connection\MaxFrameSize,
     Exception\UnexpectedFrame,
-    Exception\NoFrameDetected,
     Exception\ConnectionClosed,
     Exception\ExpectedMethodFrame,
 };
@@ -88,7 +86,7 @@ final class Connection implements ConnectionInterface
         $this->maxFrameSize = new MaxFrameSize(0);
         $this->heartbeat = new Heartbeat($clock, $timeout);
 
-        $this->open($timeout);
+        $this->open();
     }
 
     public function protocol(): Protocol
@@ -220,64 +218,31 @@ final class Connection implements ConnectionInterface
         $this->watch = $this->sockets->watch($timeout)->forRead($this->socket);
     }
 
-    private function open(ElapsedPeriod $timeout): void
+    private function open(): void
     {
         if (!$this->state->openable($this->socket)) {
             return;
         }
 
-        $this->start($timeout);
+        $this->start();
         $this->handshake();
         $this->openVHost();
 
         $this->state = State::opened;
     }
 
-    private function start(ElapsedPeriod $timeout): void
+    private function start(): void
     {
         $this->socket->write(
             $this->protocol->version()->pack(),
         );
 
-        try {
-            $this->wait(Method::connectionStart);
-        } catch (NoFrameDetected $e) {
-            $content = $e->content();
-            $protocol = $content->read(4)->match(
-                static fn($protocol) => $protocol,
-                static fn() => throw new \LogicException,
-            );
-
-            if ($protocol->toString() !== 'AMQP') {
-                throw $e;
-            }
-
-            $_ = $content->read(1)->match(
-                static fn() => null,
-                static fn() => throw new \LogicException,
-            ); // there is a zero between AMQP and version number
-
-            $this->protocol->use(
-                UnsignedOctet::unpack($content)->match(
-                    static fn($value) => $value->original(),
-                    static fn() => throw new \LogicException,
-                ),
-                UnsignedOctet::unpack($content)->match(
-                    static fn($value) => $value->original(),
-                    static fn() => throw new \LogicException,
-                ),
-                UnsignedOctet::unpack($content)->match(
-                    static fn($value) => $value->original(),
-                    static fn() => throw new \LogicException,
-                ),
-            );
-            // socket rebuilt as the server close the connection on version mismatch
-            $this->buildSocket($timeout);
-            $this->start($timeout);
-
-            return;
-        }
-
+        // at this point the server could respond with a simple text "AMQP0xyz"
+        // where xyz represent the version of the protocol it supports meaning
+        // we should restart the opening sequence with this version of the
+        // protocol but since this package only support 0.9.1 we can simply
+        // stop opening the connection
+        $this->wait(Method::connectionStart);
         $this->send($this->protocol->connection()->startOk(
             new StartOk(
                 $this->authority->userInformation()->user(),
