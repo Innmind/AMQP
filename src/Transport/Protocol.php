@@ -124,59 +124,25 @@ final class Protocol
         Readable $arguments,
     ): Maybe {
         $flagBits = $flags->original();
-        $toChunk = [];
-
-        if ($flagBits & (1 << 15)) {
-            $toChunk[] = ShortString::unpack(...); // content type
-        }
-
-        if ($flagBits & (1 << 14)) {
-            $toChunk[] = ShortString::unpack(...); // content encoding
-        }
-
-        if ($flagBits & (1 << 13)) {
-            $toChunk[] = Table::unpack(...); // headers
-        }
-
-        if ($flagBits & (1 << 12)) {
-            $toChunk[] = UnsignedOctet::unpack(...); // delivery mode
-        }
-
-        if ($flagBits & (1 << 11)) {
-            $toChunk[] = UnsignedOctet::unpack(...); // priority
-        }
-
-        if ($flagBits & (1 << 10)) {
-            $toChunk[] = ShortString::unpack(...); // correlation id
-        }
-
-        if ($flagBits & (1 << 9)) {
-            $toChunk[] = ShortString::unpack(...); // reply to
-        }
-
-        if ($flagBits & (1 << 8)) {
-            $toChunk[] = ShortString::unpack(...); // expiration
-        }
-
-        if ($flagBits & (1 << 7)) {
-            $toChunk[] = ShortString::unpack(...); // id
-        }
-
-        if ($flagBits & (1 << 6)) {
-            $toChunk[] = Timestamp::unpack(...); // timestamp
-        }
-
-        if ($flagBits & (1 << 5)) {
-            $toChunk[] = ShortString::unpack(...); // type
-        }
-
-        if ($flagBits & (1 << 4)) {
-            $toChunk[] = ShortString::unpack(...); // user id
-        }
-
-        if ($flagBits & (1 << 3)) {
-            $toChunk[] = ShortString::unpack(...); // app id
-        }
+        $toChunk = Sequence::of(
+            [15, ShortString::unpack(...)], // content type
+            [14, ShortString::unpack(...)], // content encoding
+            [13, Table::unpack(...)], // headers
+            [12, UnsignedOctet::unpack(...)], // delivery mode
+            [11, UnsignedOctet::unpack(...)], // priority
+            [10, ShortString::unpack(...)], // correlation id
+            [9, ShortString::unpack(...)], // reply to
+            [8, ShortString::unpack(...)], // expiration
+            [7, ShortString::unpack(...)], // id,
+            [6, Timestamp::unpack(...)], // timestamp
+            [5, ShortString::unpack(...)], // type
+            [4, ShortString::unpack(...)], // user id
+            [3, ShortString::unpack(...)], // app id
+        )
+            ->map(static fn($pair) => [1 << $pair[0], $pair[1]])
+            ->filter(static fn($pair) => (bool) ($flagBits & $pair[0]))
+            ->map(static fn($pair) => $pair[1])
+            ->toList();
 
         /**
          * @psalm-suppress InvalidArgument
