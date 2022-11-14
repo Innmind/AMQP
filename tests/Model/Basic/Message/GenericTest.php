@@ -106,7 +106,7 @@ class GenericTest extends TestCase
     {
         $message = new Generic(Str::of(''));
         $message2 = $message->withContentEncoding(
-            $expected = new ContentEncoding('gzip'),
+            $expected = ContentEncoding::of('gzip'),
         );
 
         $this->assertInstanceOf(Message::class, $message2);
@@ -159,7 +159,7 @@ class GenericTest extends TestCase
     {
         $message = new Generic(Str::of(''));
         $message2 = $message->withCorrelationId(
-            $expected = new CorrelationId('foo'),
+            $expected = CorrelationId::of('foo'),
         );
 
         $this->assertInstanceOf(Message::class, $message2);
@@ -173,7 +173,7 @@ class GenericTest extends TestCase
     {
         $message = new Generic(Str::of(''));
         $message2 = $message->withReplyTo(
-            $expected = new ReplyTo('foo'),
+            $expected = ReplyTo::of('foo'),
         );
 
         $this->assertInstanceOf(Message::class, $message2);
@@ -201,7 +201,7 @@ class GenericTest extends TestCase
     {
         $message = new Generic(Str::of(''));
         $message2 = $message->withId(
-            $expected = new Id('foo'),
+            $expected = Id::of('foo'),
         );
 
         $this->assertInstanceOf(Message::class, $message2);
@@ -229,7 +229,7 @@ class GenericTest extends TestCase
     {
         $message = new Generic(Str::of(''));
         $message2 = $message->withType(
-            $expected = new Type('foo'),
+            $expected = Type::of('foo'),
         );
 
         $this->assertInstanceOf(Message::class, $message2);
@@ -243,7 +243,7 @@ class GenericTest extends TestCase
     {
         $message = new Generic(Str::of(''));
         $message2 = $message->withUserId(
-            $expected = new UserId('foo'),
+            $expected = UserId::of('foo'),
         );
 
         $this->assertInstanceOf(Message::class, $message2);
@@ -257,7 +257,7 @@ class GenericTest extends TestCase
     {
         $message = new Generic(Str::of(''));
         $message2 = $message->withAppId(
-            $expected = new AppId('foo'),
+            $expected = AppId::of('foo'),
         );
 
         $this->assertInstanceOf(Message::class, $message2);

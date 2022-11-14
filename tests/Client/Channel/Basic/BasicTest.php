@@ -678,7 +678,7 @@ class BasicTest extends TestCase
         $this->connection->wait(Method::queueBindOk);
         $message = (new Generic(Str::of('foobar')))
             ->withContentType(new ContentType('text', 'plain'))
-            ->withContentEncoding(new ContentEncoding('gzip'))
+            ->withContentEncoding(ContentEncoding::of('gzip'))
             ->withHeaders(
                 Map::of(
                     ['bits', Bits::of(true)],
@@ -698,14 +698,14 @@ class BasicTest extends TestCase
             )
             ->withDeliveryMode(DeliveryMode::persistent)
             ->withPriority(Priority::five)
-            ->withCorrelationId(new CorrelationId('correlation'))
-            ->withReplyTo(new ReplyTo('reply'))
+            ->withCorrelationId(CorrelationId::of('correlation'))
+            ->withReplyTo(ReplyTo::of('reply'))
             ->withExpiration(new ElapsedPeriod(10000))
-            ->withId(new Id('id'))
+            ->withId(Id::of('id'))
             ->withTimestamp($now = new Now)
-            ->withType(new Type('type'))
-            ->withUserId(new UserId('guest'))
-            ->withAppId(new AppId('webcrawler'));
+            ->withType(Type::of('type'))
+            ->withUserId(UserId::of('guest'))
+            ->withAppId(AppId::of('webcrawler'));
 
         $this->assertNull(
             $this->basic->publish((new Publish($message))->to('amq.direct')),

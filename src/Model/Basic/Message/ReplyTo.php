@@ -13,9 +13,17 @@ final class ReplyTo
 {
     private string $value;
 
-    public function __construct(string $value)
+    private function __construct(string $value)
     {
         $this->value = $value;
+    }
+
+    /**
+     * @psalm-pure
+     */
+    public static function of(string $value): self
+    {
+        return new self($value);
     }
 
     public function toString(): string

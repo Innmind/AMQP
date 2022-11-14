@@ -78,6 +78,14 @@ final class Generic implements Message
         $this->appId = Maybe::nothing();
     }
 
+    /**
+     * @psalm-pure
+     */
+    public static function of(Str $body): self
+    {
+        return new self($body);
+    }
+
     public function contentType(): Maybe
     {
         return $this->contentType;

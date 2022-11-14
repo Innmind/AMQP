@@ -156,20 +156,20 @@ class FrameReaderTest extends TestCase
                 new Publish(
                     (new Generic(Str::of('foobar')))
                         ->withContentType(new ContentType('application', 'json'))
-                        ->withContentEncoding(new ContentEncoding('gzip'))
+                        ->withContentEncoding(ContentEncoding::of('gzip'))
                         ->withHeaders(
                             Map::of(['foo', ShortString::of(Str::of('bar'))]),
                         )
                         ->withDeliveryMode(DeliveryMode::persistent)
                         ->withPriority(Priority::five)
-                        ->withCorrelationId(new CorrelationId('correlation'))
-                        ->withReplyTo(new ReplyTo('reply'))
+                        ->withCorrelationId(CorrelationId::of('correlation'))
+                        ->withReplyTo(ReplyTo::of('reply'))
                         ->withExpiration(new ElapsedPeriod(1000))
-                        ->withId(new Id('id'))
+                        ->withId(Id::of('id'))
                         ->withTimestamp($now = new Now)
-                        ->withType(new MessageType('type'))
-                        ->withUserId(new UserId('guest'))
-                        ->withAppId(new AppId('webcrawler')),
+                        ->withType(MessageType::of('type'))
+                        ->withUserId(UserId::of('guest'))
+                        ->withAppId(AppId::of('webcrawler')),
                 ),
                 new MaxFrameSize(10),
             )

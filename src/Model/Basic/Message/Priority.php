@@ -3,6 +3,8 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Model\Basic\Message;
 
+use Innmind\Immutable\Maybe;
+
 /**
  * @psalm-immutable
  */
@@ -52,6 +54,21 @@ enum Priority
             8 => self::eight,
             9 => self::nine,
         };
+    }
+
+    /**
+     * @psalm-pure
+     *
+     * @return Maybe<self>
+     */
+    public static function maybe(int $value): Maybe
+    {
+        try {
+            return Maybe::just(self::of($value));
+        } catch (\UnhandledMatchError $e) {
+            /** @var Maybe<self> */
+            return Maybe::nothing();
+        }
     }
 
     /**
