@@ -82,8 +82,6 @@ final class Connection implements ConnectionInterface
         $this->maxChannels = new MaxChannels(0);
         $this->maxFrameSize = new MaxFrameSize(0);
         $this->heartbeat = new Heartbeat($clock, $timeout);
-
-        $this->open();
     }
 
     public static function of(
@@ -95,25 +93,25 @@ final class Connection implements ConnectionInterface
         Remote $remote,
         Sockets $sockets,
     ): self {
-        $socket = $remote
+        return $remote
             ->socket(
                 $transport,
                 $server->authority()->withoutUserInformation(),
             )
+            ->map(static fn($socket) => new self(
+                $server,
+                $protocol,
+                $timeout,
+                $clock,
+                $sockets,
+                $socket,
+                $sockets->watch($timeout)->forRead($socket),
+            ))
+            ->map(static fn($connection) => $connection->open())
             ->match(
-                static fn($socket) => $socket,
+                static fn($connection) => $connection,
                 static fn() => throw new \RuntimeException,
             );
-
-        return new self(
-            $server,
-            $protocol,
-            $timeout,
-            $clock,
-            $sockets,
-            $socket,
-            $sockets->watch($timeout)->forRead($socket),
-        );
     }
 
     public function protocol(): Protocol
@@ -236,10 +234,10 @@ final class Connection implements ConnectionInterface
         return $this->state->closed($this->socket);
     }
 
-    private function open(): void
+    private function open(): self
     {
         if (!$this->state->openable($this->socket)) {
-            return;
+            return $this;
         }
 
         $this->start();
@@ -247,6 +245,8 @@ final class Connection implements ConnectionInterface
         $this->openVHost();
 
         $this->state = State::opened;
+
+        return $this;
     }
 
     private function start(): void
