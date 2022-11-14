@@ -103,7 +103,7 @@ final class Lazy implements ConnectionInterface
             throw new ConnectionClosed;
         }
 
-        return $this->connection ??= new Connection(
+        return $this->connection ??= Connection::of(
             $this->transport,
             $this->server,
             $this->protocol,

@@ -33,7 +33,7 @@ class ConnectionTest extends TestCase
 {
     public function testInterface()
     {
-        $connection = new Connection(
+        $connection = Connection::of(
             Transport::tcp(),
             Url::of('//guest:guest@localhost:5672/'),
             $protocol = new Protocol(new Clock, $this->createMock(ArgumentTranslator::class)),
@@ -58,7 +58,7 @@ class ConnectionTest extends TestCase
 
     public function testClose()
     {
-        $connection = new Connection(
+        $connection = Connection::of(
             Transport::tcp(),
             Url::of('//guest:guest@localhost:5672/'),
             $protocol = new Protocol(new Clock, $this->createMock(ArgumentTranslator::class)),
@@ -75,7 +75,7 @@ class ConnectionTest extends TestCase
 
     public function testThrowWhenReceivedFrameIsNotTheExpectedOne()
     {
-        $connection = new Connection(
+        $connection = Connection::of(
             Transport::tcp(),
             Url::of('//guest:guest@localhost:5672/'),
             $protocol = new Protocol(new Clock, $this->createMock(ArgumentTranslator::class)),
@@ -93,7 +93,7 @@ class ConnectionTest extends TestCase
 
     public function testThrowWhenConnectionClosedByServer()
     {
-        $connection = new Connection(
+        $connection = Connection::of(
             Transport::tcp(),
             Url::of('//guest:guest@localhost:5672/'),
             $protocol = new Protocol(new Clock, $this->createMock(ArgumentTranslator::class)),

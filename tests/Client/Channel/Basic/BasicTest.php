@@ -83,7 +83,7 @@ class BasicTest extends TestCase
     public function setUp(): void
     {
         $this->basic = new Basic(
-            $this->connection = new Connection(
+            $this->connection = Connection::of(
                 Transport::tcp(),
                 Url::of('//guest:guest@localhost:5672/'),
                 new Protocol(new Clock, new ValueTranslator),

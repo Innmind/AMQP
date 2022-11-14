@@ -50,12 +50,10 @@ use Innmind\Immutable\{
 
 final class Connection implements ConnectionInterface
 {
-    private Transport $transport;
     private Authority $authority;
     private Path $vhost;
     private Protocol $protocol;
     private Socket $socket;
-    private Remote $remote;
     private Sockets $sockets;
     private Watch $watch;
     private FrameReader $read;
@@ -64,7 +62,31 @@ final class Connection implements ConnectionInterface
     private MaxFrameSize $maxFrameSize;
     private Heartbeat $heartbeat;
 
-    public function __construct(
+    private function __construct(
+        Url $server,
+        Protocol $protocol,
+        ElapsedPeriod $timeout,
+        Clock $clock,
+        Sockets $sockets,
+        Socket $socket,
+        Watch $watch,
+    ) {
+        $this->state = State::opening;
+        $this->authority = $server->authority();
+        $this->vhost = $server->path();
+        $this->protocol = $protocol;
+        $this->sockets = $sockets;
+        $this->socket = $socket;
+        $this->watch = $watch;
+        $this->read = new FrameReader;
+        $this->maxChannels = new MaxChannels(0);
+        $this->maxFrameSize = new MaxFrameSize(0);
+        $this->heartbeat = new Heartbeat($clock, $timeout);
+
+        $this->open();
+    }
+
+    public static function of(
         Transport $transport,
         Url $server,
         Protocol $protocol,
@@ -72,21 +94,26 @@ final class Connection implements ConnectionInterface
         Clock $clock,
         Remote $remote,
         Sockets $sockets,
-    ) {
-        $this->state = State::opening;
-        $this->transport = $transport;
-        $this->authority = $server->authority();
-        $this->vhost = $server->path();
-        $this->protocol = $protocol;
-        $this->remote = $remote;
-        $this->sockets = $sockets;
-        $this->buildSocket($timeout);
-        $this->read = new FrameReader;
-        $this->maxChannels = new MaxChannels(0);
-        $this->maxFrameSize = new MaxFrameSize(0);
-        $this->heartbeat = new Heartbeat($clock, $timeout);
+    ): self {
+        $socket = $remote
+            ->socket(
+                $transport,
+                $server->authority()->withoutUserInformation(),
+            )
+            ->match(
+                static fn($socket) => $socket,
+                static fn() => throw new \RuntimeException,
+            );
 
-        $this->open();
+        return new self(
+            $server,
+            $protocol,
+            $timeout,
+            $clock,
+            $sockets,
+            $socket,
+            $sockets->watch($timeout)->forRead($socket),
+        );
     }
 
     public function protocol(): Protocol
@@ -207,21 +234,6 @@ final class Connection implements ConnectionInterface
     public function closed(): bool
     {
         return $this->state->closed($this->socket);
-    }
-
-    private function buildSocket(ElapsedPeriod $timeout): void
-    {
-        $this->socket = $this
-            ->remote
-            ->socket(
-                $this->transport,
-                $this->authority->withoutUserInformation(),
-            )
-            ->match(
-                static fn($socket) => $socket,
-                static fn() => throw new \RuntimeException,
-            );
-        $this->watch = $this->sockets->watch($timeout)->forRead($this->socket);
     }
 
     private function open(): void
