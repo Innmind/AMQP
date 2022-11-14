@@ -39,7 +39,7 @@ class ChannelTest extends TestCase
             $this->connection = new Connection(
                 Transport::tcp(),
                 Url::of('//guest:guest@localhost:5672/'),
-                new Protocol(new ValueTranslator),
+                new Protocol(new Clock, new ValueTranslator),
                 new ElapsedPeriod(1000),
                 new Clock,
                 Remote\Generic::of($this->createMock(Server::class), new Clock),

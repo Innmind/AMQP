@@ -34,6 +34,7 @@ use Innmind\AMQP\{
 use Innmind\TimeContinuum\Earth\{
     ElapsedPeriod,
     PointInTime\Now,
+    Clock,
 };
 use Innmind\Stream\Readable\Stream;
 use Innmind\Immutable\{
@@ -47,7 +48,7 @@ class ProtocolTest extends TestCase
 {
     public function testInterface()
     {
-        $protocol = new Protocol($this->createMock(ArgumentTranslator::class));
+        $protocol = new Protocol(new Clock, $this->createMock(ArgumentTranslator::class));
 
         $this->assertInstanceOf(Version::class, $protocol->version());
         $this->assertSame("AMQP\x00\x00\x09\x01", $protocol->version()->pack()->toString());
@@ -61,7 +62,7 @@ class ProtocolTest extends TestCase
 
     public function testReadHeader()
     {
-        $protocol = new Protocol(new ValueTranslator);
+        $protocol = new Protocol(new Clock, new ValueTranslator);
 
         $header = $protocol
             ->basic()

@@ -36,7 +36,7 @@ class ConnectionTest extends TestCase
         $connection = new Connection(
             Transport::tcp(),
             Url::of('//guest:guest@localhost:5672/'),
-            $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
+            $protocol = new Protocol(new Clock, $this->createMock(ArgumentTranslator::class)),
             new ElapsedPeriod(1000),
             new Clock,
             Remote\Generic::of($this->createMock(Server::class), new Clock),
@@ -61,7 +61,7 @@ class ConnectionTest extends TestCase
         $connection = new Connection(
             Transport::tcp(),
             Url::of('//guest:guest@localhost:5672/'),
-            $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
+            $protocol = new Protocol(new Clock, $this->createMock(ArgumentTranslator::class)),
             new ElapsedPeriod(1000),
             new Clock,
             Remote\Generic::of($this->createMock(Server::class), new Clock),
@@ -78,7 +78,7 @@ class ConnectionTest extends TestCase
         $connection = new Connection(
             Transport::tcp(),
             Url::of('//guest:guest@localhost:5672/'),
-            $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
+            $protocol = new Protocol(new Clock, $this->createMock(ArgumentTranslator::class)),
             new ElapsedPeriod(1000),
             new Clock,
             Remote\Generic::of($this->createMock(Server::class), new Clock),
@@ -96,7 +96,7 @@ class ConnectionTest extends TestCase
         $connection = new Connection(
             Transport::tcp(),
             Url::of('//guest:guest@localhost:5672/'),
-            $protocol = new Protocol($this->createMock(ArgumentTranslator::class)),
+            $protocol = new Protocol(new Clock, $this->createMock(ArgumentTranslator::class)),
             new ElapsedPeriod(1000),
             new Clock,
             Remote\Generic::of($this->createMock(Server::class), new Clock),

@@ -8,9 +8,8 @@ use Innmind\AMQP\{
     TimeContinuum\Format\Timestamp as TimestampFormat,
 };
 use Innmind\TimeContinuum\{
-    PointInTime as PointInTimeInterface,
-    Earth\PointInTime\PointInTime,
-    Earth\Format\ISO8601,
+    Clock,
+    PointInTime,
 };
 use Innmind\Stream\Readable;
 use Innmind\Immutable\{
@@ -19,14 +18,14 @@ use Innmind\Immutable\{
 };
 
 /**
- * @implements Value<PointInTimeInterface>
+ * @implements Value<PointInTime>
  * @psalm-immutable
  */
 final class Timestamp implements Value
 {
-    private PointInTimeInterface $original;
+    private PointInTime $original;
 
-    private function __construct(PointInTimeInterface $point)
+    private function __construct(PointInTime $point)
     {
         $this->original = $point;
     }
@@ -34,7 +33,7 @@ final class Timestamp implements Value
     /**
      * @psalm-pure
      */
-    public static function of(PointInTimeInterface $point): self
+    public static function of(PointInTime $point): self
     {
         return new self($point);
     }
@@ -42,16 +41,15 @@ final class Timestamp implements Value
     /**
      * @return Maybe<self>
      */
-    public static function unpack(Readable $stream): Maybe
+    public static function unpack(Clock $clock, Readable $stream): Maybe
     {
         return UnsignedLongLongInteger::unpack($stream)
             ->map(static fn($time) => $time->original())
-            ->map(static fn($time) => \date((new ISO8601)->toString(), $time))
-            ->map(static fn($time) => new PointInTime($time))
+            ->flatMap(static fn($time) => $clock->at((string) $time, new TimestampFormat))
             ->map(static fn($point) => new self($point));
     }
 
-    public function original(): PointInTimeInterface
+    public function original(): PointInTime
     {
         return $this->original;
     }

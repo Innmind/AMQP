@@ -48,6 +48,7 @@ function bootstrap(): array
                     $transport,
                     $server,
                     new Transport\Protocol(
+                        $clock,
                         new Transport\Protocol\ArgumentTranslator\ValueTranslator,
                     ),
                     $timeout,

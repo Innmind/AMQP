@@ -42,6 +42,7 @@ use Innmind\Stream\{
 use Innmind\TimeContinuum\Earth\{
     ElapsedPeriod,
     PointInTime\Now,
+    Clock,
 };
 use Innmind\Immutable\{
     Str,
@@ -55,7 +56,7 @@ class FrameReaderTest extends TestCase
 
     public function setUp(): void
     {
-        $this->protocol = new Protocol(new ValueTranslator);
+        $this->protocol = new Protocol(new Clock, new ValueTranslator);
     }
 
     public function testReadCommand()

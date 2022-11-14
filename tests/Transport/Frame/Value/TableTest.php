@@ -10,6 +10,7 @@ use Innmind\AMQP\{
     Transport\Frame\Value\Text,
     Transport\Frame\Value,
 };
+use Innmind\TimeContinuum\Earth\Clock;
 use Innmind\Stream\Readable\Stream;
 use Innmind\Immutable\{
     Map,
@@ -42,7 +43,7 @@ class TableTest extends TestCase
      */
     public function testFromStream($string, $expected)
     {
-        $value = Table::unpack(Stream::ofContent($string))->match(
+        $value = Table::unpack(new Clock, Stream::ofContent($string))->match(
             static fn($value) => $value,
             static fn() => null,
         );

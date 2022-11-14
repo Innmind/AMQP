@@ -16,6 +16,7 @@ use Innmind\AMQP\Transport\Frame\{
     Value\UnsignedShortInteger,
     Value\Table,
 };
+use Innmind\TimeContinuum\Clock;
 use Innmind\Stream\Readable;
 use Innmind\Immutable\{
     Sequence,
@@ -24,6 +25,13 @@ use Innmind\Immutable\{
 
 final class Reader
 {
+    private Clock $clock;
+
+    public function __construct(Clock $clock)
+    {
+        $this->clock = $clock;
+    }
+
     /**
      * @return Maybe<Sequence<Value>>
      */
@@ -203,7 +211,7 @@ final class Reader
         return new ChunkArguments(
             UnsignedOctet::unpack(...), // major version
             UnsignedOctet::unpack(...), // minor version
-            Table::unpack(...), // server properties
+            fn(Readable $stream) => Table::unpack($this->clock, $stream), // server properties
             LongString::unpack(...), // mechanisms
             LongString::unpack(...), // locales
         );

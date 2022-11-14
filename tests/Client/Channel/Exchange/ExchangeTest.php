@@ -40,7 +40,7 @@ class ExchangeTest extends TestCase
             $this->connection = new Connection(
                 Transport::tcp(),
                 Url::of('//guest:guest@localhost:5672/'),
-                new Protocol($this->createMock(ArgumentTranslator::class)),
+                new Protocol(new Clock, $this->createMock(ArgumentTranslator::class)),
                 new ElapsedPeriod(1000),
                 new Clock,
                 Remote\Generic::of($this->createMock(Server::class), new Clock),

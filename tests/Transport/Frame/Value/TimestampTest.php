@@ -10,6 +10,7 @@ use Innmind\AMQP\Transport\Frame\{
 use Innmind\TimeContinuum\{
     Earth\PointInTime\Now,
     Earth\PointInTime\PointInTime,
+    Earth\Clock,
     PointInTime as PointInTimeInterface,
 };
 use Innmind\Stream\Readable\Stream;
@@ -34,7 +35,7 @@ class TimestampTest extends TestCase
 
     public function testFromStream()
     {
-        $value = Timestamp::unpack(Stream::ofContent(\pack('J', $time = \time())))->match(
+        $value = Timestamp::unpack(new Clock, Stream::ofContent(\pack('J', $time = \time())))->match(
             static fn($value) => $value,
             static fn() => null,
         );

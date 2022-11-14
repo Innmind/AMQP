@@ -4,6 +4,7 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
+use Innmind\TimeContinuum\Clock;
 use Innmind\Stream\Readable;
 use Innmind\Immutable\{
     Str,
@@ -35,8 +36,11 @@ enum Symbol
     /**
      * @return Maybe<Value>
      */
-    public static function unpack(string $symbol, Readable $stream): Maybe
-    {
+    public static function unpack(
+        Clock $clock,
+        string $symbol,
+        Readable $stream,
+    ): Maybe {
         /** @var Maybe<Value> */
         return match ($symbol) {
             'b' => SignedOctet::unpack($stream),
@@ -48,13 +52,13 @@ enum Symbol
             'L' => SignedLongLongInteger::unpack($stream),
             'l' => UnsignedLongLongInteger::unpack($stream),
             'D' => Decimal::unpack($stream),
-            'T' => Timestamp::unpack($stream),
+            'T' => Timestamp::unpack($clock, $stream),
             'V' => VoidValue::unpack($stream),
             't' => Bits::unpack($stream),
             's' => ShortString::unpack($stream),
             'S' => LongString::unpack($stream),
-            'A' => Sequence::unpack($stream),
-            'F' => Table::unpack($stream),
+            'A' => Sequence::unpack($clock, $stream),
+            'F' => Table::unpack($clock, $stream),
         };
     }
 

@@ -4,6 +4,7 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
+use Innmind\TimeContinuum\Clock;
 use Innmind\Stream\Readable;
 use Innmind\Immutable\{
     Sequence as Seq,
@@ -43,7 +44,7 @@ final class Sequence implements Value
     /**
      * @return Maybe<self>
      */
-    public static function unpack(Readable $stream): Maybe
+    public static function unpack(Clock $clock, Readable $stream): Maybe
     {
         /** @var Seq<Value> */
         $values = Seq::of();
@@ -53,6 +54,7 @@ final class Sequence implements Value
             ->flatMap(static fn($length) => match ($length) {
                 0 => Maybe::just($values),
                 default => self::unpackNested(
+                    $clock,
                     $length + $stream->position()->toInt(),
                     $stream,
                     $values,
@@ -96,6 +98,7 @@ final class Sequence implements Value
      * @return Maybe<Seq<Value>>
      */
     private static function unpackNested(
+        Clock $clock,
         int $boundary,
         Readable $stream,
         Seq $values,
@@ -104,9 +107,10 @@ final class Sequence implements Value
             ->read(1)
             ->map(static fn($chunk) => $chunk->toEncoding('ASCII'))
             ->filter(static fn($chunk) => $chunk->length() === 1)
-            ->flatMap(static fn($chunk) => Symbol::unpack($chunk->toString(), $stream))
+            ->flatMap(static fn($chunk) => Symbol::unpack($clock, $chunk->toString(), $stream))
             ->flatMap(static fn($value) => match ($stream->position()->toInt() < $boundary) {
                 true => self::unpackNested(
+                    $clock,
                     $boundary,
                     $stream,
                     ($values)($value),

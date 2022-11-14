@@ -11,6 +11,7 @@ use Innmind\AMQP\Transport\{
     Frame,
     Frame\Method,
 };
+use Innmind\TimeContinuum\Earth\Clock;
 use Psr\Log\LoggerInterface;
 use PHPUnit\Framework\TestCase;
 
@@ -36,7 +37,7 @@ class LoggerTest extends TestCase
         $inner
             ->expects($this->once())
             ->method('protocol')
-            ->willReturn($expected = new Protocol($this->createMock(ArgumentTranslator::class)));
+            ->willReturn($expected = new Protocol(new Clock, $this->createMock(ArgumentTranslator::class)));
 
         $this->assertSame($expected, $connection->protocol());
     }

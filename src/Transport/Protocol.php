@@ -23,6 +23,7 @@ use Innmind\AMQP\Transport\{
     Frame\Value\ShortString,
     Frame\Value,
 };
+use Innmind\TimeContinuum\Clock;
 use Innmind\Stream\Readable;
 use Innmind\Immutable\{
     Sequence,
@@ -31,6 +32,7 @@ use Innmind\Immutable\{
 
 final class Protocol
 {
+    private Clock $clock;
     private Version $version;
     private Reader $read;
     private Connection $connection;
@@ -40,10 +42,11 @@ final class Protocol
     private Basic $basic;
     private Transaction $transaction;
 
-    public function __construct(ArgumentTranslator $translator)
+    public function __construct(Clock $clock, ArgumentTranslator $translator)
     {
+        $this->clock = $clock;
         $this->version = Version::v091;
-        $this->read = new Reader;
+        $this->read = new Reader($clock);
         $this->connection = new Connection;
         $this->channel = new Channel;
         $this->exchange = new Exchange($translator);
@@ -119,14 +122,14 @@ final class Protocol
         $toChunk = Sequence::of(
             [15, ShortString::unpack(...)], // content type
             [14, ShortString::unpack(...)], // content encoding
-            [13, Table::unpack(...)], // headers
+            [13, fn(Readable $stream) => Table::unpack($this->clock, $stream)], // headers
             [12, UnsignedOctet::unpack(...)], // delivery mode
             [11, UnsignedOctet::unpack(...)], // priority
             [10, ShortString::unpack(...)], // correlation id
             [9, ShortString::unpack(...)], // reply to
             [8, ShortString::unpack(...)], // expiration
             [7, ShortString::unpack(...)], // id,
-            [6, Timestamp::unpack(...)], // timestamp
+            [6, fn(Readable $stream) => Timestamp::unpack($this->clock, $stream)], // timestamp
             [5, ShortString::unpack(...)], // type
             [4, ShortString::unpack(...)], // user id
             [3, ShortString::unpack(...)], // app id

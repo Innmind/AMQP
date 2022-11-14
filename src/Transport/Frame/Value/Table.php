@@ -4,6 +4,7 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
+use Innmind\TimeContinuum\Clock;
 use Innmind\Stream\Readable;
 use Innmind\Immutable\{
     Str,
@@ -43,7 +44,7 @@ final class Table implements Value
     /**
      * @return Maybe<self>
      */
-    public static function unpack(Readable $stream): Maybe
+    public static function unpack(Clock $clock, Readable $stream): Maybe
     {
         /** @var Map<string, Value> */
         $values = Map::of();
@@ -53,6 +54,7 @@ final class Table implements Value
             ->flatMap(static fn($length) => match ($length) {
                 0 => Maybe::just($values),
                 default => self::unpackNested(
+                    $clock,
                     $length + $stream->position()->toInt(),
                     $stream,
                     $values,
@@ -101,6 +103,7 @@ final class Table implements Value
      * @return Maybe<Map<string, Value>>
      */
     private static function unpackNested(
+        Clock $clock,
         int $boundary,
         Readable $stream,
         Map $values,
@@ -113,6 +116,7 @@ final class Table implements Value
                     ->map(static fn($chunk) => $chunk->toEncoding('ASCII'))
                     ->filter(static fn($chunk) => $chunk->length() === 1)
                     ->flatMap(static fn($chunk) => Symbol::unpack(
+                        $clock,
                         $chunk->toString(),
                         $stream,
                     ))
@@ -120,6 +124,7 @@ final class Table implements Value
             )
             ->flatMap(static fn($values) => match ($stream->position()->toInt() < $boundary) {
                 true => self::unpackNested(
+                    $clock,
                     $boundary,
                     $stream,
                     $values,

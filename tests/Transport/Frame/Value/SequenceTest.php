@@ -9,6 +9,7 @@ use Innmind\AMQP\{
     Transport\Frame\Value\Text,
     Transport\Frame\Value,
 };
+use Innmind\TimeContinuum\Earth\Clock;
 use Innmind\Stream\Readable\Stream;
 use Innmind\Immutable\{
     Sequence as Seq,
@@ -39,7 +40,7 @@ class SequenceTest extends TestCase
      */
     public function testFromStream($string, $expected)
     {
-        $value = Sequence::unpack(Stream::ofContent($string))->match(
+        $value = Sequence::unpack(new Clock, Stream::ofContent($string))->match(
             static fn($value) => $value,
             static fn() => null,
         );

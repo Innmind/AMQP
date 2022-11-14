@@ -16,6 +16,7 @@ use Innmind\AMQP\Transport\{
     Frame\Value\Table,
     Frame\Value\LongString
 };
+use Innmind\TimeContinuum\Earth\Clock;
 use Innmind\Stream\Readable\Stream;
 use Innmind\Immutable\{
     Str,
@@ -31,7 +32,7 @@ class ReaderTest extends TestCase
      */
     public function testInvokation($method, $arguments)
     {
-        $read = new Reader;
+        $read = new Reader(new Clock);
 
         $args = '';
 
