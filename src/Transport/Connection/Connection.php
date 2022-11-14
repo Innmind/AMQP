@@ -26,11 +26,7 @@ use Innmind\Socket\{
     Client as Socket,
 };
 use Innmind\Stream\Watch;
-use Innmind\Url\{
-    Url,
-    Path,
-    Authority,
-};
+use Innmind\Url\Url;
 use Innmind\TimeContinuum\{
     ElapsedPeriod,
     Clock,
@@ -50,11 +46,9 @@ use Innmind\Immutable\{
 
 final class Connection implements ConnectionInterface
 {
-    private Authority $authority;
-    private Path $vhost;
     private Protocol $protocol;
-    private Socket $socket;
     private Sockets $sockets;
+    private Socket $socket;
     private Watch $watch;
     private FrameReader $read;
     private State $state;
@@ -63,25 +57,24 @@ final class Connection implements ConnectionInterface
     private Heartbeat $heartbeat;
 
     private function __construct(
-        Url $server,
         Protocol $protocol,
-        ElapsedPeriod $timeout,
-        Clock $clock,
         Sockets $sockets,
+        Heartbeat $heartbeat,
         Socket $socket,
         Watch $watch,
+        State $state,
+        MaxChannels $maxChannels,
+        MaxFrameSize $maxFrameSize,
     ) {
-        $this->state = State::opening;
-        $this->authority = $server->authority();
-        $this->vhost = $server->path();
+        $this->state = $state;
         $this->protocol = $protocol;
         $this->sockets = $sockets;
         $this->socket = $socket;
         $this->watch = $watch;
         $this->read = new FrameReader;
-        $this->maxChannels = new MaxChannels(0);
-        $this->maxFrameSize = new MaxFrameSize(0);
-        $this->heartbeat = new Heartbeat($clock, $timeout);
+        $this->maxChannels = $maxChannels;
+        $this->maxFrameSize = $maxFrameSize;
+        $this->heartbeat = $heartbeat;
     }
 
     public static function of(
@@ -93,21 +86,35 @@ final class Connection implements ConnectionInterface
         Remote $remote,
         Sockets $sockets,
     ): self {
+        /**
+         * Due to the $socket->write() psalm lose the type
+         * @psalm-suppress ArgumentTypeCoercion
+         * @psalm-suppress InvalidArgument
+         */
         return $remote
             ->socket(
                 $transport,
                 $server->authority()->withoutUserInformation(),
             )
+            ->flatMap(
+                static fn($socket) => $socket
+                    ->write($protocol->version()->pack())
+                    ->maybe(),
+            )
             ->map(static fn($socket) => new self(
-                $server,
                 $protocol,
-                $timeout,
-                $clock,
                 $sockets,
+                new Heartbeat($clock, $timeout),
                 $socket,
                 $sockets->watch($timeout)->forRead($socket),
+                State::opening,
+                MaxChannels::unlimited(),
+                MaxFrameSize::unlimited(),
             ))
-            ->map(static fn($connection) => $connection->open())
+            ->map(new Start($server->authority()))
+            ->map(new Handshake($server->authority()))
+            ->map(new OpenVHost($server->path()))
+            ->map(static fn($connection) => $connection->ready())
             ->match(
                 static fn($connection) => $connection,
                 static fn() => throw new \RuntimeException,
@@ -234,95 +241,44 @@ final class Connection implements ConnectionInterface
         return $this->state->closed($this->socket);
     }
 
-    private function open(): self
-    {
-        if (!$this->state->openable($this->socket)) {
-            return $this;
-        }
-
-        $this->start();
-        $this->handshake();
-        $this->openVHost();
-
-        $this->state = State::opened;
-
-        return $this;
+    /**
+     * This only modify the internal values for the connection, it doesn't
+     * notify the server we applied the changes on our end. The notification is
+     * done in Handshake
+     *
+     * @internal
+     */
+    public function tune(
+        MaxChannels $maxChannels,
+        MaxFrameSize $maxFrameSize,
+        ElapsedPeriod $heartbeat,
+    ): self {
+        return new self(
+            $this->protocol,
+            $this->sockets,
+            $this->heartbeat->adjust($heartbeat),
+            $this->socket,
+            $this->sockets->watch($heartbeat)->forRead($this->socket),
+            $this->state,
+            $maxChannels,
+            $maxFrameSize,
+        );
     }
 
-    private function start(): void
+    /**
+     * @internal
+     */
+    public function ready(): self
     {
-        $_ = $this
-            ->socket
-            ->write($this->protocol->version()->pack())
-            ->match(
-                static fn() => null,
-                static fn() => throw new \RuntimeException,
-            );
-
-        // at this point the server could respond with a simple text "AMQP0xyz"
-        // where xyz represent the version of the protocol it supports meaning
-        // we should restart the opening sequence with this version of the
-        // protocol but since this package only support 0.9.1 we can simply
-        // stop opening the connection
-        $this->wait(Method::connectionStart);
-        $this->send($this->protocol->connection()->startOk(
-            new StartOk(
-                $this->authority->userInformation()->user(),
-                $this->authority->userInformation()->password(),
-            ),
-        ));
-    }
-
-    private function handshake(): void
-    {
-        $frame = $this->wait(Method::connectionSecure, Method::connectionTune);
-
-        if ($frame->is(Method::connectionSecure)) {
-            $this->send($this->protocol->connection()->secureOk(
-                new SecureOk(
-                    $this->authority->userInformation()->user(),
-                    $this->authority->userInformation()->password(),
-                ),
-            ));
-            $frame = $this->wait(Method::connectionTune);
-        }
-
-        /** @var Value\UnsignedShortInteger */
-        $maxChannels = $frame->values()->get(0)->match(
-            static fn($value) => $value,
-            static fn() => throw new \LogicException,
+        return new self(
+            $this->protocol,
+            $this->sockets,
+            $this->heartbeat,
+            $this->socket,
+            $this->watch,
+            State::opened,
+            $this->maxChannels,
+            $this->maxFrameSize,
         );
-        $this->maxChannels = new MaxChannels(
-            $maxChannels->original(),
-        );
-        /** @var Value\UnsignedLongInteger */
-        $maxFrameSize = $frame->values()->get(1)->match(
-            static fn($value) => $value,
-            static fn() => throw new \LogicException,
-        );
-        $this->maxFrameSize = new MaxFrameSize($maxFrameSize->original());
-        /** @var Value\UnsignedShortInteger */
-        $heartbeat = $frame->values()->get(2)->match(
-            static fn($value) => $value,
-            static fn() => throw new \LogicException,
-        );
-        $threshold = new Earth\ElapsedPeriod($heartbeat->original());
-        $this->heartbeat->adjust($threshold);
-        $this->watch = $this->sockets->watch($threshold)->forRead($this->socket);
-        $this->send($this->protocol->connection()->tuneOk(
-            new TuneOk(
-                $this->maxChannels,
-                $this->maxFrameSize,
-                $threshold,
-            ),
-        ));
-    }
-
-    private function openVHost(): void
-    {
-        $this->send($this->protocol->connection()->open(
-            new Open($this->vhost),
-        ));
-        $this->wait(Method::connectionOpenOk);
     }
 }

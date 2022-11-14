@@ -44,8 +44,11 @@ final class Heartbeat
         $this->lastReceivedData = $this->clock->now();
     }
 
-    public function adjust(ElapsedPeriod $threshold): void
+    public function adjust(ElapsedPeriod $threshold): self
     {
-        $this->threshold = $threshold;
+        $self = clone $this;
+        $self->threshold = $threshold;
+
+        return $self;
     }
 }

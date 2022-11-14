@@ -28,6 +28,14 @@ final class MaxFrameSize
         $this->value = $value;
     }
 
+    /**
+     * @psalm-pure
+     */
+    public static function unlimited(): self
+    {
+        return new self(0);
+    }
+
     public function isLimited(): bool
     {
         return $this->value > 0;

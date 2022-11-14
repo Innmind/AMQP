@@ -21,6 +21,14 @@ final class MaxChannels
         $this->value = $value;
     }
 
+    /**
+     * @psalm-pure
+     */
+    public static function unlimited(): self
+    {
+        return new self(0);
+    }
+
     public function allows(int $channel): bool
     {
         if ($this->value === 0) {
