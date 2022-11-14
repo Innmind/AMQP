@@ -30,6 +30,7 @@ final class Get implements Command
         $consume = $this->consumers->get($queue);
 
         try {
+            /** @psalm-suppress InvalidScalarArgument */
             $this
                 ->client
                 ->channel()
