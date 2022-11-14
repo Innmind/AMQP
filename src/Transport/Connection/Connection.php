@@ -101,7 +101,10 @@ final class Connection implements ConnectionInterface
         $frame = $frame->pack()->toEncoding('ASCII');
 
         $this->maxFrameSize->verify($frame->length());
-        $this->socket->write($frame);
+        $_ = $this->socket->write($frame)->match(
+            static fn() => null,
+            static fn() => throw new \RuntimeException,
+        );
     }
 
     public function wait(Frame\Method ...$names): Frame
@@ -236,9 +239,13 @@ final class Connection implements ConnectionInterface
 
     private function start(): void
     {
-        $this->socket->write(
-            $this->protocol->version()->pack(),
-        );
+        $_ = $this
+            ->socket
+            ->write($this->protocol->version()->pack())
+            ->match(
+                static fn() => null,
+                static fn() => throw new \RuntimeException,
+            );
 
         // at this point the server could respond with a simple text "AMQP0xyz"
         // where xyz represent the version of the protocol it supports meaning
