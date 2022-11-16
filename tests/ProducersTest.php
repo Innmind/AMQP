@@ -26,7 +26,6 @@ class ProducersTest extends TestCase
         $this->assertTrue($producers->contains('bar'));
         $this->assertFalse($producers->contains('baz'));
         $this->assertInstanceOf(Producer::class, $producers->get('foo'));
-        $this->assertSame($producers->get('foo'), $producers->get('foo'));
     }
 
     public function testFromDeclarations()

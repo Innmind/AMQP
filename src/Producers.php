@@ -15,21 +15,18 @@ use Innmind\Immutable\{
 
 final class Producers
 {
-    /** @var Map<string, Producer> */
-    private Map $producers;
+    /** @var Sequence<string> */
+    private Sequence $exchanges;
+    /** @var callable(string): Producer */
+    private $load;
 
     /**
      * @no-named-arguments
      */
     public function __construct(Client $client, string ...$exchanges)
     {
-        $this->producers = Map::of(
-            ...Sequence::strings(...$exchanges)
-                ->map(
-                    static fn($exchange) => [$exchange, new Producer($client, $exchange)],
-                )
-                ->toList(),
-        );
+        $this->exchanges = Sequence::of(...$exchanges);
+        $this->load = Producer::prepare($client);
     }
 
     /**
@@ -62,11 +59,17 @@ final class Producers
      */
     public function maybe(string $exchange): Maybe
     {
-        return $this->producers->get($exchange);
+        return $this
+            ->exchanges
+            ->find(static fn($name) => $name === $exchange)
+            ->map($this->load);
     }
 
     public function contains(string $exchange): bool
     {
-        return $this->producers->contains($exchange);
+        return $this->maybe($exchange)->match(
+            static fn() => true,
+            static fn() => false,
+        );
     }
 }

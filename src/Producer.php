@@ -31,4 +31,12 @@ final class Producer
                     ->withRoutingKey($routingKey ?? ''),
             );
     }
+
+    /**
+     * @return callable(string): self
+     */
+    public static function prepare(Client $client): callable
+    {
+        return static fn(string $exchange) => new self($client, $exchange);
+    }
 }
