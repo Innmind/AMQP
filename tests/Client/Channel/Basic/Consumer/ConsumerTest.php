@@ -14,11 +14,11 @@ use Innmind\AMQP\{
     Model\Basic\Qos,
     Model\Basic\Consume,
     Client,
+    Factory,
 };
-use function Innmind\AMQP\bootstrap;
 use Innmind\Socket\Internet\Transport;
 use Innmind\TimeContinuum\Earth\ElapsedPeriod;
-use Innmind\OperatingSystem\Factory;
+use Innmind\OperatingSystem\Factory as OSFactory;
 use Innmind\Url\Url;
 use Innmind\Immutable\Str;
 use PHPUnit\Framework\TestCase;
@@ -134,17 +134,12 @@ class ConsumerTest extends TestCase
 
     protected function client(): Client
     {
-        $os = Factory::build();
-        $amqp = bootstrap();
+        $amqp = Factory::of(OSFactory::build());
 
-        return $amqp['client']['basic'](
+        return $amqp->make(
             Transport::tcp(),
             Url::of('amqp://guest:guest@localhost:5672/'),
             new ElapsedPeriod(1000), // timeout
-            $os->clock(),
-            $os->process(),
-            $os->remote(),
-            $os->sockets(),
         );
     }
 }
