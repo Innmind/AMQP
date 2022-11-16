@@ -44,24 +44,28 @@ function bootstrap(): array
                 Sockets $sockets,
                 LoggerInterface $logger = null,
             ): Client {
-                $connection = new Transport\Connection\Lazy(
-                    $transport,
-                    $server,
-                    new Transport\Protocol(
+                $load = static function() use ($transport, $server, $timeout, $clock, $remote, $sockets, $logger): Transport\Connection {
+                    $connection = new Transport\Connection\Lazy(
+                        $transport,
+                        $server,
+                        new Transport\Protocol(
+                            $clock,
+                            new Transport\Protocol\ArgumentTranslator\ValueTranslator,
+                        ),
+                        $timeout,
                         $clock,
-                        new Transport\Protocol\ArgumentTranslator\ValueTranslator,
-                    ),
-                    $timeout,
-                    $clock,
-                    $remote,
-                    $sockets,
-                );
+                        $remote,
+                        $sockets,
+                    );
 
-                if ($logger instanceof LoggerInterface) {
-                    $connection = new Transport\Connection\Logger($connection, $logger);
-                }
+                    if ($logger instanceof LoggerInterface) {
+                        $connection = new Transport\Connection\Logger($connection, $logger);
+                    }
 
-                return new Client\Client($connection, $process);
+                    return $connection;
+                };
+
+                return new Client\Client($load, $process);
             },
             'fluent' => static function(Client $client): Client {
                 return new Client\Fluent($client);

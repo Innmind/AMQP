@@ -13,15 +13,20 @@ use Innmind\Immutable\Map;
 
 final class Client implements ClientInterface
 {
-    private Connection $connection;
+    /** @var callable(): Connection */
+    private $load;
+    private ?Connection $connection = null;
     private CurrentProcess $process;
     /** @var Map<int, Channel> */
     private Map $channels;
     private int $channel = 1;
 
-    public function __construct(Connection $connection, CurrentProcess $process)
+    /**
+     * @param callable(): Connection $load
+     */
+    public function __construct(callable $load, CurrentProcess $process)
     {
-        $this->connection = $connection;
+        $this->load = $load;
         $this->process = $process;
         /** @var Map<int, Channel> */
         $this->channels = Map::of();
@@ -40,7 +45,7 @@ final class Client implements ClientInterface
 
         /** @psalm-suppress ArgumentTypeCoercion */
         $channel = new Channel\Channel(
-            $this->connection,
+            $this->connection(),
             new Number($this->channel++),
         );
         $this->channels = ($this->channels)($pid, $channel);
@@ -50,6 +55,10 @@ final class Client implements ClientInterface
 
     public function closed(): bool
     {
+        if (\is_null($this->connection)) {
+            return false;
+        }
+
         return $this->connection->closed();
     }
 
@@ -62,6 +71,11 @@ final class Client implements ClientInterface
         $_ = $this->channels->foreach(static function(int $_, Channel $channel): void {
             $channel->close();
         });
-        $this->connection->close();
+        $this->connection()->close();
+    }
+
+    private function connection(): Connection
+    {
+        return $this->connection ??= ($this->load)();
     }
 }
