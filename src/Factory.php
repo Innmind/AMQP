@@ -7,7 +7,10 @@ use Innmind\OperatingSystem\OperatingSystem;
 use Innmind\Socket\Internet\Transport as Socket;
 use Innmind\Url\Url;
 use Innmind\TimeContinuum\ElapsedPeriod;
-use Innmind\Immutable\Sequence;
+use Innmind\Immutable\{
+    Sequence,
+    Maybe,
+};
 
 final class Factory
 {
@@ -51,10 +54,15 @@ final class Factory
                     $this->os->sockets(),
                 );
 
-                return $decorators->reduce(
-                    $connection,
-                    static fn(Transport\Connection $connection, $decorate) => $decorate($connection),
-                );
+                /** @psalm-suppress MixedArgumentTypeCoercion */
+                return $decorators
+                    ->reduce(
+                        $connection,
+                        static fn(Maybe $connection, $decorate): Maybe => $connection->map($decorate),
+                    )->match(
+                        static fn(Transport\Connection $connection) => $connection,
+                        static fn() => throw new \RuntimeException,
+                    );
             },
             $this->os->process(),
         );

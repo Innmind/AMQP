@@ -77,6 +77,9 @@ final class Connection implements ConnectionInterface
         $this->heartbeat = $heartbeat;
     }
 
+    /**
+     * @return Maybe<self>
+     */
     public static function of(
         Transport $transport,
         Url $server,
@@ -85,7 +88,7 @@ final class Connection implements ConnectionInterface
         Clock $clock,
         Remote $remote,
         Sockets $sockets,
-    ): self {
+    ): Maybe {
         /**
          * Due to the $socket->write() psalm lose the type
          * @psalm-suppress ArgumentTypeCoercion
@@ -114,11 +117,7 @@ final class Connection implements ConnectionInterface
             ->map(new Start($server->authority()))
             ->map(new Handshake($server->authority()))
             ->map(new OpenVHost($server->path()))
-            ->map(static fn($connection) => $connection->ready())
-            ->match(
-                static fn($connection) => $connection,
-                static fn() => throw new \RuntimeException,
-            );
+            ->map(static fn($connection) => $connection->ready());
     }
 
     public function protocol(): Protocol

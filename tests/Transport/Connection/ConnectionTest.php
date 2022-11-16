@@ -41,6 +41,9 @@ class ConnectionTest extends TestCase
             new Clock,
             Remote\Generic::of($this->createMock(Server::class), new Clock),
             Sockets\Unix::of(),
+        )->match(
+            static fn($connection) => $connection,
+            static fn() => null,
         );
 
         $this->assertInstanceOf(ConnectionInterface::class, $connection);
@@ -66,6 +69,9 @@ class ConnectionTest extends TestCase
             new Clock,
             Remote\Generic::of($this->createMock(Server::class), new Clock),
             Sockets\Unix::of(),
+        )->match(
+            static fn($connection) => $connection,
+            static fn() => null,
         );
 
         $this->assertFalse($connection->closed());
@@ -83,6 +89,9 @@ class ConnectionTest extends TestCase
             new Clock,
             Remote\Generic::of($this->createMock(Server::class), new Clock),
             Sockets\Unix::of(),
+        )->match(
+            static fn($connection) => $connection,
+            static fn() => null,
         );
 
         $this->expectException(UnexpectedFrame::class);
@@ -101,6 +110,9 @@ class ConnectionTest extends TestCase
             new Clock,
             Remote\Generic::of($this->createMock(Server::class), new Clock),
             Sockets\Unix::of(),
+        )->match(
+            static fn($connection) => $connection,
+            static fn() => null,
         );
 
         try {

@@ -45,6 +45,9 @@ class ClientTest extends TestCase
                 new Clock,
                 Remote\Generic::of($this->createMock(Server::class), new Clock),
                 Sockets\Unix::of(),
+            )->match(
+                static fn($connection) => $connection,
+                static fn() => null,
             ),
             $this->process = $this->createMock(CurrentProcess::class),
         );
