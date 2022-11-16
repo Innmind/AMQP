@@ -17,8 +17,11 @@ use Innmind\AMQP\{
     Model\Basic\Message\AppId,
     Transport\Connection as ConnectionInterface,
     Transport\Frame\Value,
+    Predicate\IsInt,
 };
 use Innmind\TimeContinuum\Earth\ElapsedPeriod;
+use Innmind\Filesystem\File\Content;
+use Innmind\Stream\Readable;
 use Innmind\Immutable\{
     Map,
     Str,
@@ -38,8 +41,8 @@ final class MessageReader
             ->first()
             ->keep(Instance::of(Value\UnsignedLongLongInteger::class))
             ->map(static fn($value) => $value->original())
-            ->flatMap(fn($bodySize) => $this->readPayload($connection, $bodySize, Str::of('')))
-            ->map(Message::of(...))
+            ->flatMap(fn($bodySize) => $this->readPayload($connection, $bodySize))
+            ->map(Message::file(...))
             ->flatMap(
                 fn($message) => $header
                     ->values()
@@ -201,27 +204,32 @@ final class MessageReader
     }
 
     /**
-     * TODO try to lazily read the payload to avoid loading whole files at once
-     *
-     * @return Maybe<Str>
+     * @return Maybe<Content>
      */
     private function readPayload(
         ConnectionInterface $connection,
         int $bodySize,
-        Str $payload,
     ): Maybe {
-        if ($payload->length() === $bodySize) {
-            return Maybe::just($payload);
+        $walk = $bodySize !== 0;
+        $read = Maybe::just(0);
+        $stream = \fopen('php://temp', 'r+');
+
+        while ($walk) {
+            $read = $connection
+                ->wait()
+                ->content()
+                ->map(static fn($chunk) => \fwrite($stream, $chunk->toString()))
+                ->keep(IsInt::natural())
+                ->flatMap(static fn(int $written) => $read->map(
+                    static fn(int $read) => $written + $read,
+                ));
+            $walk = $read->match(
+                static fn($read) => $read !== $bodySize,
+                static fn() => false, // because no content was found in the last frame or failed to write the chunk to the temp stream
+            );
         }
 
-        return $connection
-            ->wait()
-            ->content()
-            ->map(static fn($chunk) => $payload->append($chunk->toString()))
-            ->flatMap(fn($payload) => $this->readPayload(
-                $connection,
-                $bodySize,
-                $payload,
-            ));
+        /** @var Maybe<Content> */
+        return $read->map(static fn() => Content\OfStream::of(Readable\Stream::of($stream)));
     }
 }
