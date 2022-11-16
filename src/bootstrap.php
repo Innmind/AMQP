@@ -45,7 +45,7 @@ function bootstrap(): array
                 LoggerInterface $logger = null,
             ): Client {
                 $load = static function() use ($transport, $server, $timeout, $clock, $remote, $sockets, $logger): Transport\Connection {
-                    $connection = new Transport\Connection\Lazy(
+                    $connection = Transport\Connection\Connection::of(
                         $transport,
                         $server,
                         new Transport\Protocol(
