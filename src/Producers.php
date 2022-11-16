@@ -3,10 +3,14 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP;
 
-use Innmind\AMQP\Model\Exchange\Declaration;
+use Innmind\AMQP\{
+    Model\Exchange\Declaration,
+    Exception\LogicException,
+};
 use Innmind\Immutable\{
     Sequence,
     Map,
+    Maybe,
 };
 
 final class Producers
@@ -40,12 +44,25 @@ final class Producers
         return new self($client, ...$exchanges->toList());
     }
 
+    /**
+     * @param literal-string $exchange
+     *
+     * @throws LogicException
+     */
     public function get(string $exchange): Producer
     {
-        return $this->producers->get($exchange)->match(
+        return $this->maybe($exchange)->match(
             static fn($producer) => $producer,
-            static fn() => throw new \LogicException,
+            static fn() => throw new LogicException,
         );
+    }
+
+    /**
+     * @return Maybe<Producer>
+     */
+    public function maybe(string $exchange): Maybe
+    {
+        return $this->producers->get($exchange);
     }
 
     public function contains(string $exchange): bool
