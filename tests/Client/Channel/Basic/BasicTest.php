@@ -37,7 +37,6 @@ use Innmind\AMQP\{
     Model\Basic\Reject as RejectCommand,
     Model\Basic\Recover,
     Model\Basic\Message,
-    Model\Basic\Message\Generic,
     Model\Basic\Message\AppId,
     Model\Basic\Message\ContentEncoding,
     Model\Basic\Message\ContentType,
@@ -132,7 +131,7 @@ class BasicTest extends TestCase
         ));
         $this->connection->wait(Method::queueBindOk);
         $this->basic->publish(
-            Publish::a(Generic::of(Str::of('foobar')))->to('amq.direct'),
+            Publish::a(Message::of(Str::of('foobar')))->to('amq.direct'),
         );
         $this->connection->send($this->connection->protocol()->basic()->get(
             new Channel(1),
@@ -216,7 +215,7 @@ class BasicTest extends TestCase
 
         foreach (\range(0, 3) as $i) {
             $this->basic->publish(
-                Publish::a(Generic::of(Str::of('foobar'.$i)))->to('amq.direct'),
+                Publish::a(Message::of(Str::of('foobar'.$i)))->to('amq.direct'),
             );
         }
 
@@ -281,7 +280,7 @@ class BasicTest extends TestCase
 
         foreach (\range(0, 3) as $i) {
             $this->basic->publish(
-                Publish::a(Generic::of(Str::of('foobar'.$i)))->to('amq.direct'),
+                Publish::a(Message::of(Str::of('foobar'.$i)))->to('amq.direct'),
             );
         }
 
@@ -316,7 +315,7 @@ class BasicTest extends TestCase
 
         foreach (\range(0, 3) as $i) {
             $this->basic->publish(
-                Publish::a(Generic::of(Str::of('foobar'.$i)))->to('amq.direct'),
+                Publish::a(Message::of(Str::of('foobar'.$i)))->to('amq.direct'),
             );
         }
 
@@ -354,7 +353,7 @@ class BasicTest extends TestCase
 
         foreach (\range(0, 3) as $i) {
             $this->basic->publish(
-                Publish::a(Generic::of(Str::of('foobar'.$i)))->to('amq.direct'),
+                Publish::a(Message::of(Str::of('foobar'.$i)))->to('amq.direct'),
             );
         }
 
@@ -416,7 +415,7 @@ class BasicTest extends TestCase
 
         foreach (\range(0, 5) as $i) {
             $this->basic->publish(
-                Publish::a(Generic::of(Str::of('foobar'.$i)))->to('amq.direct'),
+                Publish::a(Message::of(Str::of('foobar'.$i)))->to('amq.direct'),
             );
         }
 
@@ -502,7 +501,7 @@ class BasicTest extends TestCase
 
         foreach (\range(0, 3) as $i) {
             $this->basic->publish(
-                Publish::a(Generic::of(Str::of('foobar'.$i)))->to('amq.direct'),
+                Publish::a(Message::of(Str::of('foobar'.$i)))->to('amq.direct'),
             );
         }
 
@@ -563,7 +562,7 @@ class BasicTest extends TestCase
 
         foreach (\range(0, 3) as $i) {
             $this->basic->publish(
-                Publish::a(Generic::of(Str::of('foobar'.$i)))->to('amq.direct'),
+                Publish::a(Message::of(Str::of('foobar'.$i)))->to('amq.direct'),
             );
         }
 
@@ -632,7 +631,7 @@ class BasicTest extends TestCase
         ));
         $this->connection->wait(Method::queueBindOk);
         $this->basic->publish(
-            $publish = Publish::a(Generic::of(Str::of('foobar')))->to('amq.direct'),
+            $publish = Publish::a(Message::of(Str::of('foobar')))->to('amq.direct'),
         );
         $this->basic->publish($publish);
         $called = false;
@@ -676,7 +675,7 @@ class BasicTest extends TestCase
             Binding::of('amq.direct', 'test_get'),
         ));
         $this->connection->wait(Method::queueBindOk);
-        $message = Generic::of(Str::of('foobar'))
+        $message = Message::of(Str::of('foobar'))
             ->withContentType(ContentType::of('text', 'plain'))
             ->withContentEncoding(ContentEncoding::of('gzip'))
             ->withHeaders(
@@ -877,7 +876,7 @@ class BasicTest extends TestCase
         ));
         $this->connection->wait(Method::queueBindOk);
         $this->basic->publish(
-            $publish = Publish::a(Generic::of(Str::of('foobar')))->to('amq.direct'),
+            $publish = Publish::a(Message::of(Str::of('foobar')))->to('amq.direct'),
         );
         $this->basic->publish($publish);
         $called = false;
@@ -952,7 +951,7 @@ class BasicTest extends TestCase
         ));
         $this->connection->wait(Method::queueBindOk);
         $this->basic->publish(
-            Publish::a(Generic::of(Str::of('foobar')))->to('amq.direct'),
+            Publish::a(Message::of(Str::of('foobar')))->to('amq.direct'),
         );
         $called = false;
 
@@ -990,7 +989,7 @@ class BasicTest extends TestCase
         ));
         $this->connection->wait(Method::queueBindOk);
         $this->basic->publish(
-            Publish::a(Generic::of(Str::of('foobar')))->to('amq.direct'),
+            Publish::a(Message::of(Str::of('foobar')))->to('amq.direct'),
         );
         $called = false;
 
@@ -1031,7 +1030,7 @@ class BasicTest extends TestCase
         ));
         $this->connection->wait(Method::queueBindOk);
         $this->basic->publish(
-            Publish::a(Generic::of(Str::of('foobar')))->to('amq.direct'),
+            Publish::a(Message::of(Str::of('foobar')))->to('amq.direct'),
         );
         $called = false;
 
@@ -1059,7 +1058,7 @@ class BasicTest extends TestCase
     {
         $this->assertNull(
             $this->basic->publish(
-                Publish::a(Generic::of(Str::of('foobar'))),
+                Publish::a(Message::of(Str::of('foobar'))),
             ),
         );
     }
@@ -1079,7 +1078,7 @@ class BasicTest extends TestCase
         ));
         $this->connection->wait(Method::queueBindOk);
         $this->basic->publish(
-            Publish::a(Generic::of(Str::of('foobar')))->to('amq.direct'),
+            Publish::a(Message::of(Str::of('foobar')))->to('amq.direct'),
         );
         $this->connection->send($this->connection->protocol()->basic()->get(
             new Channel(1),
@@ -1117,7 +1116,7 @@ class BasicTest extends TestCase
         ));
         $this->connection->wait(Method::queueBindOk);
         $this->basic->publish(
-            Publish::a(Generic::of(Str::of('foobar')))->to('amq.direct'),
+            Publish::a(Message::of(Str::of('foobar')))->to('amq.direct'),
         );
         $this->connection->send($this->connection->protocol()->basic()->get(
             new Channel(1),

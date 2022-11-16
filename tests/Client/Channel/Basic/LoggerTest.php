@@ -16,6 +16,7 @@ use Innmind\AMQP\{
     Model\Basic\Recover,
     Model\Basic\Reject,
 };
+use Innmind\Immutable\Str;
 use Psr\Log\LoggerInterface;
 use PHPUnit\Framework\TestCase;
 
@@ -39,7 +40,7 @@ class LoggerTest extends TestCase
             Basic\Get\Logger::class,
             $basic->get(Get::of('')),
         );
-        $this->assertNull($basic->publish(Publish::a($this->createMock(Message::class))));
+        $this->assertNull($basic->publish(Publish::a(Message::of(Str::of('')))));
         $this->assertNull($basic->qos(Qos::of(0, 0)));
         $this->assertNull($basic->recover(Recover::withoutRequeue()));
         $this->assertNull($basic->reject(Reject::of(1)));

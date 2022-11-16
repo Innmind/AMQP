@@ -44,14 +44,7 @@ class LoggerTest extends TestCase
 
     public function testFilter()
     {
-        $message = function($i) {
-            $message = $this->createMock(Message::class);
-            $message
-                ->method('body')
-                ->willReturn(Str::of('foobar'.$i));
-
-            return $message;
-        };
+        $message = static fn($i) => Message::of(Str::of('foobar'.$i));
 
         $consumer = new Logger(
             new class($message) implements Consumer {
@@ -98,10 +91,7 @@ class LoggerTest extends TestCase
 
     public function testLogMessageReceived()
     {
-        $message = $this->createMock(Message::class);
-        $message
-            ->method('body')
-            ->willReturn(Str::of('foobar'));
+        $message = Message::of(Str::of('foobar'));
 
         $consumer = new Logger(
             new class($message) implements Consumer {
@@ -139,10 +129,7 @@ class LoggerTest extends TestCase
 
     public function testLogReject()
     {
-        $message = $this->createMock(Message::class);
-        $message
-            ->method('body')
-            ->willReturn(Str::of('foobar'));
+        $message = Message::of(Str::of('foobar'));
 
         $consumer = new Logger(
             new class($message) implements Consumer {
@@ -186,10 +173,7 @@ class LoggerTest extends TestCase
 
     public function testLogRequeue()
     {
-        $message = $this->createMock(Message::class);
-        $message
-            ->method('body')
-            ->willReturn(Str::of('foobar'));
+        $message = Message::of(Str::of('foobar'));
 
         $consumer = new Logger(
             new class($message) implements Consumer {
@@ -233,10 +217,7 @@ class LoggerTest extends TestCase
 
     public function testLogCancel()
     {
-        $message = $this->createMock(Message::class);
-        $message
-            ->method('body')
-            ->willReturn(Str::of('foobar'));
+        $message = Message::of(Str::of('foobar'));
 
         $consumer = new Logger(
             new class($message) implements Consumer {
@@ -280,10 +261,7 @@ class LoggerTest extends TestCase
 
     public function testLogError()
     {
-        $message = $this->createMock(Message::class);
-        $message
-            ->method('body')
-            ->willReturn(Str::of('foobar'));
+        $message = Message::of(Str::of('foobar'));
 
         $consumer = new Logger(
             new class($message) implements Consumer {

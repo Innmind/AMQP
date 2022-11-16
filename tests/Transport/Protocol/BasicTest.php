@@ -27,7 +27,7 @@ use Innmind\AMQP\{
     Model\Basic\Qos,
     Model\Basic\Recover,
     Model\Basic\Reject,
-    Model\Basic\Message\Generic,
+    Model\Basic\Message,
     Model\Basic\Message\AppId,
     Model\Basic\Message\ContentType,
     Model\Basic\Message\ContentEncoding,
@@ -368,7 +368,7 @@ class BasicTest extends TestCase
     {
         $frames = $this->basic->publish(
             $channel = new Channel(1),
-            Publish::a(Generic::of(Str::of('foobar'))),
+            Publish::a(Message::of(Str::of('foobar'))),
             MaxFrameSize::of(0),
         );
 
@@ -471,7 +471,7 @@ class BasicTest extends TestCase
     {
         $frames = $this->basic->publish(
             $channel = new Channel(1),
-            Publish::a(Generic::of(Str::of('foobar'))),
+            Publish::a(Message::of(Str::of('foobar'))),
             MaxFrameSize::of(3),
         );
 
@@ -523,7 +523,7 @@ class BasicTest extends TestCase
         $frames = $basic->publish(
             $channel = new Channel(1),
             Publish::a(
-                Generic::of(Str::of('foobar'))
+                Message::of(Str::of('foobar'))
                     ->withContentType(ContentType::of('application', 'json'))
                     ->withContentEncoding(ContentEncoding::of('gzip'))
                     ->withHeaders(
@@ -783,7 +783,7 @@ class BasicTest extends TestCase
     {
         $frames = $this->basic->publish(
             $channel = new Channel(1),
-            Publish::a(Generic::of(Str::of('')))->to('foo'),
+            Publish::a(Message::of(Str::of('')))->to('foo'),
             MaxFrameSize::of(0),
         );
 
@@ -801,7 +801,7 @@ class BasicTest extends TestCase
     {
         $frames = $this->basic->publish(
             $channel = new Channel(1),
-            Publish::a(Generic::of(Str::of('')))->withRoutingKey('foo'),
+            Publish::a(Message::of(Str::of('')))->withRoutingKey('foo'),
             MaxFrameSize::of(0),
         );
 
@@ -819,7 +819,7 @@ class BasicTest extends TestCase
     {
         $frames = $this->basic->publish(
             $channel = new Channel(1),
-            Publish::a(Generic::of(Str::of('')))->flagAsMandatory(),
+            Publish::a(Message::of(Str::of('')))->flagAsMandatory(),
             MaxFrameSize::of(0),
         );
 
@@ -840,7 +840,7 @@ class BasicTest extends TestCase
     {
         $frames = $this->basic->publish(
             $channel = new Channel(1),
-            Publish::a(Generic::of(Str::of('')))->flagAsImmediate(),
+            Publish::a(Message::of(Str::of('')))->flagAsImmediate(),
             MaxFrameSize::of(0),
         );
 

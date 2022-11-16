@@ -9,7 +9,7 @@ use Innmind\AMQP\{
     Model\Queue\Deletion,
     Model\Queue\Declaration as Queue,
     Model\Queue\Binding,
-    Model\Basic\Message\Generic as Message,
+    Model\Basic\Message,
     Model\Basic\Publish,
     Model\Basic\Qos,
     Model\Basic\Consume,

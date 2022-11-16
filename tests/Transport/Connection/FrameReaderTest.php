@@ -21,7 +21,7 @@ use Innmind\AMQP\{
     Transport\Protocol,
     Transport\Protocol\ArgumentTranslator\ValueTranslator,
     Model\Basic\Publish,
-    Model\Basic\Message\Generic,
+    Model\Basic\Message,
     Model\Basic\Message\AppId,
     Model\Basic\Message\ContentEncoding,
     Model\Basic\Message\ContentType,
@@ -154,7 +154,7 @@ class FrameReaderTest extends TestCase
             ->publish(
                 new Channel(1),
                 Publish::a(
-                    Generic::of(Str::of('foobar'))
+                    Message::of(Str::of('foobar'))
                         ->withContentType(ContentType::of('application', 'json'))
                         ->withContentEncoding(ContentEncoding::of('gzip'))
                         ->withHeaders(

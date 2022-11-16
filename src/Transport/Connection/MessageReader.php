@@ -5,7 +5,6 @@ namespace Innmind\AMQP\Transport\Connection;
 
 use Innmind\AMQP\{
     Model\Basic\Message,
-    Model\Basic\Message\Generic,
     Model\Basic\Message\ContentType,
     Model\Basic\Message\ContentEncoding,
     Model\Basic\Message\DeliveryMode,
@@ -40,7 +39,7 @@ final class MessageReader
             ->keep(Instance::of(Value\UnsignedLongLongInteger::class))
             ->map(static fn($value) => $value->original())
             ->flatMap(fn($bodySize) => $this->readPayload($connection, $bodySize, Str::of('')))
-            ->map(Generic::of(...))
+            ->map(Message::of(...))
             ->flatMap(
                 fn($message) => $header
                     ->values()

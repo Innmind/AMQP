@@ -29,10 +29,7 @@ class LoggerTest extends TestCase
 
     public function testLogMessageReceived()
     {
-        $message = $this->createMock(Message::class);
-        $message
-            ->method('body')
-            ->willReturn(Str::of('foobar'));
+        $message = Message::of(Str::of('foobar'));
 
         $consume = new Logger(
             new class($message) implements Get {
@@ -63,10 +60,7 @@ class LoggerTest extends TestCase
 
     public function testLogReject()
     {
-        $message = $this->createMock(Message::class);
-        $message
-            ->method('body')
-            ->willReturn(Str::of('foobar'));
+        $message = Message::of(Str::of('foobar'));
 
         $consume = new Logger(
             new class($message) implements Get {
@@ -103,10 +97,7 @@ class LoggerTest extends TestCase
 
     public function testLogRequeue()
     {
-        $message = $this->createMock(Message::class);
-        $message
-            ->method('body')
-            ->willReturn(Str::of('foobar'));
+        $message = Message::of(Str::of('foobar'));
 
         $consume = new Logger(
             new class($message) implements Get {
@@ -143,10 +134,7 @@ class LoggerTest extends TestCase
 
     public function testLogError()
     {
-        $message = $this->createMock(Message::class);
-        $message
-            ->method('body')
-            ->willReturn(Str::of('foobar'));
+        $message = Message::of(Str::of('foobar'));
 
         $consume = new Logger(
             new class($message) implements Get {
