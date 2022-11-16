@@ -10,7 +10,7 @@ class CountTest extends TestCase
 {
     public function testInterface()
     {
-        $this->assertSame(0, (new Count(0))->toInt());
-        $this->assertSame(42, (new Count(42))->toInt());
+        $this->assertSame(0, Count::of(0)->toInt());
+        $this->assertSame(42, Count::of(42)->toInt());
     }
 }

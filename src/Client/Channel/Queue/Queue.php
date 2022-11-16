@@ -61,10 +61,10 @@ final class Queue implements QueueInterface
             static fn() => throw new \LogicException,
         );
 
-        return new DeclareOk(
+        return DeclareOk::of(
             $name->original()->toString(),
-            new Count($message->original()),
-            new Count($consumer->original()),
+            Count::of($message->original()),
+            Count::of($consumer->original()),
         );
     }
 
@@ -88,7 +88,7 @@ final class Queue implements QueueInterface
             static fn() => throw new \LogicException,
         );
 
-        return new DeleteOk(new Count(
+        return DeleteOk::of(Count::of(
             $message->original(),
         ));
     }
@@ -136,7 +136,7 @@ final class Queue implements QueueInterface
             static fn() => throw new \LogicException,
         );
 
-        return new PurgeOk(new Count(
+        return PurgeOk::of(Count::of(
             $message->original(),
         ));
     }

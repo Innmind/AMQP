@@ -191,7 +191,7 @@ final class Consumer implements ConsumerInterface
         $this->connection->send(
             $this->connection->protocol()->basic()->ack(
                 $this->channel,
-                new Ack($deliveryTag),
+                Ack::of($deliveryTag),
             ),
         );
     }
@@ -204,7 +204,7 @@ final class Consumer implements ConsumerInterface
         $this->connection->send(
             $this->connection->protocol()->basic()->reject(
                 $this->channel,
-                new RejectCommand($deliveryTag),
+                RejectCommand::of($deliveryTag),
             ),
         );
     }
@@ -239,7 +239,7 @@ final class Consumer implements ConsumerInterface
 
         $this->connection->send($this->connection->protocol()->basic()->cancel(
             $this->channel,
-            new CancelCommand($this->consumerTag),
+            CancelCommand::of($this->consumerTag),
         ));
 
         // walk over prefetched messages

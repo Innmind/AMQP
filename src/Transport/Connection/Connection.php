@@ -230,7 +230,7 @@ final class Connection implements ConnectionInterface
             return;
         }
 
-        $this->send($this->protocol->connection()->close(new Close));
+        $this->send($this->protocol->connection()->close(Close::demand()));
         $this->wait(Method::connectionCloseOk);
         $this->socket->close();
         $this->state = State::closed;

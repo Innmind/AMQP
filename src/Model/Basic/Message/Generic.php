@@ -47,7 +47,7 @@ final class Generic implements Message
     private Maybe $appId;
     private Str $body;
 
-    public function __construct(Str $body)
+    private function __construct(Str $body)
     {
         $this->body = $body->toEncoding('ASCII');
         /** @var Map<string, mixed> */

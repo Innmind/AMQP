@@ -16,7 +16,7 @@ final class MaxChannels
     /**
      * @param int<0, 65535> $value
      */
-    public function __construct(int $value)
+    private function __construct(int $value)
     {
         $this->value = $value;
     }

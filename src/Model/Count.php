@@ -14,9 +14,19 @@ final class Count
     /**
      * @param int<0, max> $value
      */
-    public function __construct(int $value)
+    private function __construct(int $value)
     {
         $this->value = $value;
+    }
+
+    /**
+     * @psalm-pure
+     *
+     * @param int<0, max> $value
+     */
+    public static function of(int $value): self
+    {
+        return new self($value);
     }
 
     /**

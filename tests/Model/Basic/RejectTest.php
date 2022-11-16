@@ -10,7 +10,7 @@ class RejectTest extends TestCase
 {
     public function testInterface()
     {
-        $command = new Reject(42);
+        $command = Reject::of(42);
 
         $this->assertSame(42, $command->deliveryTag());
         $this->assertFalse($command->shouldRequeue());

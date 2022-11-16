@@ -105,7 +105,7 @@ class BasicTest extends TestCase
         $this->connection->send(
             $this->connection->protocol()->channel()->close(
                 new Channel(1),
-                new Close,
+                Close::demand(),
             ),
         );
         $this->connection->wait(Method::channelCloseOk);
@@ -128,15 +128,15 @@ class BasicTest extends TestCase
         $this->connection->wait(Method::queueDeclareOk);
         $this->connection->send($this->connection->protocol()->queue()->bind(
             new Channel(1),
-            new Binding('amq.direct', 'test_ack'),
+            Binding::of('amq.direct', 'test_ack'),
         ));
         $this->connection->wait(Method::queueBindOk);
         $this->basic->publish(
-            (new Publish(new Generic(Str::of('foobar'))))->to('amq.direct'),
+            Publish::a(Generic::of(Str::of('foobar')))->to('amq.direct'),
         );
         $this->connection->send($this->connection->protocol()->basic()->get(
             new Channel(1),
-            new Get('test_ack'),
+            Get::of('test_ack'),
         ));
         $frame = $this->connection->wait(Method::basicGetOk);
         $deliveryTag = $frame
@@ -151,7 +151,7 @@ class BasicTest extends TestCase
         $this->connection->wait(); //body
 
         $this->assertNull(
-            $this->basic->ack(new Ack($deliveryTag)),
+            $this->basic->ack(Ack::of($deliveryTag)),
         );
     }
 
@@ -166,13 +166,13 @@ class BasicTest extends TestCase
         $this->connection->wait(Method::queueDeclareOk);
         $this->connection->send($this->connection->protocol()->basic()->consume(
             new Channel(1),
-            (new Consume('test_cancel'))->withConsumerTag('test_cancel_tag'),
+            Consume::of('test_cancel')->withConsumerTag('test_cancel_tag'),
         ));
         $this->connection->wait(Method::basicConsumeOk);
 
         $this->assertNull(
             $this->basic->cancel(
-                new CancelCommand('test_cancel_tag'),
+                CancelCommand::of('test_cancel_tag'),
             ),
         );
     }
@@ -188,13 +188,13 @@ class BasicTest extends TestCase
         $this->connection->wait(Method::queueDeclareOk);
         $this->connection->send($this->connection->protocol()->basic()->consume(
             new Channel(1),
-            (new Consume('test_cancel'))->withConsumerTag('test_cancel_tag'),
+            Consume::of('test_cancel')->withConsumerTag('test_cancel_tag'),
         ));
         $this->connection->wait(Method::basicConsumeOk);
 
         $this->assertNull(
             $this->basic->cancel(
-                (new CancelCommand('test_cancel_tag'))->dontWait(),
+                CancelCommand::of('test_cancel_tag')->dontWait(),
             ),
         );
     }
@@ -210,13 +210,13 @@ class BasicTest extends TestCase
         $this->connection->wait(Method::queueDeclareOk);
         $this->connection->send($this->connection->protocol()->queue()->bind(
             new Channel(1),
-            new Binding('amq.direct', 'test_consume'),
+            Binding::of('amq.direct', 'test_consume'),
         ));
         $this->connection->wait(Method::queueBindOk);
 
         foreach (\range(0, 3) as $i) {
             $this->basic->publish(
-                (new Publish(new Generic(Str::of('foobar'.$i))))->to('amq.direct'),
+                Publish::a(Generic::of(Str::of('foobar'.$i)))->to('amq.direct'),
             );
         }
 
@@ -226,7 +226,7 @@ class BasicTest extends TestCase
             $this
                 ->basic
                 ->consume(
-                    new Consume('test_consume'),
+                    Consume::of('test_consume'),
                 )
                 ->foreach(function(
                     Message $message,
@@ -249,7 +249,7 @@ class BasicTest extends TestCase
         );
         $this->assertSame(2, $calls);
         $called = false;
-        $this->basic->get(new Get('test_consume'))(function(
+        $this->basic->get(Get::of('test_consume'))(function(
             $message,
             $redelivered,
             $exchange,
@@ -275,17 +275,17 @@ class BasicTest extends TestCase
         $this->connection->wait(Method::queueDeclareOk);
         $this->connection->send($this->connection->protocol()->queue()->bind(
             new Channel(1),
-            new Binding('amq.direct', 'test_consume'),
+            Binding::of('amq.direct', 'test_consume'),
         ));
         $this->connection->wait(Method::queueBindOk);
 
         foreach (\range(0, 3) as $i) {
             $this->basic->publish(
-                (new Publish(new Generic(Str::of('foobar'.$i))))->to('amq.direct'),
+                Publish::a(Generic::of(Str::of('foobar'.$i)))->to('amq.direct'),
             );
         }
 
-        $consumer = $this->basic->consume(new Consume('test_consume'));
+        $consumer = $this->basic->consume(Consume::of('test_consume'));
         $consumer->take(4);
         $this->assertNull(
             $consumer->foreach(static function(): void {
@@ -310,17 +310,17 @@ class BasicTest extends TestCase
         $this->connection->wait(Method::queueDeclareOk);
         $this->connection->send($this->connection->protocol()->queue()->bind(
             new Channel(1),
-            new Binding('amq.direct', 'test_consume'),
+            Binding::of('amq.direct', 'test_consume'),
         ));
         $this->connection->wait(Method::queueBindOk);
 
         foreach (\range(0, 3) as $i) {
             $this->basic->publish(
-                (new Publish(new Generic(Str::of('foobar'.$i))))->to('amq.direct'),
+                Publish::a(Generic::of(Str::of('foobar'.$i)))->to('amq.direct'),
             );
         }
 
-        $consumer = $this->basic->consume(new Consume('test_consume'));
+        $consumer = $this->basic->consume(Consume::of('test_consume'));
 
         try {
             $consumer->foreach(static function(): void {
@@ -348,13 +348,13 @@ class BasicTest extends TestCase
         $this->connection->wait(Method::queueDeclareOk);
         $this->connection->send($this->connection->protocol()->queue()->bind(
             new Channel(1),
-            new Binding('amq.direct', 'test_consume'),
+            Binding::of('amq.direct', 'test_consume'),
         ));
         $this->connection->wait(Method::queueBindOk);
 
         foreach (\range(0, 3) as $i) {
             $this->basic->publish(
-                (new Publish(new Generic(Str::of('foobar'.$i))))->to('amq.direct'),
+                Publish::a(Generic::of(Str::of('foobar'.$i)))->to('amq.direct'),
             );
         }
 
@@ -363,7 +363,7 @@ class BasicTest extends TestCase
         $consumer = $this
             ->basic
             ->consume(
-                new Consume('test_consume'),
+                Consume::of('test_consume'),
             );
         $consumer->take(2);
         $this->assertNull(
@@ -384,7 +384,7 @@ class BasicTest extends TestCase
         );
         $this->assertSame(2, $calls);
         $called = false;
-        $this->basic->get(new Get('test_consume'))(function(
+        $this->basic->get(Get::of('test_consume'))(function(
             $message,
             $redelivered,
             $exchange,
@@ -410,13 +410,13 @@ class BasicTest extends TestCase
         $this->connection->wait(Method::queueDeclareOk);
         $this->connection->send($this->connection->protocol()->queue()->bind(
             new Channel(1),
-            new Binding('amq.direct', 'test_consume'),
+            Binding::of('amq.direct', 'test_consume'),
         ));
         $this->connection->wait(Method::queueBindOk);
 
         foreach (\range(0, 5) as $i) {
             $this->basic->publish(
-                (new Publish(new Generic(Str::of('foobar'.$i))))->to('amq.direct'),
+                Publish::a(Generic::of(Str::of('foobar'.$i)))->to('amq.direct'),
             );
         }
 
@@ -426,7 +426,7 @@ class BasicTest extends TestCase
         $consumer = $this
             ->basic
             ->consume(
-                new Consume('test_consume'),
+                Consume::of('test_consume'),
             );
         $consumer->take(2);
         $consumer->filter(function(
@@ -469,7 +469,7 @@ class BasicTest extends TestCase
         $this->assertSame(3, $filtered);
 
         $called = false;
-        $this->basic->get(new Get('test_consume'))(function(
+        $this->basic->get(Get::of('test_consume'))(function(
             $message,
             $redelivered,
             $exchange,
@@ -496,13 +496,13 @@ class BasicTest extends TestCase
         $this->connection->wait(Method::queueDeclareOk);
         $this->connection->send($this->connection->protocol()->queue()->bind(
             new Channel(1),
-            new Binding('amq.direct', 'test_consume'),
+            Binding::of('amq.direct', 'test_consume'),
         ));
         $this->connection->wait(Method::queueBindOk);
 
         foreach (\range(0, 3) as $i) {
             $this->basic->publish(
-                (new Publish(new Generic(Str::of('foobar'.$i))))->to('amq.direct'),
+                Publish::a(Generic::of(Str::of('foobar'.$i)))->to('amq.direct'),
             );
         }
 
@@ -511,7 +511,7 @@ class BasicTest extends TestCase
         $consumer = $this
             ->basic
             ->consume(
-                new Consume('test_consume'),
+                Consume::of('test_consume'),
             );
         $consumer->take(4); //otherwise it will hang forever
         $this->assertNull(
@@ -540,7 +540,7 @@ class BasicTest extends TestCase
         $this->assertSame(4, $calls);
 
         $called = false;
-        $this->basic->get(new Get('test_consume'))(static function() use (&$called): void {
+        $this->basic->get(Get::of('test_consume'))(static function() use (&$called): void {
             $called = true;
         });
         $this->assertFalse($called);
@@ -557,13 +557,13 @@ class BasicTest extends TestCase
         $this->connection->wait(Method::queueDeclareOk);
         $this->connection->send($this->connection->protocol()->queue()->bind(
             new Channel(1),
-            new Binding('amq.direct', 'test_consume'),
+            Binding::of('amq.direct', 'test_consume'),
         ));
         $this->connection->wait(Method::queueBindOk);
 
         foreach (\range(0, 3) as $i) {
             $this->basic->publish(
-                (new Publish(new Generic(Str::of('foobar'.$i))))->to('amq.direct'),
+                Publish::a(Generic::of(Str::of('foobar'.$i)))->to('amq.direct'),
             );
         }
 
@@ -572,7 +572,7 @@ class BasicTest extends TestCase
         $consumer = $this
             ->basic
             ->consume(
-                new Consume('test_consume'),
+                Consume::of('test_consume'),
             );
         $consumer->take(4); //otherwise it will process all messages ()
         $this->assertNull(
@@ -601,7 +601,7 @@ class BasicTest extends TestCase
         $this->assertSame(4, $calls);
 
         $called = false;
-        $this->basic->get(new Get('test_consume'))(function(
+        $this->basic->get(Get::of('test_consume'))(function(
             $message,
             $redelivered,
             $exchange,
@@ -628,11 +628,11 @@ class BasicTest extends TestCase
         $this->connection->wait(Method::queueDeclareOk);
         $this->connection->send($this->connection->protocol()->queue()->bind(
             new Channel(1),
-            new Binding('amq.direct', 'test_get'),
+            Binding::of('amq.direct', 'test_get'),
         ));
         $this->connection->wait(Method::queueBindOk);
         $this->basic->publish(
-            $publish = (new Publish(new Generic(Str::of('foobar'))))->to('amq.direct'),
+            $publish = Publish::a(Generic::of(Str::of('foobar')))->to('amq.direct'),
         );
         $this->basic->publish($publish);
         $called = false;
@@ -641,7 +641,7 @@ class BasicTest extends TestCase
             $this
                 ->basic
                 ->get(
-                    new Get('test_get'),
+                    Get::of('test_get'),
                 )(function(
                     Message $message,
                     bool $redelivered,
@@ -673,11 +673,11 @@ class BasicTest extends TestCase
         $this->connection->wait(Method::queueDeclareOk);
         $this->connection->send($this->connection->protocol()->queue()->bind(
             new Channel(1),
-            new Binding('amq.direct', 'test_get'),
+            Binding::of('amq.direct', 'test_get'),
         ));
         $this->connection->wait(Method::queueBindOk);
-        $message = (new Generic(Str::of('foobar')))
-            ->withContentType(new ContentType('text', 'plain'))
+        $message = Generic::of(Str::of('foobar'))
+            ->withContentType(ContentType::of('text', 'plain'))
             ->withContentEncoding(ContentEncoding::of('gzip'))
             ->withHeaders(
                 Map::of(
@@ -708,7 +708,7 @@ class BasicTest extends TestCase
             ->withAppId(AppId::of('webcrawler'));
 
         $this->assertNull(
-            $this->basic->publish((new Publish($message))->to('amq.direct')),
+            $this->basic->publish(Publish::a($message)->to('amq.direct')),
         );
         $called = false;
 
@@ -716,7 +716,7 @@ class BasicTest extends TestCase
             $this
                 ->basic
                 ->get(
-                    new Get('test_get'),
+                    Get::of('test_get'),
                 )(function(
                     Message $message,
                     bool $redelivered,
@@ -873,16 +873,16 @@ class BasicTest extends TestCase
         $this->connection->wait(Method::queueDeclareOk);
         $this->connection->send($this->connection->protocol()->queue()->bind(
             new Channel(1),
-            new Binding('amq.direct', 'test_get'),
+            Binding::of('amq.direct', 'test_get'),
         ));
         $this->connection->wait(Method::queueBindOk);
         $this->basic->publish(
-            $publish = (new Publish(new Generic(Str::of('foobar'))))->to('amq.direct'),
+            $publish = Publish::a(Generic::of(Str::of('foobar')))->to('amq.direct'),
         );
         $this->basic->publish($publish);
         $called = false;
 
-        $get = $this->basic->get(new Get('test_get'));
+        $get = $this->basic->get(Get::of('test_get'));
         $this->assertNull(
             $get(function(
                 Message $message,
@@ -920,7 +920,7 @@ class BasicTest extends TestCase
         $this->connection->wait(Method::queueDeclareOk);
         $this->connection->send($this->connection->protocol()->queue()->bind(
             new Channel(1),
-            new Binding('amq.direct', 'test_get'),
+            Binding::of('amq.direct', 'test_get'),
         ));
         $this->connection->wait(Method::queueBindOk);
         $called = false;
@@ -929,7 +929,7 @@ class BasicTest extends TestCase
             $this
                 ->basic
                 ->get(
-                    new Get('test_get'),
+                    Get::of('test_get'),
                 )(static function() use (&$called): void {
                     $called = true;
                 }),
@@ -948,11 +948,11 @@ class BasicTest extends TestCase
         $this->connection->wait(Method::queueDeclareOk);
         $this->connection->send($this->connection->protocol()->queue()->bind(
             new Channel(1),
-            new Binding('amq.direct', 'test_get'),
+            Binding::of('amq.direct', 'test_get'),
         ));
         $this->connection->wait(Method::queueBindOk);
         $this->basic->publish(
-            (new Publish(new Generic(Str::of('foobar'))))->to('amq.direct'),
+            Publish::a(Generic::of(Str::of('foobar')))->to('amq.direct'),
         );
         $called = false;
 
@@ -960,7 +960,7 @@ class BasicTest extends TestCase
             $this
                 ->basic
                 ->get(
-                    new Get('test_get'),
+                    Get::of('test_get'),
                 )(static function() use (&$called): void {
                     $called = true;
 
@@ -969,7 +969,7 @@ class BasicTest extends TestCase
         );
         $this->assertTrue($called);
         $called = false;
-        $this->basic->get(new Get('test_get'))(static function() use (&$called): void {
+        $this->basic->get(Get::of('test_get'))(static function() use (&$called): void {
             $called = true;
         });
         $this->assertFalse($called);
@@ -986,11 +986,11 @@ class BasicTest extends TestCase
         $this->connection->wait(Method::queueDeclareOk);
         $this->connection->send($this->connection->protocol()->queue()->bind(
             new Channel(1),
-            new Binding('amq.direct', 'test_get'),
+            Binding::of('amq.direct', 'test_get'),
         ));
         $this->connection->wait(Method::queueBindOk);
         $this->basic->publish(
-            (new Publish(new Generic(Str::of('foobar'))))->to('amq.direct'),
+            Publish::a(Generic::of(Str::of('foobar')))->to('amq.direct'),
         );
         $called = false;
 
@@ -998,7 +998,7 @@ class BasicTest extends TestCase
             $this
                 ->basic
                 ->get(
-                    new Get('test_get'),
+                    Get::of('test_get'),
                 )(static function() use (&$called): void {
                     $called = true;
 
@@ -1010,7 +1010,7 @@ class BasicTest extends TestCase
 
         $this->assertTrue($called);
         $called = false;
-        $this->basic->get(new Get('test_get'))(static function() use (&$called): void {
+        $this->basic->get(Get::of('test_get'))(static function() use (&$called): void {
             $called = true;
         });
         $this->assertFalse($called);
@@ -1027,11 +1027,11 @@ class BasicTest extends TestCase
         $this->connection->wait(Method::queueDeclareOk);
         $this->connection->send($this->connection->protocol()->queue()->bind(
             new Channel(1),
-            new Binding('amq.direct', 'test_get'),
+            Binding::of('amq.direct', 'test_get'),
         ));
         $this->connection->wait(Method::queueBindOk);
         $this->basic->publish(
-            (new Publish(new Generic(Str::of('foobar'))))->to('amq.direct'),
+            Publish::a(Generic::of(Str::of('foobar')))->to('amq.direct'),
         );
         $called = false;
 
@@ -1039,7 +1039,7 @@ class BasicTest extends TestCase
             $this
                 ->basic
                 ->get(
-                    new Get('test_get'),
+                    Get::of('test_get'),
                 )(static function() use (&$called): void {
                     $called = true;
 
@@ -1048,7 +1048,7 @@ class BasicTest extends TestCase
         );
         $this->assertTrue($called);
         $called = false;
-        $this->basic->get(new Get('test_get'))(function($message) use (&$called): void {
+        $this->basic->get(Get::of('test_get'))(function($message) use (&$called): void {
             $called = true;
             $this->assertSame('foobar', $message->body()->toString());
         });
@@ -1059,7 +1059,7 @@ class BasicTest extends TestCase
     {
         $this->assertNull(
             $this->basic->publish(
-                new Publish(new Generic(Str::of('foobar'))),
+                Publish::a(Generic::of(Str::of('foobar'))),
             ),
         );
     }
@@ -1075,15 +1075,15 @@ class BasicTest extends TestCase
         $this->connection->wait(Method::queueDeclareOk);
         $this->connection->send($this->connection->protocol()->queue()->bind(
             new Channel(1),
-            new Binding('amq.direct', 'test_reject'),
+            Binding::of('amq.direct', 'test_reject'),
         ));
         $this->connection->wait(Method::queueBindOk);
         $this->basic->publish(
-            (new Publish(new Generic(Str::of('foobar'))))->to('amq.direct'),
+            Publish::a(Generic::of(Str::of('foobar')))->to('amq.direct'),
         );
         $this->connection->send($this->connection->protocol()->basic()->get(
             new Channel(1),
-            new Get('test_reject'),
+            Get::of('test_reject'),
         ));
         $frame = $this->connection->wait(Method::basicGetOk);
         $deliveryTag = $frame
@@ -1098,7 +1098,7 @@ class BasicTest extends TestCase
         $this->connection->wait(); //body
 
         $this->assertNull(
-            $this->basic->reject(new RejectCommand($deliveryTag)),
+            $this->basic->reject(RejectCommand::of($deliveryTag)),
         );
     }
 
@@ -1113,15 +1113,15 @@ class BasicTest extends TestCase
         $this->connection->wait(Method::queueDeclareOk);
         $this->connection->send($this->connection->protocol()->queue()->bind(
             new Channel(1),
-            new Binding('amq.direct', 'test_requeue'),
+            Binding::of('amq.direct', 'test_requeue'),
         ));
         $this->connection->wait(Method::queueBindOk);
         $this->basic->publish(
-            (new Publish(new Generic(Str::of('foobar'))))->to('amq.direct'),
+            Publish::a(Generic::of(Str::of('foobar')))->to('amq.direct'),
         );
         $this->connection->send($this->connection->protocol()->basic()->get(
             new Channel(1),
-            new Get('test_requeue'),
+            Get::of('test_requeue'),
         ));
         $frame = $this->connection->wait(Method::basicGetOk);
         $deliveryTag = $frame
@@ -1145,7 +1145,7 @@ class BasicTest extends TestCase
         //only prefectch count can be tested as prefetch size is not implemented
         //by rabbitmq
         $this->assertNull(
-            $this->basic->qos(new Qos(0, 50)),
+            $this->basic->qos(Qos::of(0, 50)),
         );
         $this->assertNull(
             $this->basic->qos(Qos::global(0, 50)),

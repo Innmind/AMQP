@@ -10,7 +10,7 @@ class QosTest extends TestCase
 {
     public function testInterface()
     {
-        $command = new Qos(0, 1);
+        $command = Qos::of(0, 1);
 
         $this->assertSame(0, $command->prefetchSize());
         $this->assertSame(1, $command->prefetchCount());

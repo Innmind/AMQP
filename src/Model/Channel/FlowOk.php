@@ -10,9 +10,17 @@ final class FlowOk
 {
     private bool $active;
 
-    public function __construct(bool $active)
+    private function __construct(bool $active)
     {
         $this->active = $active;
+    }
+
+    /**
+     * @psalm-pure
+     */
+    public static function of(bool $active): self
+    {
+        return new self($active);
     }
 
     public function active(): bool

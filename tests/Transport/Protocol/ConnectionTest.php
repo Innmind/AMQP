@@ -35,7 +35,7 @@ class ConnectionTest extends TestCase
     public function testStartOk()
     {
         $frame = (new Connection)->startOk(
-            new StartOk(
+            StartOk::of(
                 User::of('foo'),
                 Password::of('bar'),
             ),
@@ -327,7 +327,7 @@ class ConnectionTest extends TestCase
     public function testSecureOk()
     {
         $frame = (new Connection)->secureOk(
-            new SecureOk(
+            SecureOk::of(
                 User::of('foo'),
                 Password::of('bar'),
             ),
@@ -354,10 +354,10 @@ class ConnectionTest extends TestCase
     public function testTuneOk()
     {
         $frame = (new Connection)->tuneOk(
-            new TuneOk(
-                new MaxChannels(1),
-                new MaxFrameSize(10),
-                new ElapsedPeriod(3000),
+            TuneOk::of(
+                MaxChannels::of(1),
+                MaxFrameSize::of(10),
+                ElapsedPeriod::of(3000),
             ),
         );
 
@@ -404,7 +404,7 @@ class ConnectionTest extends TestCase
     public function testOpen()
     {
         $frame = (new Connection)->open(
-            new Open(Path::of('/')),
+            Open::of(Path::of('/')),
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -453,7 +453,7 @@ class ConnectionTest extends TestCase
     public function testClose()
     {
         $frame = (new Connection)->close(
-            new Close,
+            Close::demand(),
         );
 
         $this->assertInstanceOf(Frame::class, $frame);

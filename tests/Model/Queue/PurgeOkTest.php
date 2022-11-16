@@ -13,8 +13,8 @@ class PurgeOkTest extends TestCase
 {
     public function testInterface()
     {
-        $model = new PurgeOk(
-            $message = new Count(1),
+        $model = PurgeOk::of(
+            $message = Count::of(1),
         );
 
         $this->assertSame($message, $model->message());

@@ -56,7 +56,7 @@ class TransactionTest extends TestCase
         $this->connection->send(
             $this->connection->protocol()->channel()->close(
                 new Channel(1),
-                new Close,
+                Close::demand(),
             ),
         );
         $this->connection->wait(Method::channelCloseOk);

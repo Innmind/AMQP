@@ -44,11 +44,11 @@ class ConsumerTest extends TestCase
             ->channel()
             ->queue()
             ->bind(
-                new Binding('e', $queue->name()),
+                Binding::of('e', $queue->name()),
             );
 
         foreach (\range(0, 99) as $i) {
-            $message = new Message(Str::of("$i"));
+            $message = Message::of(Str::of("$i"));
             $client
                 ->channel()
                 ->basic()
@@ -60,14 +60,14 @@ class ConsumerTest extends TestCase
         $client
             ->channel()
             ->basic()
-            ->qos(new Qos(0, 10));
+            ->qos(Qos::of(0, 10));
         $expected = [];
 
         foreach (\range(1, 10) as $_) {
             $consumer = $client
                 ->channel()
                 ->basic()
-                ->consume(new Consume($queue->name()));
+                ->consume(Consume::of($queue->name()));
             $consumer->take(10);
             $consumer->foreach(static function($message) use (&$expected) {
                 $expected[] = (int) $message->body()->toString();
@@ -96,11 +96,11 @@ class ConsumerTest extends TestCase
             ->channel()
             ->queue()
             ->bind(
-                new Binding('e', $queue->name()),
+                Binding::of('e', $queue->name()),
             );
 
         foreach (\range(0, 99) as $i) {
-            $message = new Message(Str::of("$i"));
+            $message = Message::of(Str::of("$i"));
             $client
                 ->channel()
                 ->basic()
@@ -117,11 +117,11 @@ class ConsumerTest extends TestCase
             $client
                 ->channel()
                 ->basic()
-                ->qos(new Qos(0, 10));
+                ->qos(Qos::of(0, 10));
             $consumer = $client
                 ->channel()
                 ->basic()
-                ->consume(new Consume($queue->name()));
+                ->consume(Consume::of($queue->name()));
             $consumer->take(10);
             $consumer->foreach(static function($message) use (&$expected) {
                 $expected[] = (int) $message->body()->toString();

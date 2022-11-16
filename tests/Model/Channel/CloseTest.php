@@ -10,7 +10,7 @@ class CloseTest extends TestCase
 {
     public function testInterface()
     {
-        $command = new Close;
+        $command = Close::demand();
 
         $this->assertNull($command->response()->match(
             static fn($info) => $info,

@@ -45,7 +45,7 @@ class AutoDeclareTest extends TestCase
         $exchange2 = clone $exchange;
         $queue = Queue::durable();
         $queue2 = clone $queue;
-        $binding = new Binding('foo', 'bar');
+        $binding = Binding::of('foo', 'bar');
         $binding2 = clone $binding;
 
         $client = new AutoDeclare(
@@ -88,13 +88,13 @@ class AutoDeclareTest extends TestCase
     {
         $exchange = Exchange::temporary('foo', Type::direct);
         $queue = Queue::durable();
-        $binding = new Binding('foo', 'bar');
+        $binding = Binding::of('foo', 'bar');
 
         $client = new AutoDeclare(
             $mock = $this->createMock(Client::class),
-            Set::of(Exchange::class, $exchange),
-            Set::of(Queue::class, $queue),
-            Set::of(Binding::class, $binding),
+            Set::of($exchange),
+            Set::of($queue),
+            Set::of($binding),
         );
         $mock
             ->expects($this->once())

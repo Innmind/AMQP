@@ -19,7 +19,7 @@ final class MaxFrameSize
     /**
      * @param int<0, 4294967295> $value
      */
-    public function __construct(int $value)
+    private function __construct(int $value)
     {
         if ($value !== 0 && $value < 9) {
             throw new DomainException((string) $value);

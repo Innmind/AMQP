@@ -34,7 +34,7 @@ final class Consume implements Command
 
         $this->qos($console, $basic);
 
-        $consumer = $basic->consume(new Basic\Consume($queue));
+        $consumer = $basic->consume(Basic\Consume::of($queue));
 
         if ($console->arguments()->contains('number')) {
             $consumer->take((int) $console->arguments()->get('number'));
@@ -71,7 +71,7 @@ USAGE;
             }
 
             /** @psalm-suppress InvalidArgument */
-            $basic->qos(new Qos(0, $prefetch));
+            $basic->qos(Qos::of(0, $prefetch));
 
             return;
         }
@@ -84,7 +84,7 @@ USAGE;
             }
 
             /** @psalm-suppress InvalidArgument */
-            $basic->qos(new Qos(0, $prefetch));
+            $basic->qos(Qos::of(0, $prefetch));
 
             return;
         }

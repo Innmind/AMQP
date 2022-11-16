@@ -31,7 +31,7 @@ class GenericTest extends TestCase
 {
     public function testInterface()
     {
-        $message = new Generic(Str::of('foo'));
+        $message = Generic::of(Str::of('foo'));
 
         $this->assertInstanceOf(Message::class, $message);
         $this->assertFalse($message->contentType()->match(
@@ -90,9 +90,9 @@ class GenericTest extends TestCase
 
     public function testContentType()
     {
-        $message = new Generic(Str::of(''));
+        $message = Generic::of(Str::of(''));
         $message2 = $message->withContentType(
-            $expected = new ContentType('text', 'plain'),
+            $expected = ContentType::of('text', 'plain'),
         );
 
         $this->assertInstanceOf(Message::class, $message2);
@@ -104,7 +104,7 @@ class GenericTest extends TestCase
 
     public function testContentEncoding()
     {
-        $message = new Generic(Str::of(''));
+        $message = Generic::of(Str::of(''));
         $message2 = $message->withContentEncoding(
             $expected = ContentEncoding::of('gzip'),
         );
@@ -118,7 +118,7 @@ class GenericTest extends TestCase
 
     public function testHeaders()
     {
-        $message = new Generic(Str::of(''));
+        $message = Generic::of(Str::of(''));
         $message2 = $message->withHeaders(
             $expected = Map::of(['foo', 'bar']),
         );
@@ -129,7 +129,7 @@ class GenericTest extends TestCase
 
     public function testDeliveryMode()
     {
-        $message = new Generic(Str::of(''));
+        $message = Generic::of(Str::of(''));
         $message2 = $message->withDeliveryMode(
             $expected = DeliveryMode::persistent,
         );
@@ -143,7 +143,7 @@ class GenericTest extends TestCase
 
     public function testPriority()
     {
-        $message = new Generic(Str::of(''));
+        $message = Generic::of(Str::of(''));
         $message2 = $message->withPriority(
             $expected = Priority::zero,
         );
@@ -157,7 +157,7 @@ class GenericTest extends TestCase
 
     public function testCorrelationId()
     {
-        $message = new Generic(Str::of(''));
+        $message = Generic::of(Str::of(''));
         $message2 = $message->withCorrelationId(
             $expected = CorrelationId::of('foo'),
         );
@@ -171,7 +171,7 @@ class GenericTest extends TestCase
 
     public function testReplyTo()
     {
-        $message = new Generic(Str::of(''));
+        $message = Generic::of(Str::of(''));
         $message2 = $message->withReplyTo(
             $expected = ReplyTo::of('foo'),
         );
@@ -185,7 +185,7 @@ class GenericTest extends TestCase
 
     public function testExpiration()
     {
-        $message = new Generic(Str::of(''));
+        $message = Generic::of(Str::of(''));
         $message2 = $message->withExpiration(
             $expected = new ElapsedPeriod(1000),
         );
@@ -199,7 +199,7 @@ class GenericTest extends TestCase
 
     public function testId()
     {
-        $message = new Generic(Str::of(''));
+        $message = Generic::of(Str::of(''));
         $message2 = $message->withId(
             $expected = Id::of('foo'),
         );
@@ -213,7 +213,7 @@ class GenericTest extends TestCase
 
     public function testTimestamp()
     {
-        $message = new Generic(Str::of(''));
+        $message = Generic::of(Str::of(''));
         $message2 = $message->withTimestamp(
             $expected = $this->createMock(PointInTime::class),
         );
@@ -227,7 +227,7 @@ class GenericTest extends TestCase
 
     public function testType()
     {
-        $message = new Generic(Str::of(''));
+        $message = Generic::of(Str::of(''));
         $message2 = $message->withType(
             $expected = Type::of('foo'),
         );
@@ -241,7 +241,7 @@ class GenericTest extends TestCase
 
     public function testUserId()
     {
-        $message = new Generic(Str::of(''));
+        $message = Generic::of(Str::of(''));
         $message2 = $message->withUserId(
             $expected = UserId::of('foo'),
         );
@@ -255,7 +255,7 @@ class GenericTest extends TestCase
 
     public function testAppId()
     {
-        $message = new Generic(Str::of(''));
+        $message = Generic::of(Str::of(''));
         $message2 = $message->withAppId(
             $expected = AppId::of('foo'),
         );

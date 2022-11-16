@@ -14,7 +14,7 @@ final class TuneOk
     private MaxFrameSize $maxFrameSize;
     private ElapsedPeriod $heartbeat;
 
-    public function __construct(
+    private function __construct(
         MaxChannels $maxChannels,
         MaxFrameSize $maxFrameSize,
         ElapsedPeriod $heartbeat,
@@ -22,6 +22,17 @@ final class TuneOk
         $this->maxChannels = $maxChannels;
         $this->maxFrameSize = $maxFrameSize;
         $this->heartbeat = $heartbeat;
+    }
+
+    /**
+     * @psalm-pure
+     */
+    public static function of(
+        MaxChannels $maxChannels,
+        MaxFrameSize $maxFrameSize,
+        ElapsedPeriod $heartbeat,
+    ): self {
+        return new self($maxChannels, $maxFrameSize, $heartbeat);
     }
 
     /**

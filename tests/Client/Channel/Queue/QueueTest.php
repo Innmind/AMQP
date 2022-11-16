@@ -64,7 +64,7 @@ class QueueTest extends TestCase
         $this->connection->send(
             $this->connection->protocol()->channel()->close(
                 new Channel(1),
-                new Close,
+                Close::demand(),
             ),
         );
         $this->connection->wait(Method::channelCloseOk);
@@ -99,12 +99,12 @@ class QueueTest extends TestCase
 
         $this->assertNull(
             $this->queue->bind(
-                (new Binding('amq.direct', $queue, 'foo'))->dontWait(),
+                Binding::of('amq.direct', $queue, 'foo')->dontWait(),
             ),
         );
         $this->assertNull(
             $this->queue->bind(
-                new Binding('amq.direct', $queue, 'bar'),
+                Binding::of('amq.direct', $queue, 'bar'),
             ),
         );
     }
@@ -120,7 +120,7 @@ class QueueTest extends TestCase
 
         $this->assertNull(
             $this->queue->unbind(
-                new Unbinding('amq.direct', $queue, 'bar'),
+                Unbinding::of('amq.direct', $queue, 'bar'),
             ),
         );
     }
@@ -135,10 +135,10 @@ class QueueTest extends TestCase
             ->name();
 
         $this->assertNull($this->queue->purge(
-            (new Purge($queue))->dontWait(),
+            Purge::of($queue)->dontWait(),
         ));
 
-        $response = $this->queue->purge(new Purge($queue));
+        $response = $this->queue->purge(Purge::of($queue));
         $this->assertInstanceOf(PurgeOk::class, $response);
     }
 
@@ -152,10 +152,10 @@ class QueueTest extends TestCase
             ->name();
 
         $this->assertNull($this->queue->delete(
-            (new Deletion($queue))->dontWait(),
+            Deletion::of($queue)->dontWait(),
         ));
 
-        $response = $this->queue->delete(new Deletion($queue));
+        $response = $this->queue->delete(Deletion::of($queue));
         $this->assertInstanceOf(DeleteOk::class, $response);
     }
 }

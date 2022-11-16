@@ -11,7 +11,7 @@ class UnbindingTest extends TestCase
 {
     public function testInterface()
     {
-        $command = new Unbinding('foo', 'bar', 'baz');
+        $command = Unbinding::of('foo', 'bar', 'baz');
 
         $this->assertSame('foo', $command->exchange());
         $this->assertSame('bar', $command->queue());
@@ -22,7 +22,7 @@ class UnbindingTest extends TestCase
 
     public function testWithArgument()
     {
-        $command = new Unbinding('foo', 'bar', 'baz');
+        $command = Unbinding::of('foo', 'bar', 'baz');
         $command2 = $command->withArgument('f', [42]);
 
         $this->assertInstanceOf(Unbinding::class, $command2);

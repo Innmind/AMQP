@@ -59,7 +59,7 @@ class ExchangeTest extends TestCase
         $this->connection->send(
             $this->connection->protocol()->channel()->close(
                 new Channel(1),
-                new Close,
+                Close::demand(),
             ),
         );
         $this->connection->wait(Method::channelCloseOk);
@@ -89,12 +89,12 @@ class ExchangeTest extends TestCase
     {
         $this->assertNull(
             $this->exchange->delete(
-                (new Deletion('foo'))->dontWait(),
+                Deletion::of('foo')->dontWait(),
             ),
         );
         $this->assertNull(
             $this->exchange->delete(
-                new Deletion('bar'),
+                Deletion::of('bar'),
             ),
         );
     }

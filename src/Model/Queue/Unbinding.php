@@ -16,13 +16,21 @@ final class Unbinding
     /** @var Map<string, mixed> */
     private Map $arguments;
 
-    public function __construct(string $exchange, string $queue, string $routingKey = '')
+    private function __construct(string $exchange, string $queue, string $routingKey = '')
     {
         $this->exchange = $exchange;
         $this->queue = $queue;
         $this->routingKey = $routingKey;
         /** @var Map<string, mixed> */
         $this->arguments = Map::of();
+    }
+
+    /**
+     * @psalm-pure
+     */
+    public static function of(string $exchange, string $queue, string $routingKey = ''): self
+    {
+        return new self($exchange, $queue, $routingKey);
     }
 
     public function withArgument(string $key, mixed $value): self

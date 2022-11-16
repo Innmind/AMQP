@@ -35,7 +35,7 @@ final class Get implements Command
                 ->client
                 ->channel()
                 ->basic()
-                ->get(new Basic\Get($queue))($consume);
+                ->get(Basic\Get::of($queue))($consume);
 
             return $console;
         } finally {

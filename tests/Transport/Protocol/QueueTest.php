@@ -211,7 +211,7 @@ class QueueTest extends TestCase
     {
         $frame = $this->queue->delete(
             $channel = new Channel(1),
-            new Deletion('foo'),
+            Deletion::of('foo'),
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -252,7 +252,7 @@ class QueueTest extends TestCase
 
         $frame = $this->queue->delete(
             $channel = new Channel(1),
-            (new Deletion('foo'))->ifUnused(),
+            Deletion::of('foo')->ifUnused(),
         );
 
         $this->assertSame(
@@ -265,7 +265,7 @@ class QueueTest extends TestCase
 
         $frame = $this->queue->delete(
             $channel = new Channel(1),
-            (new Deletion('foo'))->ifEmpty(),
+            Deletion::of('foo')->ifEmpty(),
         );
 
         $this->assertSame(
@@ -278,7 +278,7 @@ class QueueTest extends TestCase
 
         $frame = $this->queue->delete(
             $channel = new Channel(1),
-            (new Deletion('foo'))->dontWait(),
+            Deletion::of('foo')->dontWait(),
         );
 
         $this->assertSame(
@@ -303,7 +303,7 @@ class QueueTest extends TestCase
             ));
         $frame = $this->queue->bind(
             $channel = new Channel(1),
-            (new Binding('ex', 'q', 'rk'))
+            Binding::of('ex', 'q', 'rk')
                 ->withArgument('foo', 24)
                 ->withArgument('bar', 42),
         );
@@ -384,7 +384,7 @@ class QueueTest extends TestCase
 
         $frame = $this->queue->bind(
             $channel = new Channel(1),
-            (new Binding('ex', 'q', 'rk'))->dontWait(),
+            Binding::of('ex', 'q', 'rk')->dontWait(),
         );
 
         $this->assertTrue($frame->values()->get(4)->match(
@@ -409,7 +409,7 @@ class QueueTest extends TestCase
             ));
         $frame = $this->queue->unbind(
             $channel = new Channel(1),
-            (new Unbinding('ex', 'q', 'rk'))
+            Unbinding::of('ex', 'q', 'rk')
                 ->withArgument('foo', 24)
                 ->withArgument('bar', 42),
         );
@@ -482,7 +482,7 @@ class QueueTest extends TestCase
     {
         $frame = $this->queue->purge(
             $channel = new Channel(1),
-            new Purge('q'),
+            Purge::of('q'),
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -523,7 +523,7 @@ class QueueTest extends TestCase
 
         $frame = $this->queue->purge(
             $channel = new Channel(1),
-            (new Purge('q'))->dontWait(),
+            Purge::of('q')->dontWait(),
         );
 
         $this->assertTrue($frame->values()->get(2)->match(

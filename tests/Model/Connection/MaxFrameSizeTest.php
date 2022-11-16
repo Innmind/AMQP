@@ -20,14 +20,14 @@ class MaxFrameSizeTest extends TestCase
 
     public function testInterface()
     {
-        $max = new MaxFrameSize(42);
+        $max = MaxFrameSize::of(42);
 
         $this->assertSame(42, $max->toInt());
         $this->assertTrue($max->allows(0));
         $this->assertTrue($max->allows(42));
         $this->assertFalse($max->allows(43));
 
-        $this->assertTrue((new MaxFrameSize(0))->allows(1));
+        $this->assertTrue((MaxFrameSize::of(0))->allows(1));
     }
 
     public function testAllowAnySizeWhenNoLimit()
@@ -35,7 +35,7 @@ class MaxFrameSizeTest extends TestCase
         $this
             ->forAll(Set\Integers::between(0, 4294967295)) // max allowed by the specification 0.9.1
             ->then(function($size) {
-                $max = new MaxFrameSize(0);
+                $max = MaxFrameSize::of(0);
 
                 $this->assertTrue($max->allows($size));
             });
@@ -49,7 +49,7 @@ class MaxFrameSizeTest extends TestCase
                 Set\Integers::between(1, 4294967295 - 9),
             )
             ->then(function($allowed, $extraSize) {
-                $max = new MaxFrameSize($allowed);
+                $max = MaxFrameSize::of($allowed);
 
                 $this->assertFalse($max->allows($allowed + $extraSize));
             });
@@ -63,7 +63,7 @@ class MaxFrameSizeTest extends TestCase
                 Set\Integers::between(0, 4294967295 - 9),
             )
             ->then(function($allowed, $sizeBelow) {
-                $max = new MaxFrameSize($allowed);
+                $max = MaxFrameSize::of($allowed);
 
                 $this->assertTrue($max->allows($allowed - $sizeBelow));
             });
@@ -74,7 +74,7 @@ class MaxFrameSizeTest extends TestCase
         $this
             ->forAll(Set\Integers::between(0, 4294967295)) // max allowed by the specification 0.9.1
             ->then(function($size) {
-                $max = new MaxFrameSize(0);
+                $max = MaxFrameSize::of(0);
 
                 $this->assertNull($max->verify($size));
             });
@@ -84,7 +84,7 @@ class MaxFrameSizeTest extends TestCase
                 Set\Integers::between(0, 4294967295 - 9),
             )
             ->then(function($allowed, $sizeBelow) {
-                $max = new MaxFrameSize($allowed);
+                $max = MaxFrameSize::of($allowed);
 
                 $this->assertNull($max->verify($allowed - $sizeBelow));
             });
@@ -98,7 +98,7 @@ class MaxFrameSizeTest extends TestCase
                 Set\Integers::between(1, 4294967295 - 9),
             )
             ->then(function($allowed, $extraSize) {
-                $max = new MaxFrameSize($allowed);
+                $max = MaxFrameSize::of($allowed);
 
                 $above = $allowed + $extraSize;
 
@@ -111,16 +111,16 @@ class MaxFrameSizeTest extends TestCase
 
     public function testIsLimited()
     {
-        $this->assertTrue((new MaxFrameSize(42))->isLimited());
-        $this->assertTrue((new MaxFrameSize(9))->isLimited());
-        $this->assertFalse((new MaxFrameSize(0))->isLimited());
+        $this->assertTrue(MaxFrameSize::of(42)->isLimited());
+        $this->assertTrue(MaxFrameSize::of(9)->isLimited());
+        $this->assertFalse(MaxFrameSize::of(0)->isLimited());
     }
 
     public function testThrowWhenNegativeValue()
     {
         $this->expectException(DomainException::class);
 
-        new MaxFrameSize(-1);
+        MaxFrameSize::of(-1);
     }
 
     /**
@@ -132,7 +132,7 @@ class MaxFrameSizeTest extends TestCase
 
         //meaning that channel id + payload size int + frame end flag
         //already make a size of 8 leaving no place for the payload
-        new MaxFrameSize($int);
+        MaxFrameSize::of($int);
     }
 
     public function invalid(): array

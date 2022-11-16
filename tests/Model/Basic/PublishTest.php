@@ -13,7 +13,7 @@ class PublishTest extends TestCase
 {
     public function testInterface()
     {
-        $command = new Publish(
+        $command = Publish::a(
             $message = $this->createMock(Message::class),
         );
 
@@ -34,7 +34,7 @@ class PublishTest extends TestCase
 
     public function testTo()
     {
-        $command = new Publish($this->createMock(Message::class));
+        $command = Publish::a($this->createMock(Message::class));
         $command2 = $command->to('foo');
 
         $this->assertInstanceOf(Publish::class, $command2);
@@ -52,7 +52,7 @@ class PublishTest extends TestCase
 
     public function testWithRoutingKey()
     {
-        $command = new Publish($this->createMock(Message::class));
+        $command = Publish::a($this->createMock(Message::class));
         $command2 = $command->withRoutingKey('bar');
 
         $this->assertInstanceOf(Publish::class, $command2);
@@ -63,7 +63,7 @@ class PublishTest extends TestCase
 
     public function testFlagAsMandatory()
     {
-        $command = new Publish($this->createMock(Message::class));
+        $command = Publish::a($this->createMock(Message::class));
         $command2 = $command->flagAsMandatory();
 
         $this->assertInstanceOf(Publish::class, $command2);
@@ -81,7 +81,7 @@ class PublishTest extends TestCase
 
     public function testFlagAsImmediate()
     {
-        $command = new Publish($this->createMock(Message::class));
+        $command = Publish::a($this->createMock(Message::class));
         $command2 = $command->flagAsImmediate();
 
         $this->assertInstanceOf(Publish::class, $command2);

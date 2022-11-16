@@ -27,7 +27,7 @@ final class Start
         // stop opening the connection
         $connection->wait(Method::connectionStart);
         $connection->send($connection->protocol()->connection()->startOk(
-            new StartOk(
+            StartOk::of(
                 $this->authority->userInformation()->user(),
                 $this->authority->userInformation()->password(),
             ),

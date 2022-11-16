@@ -13,10 +13,18 @@ final class Close
     /** @var Maybe<array{int<0, 65535>, string}> */
     private Maybe $reply;
 
-    public function __construct()
+    private function __construct()
     {
         /** @var Maybe<array{int<0, 65535>, string}> */
         $this->reply = Maybe::nothing();
+    }
+
+    /**
+     * @psalm-pure
+     */
+    public static function demand(): self
+    {
+        return new self;
     }
 
     /**

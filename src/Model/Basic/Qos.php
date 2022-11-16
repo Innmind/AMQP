@@ -23,10 +23,21 @@ final class Qos
      * @param int<0, 4294967295> $prefetchSize
      * @param int<0, 65535> $prefetchCount
      */
-    public function __construct(int $prefetchSize, int $prefetchCount)
+    private function __construct(int $prefetchSize, int $prefetchCount)
     {
         $this->prefetchSize = $prefetchSize;
         $this->prefetchCount = $prefetchCount;
+    }
+
+    /**
+     * @psalm-pure
+     *
+     * @param int<0, 4294967295> $prefetchSize
+     * @param int<0, 65535> $prefetchCount
+     */
+    public static function of(int $prefetchSize, int $prefetchCount): self
+    {
+        return new self($prefetchSize, $prefetchCount);
     }
 
     /**

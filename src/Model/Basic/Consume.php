@@ -24,13 +24,21 @@ final class Consume
     /** @var Map<string, mixed> */
     private Map $arguments;
 
-    public function __construct(string $queue)
+    private function __construct(string $queue)
     {
         $this->queue = $queue;
         /** @var Maybe<string> */
         $this->consumerTag = Maybe::nothing();
         /** @var Map<string, mixed> */
         $this->arguments = Map::of();
+    }
+
+    /**
+     * @psalm-pure
+     */
+    public static function of(string $queue): self
+    {
+        return new self($queue);
     }
 
     public function withConsumerTag(string $tag): self

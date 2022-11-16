@@ -12,9 +12,17 @@ final class DeleteOk
 {
     private Count $message;
 
-    public function __construct(Count $message)
+    private function __construct(Count $message)
     {
         $this->message = $message;
+    }
+
+    /**
+     * @psalm-pure
+     */
+    public static function of(Count $message): self
+    {
+        return new self($message);
     }
 
     public function message(): Count

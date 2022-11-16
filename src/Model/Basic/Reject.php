@@ -15,9 +15,19 @@ final class Reject
     /**
      * @param int<0, max> $deliveryTag
      */
-    public function __construct(int $deliveryTag)
+    private function __construct(int $deliveryTag)
     {
         $this->deliveryTag = $deliveryTag;
+    }
+
+    /**
+     * @psalm-pure
+     *
+     * @param int<0, max> $deliveryTag
+     */
+    public static function of(int $deliveryTag): self
+    {
+        return new self($deliveryTag);
     }
 
     /**

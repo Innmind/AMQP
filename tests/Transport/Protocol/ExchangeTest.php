@@ -172,7 +172,7 @@ class ExchangeTest extends TestCase
     {
         $frame = $this->exchange->delete(
             $channel = new Channel(1),
-            new Deletion('foo'),
+            Deletion::of('foo'),
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -213,7 +213,7 @@ class ExchangeTest extends TestCase
 
         $frame = $this->exchange->delete(
             $channel = new Channel(1),
-            (new Deletion('foo'))->ifUnused(),
+            Deletion::of('foo')->ifUnused(),
         );
 
         $this->assertSame(
@@ -226,7 +226,7 @@ class ExchangeTest extends TestCase
 
         $frame = $this->exchange->delete(
             $channel = new Channel(1),
-            (new Deletion('foo'))->dontWait(),
+            Deletion::of('foo')->dontWait(),
         );
 
         $this->assertSame(

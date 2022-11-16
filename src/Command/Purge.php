@@ -32,7 +32,7 @@ final class Purge implements Command
                 ->client
                 ->channel()
                 ->queue()
-                ->purge(new Queue\Purge($queue));
+                ->purge(Queue\Purge::of($queue));
 
             return $console;
         } catch (UnexpectedFrame $e) {

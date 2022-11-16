@@ -15,10 +15,10 @@ class TuneOkTest extends TestCase
 {
     public function testInterface()
     {
-        $command = new TuneOk(
-            new MaxChannels(1),
-            new MaxFrameSize(10),
-            $heartbeat = new ElapsedPeriod(1000),
+        $command = TuneOk::of(
+            MaxChannels::of(1),
+            MaxFrameSize::of(10),
+            $heartbeat = ElapsedPeriod::of(1000),
         );
 
         $this->assertSame(1, $command->maxChannels());

@@ -72,7 +72,7 @@ final class GetOk implements Get
             if (!$this->command->shouldAutoAcknowledge()) {
                 $this->connection->send($this->connection->protocol()->basic()->ack(
                     $this->channel,
-                    new Ack($this->deliveryTag),
+                    Ack::of($this->deliveryTag),
                 ));
             }
 
@@ -93,7 +93,7 @@ final class GetOk implements Get
         $this->connection->send(
             $this->connection->protocol()->basic()->reject(
                 $this->channel,
-                new RejectCommand($this->deliveryTag),
+                RejectCommand::of($this->deliveryTag),
             ),
         );
     }

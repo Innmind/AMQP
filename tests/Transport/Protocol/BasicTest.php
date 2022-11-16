@@ -67,7 +67,7 @@ class BasicTest extends TestCase
     {
         $frame = $this->basic->ack(
             $channel = new Channel(1),
-            new Ack(42),
+            Ack::of(42),
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -116,7 +116,7 @@ class BasicTest extends TestCase
     {
         $frame = $this->basic->cancel(
             $channel = new Channel(1),
-            new Cancel('consumer'),
+            Cancel::of('consumer'),
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -146,7 +146,7 @@ class BasicTest extends TestCase
 
         $frame = $this->basic->cancel(
             $channel = new Channel(1),
-            (new Cancel('consumer'))->dontWait(),
+            Cancel::of('consumer')->dontWait(),
         );
 
         $this->assertTrue($frame->values()->get(1)->match(
@@ -171,7 +171,7 @@ class BasicTest extends TestCase
             ));
         $frame = $this->basic->consume(
             $channel = new Channel(1),
-            (new Consume('queue'))
+            Consume::of('queue')
                 ->withArgument('foo', 24)
                 ->withArgument('bar', 42),
         );
@@ -244,7 +244,7 @@ class BasicTest extends TestCase
 
         $frame = $this->basic->consume(
             $channel = new Channel(1),
-            (new Consume('queue'))->withConsumerTag('tag'),
+            Consume::of('queue')->withConsumerTag('tag'),
         );
 
         $this->assertSame('tag', $frame->values()->get(2)->match(
@@ -254,7 +254,7 @@ class BasicTest extends TestCase
 
         $frame = $this->basic->consume(
             $channel = new Channel(1),
-            (new Consume('queue'))->noLocal(),
+            Consume::of('queue')->noLocal(),
         );
 
         $this->assertSame(
@@ -267,7 +267,7 @@ class BasicTest extends TestCase
 
         $frame = $this->basic->consume(
             $channel = new Channel(1),
-            (new Consume('queue'))->autoAcknowledge(),
+            Consume::of('queue')->autoAcknowledge(),
         );
 
         $this->assertSame(
@@ -280,7 +280,7 @@ class BasicTest extends TestCase
 
         $frame = $this->basic->consume(
             $channel = new Channel(1),
-            (new Consume('queue'))->exclusive(),
+            Consume::of('queue')->exclusive(),
         );
 
         $this->assertSame(
@@ -293,7 +293,7 @@ class BasicTest extends TestCase
 
         $frame = $this->basic->consume(
             $channel = new Channel(1),
-            (new Consume('queue'))
+            Consume::of('queue')
                 ->withConsumerTag('foo')
                 ->dontWait(),
         );
@@ -311,7 +311,7 @@ class BasicTest extends TestCase
     {
         $frame = $this->basic->get(
             $channel = new Channel(1),
-            new Get('queue'),
+            Get::of('queue'),
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -352,7 +352,7 @@ class BasicTest extends TestCase
 
         $frame = $this->basic->get(
             $channel = new Channel(1),
-            (new Get('queue'))->autoAcknowledge(),
+            Get::of('queue')->autoAcknowledge(),
         );
 
         $this->assertTrue($frame->values()->get(2)->match(
@@ -368,8 +368,8 @@ class BasicTest extends TestCase
     {
         $frames = $this->basic->publish(
             $channel = new Channel(1),
-            new Publish(new Generic(Str::of('foobar'))),
-            new MaxFrameSize(0),
+            Publish::a(Generic::of(Str::of('foobar'))),
+            MaxFrameSize::of(0),
         );
 
         $this->assertInstanceOf(Sequence::class, $frames);
@@ -471,8 +471,8 @@ class BasicTest extends TestCase
     {
         $frames = $this->basic->publish(
             $channel = new Channel(1),
-            new Publish(new Generic(Str::of('foobar'))),
-            new MaxFrameSize(11),
+            Publish::a(Generic::of(Str::of('foobar'))),
+            MaxFrameSize::of(11),
         );
 
         $this->assertInstanceOf(Sequence::class, $frames);
@@ -522,9 +522,9 @@ class BasicTest extends TestCase
 
         $frames = $basic->publish(
             $channel = new Channel(1),
-            new Publish(
-                (new Generic(Str::of('foobar')))
-                    ->withContentType(new ContentType('application', 'json'))
+            Publish::a(
+                Generic::of(Str::of('foobar'))
+                    ->withContentType(ContentType::of('application', 'json'))
                     ->withContentEncoding(ContentEncoding::of('gzip'))
                     ->withHeaders(
                         Map::of(['foo', ShortString::literal('bar')]),
@@ -540,7 +540,7 @@ class BasicTest extends TestCase
                     ->withUserId(UserId::of('guest'))
                     ->withAppId(AppId::of('webcrawler')),
             ),
-            new MaxFrameSize(0),
+            MaxFrameSize::of(0),
         );
 
         $this->assertInstanceOf(Sequence::class, $frames);
@@ -783,8 +783,8 @@ class BasicTest extends TestCase
     {
         $frames = $this->basic->publish(
             $channel = new Channel(1),
-            (new Publish(new Generic(Str::of(''))))->to('foo'),
-            new MaxFrameSize(0),
+            Publish::a(Generic::of(Str::of('')))->to('foo'),
+            MaxFrameSize::of(0),
         );
 
         $frame = $frames->first()->match(
@@ -801,8 +801,8 @@ class BasicTest extends TestCase
     {
         $frames = $this->basic->publish(
             $channel = new Channel(1),
-            (new Publish(new Generic(Str::of(''))))->withRoutingKey('foo'),
-            new MaxFrameSize(0),
+            Publish::a(Generic::of(Str::of('')))->withRoutingKey('foo'),
+            MaxFrameSize::of(0),
         );
 
         $frame = $frames->first()->match(
@@ -819,8 +819,8 @@ class BasicTest extends TestCase
     {
         $frames = $this->basic->publish(
             $channel = new Channel(1),
-            (new Publish(new Generic(Str::of(''))))->flagAsMandatory(),
-            new MaxFrameSize(0),
+            Publish::a(Generic::of(Str::of('')))->flagAsMandatory(),
+            MaxFrameSize::of(0),
         );
 
         $frame = $frames->first()->match(
@@ -840,8 +840,8 @@ class BasicTest extends TestCase
     {
         $frames = $this->basic->publish(
             $channel = new Channel(1),
-            (new Publish(new Generic(Str::of(''))))->flagAsImmediate(),
-            new MaxFrameSize(0),
+            Publish::a(Generic::of(Str::of('')))->flagAsImmediate(),
+            MaxFrameSize::of(0),
         );
 
         $frame = $frames->first()->match(
@@ -861,7 +861,7 @@ class BasicTest extends TestCase
     {
         $frame = $this->basic->qos(
             $channel = new Channel(1),
-            new Qos(1, 2),
+            Qos::of(1, 2),
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -921,7 +921,7 @@ class BasicTest extends TestCase
     {
         $frame = $this->basic->recover(
             $channel = new Channel(1),
-            new Recover,
+            Recover::withoutRequeue(),
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -959,7 +959,7 @@ class BasicTest extends TestCase
     {
         $frame = $this->basic->reject(
             $channel = new Channel(1),
-            new Reject(42),
+            Reject::of(42),
         );
 
         $this->assertInstanceOf(Frame::class, $frame);

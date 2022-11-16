@@ -83,7 +83,7 @@ class ChannelTest extends TestCase
     {
         $frame = (new Channel)->flowOk(
             $channel = new FrameChannel(1),
-            new FlowOk(true),
+            FlowOk::of(true),
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -105,7 +105,7 @@ class ChannelTest extends TestCase
 
         $frame = (new Channel)->flowOk(
             $channel = new FrameChannel(1),
-            new FlowOk(false),
+            FlowOk::of(false),
         );
 
         $this->assertFalse($frame->values()->get(0)->match(
@@ -121,7 +121,7 @@ class ChannelTest extends TestCase
     {
         $frame = (new Channel)->close(
             $channel = new FrameChannel(1),
-            new Close,
+            Close::demand(),
         );
 
         $this->assertInstanceOf(Frame::class, $frame);

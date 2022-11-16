@@ -68,9 +68,9 @@ class ProtocolTest extends TestCase
             ->basic()
             ->publish(
                 new FrameChannel(1),
-                new Publish(
-                    (new Generic(Str::of('foobar')))
-                        ->withContentType(new ContentType('application', 'json'))
+                Publish::a(
+                    Generic::of(Str::of('foobar'))
+                        ->withContentType(ContentType::of('application', 'json'))
                         ->withContentEncoding(ContentEncoding::of('gzip'))
                         ->withHeaders(
                             Map::of(['foo', ShortString::of(Str::of('bar'))]),
@@ -86,7 +86,7 @@ class ProtocolTest extends TestCase
                         ->withUserId(UserId::of('guest'))
                         ->withAppId(AppId::of('webcrawler')),
                 ),
-                new MaxFrameSize(10),
+                MaxFrameSize::of(10),
             )
             ->get(1)
             ->match(

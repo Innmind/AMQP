@@ -11,7 +11,7 @@ class BindingTest extends TestCase
 {
     public function testInterface()
     {
-        $command = new Binding('foo', 'bar', 'baz');
+        $command = Binding::of('foo', 'bar', 'baz');
 
         $this->assertSame('foo', $command->exchange());
         $this->assertSame('bar', $command->queue());
@@ -23,7 +23,7 @@ class BindingTest extends TestCase
 
     public function testDontWait()
     {
-        $command = new Binding('foo', 'bar', 'baz');
+        $command = Binding::of('foo', 'bar', 'baz');
         $command2 = $command->dontWait();
 
         $this->assertInstanceOf(Binding::class, $command2);
@@ -34,7 +34,7 @@ class BindingTest extends TestCase
 
     public function testWait()
     {
-        $command = new Binding('foo', 'bar', 'baz');
+        $command = Binding::of('foo', 'bar', 'baz');
         $command2 = $command->wait();
 
         $this->assertInstanceOf(Binding::class, $command2);
@@ -45,7 +45,7 @@ class BindingTest extends TestCase
 
     public function testWithArgument()
     {
-        $command = new Binding('foo', 'bar', 'baz');
+        $command = Binding::of('foo', 'bar', 'baz');
         $command2 = $command->withArgument('f', [42]);
 
         $this->assertInstanceOf(Binding::class, $command2);

@@ -13,9 +13,17 @@ final class Deletion
     private bool $ifEmpty = false;
     private bool $wait = true;
 
-    public function __construct(string $name)
+    private function __construct(string $name)
     {
         $this->name = $name;
+    }
+
+    /**
+     * @psalm-pure
+     */
+    public static function of(string $name): self
+    {
+        return new self($name);
     }
 
     public function ifUnused(): self

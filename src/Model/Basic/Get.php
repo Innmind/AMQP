@@ -11,9 +11,17 @@ final class Get
     private string $queue;
     private bool $ack = true;
 
-    public function __construct(string $queue)
+    private function __construct(string $queue)
     {
         $this->queue = $queue;
+    }
+
+    /**
+     * @psalm-pure
+     */
+    public static function of(string $queue): self
+    {
+        return new self($queue);
     }
 
     public function manualAcknowledge(): self

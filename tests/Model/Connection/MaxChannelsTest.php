@@ -19,14 +19,14 @@ class MaxChannelsTest extends TestCase
 
     public function testInterface()
     {
-        $max = new MaxChannels(42);
+        $max = MaxChannels::of(42);
 
         $this->assertSame(42, $max->toInt());
         $this->assertTrue($max->allows(0));
         $this->assertTrue($max->allows(42));
         $this->assertFalse($max->allows(43));
 
-        $this->assertTrue((new MaxChannels(0))->allows(1));
+        $this->assertTrue((MaxChannels::of(0))->allows(1));
     }
 
     public function testAllowAnyNumberWhenNoLimit()
@@ -34,7 +34,7 @@ class MaxChannelsTest extends TestCase
         $this
             ->forAll(Set\Integers::between(0, 65535)) // max allowed by the specification 0.9.1
             ->then(function($number) {
-                $max = new MaxChannels(0);
+                $max = MaxChannels::of(0);
 
                 $this->assertTrue($max->allows($number));
             });
@@ -48,7 +48,7 @@ class MaxChannelsTest extends TestCase
                 Set\Integers::between(1, 65535),
             )
             ->then(function($allowed, $extraNumber) {
-                $max = new MaxChannels($allowed);
+                $max = MaxChannels::of($allowed);
 
                 $this->assertFalse($max->allows($allowed + $extraNumber));
             });
@@ -62,7 +62,7 @@ class MaxChannelsTest extends TestCase
                 Set\Integers::between(0, 65535),
             )
             ->then(function($allowed, $sizeBelow) {
-                $max = new MaxChannels($allowed);
+                $max = MaxChannels::of($allowed);
 
                 $this->assertTrue($max->allows($allowed - $sizeBelow));
             });
@@ -73,7 +73,7 @@ class MaxChannelsTest extends TestCase
         $this
             ->forAll(Set\Integers::between(0, 65535)) // max allowed by the specification 0.9.1
             ->then(function($size) {
-                $max = new MaxChannels(0);
+                $max = MaxChannels::of(0);
 
                 $this->assertNull($max->verify($size));
             });
@@ -83,7 +83,7 @@ class MaxChannelsTest extends TestCase
                 Set\Integers::between(1, 65535),
             )
             ->then(function($allowed, $numberBelow) {
-                $max = new MaxChannels($allowed);
+                $max = MaxChannels::of($allowed);
 
                 $this->assertNull($max->verify($allowed - $numberBelow));
             });
@@ -97,7 +97,7 @@ class MaxChannelsTest extends TestCase
                 Set\Integers::between(1, 65535),
             )
             ->then(function($allowed, $extraNumber) {
-                $max = new MaxChannels($allowed);
+                $max = MaxChannels::of($allowed);
 
                 $above = $allowed + $extraNumber;
 
