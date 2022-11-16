@@ -19,6 +19,14 @@ final class Logger implements ClientInterface
         $this->logger = $logger;
     }
 
+    /**
+     * @return callable(ClientInterface): ClientInterface
+     */
+    public static function prepare(LoggerInterface $logger): callable
+    {
+        return static fn(ClientInterface $client): ClientInterface => new self($client, $logger);
+    }
+
     public function channel(): Channel
     {
         return new Channel\Logger(

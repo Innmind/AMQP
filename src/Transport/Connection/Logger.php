@@ -25,6 +25,14 @@ final class Logger implements ConnectionInterface
         $this->logger = $logger;
     }
 
+    /**
+     * @return callable(ConnectionInterface): ConnectionInterface
+     */
+    public static function prepare(LoggerInterface $logger): callable
+    {
+        return static fn(ConnectionInterface $connection): ConnectionInterface => new self($connection, $logger);
+    }
+
     public function protocol(): Protocol
     {
         return $this->connection->protocol();
