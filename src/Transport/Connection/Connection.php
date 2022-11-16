@@ -234,6 +234,9 @@ final class Connection implements ConnectionInterface
         $this->send($this->protocol->connection()->close(Close::demand()));
         $this->wait(Method::connectionCloseOk);
         $this->socket->close();
+        // we modify the state of the current instance instead of creating a new
+        // instance like in self::ready() to prevent anyone from trying to reuse
+        // this instance after it has been closed
         $this->state = State::closed;
     }
 
