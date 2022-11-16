@@ -472,7 +472,7 @@ class BasicTest extends TestCase
         $frames = $this->basic->publish(
             $channel = new Channel(1),
             Publish::a(Generic::of(Str::of('foobar'))),
-            MaxFrameSize::of(11),
+            MaxFrameSize::of(3),
         );
 
         $this->assertInstanceOf(Sequence::class, $frames);
