@@ -125,17 +125,19 @@ final class Connection implements ConnectionInterface
         return $this->protocol;
     }
 
-    public function send(Frame $frame): void
+    public function send(Frame $frame): Maybe
     {
-        $this->maxChannels->verify($frame->channel()->toInt());
-
-        $frame = $frame->pack()->toEncoding('ASCII');
-
-        $this->maxFrameSize->verify($frame->length());
-        $_ = $this->socket->write($frame)->match(
-            static fn() => null,
-            static fn() => throw new \RuntimeException,
-        );
+        return Maybe::just($frame)
+            ->filter(fn($frame) => $this->maxChannels->allows($frame->channel()->toInt()))
+            ->map(static fn($frame) => $frame->pack()->toEncoding('ASCII'))
+            ->filter(fn($frame) => $this->maxFrameSize->allows($frame->length()))
+            ->flatMap(
+                fn($frame) => $this
+                    ->socket
+                    ->write($frame)
+                    ->maybe(),
+            )
+            ->map(fn() => $this);
     }
 
     public function wait(Frame\Method ...$names): Frame

@@ -50,10 +50,16 @@ class ConnectionTest extends TestCase
         $this->assertSame($protocol, $connection->protocol());
         $this->assertInstanceOf(MaxFrameSize::class, $connection->maxFrameSize());
         $this->assertSame(131072, $connection->maxFrameSize()->toInt());
-        $this->assertNull(
-            $connection->send(
-                $protocol->channel()->open(new Channel(1)),
-            ),
+        $this->assertSame(
+            $connection,
+            $connection
+                ->send(
+                    $protocol->channel()->open(new Channel(1)),
+                )
+                ->match(
+                    static fn($connection) => $connection,
+                    static fn() => null,
+                ),
         );
         $this->assertInstanceOf(Frame::class, $connection->wait(Method::channelOpenOk));
         $connection->close(); //test it closes without exception

@@ -11,16 +11,22 @@ use Innmind\AMQP\{
     Exception\FrameChannelExceedAllowedChannelNumber,
     Exception\FrameExceedAllowedSize,
 };
+use Innmind\Immutable\Maybe;
 
 interface Connection
 {
     public function protocol(): Protocol;
 
     /**
-     * @throws FrameChannelExceedAllowedChannelNumber
-     * @throws FrameExceedAllowedSize
+     * When it contains the same connection instance it means that you can still
+     * use the connection, otherwise you should stop using it
+     *
+     * Possible failures are exceeding the max channel number, the max frame size
+     * or that writting to the socket failed
+     *
+     * @return Maybe<$this>
      */
-    public function send(Frame $frame): void;
+    public function send(Frame $frame): Maybe;
 
     /**
      * @throws ExpectedMethodFrame When expecting a method frame but another type is received

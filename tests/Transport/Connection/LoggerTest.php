@@ -12,6 +12,7 @@ use Innmind\AMQP\Transport\{
     Frame\Method,
 };
 use Innmind\TimeContinuum\Earth\Clock;
+use Innmind\Immutable\Maybe;
 use Psr\Log\LoggerInterface;
 use PHPUnit\Framework\TestCase;
 
@@ -52,7 +53,8 @@ class LoggerTest extends TestCase
         $inner
             ->expects($this->once())
             ->method('send')
-            ->with($frame);
+            ->with($frame)
+            ->willReturn(Maybe::just($inner));
         $uuid = null;
         $logger
             ->expects($this->exactly(2))
@@ -76,7 +78,10 @@ class LoggerTest extends TestCase
                 ],
             );
 
-        $this->assertNull($connection->send($frame));
+        $this->assertSame($connection, $connection->send($frame)->match(
+            static fn($connection) => $connection,
+            static fn() => null,
+        ));
     }
 
     public function testWait()

@@ -9,6 +9,7 @@ use Innmind\AMQP\{
     Transport\Frame,
     Model\Connection\MaxFrameSize,
 };
+use Innmind\Immutable\Maybe;
 use Ramsey\Uuid\Uuid;
 use Psr\Log\LoggerInterface;
 
@@ -38,7 +39,7 @@ final class Logger implements ConnectionInterface
         return $this->connection->protocol();
     }
 
-    public function send(Frame $frame): void
+    public function send(Frame $frame): Maybe
     {
         $this->logger->debug(
             'AMQP frame about to be sent',
@@ -49,8 +50,15 @@ final class Logger implements ConnectionInterface
             ],
         );
 
-        $this->connection->send($frame);
-        $this->logger->debug('AMQP frame sent', ['uuid' => $uuid]);
+        /** @var Maybe<self> */
+        return $this
+            ->connection
+            ->send($frame)
+            ->map(function() use ($uuid) {
+                $this->logger->debug('AMQP frame sent', ['uuid' => $uuid]);
+
+                return $this;
+            });
     }
 
     public function wait(Frame\Method ...$names): Frame
