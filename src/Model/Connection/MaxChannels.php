@@ -23,6 +23,16 @@ final class MaxChannels
 
     /**
      * @psalm-pure
+     *
+     * @param int<0, 65535> $value
+     */
+    public static function of(int $value): self
+    {
+        return new self($value);
+    }
+
+    /**
+     * @psalm-pure
      */
     public static function unlimited(): self
     {

@@ -30,6 +30,16 @@ final class MaxFrameSize
 
     /**
      * @psalm-pure
+     *
+     * @param int<0, 4294967295> $value
+     */
+    public static function of(int $value): self
+    {
+        return new self($value);
+    }
+
+    /**
+     * @psalm-pure
      */
     public static function unlimited(): self
     {

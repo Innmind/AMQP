@@ -13,6 +13,10 @@ use Innmind\AMQP\{
 };
 use Innmind\TimeContinuum\Earth\ElapsedPeriod;
 use Innmind\Url\Authority;
+use Innmind\Immutable\{
+    Maybe,
+    Predicate\Instance,
+};
 
 final class Handshake
 {
@@ -37,34 +41,50 @@ final class Handshake
             $frame = $connection->wait(Method::connectionTune);
         }
 
-        /** @var Value\UnsignedShortInteger */
-        $maxChannels = $frame->values()->get(0)->match(
-            static fn($value) => $value,
-            static fn() => throw new \LogicException,
-        );
-        $maxChannels = new MaxChannels($maxChannels->original());
-        /** @var Value\UnsignedLongInteger */
-        $maxFrameSize = $frame->values()->get(1)->match(
-            static fn($value) => $value,
-            static fn() => throw new \LogicException,
-        );
-        $maxFrameSize = new MaxFrameSize($maxFrameSize->original());
-        /** @var Value\UnsignedShortInteger */
-        $heartbeat = $frame->values()->get(2)->match(
-            static fn($value) => $value,
-            static fn() => throw new \LogicException,
-        );
-        $threshold = new ElapsedPeriod($heartbeat->original());
-        $connection = $connection->tune(
-            $maxChannels,
-            $maxFrameSize,
-            $threshold,
-        );
+        $maxChannels = $frame
+            ->values()
+            ->first()
+            ->keep(Instance::of(Value\UnsignedShortInteger::class))
+            ->map(static fn($value) => $value->original())
+            ->map(MaxChannels::of(...));
+        $maxFrameSize = $frame
+            ->values()
+            ->get(1)
+            ->keep(Instance::of(Value\UnsignedLongInteger::class))
+            ->map(static fn($value) => $value->original())
+            ->map(MaxFrameSize::of(...));
+        $heartbeat = $frame
+            ->values()
+            ->get(2)
+            ->keep(Instance::of(Value\UnsignedShortInteger::class))
+            ->map(static fn($value) => $value->original())
+            ->map(ElapsedPeriod::of(...));
+
+        return Maybe::all($maxChannels, $maxFrameSize, $heartbeat)
+            ->map(fn(MaxChannels $maxChannels, MaxFrameSize $maxFrameSize, ElapsedPeriod $heartbeat) => $this->tune(
+                $connection,
+                $maxChannels,
+                $maxFrameSize,
+                $heartbeat,
+            ))
+            ->match(
+                static fn($connection) => $connection,
+                static fn() => throw new \LogicException,
+            );
+    }
+
+    private function tune(
+        Connection $connection,
+        MaxChannels $maxChannels,
+        MaxFrameSize $maxFrameSize,
+        ElapsedPeriod $heartbeat,
+    ): Connection {
+        $connection = $connection->tune($maxChannels, $maxFrameSize, $heartbeat);
         $connection->send($connection->protocol()->connection()->tuneOk(
             new TuneOk(
                 $maxChannels,
                 $maxFrameSize,
-                $threshold,
+                $heartbeat,
             ),
         ));
 
