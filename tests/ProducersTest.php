@@ -5,7 +5,7 @@ namespace Tests\Innmind\AMQP;
 
 use Innmind\AMQP\{
     Producers,
-    Producer\Producer,
+    Producer,
     Model\Exchange\Declaration,
     Model\Exchange\Type,
     Client,

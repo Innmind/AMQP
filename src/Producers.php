@@ -19,11 +19,10 @@ final class Producers
      */
     public function __construct(Client $client, string ...$exchanges)
     {
-        /** @var Map<string, Producer> */
         $this->producers = Map::of(
             ...Sequence::strings(...$exchanges)
                 ->map(
-                    static fn($exchange) => [$exchange, new Producer\Producer($client, $exchange)],
+                    static fn($exchange) => [$exchange, new Producer($client, $exchange)],
                 )
                 ->toList(),
         );

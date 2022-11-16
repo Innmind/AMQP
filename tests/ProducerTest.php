@@ -1,11 +1,10 @@
 <?php
 declare(strict_types = 1);
 
-namespace Tests\Innmind\AMQP\Producer;
+namespace Tests\Innmind\AMQP;
 
 use Innmind\AMQP\{
-    Producer\Producer,
-    Producer as ProducerInterface,
+    Producer,
     Client,
     Client\Channel,
     Model\Basic\Message,
@@ -14,17 +13,6 @@ use PHPUnit\Framework\TestCase;
 
 class ProducerTest extends TestCase
 {
-    public function testInterface()
-    {
-        $this->assertInstanceOf(
-            ProducerInterface::class,
-            new Producer(
-                $this->createMock(Client::class),
-                'foo',
-            ),
-        );
-    }
-
     public function testSendMessage()
     {
         $producer = new Producer(
