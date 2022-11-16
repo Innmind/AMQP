@@ -201,6 +201,8 @@ final class MessageReader
     }
 
     /**
+     * TODO try to lazily read the payload to avoid loading whole files at once
+     *
      * @return Maybe<Str>
      */
     private function readPayload(

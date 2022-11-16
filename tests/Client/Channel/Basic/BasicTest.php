@@ -58,7 +58,11 @@ use Innmind\TimeContinuum\Earth\{
     Clock,
     PointInTime\Now,
 };
-use Innmind\Url\Url;
+use Innmind\Filesystem\File\Content;
+use Innmind\Url\{
+    Url,
+    Path,
+};
 use Innmind\OperatingSystem\{
     Remote,
     Sockets,
@@ -1059,6 +1063,15 @@ class BasicTest extends TestCase
         $this->assertNull(
             $this->basic->publish(
                 Publish::a(Message::of(Str::of('foobar'))),
+            ),
+        );
+    }
+
+    public function testPublishContentOfAFile()
+    {
+        $this->assertNull(
+            $this->basic->publish(
+                Publish::a(Message::file(Content\AtPath::of(Path::of(__FILE__)))),
             ),
         );
     }

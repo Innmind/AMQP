@@ -19,6 +19,10 @@ use Innmind\TimeContinuum\{
     PointInTime,
     ElapsedPeriod,
 };
+use Innmind\Filesystem\{
+    File\Content,
+    Chunk,
+};
 use Innmind\Immutable\{
     Map,
     Str,
@@ -110,6 +114,29 @@ final class Message
             Sequence::of($body),
             $body->toEncoding('ASCII')->length(),
         );
+    }
+
+    /**
+     * Since the length of the body must be known in advance using a content
+     * that can only be streamed once (ie output of a process) won't work here
+     */
+    public static function file(Content $content): self
+    {
+        $chunks = (new Chunk)($content)->map(
+            static fn($chunk) => $chunk->toEncoding('ASCII'),
+        );
+        /** @var int<0, max> */
+        $size = $content->size()->match(
+            static fn($size) => $size->toInt(),
+            static fn() => $chunks
+                ->map(static fn($chunk) => $chunk->length())
+                ->reduce(
+                    0,
+                    static fn(int $a, int $b) => $a + $b,
+                ),
+        );
+
+        return new self($chunks, $size);
     }
 
     /**

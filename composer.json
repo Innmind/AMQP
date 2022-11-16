@@ -22,7 +22,8 @@
         "innmind/url": "~4.1",
         "ramsey/uuid": "~4.0",
         "innmind/operating-system": "~3.1",
-        "innmind/media-type": "~2.0"
+        "innmind/media-type": "~2.0",
+        "innmind/filesystem": "~5.2"
     },
     "autoload": {
         "psr-4": {
