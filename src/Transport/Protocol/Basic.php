@@ -128,22 +128,11 @@ final class Basic
             ),
         );
 
-        // the "-8" is due to the content frame extra informations (type, channel and end flag)
-        /** @var int<0, 4294967287> */
-        $chunk = $maxFrameSize->isLimited() ? ($maxFrameSize->toInt() - 8) : $command->message()->body()->length();
-
-        if ($chunk === 0) {
-            return $frames;
-        }
-
-        /** @psalm-suppress InvalidArgument */
-        $payloadFrames = $command
-            ->message()
-            ->body()
-            ->chunk($chunk)
-            ->map(static fn($chunk) => Frame::body($channel, $chunk));
-
-        return $frames->append($payloadFrames);
+        return $frames->append(
+            $maxFrameSize
+                ->chunk($command->message())
+                ->map(static fn($chunk) => Frame::body($channel, $chunk)),
+        );
     }
 
     public function qos(FrameChannel $channel, Qos $command): Frame

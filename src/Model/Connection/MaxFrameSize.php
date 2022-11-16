@@ -3,9 +3,14 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Model\Connection;
 
-use Innmind\AMQP\Exception\{
-    DomainException,
-    FrameExceedAllowedSize,
+use Innmind\AMQP\{
+    Model\Basic\Message,
+    Exception\DomainException,
+    Exception\FrameExceedAllowedSize,
+};
+use Innmind\Immutable\{
+    Sequence,
+    Str,
 };
 
 /**
@@ -13,11 +18,11 @@ use Innmind\AMQP\Exception\{
  */
 final class MaxFrameSize
 {
-    /** @var int<0, 4294967295> */
+    /** @var 0|int<9, 4294967295> */
     private int $value;
 
     /**
-     * @param int<0, 4294967295> $value
+     * @param 0|int<9, 4294967295> $value
      */
     private function __construct(int $value)
     {
@@ -31,7 +36,7 @@ final class MaxFrameSize
     /**
      * @psalm-pure
      *
-     * @param int<0, 4294967295> $value
+     * @param 0|int<9, 4294967295> $value
      */
     public static function of(int $value): self
     {
@@ -46,6 +51,10 @@ final class MaxFrameSize
         return new self(0);
     }
 
+    /**
+     * @psalm-assert-if-false 0 $this->value
+     * @psalm-assert-if-false 0 $this->toInt()
+     */
     public function isLimited(): bool
     {
         return $this->value > 0;
@@ -71,10 +80,27 @@ final class MaxFrameSize
     }
 
     /**
-     * @return int<0, 4294967295>
+     * @return 0|int<9, 4294967295>
      */
     public function toInt(): int
     {
         return $this->value;
+    }
+
+    /**
+     * @return Sequence<Str>
+     */
+    public function chunk(Message $message): Sequence
+    {
+        if (!$this->isLimited()) {
+            return Sequence::of($message->body());
+        }
+
+        /**
+         * the "-8" is due to the content frame extra informations (type,
+         * channel and end flag)
+         * @psalm-suppress InvalidArgument
+         */
+        return $message->body()->chunk($this->value - 8);
     }
 }
