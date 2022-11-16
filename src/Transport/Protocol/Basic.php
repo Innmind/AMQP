@@ -121,9 +121,7 @@ final class Basic
             Frame::header(
                 $channel,
                 MethodClass::basic,
-                UnsignedLongLongInteger::of(
-                    $command->message()->body()->length(),
-                ),
+                UnsignedLongLongInteger::of($command->message()->length()),
                 ...$this->serializeProperties($command->message()),
             ),
         );

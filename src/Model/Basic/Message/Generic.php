@@ -11,7 +11,9 @@ use Innmind\TimeContinuum\{
 use Innmind\Immutable\{
     Map,
     Str,
-    Maybe
+    Maybe,
+    Sequence,
+    Monoid\Concat,
 };
 
 /**
@@ -45,11 +47,21 @@ final class Generic implements Message
     private Maybe $userId;
     /** @var Maybe<AppId> */
     private Maybe $appId;
-    private Str $body;
+    /** @var Sequence<Str> */
+    private Sequence $chunks;
+    /** @var int<0, max> */
+    private int $length;
 
-    private function __construct(Str $body)
+    /**
+     * @param Sequence<Str> $chunks
+     * @param int<0, max> $length
+     */
+    private function __construct(Sequence $chunks, int $length)
     {
-        $this->body = $body->toEncoding('ASCII');
+        $this->chunks = $chunks->map(
+            static fn($chunk) => $chunk->toEncoding('ASCII'),
+        );
+        $this->length = $length;
         /** @var Map<string, mixed> */
         $this->headers = Map::of();
         /** @var Maybe<ContentType> */
@@ -83,7 +95,10 @@ final class Generic implements Message
      */
     public static function of(Str $body): self
     {
-        return new self($body);
+        return new self(
+            Sequence::of($body),
+            $body->toEncoding('ASCII')->length(),
+        );
     }
 
     public function contentType(): Maybe
@@ -257,6 +272,22 @@ final class Generic implements Message
 
     public function body(): Str
     {
-        return $this->body;
+        return $this
+            ->chunks
+            ->fold(new Concat)
+            ->toEncoding('ASCII');
+    }
+
+    /**
+     * @return Sequence<Str>
+     */
+    public function chunks(): Sequence
+    {
+        return $this->chunks;
+    }
+
+    public function length(): int
+    {
+        return $this->length;
     }
 }

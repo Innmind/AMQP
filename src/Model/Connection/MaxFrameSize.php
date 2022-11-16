@@ -88,9 +88,12 @@ final class MaxFrameSize
     public function chunk(Message $message): Sequence
     {
         if (!$this->isLimited()) {
-            return Sequence::of($message->body());
+            return $message->chunks();
         }
 
-        return $message->body()->chunk($this->value);
+        /** @psalm-suppress InvalidArgument Psalm forgets the condition above when in the callable below */
+        return $message
+            ->chunks()
+            ->flatMap(fn($chunk) => $chunk->chunk($this->value));
     }
 }

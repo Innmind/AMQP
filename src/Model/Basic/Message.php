@@ -24,6 +24,7 @@ use Innmind\Immutable\{
     Map,
     Str,
     Maybe,
+    Sequence,
 };
 
 /**
@@ -113,4 +114,14 @@ interface Message
     public function appId(): Maybe;
     public function withAppId(AppId $appId): self;
     public function body(): Str;
+
+    /**
+     * @return Sequence<Str>
+     */
+    public function chunks(): Sequence;
+
+    /**
+     * @return int<0, max>
+     */
+    public function length(): int;
 }
