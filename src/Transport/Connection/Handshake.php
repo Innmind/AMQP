@@ -32,13 +32,18 @@ final class Handshake
         $frame = $connection->wait(Method::connectionSecure, Method::connectionTune);
 
         if ($frame->is(Method::connectionSecure)) {
-            $connection->send($connection->protocol()->connection()->secureOk(
-                SecureOk::of(
-                    $this->authority->userInformation()->user(),
-                    $this->authority->userInformation()->password(),
-                ),
-            ));
-            $frame = $connection->wait(Method::connectionTune);
+            $frame = $connection
+                ->send($connection->protocol()->connection()->secureOk(
+                    SecureOk::of(
+                        $this->authority->userInformation()->user(),
+                        $this->authority->userInformation()->password(),
+                    ),
+                ))
+                ->map(static fn($connection) => $connection->wait(Method::connectionTune))
+                ->match(
+                    static fn($frame) => $frame,
+                    static fn() => throw new \RuntimeException,
+                );
         }
 
         $maxChannels = $frame
@@ -79,15 +84,19 @@ final class Handshake
         MaxFrameSize $maxFrameSize,
         ElapsedPeriod $heartbeat,
     ): Connection {
-        $connection = $connection->tune($maxChannels, $maxFrameSize, $heartbeat);
-        $connection->send($connection->protocol()->connection()->tuneOk(
-            TuneOk::of(
-                $maxChannels,
-                $maxFrameSize,
-                $heartbeat,
-            ),
-        ));
-
-        return $connection;
+        return $connection
+            ->tune($maxChannels, $maxFrameSize, $heartbeat)
+            ->send($connection->protocol()->connection()->tuneOk(
+                TuneOk::of(
+                    $maxChannels,
+                    $maxFrameSize,
+                    $heartbeat,
+                ),
+            ))
+            ->keep(Instance::of(Connection::class))
+            ->match(
+                static fn($connection) => $connection,
+                static fn() => throw new \RuntimeException,
+            );
     }
 }

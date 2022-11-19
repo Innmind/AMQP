@@ -36,22 +36,34 @@ final class Basic implements BasicInterface
 
     public function ack(Ack $command): void
     {
-        $this->connection->send(
-            $this->connection->protocol()->basic()->ack(
-                $this->channel,
-                $command,
-            ),
-        );
+        $_ = $this
+            ->connection
+            ->send(
+                $this->connection->protocol()->basic()->ack(
+                    $this->channel,
+                    $command,
+                ),
+            )
+            ->match(
+                static fn() => null,
+                static fn() => throw new \RuntimeException,
+            );
     }
 
     public function cancel(Cancel $command): void
     {
-        $this->connection->send(
-            $this->connection->protocol()->basic()->cancel(
-                $this->channel,
-                $command,
-            ),
-        );
+        $_ = $this
+            ->connection
+            ->send(
+                $this->connection->protocol()->basic()->cancel(
+                    $this->channel,
+                    $command,
+                ),
+            )
+            ->match(
+                static fn() => null,
+                static fn() => throw new \RuntimeException,
+            );
 
         if ($command->shouldWait()) {
             $this->connection->wait(Method::basicCancelOk);
@@ -60,12 +72,18 @@ final class Basic implements BasicInterface
 
     public function consume(Consume $command): Consumer
     {
-        $this->connection->send(
-            $this->connection->protocol()->basic()->consume(
-                $this->channel,
-                $command,
-            ),
-        );
+        $_ = $this
+            ->connection
+            ->send(
+                $this->connection->protocol()->basic()->consume(
+                    $this->channel,
+                    $command,
+                ),
+            )
+            ->match(
+                static fn() => null,
+                static fn() => throw new \RuntimeException,
+            );
 
         if ($command->shouldWait()) {
             $frame = $this->connection->wait(Method::basicConsumeOk);
@@ -92,11 +110,17 @@ final class Basic implements BasicInterface
 
     public function get(GetCommand $command): Get
     {
-        $this->connection->send($this->connection->protocol()->basic()->get(
-            $this->channel,
-            $command,
-        ));
-        $frame = $this->connection->wait(Method::basicGetOk, Method::basicGetEmpty);
+        $frame = $this
+            ->connection
+            ->send($this->connection->protocol()->basic()->get(
+                $this->channel,
+                $command,
+            ))
+            ->map(static fn($connection) => $connection->wait(Method::basicGetOk, Method::basicGetEmpty))
+            ->match(
+                static fn($frame) => $frame,
+                static fn() => throw new \RuntimeException,
+            );
 
         if ($frame->is(Method::basicGetEmpty)) {
             return new Get\GetEmpty;
@@ -157,35 +181,56 @@ final class Basic implements BasicInterface
                 $this->connection->maxFrameSize(),
             )
             ->foreach(function(Frame $frame): void {
-                $this->connection->send($frame);
+                $_ = $this->connection->send($frame)->match(
+                    static fn() => null,
+                    static fn() => throw new \RuntimeException,
+                );
             });
     }
 
     public function qos(Qos $command): void
     {
-        $this->connection->send($this->connection->protocol()->basic()->qos(
-            $this->channel,
-            $command,
-        ));
-        $this->connection->wait(Method::basicQosOk);
+        $_ = $this
+            ->connection
+            ->send($this->connection->protocol()->basic()->qos(
+                $this->channel,
+                $command,
+            ))
+            ->map(static fn($connection) => $connection->wait(Method::basicQosOk))
+            ->match(
+                static fn() => null,
+                static fn() => throw new \RuntimeException,
+            );
     }
 
     public function recover(Recover $command): void
     {
-        $this->connection->send($this->connection->protocol()->basic()->recover(
-            $this->channel,
-            $command,
-        ));
-        $this->connection->wait(Method::basicRecoverOk);
+        $_ = $this
+            ->connection
+            ->send($this->connection->protocol()->basic()->recover(
+                $this->channel,
+                $command,
+            ))
+            ->map(static fn($connection) => $connection->wait(Method::basicRecoverOk))
+            ->match(
+                static fn() => null,
+                static fn() => throw new \RuntimeException,
+            );
     }
 
     public function reject(Reject $command): void
     {
-        $this->connection->send(
-            $this->connection->protocol()->basic()->reject(
-                $this->channel,
-                $command,
-            ),
-        );
+        $_ = $this
+            ->connection
+            ->send(
+                $this->connection->protocol()->basic()->reject(
+                    $this->channel,
+                    $command,
+                ),
+            )
+            ->match(
+                static fn() => null,
+                static fn() => throw new \RuntimeException,
+            );
     }
 }

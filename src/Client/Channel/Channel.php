@@ -26,8 +26,13 @@ final class Channel implements ChannelInterfce
         $this->connection = $connection;
         $this->number = $number;
 
-        $connection->send($connection->protocol()->channel()->open($number));
-        $connection->wait(Method::channelOpenOk);
+        $_ = $connection
+            ->send($connection->protocol()->channel()->open($number))
+            ->map(static fn($connection) => $connection->wait(Method::channelOpenOk))
+            ->match(
+                static fn() => null,
+                static fn() => throw new \RuntimeException,
+            );
 
         $this->exchange = new Exchange\Exchange($connection, $number);
         $this->queue = new Queue\Queue($connection, $number);
@@ -66,11 +71,17 @@ final class Channel implements ChannelInterfce
             return;
         }
 
-        $this->connection->send($this->connection->protocol()->channel()->close(
-            $this->number,
-            Close::demand(),
-        ));
-        $this->connection->wait(Method::channelCloseOk);
+        $_ = $this
+            ->connection
+            ->send($this->connection->protocol()->channel()->close(
+                $this->number,
+                Close::demand(),
+            ))
+            ->map(static fn($connection) => $connection->wait(Method::channelCloseOk))
+            ->match(
+                static fn() => null,
+                static fn() => throw new \RuntimeException,
+            );
         $this->closed = true;
     }
 }

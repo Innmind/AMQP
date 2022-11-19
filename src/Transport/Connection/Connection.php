@@ -183,7 +183,12 @@ final class Connection implements ConnectionInterface
         }
 
         if ($frame->is(Method::connectionClose)) {
-            $this->send($this->protocol->connection()->closeOk());
+            $_ = $this
+                ->send($this->protocol->connection()->closeOk())
+                ->match(
+                    static fn() => null,
+                    static fn() => throw new \RuntimeException,
+                );
             $this->state = State::closed;
 
             /** @var Value\ShortString */
@@ -232,7 +237,12 @@ final class Connection implements ConnectionInterface
             return;
         }
 
-        $this->send($this->protocol->connection()->close(Close::demand()));
+        $_ = $this
+            ->send($this->protocol->connection()->close(Close::demand()))
+            ->match(
+                static fn() => null,
+                static fn() => throw new \RuntimeException,
+            );
         $this->wait(Method::connectionCloseOk);
         $this->socket->close();
         // we modify the state of the current instance instead of creating a new

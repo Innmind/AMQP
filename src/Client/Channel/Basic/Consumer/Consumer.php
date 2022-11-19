@@ -188,12 +188,18 @@ final class Consumer implements ConsumerInterface
             return;
         }
 
-        $this->connection->send(
-            $this->connection->protocol()->basic()->ack(
-                $this->channel,
-                Ack::of($deliveryTag),
-            ),
-        );
+        $_ = $this
+            ->connection
+            ->send(
+                $this->connection->protocol()->basic()->ack(
+                    $this->channel,
+                    Ack::of($deliveryTag),
+                ),
+            )
+            ->match(
+                static fn() => null,
+                static fn() => throw new \RuntimeException,
+            );
     }
 
     /**
@@ -201,12 +207,18 @@ final class Consumer implements ConsumerInterface
      */
     private function reject(int $deliveryTag): void
     {
-        $this->connection->send(
-            $this->connection->protocol()->basic()->reject(
-                $this->channel,
-                RejectCommand::of($deliveryTag),
-            ),
-        );
+        $_ = $this
+            ->connection
+            ->send(
+                $this->connection->protocol()->basic()->reject(
+                    $this->channel,
+                    RejectCommand::of($deliveryTag),
+                ),
+            )
+            ->match(
+                static fn() => null,
+                static fn() => throw new \RuntimeException,
+            );
     }
 
     /**
@@ -214,12 +226,18 @@ final class Consumer implements ConsumerInterface
      */
     private function requeue(int $deliveryTag): void
     {
-        $this->connection->send(
-            $this->connection->protocol()->basic()->reject(
-                $this->channel,
-                RejectCommand::requeue($deliveryTag),
-            ),
-        );
+        $_ = $this
+            ->connection
+            ->send(
+                $this->connection->protocol()->basic()->reject(
+                    $this->channel,
+                    RejectCommand::requeue($deliveryTag),
+                ),
+            )
+            ->match(
+                static fn() => null,
+                static fn() => throw new \RuntimeException,
+            );
     }
 
     private function canceled(): bool
@@ -237,10 +255,16 @@ final class Consumer implements ConsumerInterface
             return;
         }
 
-        $this->connection->send($this->connection->protocol()->basic()->cancel(
-            $this->channel,
-            CancelCommand::of($this->consumerTag),
-        ));
+        $_ = $this
+            ->connection
+            ->send($this->connection->protocol()->basic()->cancel(
+                $this->channel,
+                CancelCommand::of($this->consumerTag),
+            ))
+            ->match(
+                static fn() => null,
+                static fn() => throw new \RuntimeException,
+            );
 
         // walk over prefetched messages
         do {
@@ -259,11 +283,17 @@ final class Consumer implements ConsumerInterface
         // to "consume" within the same channel will receive new messages but
         // won't receive previously prefetched messages leading to out of order
         // messages handling
-        $this->connection->send($this->connection->protocol()->basic()->recover(
-            $this->channel,
-            Recover::requeue(),
-        ));
-        $this->connection->wait(Method::basicRecoverOk);
+        $_ = $this
+            ->connection
+            ->send($this->connection->protocol()->basic()->recover(
+                $this->channel,
+                Recover::requeue(),
+            ))
+            ->map(static fn($connection) => $connection->wait(Method::basicRecoverOk))
+            ->match(
+                static fn() => null,
+                static fn() => throw new \RuntimeException,
+            );
 
         $this->canceled = true;
     }

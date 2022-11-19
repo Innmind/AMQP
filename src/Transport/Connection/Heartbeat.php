@@ -35,7 +35,12 @@ final class Heartbeat
                 ->elapsedSince($this->lastReceivedData)
                 ->longerThan($this->threshold)
         ) {
-            $connection->send(Frame::heartbeat());
+            $_ = $connection
+                ->send(Frame::heartbeat())
+                ->match(
+                    static fn() => null,
+                    static fn() => throw new \RuntimeException,
+                );
         }
     }
 

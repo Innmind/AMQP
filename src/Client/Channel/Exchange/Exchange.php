@@ -25,12 +25,18 @@ final class Exchange implements ExchangeInterface
 
     public function declare(Declaration $command): void
     {
-        $this->connection->send(
-            $this->connection->protocol()->exchange()->declare(
-                $this->channel,
-                $command,
-            ),
-        );
+        $_ = $this
+            ->connection
+            ->send(
+                $this->connection->protocol()->exchange()->declare(
+                    $this->channel,
+                    $command,
+                ),
+            )
+            ->match(
+                static fn() => null,
+                static fn() => throw new \RuntimeException,
+            );
 
         if ($command->shouldWait()) {
             $this->connection->wait(Method::exchangeDeclareOk);
@@ -39,12 +45,18 @@ final class Exchange implements ExchangeInterface
 
     public function delete(Deletion $command): void
     {
-        $this->connection->send(
-            $this->connection->protocol()->exchange()->delete(
-                $this->channel,
-                $command,
-            ),
-        );
+        $_ = $this
+            ->connection
+            ->send(
+                $this->connection->protocol()->exchange()->delete(
+                    $this->channel,
+                    $command,
+                ),
+            )
+            ->match(
+                static fn() => null,
+                static fn() => throw new \RuntimeException,
+            );
 
         if ($command->shouldWait()) {
             $this->connection->wait(Method::exchangeDeleteOk);

@@ -23,25 +23,43 @@ final class Transaction implements TransactionInterface
 
     public function select(): void
     {
-        $this->connection->send($this->connection->protocol()->transaction()->select(
-            $this->channel,
-        ));
-        $this->connection->wait(Method::transactionSelectOk);
+        $_ = $this
+            ->connection
+            ->send($this->connection->protocol()->transaction()->select(
+                $this->channel,
+            ))
+            ->map(static fn($connection) => $connection->wait(Method::transactionSelectOk))
+            ->match(
+                static fn() => null,
+                static fn() => throw new \RuntimeException,
+            );
     }
 
     public function commit(): void
     {
-        $this->connection->send($this->connection->protocol()->transaction()->commit(
-            $this->channel,
-        ));
-        $this->connection->wait(Method::transactionCommitOk);
+        $_ = $this
+            ->connection
+            ->send($this->connection->protocol()->transaction()->commit(
+                $this->channel,
+            ))
+            ->map(static fn($connection) => $connection->wait(Method::transactionCommitOk))
+            ->match(
+                static fn() => null,
+                static fn() => throw new \RuntimeException,
+            );
     }
 
     public function rollback(): void
     {
-        $this->connection->send($this->connection->protocol()->transaction()->rollback(
-            $this->channel,
-        ));
-        $this->connection->wait(Method::transactionRollbackOk);
+        $_ = $this
+            ->connection
+            ->send($this->connection->protocol()->transaction()->rollback(
+                $this->channel,
+            ))
+            ->map(static fn($connection) => $connection->wait(Method::transactionRollbackOk))
+            ->match(
+                static fn() => null,
+                static fn() => throw new \RuntimeException,
+            );
     }
 }

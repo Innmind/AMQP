@@ -33,12 +33,18 @@ final class Queue implements QueueInterface
 
     public function declare(Declaration $command): ?DeclareOk
     {
-        $this->connection->send(
-            $this->connection->protocol()->queue()->declare(
-                $this->channel,
-                $command,
-            ),
-        );
+        $_ = $this
+            ->connection
+            ->send(
+                $this->connection->protocol()->queue()->declare(
+                    $this->channel,
+                    $command,
+                ),
+            )
+            ->match(
+                static fn() => null,
+                static fn() => throw new \RuntimeException,
+            );
 
         if (!$command->shouldWait()) {
             return null;
@@ -70,12 +76,18 @@ final class Queue implements QueueInterface
 
     public function delete(Deletion $command): ?DeleteOk
     {
-        $this->connection->send(
-            $this->connection->protocol()->queue()->delete(
-                $this->channel,
-                $command,
-            ),
-        );
+        $_ = $this
+            ->connection
+            ->send(
+                $this->connection->protocol()->queue()->delete(
+                    $this->channel,
+                    $command,
+                ),
+            )
+            ->match(
+                static fn() => null,
+                static fn() => throw new \RuntimeException,
+            );
 
         if (!$command->shouldWait()) {
             return null;
@@ -95,12 +107,18 @@ final class Queue implements QueueInterface
 
     public function bind(Binding $command): void
     {
-        $this->connection->send(
-            $this->connection->protocol()->queue()->bind(
-                $this->channel,
-                $command,
-            ),
-        );
+        $_ = $this
+            ->connection
+            ->send(
+                $this->connection->protocol()->queue()->bind(
+                    $this->channel,
+                    $command,
+                ),
+            )
+            ->match(
+                static fn() => null,
+                static fn() => throw new \RuntimeException,
+            );
 
         if ($command->shouldWait()) {
             $this->connection->wait(Method::queueBindOk);
@@ -109,21 +127,33 @@ final class Queue implements QueueInterface
 
     public function unbind(Unbinding $command): void
     {
-        $this->connection->send($this->connection->protocol()->queue()->unbind(
-            $this->channel,
-            $command,
-        ));
-        $this->connection->wait(Method::queueUnbindOk);
+        $_ = $this
+            ->connection
+            ->send($this->connection->protocol()->queue()->unbind(
+                $this->channel,
+                $command,
+            ))
+            ->map(static fn($connection) => $connection->wait(Method::queueUnbindOk))
+            ->match(
+                static fn() => null,
+                static fn() => throw new \RuntimeException,
+            );
     }
 
     public function purge(Purge $command): ?PurgeOk
     {
-        $this->connection->send(
-            $this->connection->protocol()->queue()->purge(
-                $this->channel,
-                $command,
-            ),
-        );
+        $_ = $this
+            ->connection
+            ->send(
+                $this->connection->protocol()->queue()->purge(
+                    $this->channel,
+                    $command,
+                ),
+            )
+            ->match(
+                static fn() => null,
+                static fn() => throw new \RuntimeException,
+            );
 
         if (!$command->shouldWait()) {
             return null;

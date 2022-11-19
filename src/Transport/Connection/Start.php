@@ -26,12 +26,17 @@ final class Start
         // protocol but since this package only support 0.9.1 we can simply
         // stop opening the connection
         $connection->wait(Method::connectionStart);
-        $connection->send($connection->protocol()->connection()->startOk(
-            StartOk::of(
-                $this->authority->userInformation()->user(),
-                $this->authority->userInformation()->password(),
-            ),
-        ));
+        $_ = $connection
+            ->send($connection->protocol()->connection()->startOk(
+                StartOk::of(
+                    $this->authority->userInformation()->user(),
+                    $this->authority->userInformation()->password(),
+                ),
+            ))
+            ->match(
+                static fn() => null,
+                static fn() => throw new \RuntimeException,
+            );
 
         return $connection;
     }

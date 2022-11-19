@@ -70,10 +70,16 @@ final class GetOk implements Get
             );
 
             if (!$this->command->shouldAutoAcknowledge()) {
-                $this->connection->send($this->connection->protocol()->basic()->ack(
-                    $this->channel,
-                    Ack::of($this->deliveryTag),
-                ));
+                $_ = $this
+                    ->connection
+                    ->send($this->connection->protocol()->basic()->ack(
+                        $this->channel,
+                        Ack::of($this->deliveryTag),
+                    ))
+                    ->match(
+                        static fn() => null,
+                        static fn() => throw new \RuntimeException,
+                    );
             }
 
             $this->consumed = true;
@@ -90,21 +96,33 @@ final class GetOk implements Get
 
     private function reject(): void
     {
-        $this->connection->send(
-            $this->connection->protocol()->basic()->reject(
-                $this->channel,
-                RejectCommand::of($this->deliveryTag),
-            ),
-        );
+        $_ = $this
+            ->connection
+            ->send(
+                $this->connection->protocol()->basic()->reject(
+                    $this->channel,
+                    RejectCommand::of($this->deliveryTag),
+                ),
+            )
+            ->match(
+                static fn() => null,
+                static fn() => throw new \RuntimeException,
+            );
     }
 
     private function requeue(): void
     {
-        $this->connection->send(
-            $this->connection->protocol()->basic()->reject(
-                $this->channel,
-                RejectCommand::requeue($this->deliveryTag),
-            ),
-        );
+        $_ = $this
+            ->connection
+            ->send(
+                $this->connection->protocol()->basic()->reject(
+                    $this->channel,
+                    RejectCommand::requeue($this->deliveryTag),
+                ),
+            )
+            ->match(
+                static fn() => null,
+                static fn() => throw new \RuntimeException,
+            );
     }
 }
