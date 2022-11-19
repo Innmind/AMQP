@@ -21,7 +21,7 @@ final class Channel implements ChannelInterfce
     private Transaction $transaction;
     private bool $closed = false;
 
-    public function __construct(Connection $connection, Number $number)
+    private function __construct(Connection $connection, Number $number)
     {
         $this->connection = $connection;
         $this->number = $number;
@@ -39,6 +39,11 @@ final class Channel implements ChannelInterfce
         $this->queue = new Queue\Queue($connection, $number);
         $this->basic = new Basic\Basic($connection, $number);
         $this->transaction = new Transaction\Transaction($connection, $number);
+    }
+
+    public static function open(Connection $connection, Number $number): self
+    {
+        return new self($connection, $number);
     }
 
     public function exchange(): Exchange
