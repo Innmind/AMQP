@@ -28,8 +28,9 @@ final class Transaction implements TransactionInterface
             ->send(fn($protocol) => $protocol->transaction()->select(
                 $this->channel,
             ))
-            ->map(static fn($connection) => $connection->wait(Method::transactionSelectOk))
+            ->wait(Method::transactionSelectOk)
             ->match(
+                static fn() => null,
                 static fn() => null,
                 static fn() => throw new \RuntimeException,
             );
@@ -42,8 +43,9 @@ final class Transaction implements TransactionInterface
             ->send(fn($protocol) => $protocol->transaction()->commit(
                 $this->channel,
             ))
-            ->map(static fn($connection) => $connection->wait(Method::transactionCommitOk))
+            ->wait(Method::transactionCommitOk)
             ->match(
+                static fn() => null,
                 static fn() => null,
                 static fn() => throw new \RuntimeException,
             );
@@ -56,8 +58,9 @@ final class Transaction implements TransactionInterface
             ->send(fn($protocol) => $protocol->transaction()->rollback(
                 $this->channel,
             ))
-            ->map(static fn($connection) => $connection->wait(Method::transactionRollbackOk))
+            ->wait(Method::transactionRollbackOk)
             ->match(
+                static fn() => null,
                 static fn() => null,
                 static fn() => throw new \RuntimeException,
             );

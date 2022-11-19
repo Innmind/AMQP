@@ -196,6 +196,7 @@ final class Consumer implements ConsumerInterface
             ))
             ->match(
                 static fn() => null,
+                static fn() => null,
                 static fn() => throw new \RuntimeException,
             );
     }
@@ -213,6 +214,7 @@ final class Consumer implements ConsumerInterface
             ))
             ->match(
                 static fn() => null,
+                static fn() => null,
                 static fn() => throw new \RuntimeException,
             );
     }
@@ -229,6 +231,7 @@ final class Consumer implements ConsumerInterface
                 RejectCommand::requeue($deliveryTag),
             ))
             ->match(
+                static fn() => null,
                 static fn() => null,
                 static fn() => throw new \RuntimeException,
             );
@@ -257,6 +260,7 @@ final class Consumer implements ConsumerInterface
             ))
             ->match(
                 static fn() => null,
+                static fn() => null,
                 static fn() => throw new \RuntimeException,
             );
 
@@ -283,8 +287,9 @@ final class Consumer implements ConsumerInterface
                 $this->channel,
                 Recover::requeue(),
             ))
-            ->map(static fn($connection) => $connection->wait(Method::basicRecoverOk))
+            ->wait(Method::basicRecoverOk)
             ->match(
+                static fn() => null,
                 static fn() => null,
                 static fn() => throw new \RuntimeException,
             );

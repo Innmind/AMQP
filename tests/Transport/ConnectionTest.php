@@ -54,6 +54,7 @@ class ConnectionTest extends TestCase
                 )
                 ->match(
                     static fn($connection) => $connection,
+                    static fn($connection) => $connection,
                     static fn() => null,
                 ),
         );

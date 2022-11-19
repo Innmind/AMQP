@@ -20,6 +20,7 @@ use Innmind\AMQP\{
     Transport\Frame\Value,
     Transport\Frame\Method,
 };
+use Innmind\Immutable\Predicate\Instance;
 
 final class Basic implements BasicInterface
 {
@@ -44,6 +45,7 @@ final class Basic implements BasicInterface
             ))
             ->match(
                 static fn() => null,
+                static fn() => null,
                 static fn() => throw new \RuntimeException,
             );
     }
@@ -56,46 +58,48 @@ final class Basic implements BasicInterface
                 $this->channel,
                 $command,
             ))
+            ->maybeWait($command->shouldWait(), Method::basicCancelOk)
             ->match(
+                static fn() => null,
                 static fn() => null,
                 static fn() => throw new \RuntimeException,
             );
-
-        if ($command->shouldWait()) {
-            $this->connection->wait(Method::basicCancelOk);
-        }
     }
 
     public function consume(Consume $command): Consumer
     {
-        $_ = $this
+        [$connection, $consumerTag] = $this
             ->connection
             ->send(fn($protocol) => $protocol->basic()->consume(
                 $this->channel,
                 $command,
             ))
+            ->maybeWait($command->shouldWait(), Method::basicConsumeOk)
             ->match(
-                static fn() => null,
+                static fn($connection, $frame) => [
+                    $connection,
+                    $frame
+                        ->values()
+                        ->first()
+                        ->keep(Instance::of(Value\ShortString::class))
+                        ->map(static fn($value) => $value->original()->toString())
+                        ->match(
+                            static fn($consumerTag) => $consumerTag,
+                            static fn() => throw new \LogicException,
+                        ),
+                ],
+                static fn($connection) => [
+                    $connection,
+                    $command->consumerTag()->match(
+                        static fn($consumerTag) => $consumerTag,
+                        static fn() => throw new \LogicException,
+                    ),
+                ],
                 static fn() => throw new \RuntimeException,
             );
 
-        if ($command->shouldWait()) {
-            $frame = $this->connection->wait(Method::basicConsumeOk);
-            /** @var Value\ShortString */
-            $consumerTag = $frame->values()->first()->match(
-                static fn($value) => $value,
-                static fn() => throw new \LogicException,
-            );
-            $consumerTag = $consumerTag->original()->toString();
-        } else {
-            $consumerTag = $command->consumerTag()->match(
-                static fn($tag) => $tag,
-                static fn() => throw new \LogicException,
-            );
-        }
-
         return new Consumer\Consumer(
-            $this->connection,
+            $connection,
             $command,
             $this->channel,
             $consumerTag,
@@ -110,9 +114,10 @@ final class Basic implements BasicInterface
                 $this->channel,
                 $command,
             ))
-            ->map(static fn($connection) => $connection->wait(Method::basicGetOk, Method::basicGetEmpty))
+            ->wait(Method::basicGetOk, Method::basicGetEmpty)
             ->match(
-                static fn($frame) => $frame,
+                static fn($_, $frame) => $frame,
+                static fn() => throw new \RuntimeException,
                 static fn() => throw new \RuntimeException,
             );
 
@@ -174,6 +179,7 @@ final class Basic implements BasicInterface
             ))
             ->match(
                 static fn() => null,
+                static fn() => null,
                 static fn() => throw new \RuntimeException,
             );
     }
@@ -186,8 +192,9 @@ final class Basic implements BasicInterface
                 $this->channel,
                 $command,
             ))
-            ->map(static fn($connection) => $connection->wait(Method::basicQosOk))
+            ->wait(Method::basicQosOk)
             ->match(
+                static fn() => null,
                 static fn() => null,
                 static fn() => throw new \RuntimeException,
             );
@@ -201,8 +208,9 @@ final class Basic implements BasicInterface
                 $this->channel,
                 $command,
             ))
-            ->map(static fn($connection) => $connection->wait(Method::basicRecoverOk))
+            ->wait(Method::basicRecoverOk)
             ->match(
+                static fn() => null,
                 static fn() => null,
                 static fn() => throw new \RuntimeException,
             );
@@ -217,6 +225,7 @@ final class Basic implements BasicInterface
                 $command,
             ))
             ->match(
+                static fn() => null,
                 static fn() => null,
                 static fn() => throw new \RuntimeException,
             );

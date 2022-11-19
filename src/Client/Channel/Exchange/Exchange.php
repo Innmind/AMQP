@@ -31,14 +31,12 @@ final class Exchange implements ExchangeInterface
                 $this->channel,
                 $command,
             ))
+            ->maybeWait($command->shouldWait(), Method::exchangeDeclareOk)
             ->match(
+                static fn() => null,
                 static fn() => null,
                 static fn() => throw new \RuntimeException,
             );
-
-        if ($command->shouldWait()) {
-            $this->connection->wait(Method::exchangeDeclareOk);
-        }
     }
 
     public function delete(Deletion $command): void
@@ -49,13 +47,11 @@ final class Exchange implements ExchangeInterface
                 $this->channel,
                 $command,
             ))
+            ->maybeWait($command->shouldWait(), Method::exchangeDeleteOk)
             ->match(
+                static fn() => null,
                 static fn() => null,
                 static fn() => throw new \RuntimeException,
             );
-
-        if ($command->shouldWait()) {
-            $this->connection->wait(Method::exchangeDeleteOk);
-        }
     }
 }

@@ -26,11 +26,12 @@ final class Channel implements ChannelInterfce
         $this->connection = $connection;
         $this->number = $number;
 
-        $_ = $connection
+        $connection = $connection
             ->send(static fn($protocol) => $protocol->channel()->open($number))
-            ->map(static fn($connection) => $connection->wait(Method::channelOpenOk))
+            ->wait(Method::channelOpenOk)
             ->match(
-                static fn() => null,
+                static fn($connection) => $connection,
+                static fn($connection) => $connection,
                 static fn() => throw new \RuntimeException,
             );
 
@@ -77,8 +78,9 @@ final class Channel implements ChannelInterfce
                 $this->number,
                 Close::demand(),
             ))
-            ->map(static fn($connection) => $connection->wait(Method::channelCloseOk))
+            ->wait(Method::channelCloseOk)
             ->match(
+                static fn() => null,
                 static fn() => null,
                 static fn() => throw new \RuntimeException,
             );

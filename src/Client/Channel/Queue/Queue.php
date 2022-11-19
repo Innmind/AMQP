@@ -33,72 +33,66 @@ final class Queue implements QueueInterface
 
     public function declare(Declaration $command): ?DeclareOk
     {
-        $_ = $this
+        return $this
             ->connection
             ->send(fn($protocol) => $protocol->queue()->declare(
                 $this->channel,
                 $command,
             ))
+            ->maybeWait($command->shouldWait(), Method::queueDeclareOk)
             ->match(
+                static function($_, $frame) {
+                    /** @var Value\ShortString */
+                    $name = $frame->values()->get(0)->match(
+                        static fn($value) => $value,
+                        static fn() => throw new \LogicException,
+                    );
+                    /** @var Value\UnsignedLongInteger */
+                    $message = $frame->values()->get(1)->match(
+                        static fn($value) => $value,
+                        static fn() => throw new \LogicException,
+                    );
+                    /** @var Value\UnsignedLongInteger */
+                    $consumer = $frame->values()->get(2)->match(
+                        static fn($value) => $value,
+                        static fn() => throw new \LogicException,
+                    );
+
+                    return DeclareOk::of(
+                        $name->original()->toString(),
+                        Count::of($message->original()),
+                        Count::of($consumer->original()),
+                    );
+                },
                 static fn() => null,
                 static fn() => throw new \RuntimeException,
             );
-
-        if (!$command->shouldWait()) {
-            return null;
-        }
-
-        $frame = $this->connection->wait(Method::queueDeclareOk);
-        /** @var Value\ShortString */
-        $name = $frame->values()->get(0)->match(
-            static fn($value) => $value,
-            static fn() => throw new \LogicException,
-        );
-        /** @var Value\UnsignedLongInteger */
-        $message = $frame->values()->get(1)->match(
-            static fn($value) => $value,
-            static fn() => throw new \LogicException,
-        );
-        /** @var Value\UnsignedLongInteger */
-        $consumer = $frame->values()->get(2)->match(
-            static fn($value) => $value,
-            static fn() => throw new \LogicException,
-        );
-
-        return DeclareOk::of(
-            $name->original()->toString(),
-            Count::of($message->original()),
-            Count::of($consumer->original()),
-        );
     }
 
     public function delete(Deletion $command): ?DeleteOk
     {
-        $_ = $this
+        return $this
             ->connection
             ->send(fn($protocol) => $protocol->queue()->delete(
                 $this->channel,
                 $command,
             ))
+            ->maybeWait($command->shouldWait(), Method::queueDeleteOk)
             ->match(
+                static function($_, $frame) {
+                    /** @var Value\UnsignedLongInteger */
+                    $message = $frame->values()->first()->match(
+                        static fn($value) => $value,
+                        static fn() => throw new \LogicException,
+                    );
+
+                    return DeleteOk::of(Count::of(
+                        $message->original(),
+                    ));
+                },
                 static fn() => null,
                 static fn() => throw new \RuntimeException,
             );
-
-        if (!$command->shouldWait()) {
-            return null;
-        }
-
-        $frame = $this->connection->wait(Method::queueDeleteOk);
-        /** @var Value\UnsignedLongInteger */
-        $message = $frame->values()->first()->match(
-            static fn($value) => $value,
-            static fn() => throw new \LogicException,
-        );
-
-        return DeleteOk::of(Count::of(
-            $message->original(),
-        ));
     }
 
     public function bind(Binding $command): void
@@ -109,14 +103,12 @@ final class Queue implements QueueInterface
                 $this->channel,
                 $command,
             ))
+            ->maybeWait($command->shouldWait(), Method::queueBindOk)
             ->match(
+                static fn() => null,
                 static fn() => null,
                 static fn() => throw new \RuntimeException,
             );
-
-        if ($command->shouldWait()) {
-            $this->connection->wait(Method::queueBindOk);
-        }
     }
 
     public function unbind(Unbinding $command): void
@@ -127,8 +119,9 @@ final class Queue implements QueueInterface
                 $this->channel,
                 $command,
             ))
-            ->map(static fn($connection) => $connection->wait(Method::queueUnbindOk))
+            ->wait(Method::queueUnbindOk)
             ->match(
+                static fn() => null,
                 static fn() => null,
                 static fn() => throw new \RuntimeException,
             );
@@ -136,30 +129,27 @@ final class Queue implements QueueInterface
 
     public function purge(Purge $command): ?PurgeOk
     {
-        $_ = $this
+        return $this
             ->connection
             ->send(fn($protocol) => $protocol->queue()->purge(
                 $this->channel,
                 $command,
             ))
+            ->maybeWait($command->shouldWait(), Method::queuePurgeOk)
             ->match(
+                static function($_, $frame) {
+                    /** @var Value\UnsignedLongInteger */
+                    $message = $frame->values()->first()->match(
+                        static fn($value) => $value,
+                        static fn() => throw new \LogicException,
+                    );
+
+                    return PurgeOk::of(Count::of(
+                        $message->original(),
+                    ));
+                },
                 static fn() => null,
                 static fn() => throw new \RuntimeException,
             );
-
-        if (!$command->shouldWait()) {
-            return null;
-        }
-
-        $frame = $this->connection->wait(Method::queuePurgeOk);
-        /** @var Value\UnsignedLongInteger */
-        $message = $frame->values()->first()->match(
-            static fn($value) => $value,
-            static fn() => throw new \LogicException,
-        );
-
-        return PurgeOk::of(Count::of(
-            $message->original(),
-        ));
     }
 }

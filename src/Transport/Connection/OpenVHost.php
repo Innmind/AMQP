@@ -25,9 +25,10 @@ final class OpenVHost
             ->send(fn($protocol) => $protocol->connection()->open(
                 Open::of($this->vhost),
             ))
-            ->map(static fn($connection) => $connection->wait(Method::connectionOpenOk))
+            ->wait(Method::connectionOpenOk)
             ->match(
-                static fn() => $connection,
+                static fn($connection) => $connection,
+                static fn($connection) => $connection,
                 static fn() => throw new \RuntimeException,
             );
     }

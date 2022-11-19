@@ -78,6 +78,7 @@ final class GetOk implements Get
                     ))
                     ->match(
                         static fn() => null,
+                        static fn() => null,
                         static fn() => throw new \RuntimeException,
                     );
             }
@@ -104,6 +105,7 @@ final class GetOk implements Get
             ))
             ->match(
                 static fn() => null,
+                static fn() => null,
                 static fn() => throw new \RuntimeException,
             );
     }
@@ -117,6 +119,7 @@ final class GetOk implements Get
                 RejectCommand::requeue($this->deliveryTag),
             ))
             ->match(
+                static fn() => null,
                 static fn() => null,
                 static fn() => throw new \RuntimeException,
             );

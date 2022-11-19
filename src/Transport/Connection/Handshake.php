@@ -33,16 +33,17 @@ final class Handshake
         $frame = $connection->wait(Method::connectionSecure, Method::connectionTune);
 
         if ($frame->is(Method::connectionSecure)) {
-            $frame = $connection
+            [$connection, $frame] = $connection
                 ->send(fn($protocol) => $protocol->connection()->secureOk(
                     SecureOk::of(
                         $this->authority->userInformation()->user(),
                         $this->authority->userInformation()->password(),
                     ),
                 ))
-                ->map(static fn($connection) => $connection->wait(Method::connectionTune))
+                ->wait(Method::connectionTune)
                 ->match(
-                    static fn($frame) => $frame,
+                    static fn($connection, $frame) => [$connection, $frame],
+                    static fn() => throw new \RuntimeException,
                     static fn() => throw new \RuntimeException,
                 );
         }
@@ -94,8 +95,8 @@ final class Handshake
                     $heartbeat,
                 ),
             ))
-            ->keep(Instance::of(Connection::class))
             ->match(
+                static fn($connection) => $connection,
                 static fn($connection) => $connection,
                 static fn() => throw new \RuntimeException,
             );

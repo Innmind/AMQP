@@ -10,6 +10,7 @@ use Innmind\AMQP\{
     Transport\Connection\Heartbeat,
     Transport\Connection\FrameReader,
     Transport\Connection\State,
+    Transport\Connection\Continuation,
     Transport\Frame,
     Transport\Protocol,
     Transport\Frame\Type,
@@ -134,21 +135,18 @@ final class Connection
      * or that writting to the socket failed
      *
      * @param callable(Protocol, MaxFrameSize): Sequence<Frame> $frames
-     *
-     * @return Maybe<self>
      */
-    public function send(callable $frames): Maybe
+    public function send(callable $frames): Continuation
     {
-        /**
-         * @psalm-suppress MixedArgumentTypeCoercion
-         * @var Maybe<self>
-         */
-        return $frames($this->protocol, $this->maxFrameSize)->reduce(
+        /** @psalm-suppress MixedArgumentTypeCoercion */
+        $connection = $frames($this->protocol, $this->maxFrameSize)->reduce(
             Maybe::just($this),
             static fn(Maybe $connection, $frame) => $connection->flatMap(
                 static fn(self $connection) => $connection->sendFrame($frame),
             ),
         );
+
+        return Continuation::of($connection);
     }
 
     /**
@@ -202,6 +200,7 @@ final class Connection
                 ->send(static fn($protocol) => $protocol->connection()->closeOk())
                 ->match(
                     static fn() => null,
+                    static fn() => null,
                     static fn() => throw new \RuntimeException,
                 );
             $this->state = State::closed;
@@ -249,11 +248,12 @@ final class Connection
 
         $_ = $this
             ->send(static fn($protocol) => $protocol->connection()->close(Close::demand()))
+            ->wait(Method::connectionCloseOk)
             ->match(
+                static fn() => null,
                 static fn() => null,
                 static fn() => throw new \RuntimeException,
             );
-        $this->wait(Method::connectionCloseOk);
         $this->socket->close();
         // we modify the state of the current instance instead of creating a new
         // instance like in self::ready() to prevent anyone from trying to reuse

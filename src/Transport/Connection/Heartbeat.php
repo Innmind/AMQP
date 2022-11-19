@@ -40,6 +40,7 @@ final class Heartbeat
                 ->send(static fn() => Sequence::of(Frame::heartbeat()))
                 ->match(
                     static fn() => null,
+                    static fn() => null,
                     static fn() => throw new \RuntimeException,
                 );
         }
