@@ -32,7 +32,7 @@ final class Factory
         ElapsedPeriod $timeout,
     ): Client {
         return new Client\Client(
-            fn() => Transport\Connection::of(
+            fn() => Transport\Connection::open(
                 $transport,
                 $server,
                 new Transport\Protocol(

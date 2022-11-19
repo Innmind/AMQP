@@ -42,7 +42,7 @@ class QueueTest extends TestCase
     public function setUp(): void
     {
         $this->queue = new Queue(
-            $this->connection = Connection::of(
+            $this->connection = Connection::open(
                 Transport::tcp(),
                 Url::of('//guest:guest@localhost:5672/'),
                 new Protocol(new Clock, $this->createMock(ArgumentTranslator::class)),

@@ -87,7 +87,7 @@ final class Connection
     /**
      * @return Maybe<self>
      */
-    public static function of(
+    public static function open(
         Transport $transport,
         Url $server,
         Protocol $protocol,

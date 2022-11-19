@@ -86,7 +86,7 @@ class BasicTest extends TestCase
     public function setUp(): void
     {
         $this->basic = new Basic(
-            $this->connection = Connection::of(
+            $this->connection = Connection::open(
                 Transport::tcp(),
                 Url::of('//guest:guest@localhost:5672/'),
                 new Protocol(new Clock, new ValueTranslator),
