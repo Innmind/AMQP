@@ -127,6 +127,7 @@ final class Connection implements ConnectionInterface
 
     public function send(Frame $frame): Maybe
     {
+        /** @var Maybe<ConnectionInterface> */
         return Maybe::just($frame)
             ->filter(fn($frame) => $this->maxChannels->allows($frame->channel()->toInt()))
             ->map(static fn($frame) => $frame->pack()->toEncoding('ASCII'))

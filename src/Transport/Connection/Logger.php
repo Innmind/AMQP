@@ -50,7 +50,7 @@ final class Logger implements ConnectionInterface
             ],
         );
 
-        /** @var Maybe<self> */
+        /** @var Maybe<ConnectionInterface> */
         return $this
             ->connection
             ->send($frame)

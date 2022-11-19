@@ -24,7 +24,7 @@ interface Connection
      * Possible failures are exceeding the max channel number, the max frame size
      * or that writting to the socket failed
      *
-     * @return Maybe<$this>
+     * @return Maybe<self>
      */
     public function send(Frame $frame): Maybe;
 
