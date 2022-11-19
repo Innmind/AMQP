@@ -27,6 +27,7 @@ use Innmind\OperatingSystem\{
     Sockets,
 };
 use Innmind\Server\Control\Server;
+use Innmind\Immutable\Sequence;
 use PHPUnit\Framework\TestCase;
 
 class ConnectionTest extends TestCase
@@ -47,14 +48,11 @@ class ConnectionTest extends TestCase
         );
 
         $this->assertInstanceOf(ConnectionInterface::class, $connection);
-        $this->assertSame($protocol, $connection->protocol());
-        $this->assertInstanceOf(MaxFrameSize::class, $connection->maxFrameSize());
-        $this->assertSame(131072, $connection->maxFrameSize()->toInt());
         $this->assertSame(
             $connection,
             $connection
                 ->send(
-                    $protocol->channel()->open(new Channel(1)),
+                    static fn($protocol) => $protocol->channel()->open(new Channel(1)),
                 )
                 ->match(
                     static fn($connection) => $connection,
@@ -90,7 +88,7 @@ class ConnectionTest extends TestCase
         $connection = Connection::of(
             Transport::tcp(),
             Url::of('//guest:guest@localhost:5672/'),
-            $protocol = new Protocol(new Clock, $this->createMock(ArgumentTranslator::class)),
+            new Protocol(new Clock, $this->createMock(ArgumentTranslator::class)),
             new ElapsedPeriod(1000),
             new Clock,
             Remote\Generic::of($this->createMock(Server::class), new Clock),
@@ -102,7 +100,7 @@ class ConnectionTest extends TestCase
 
         $this->expectException(UnexpectedFrame::class);
 
-        $connection->send($protocol->channel()->open(new Channel(2)));
+        $connection->send(static fn($protocol) => $protocol->channel()->open(new Channel(2)));
         $connection->wait(Method::connectionOpen);
     }
 
@@ -122,11 +120,11 @@ class ConnectionTest extends TestCase
         );
 
         try {
-            $connection->send(Frame::method(
+            $connection->send(static fn() => Sequence::of(Frame::method(
                 new Channel(0),
                 Method::of(20, 10),
                 //missing arguments
-            ));
+            )));
             $connection->wait(Method::channelOpenOk);
         } catch (ConnectionClosed $e) {
             $this->assertTrue($connection->closed());

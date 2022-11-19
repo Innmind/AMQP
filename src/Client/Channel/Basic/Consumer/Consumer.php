@@ -190,12 +190,10 @@ final class Consumer implements ConsumerInterface
 
         $_ = $this
             ->connection
-            ->send(
-                $this->connection->protocol()->basic()->ack(
-                    $this->channel,
-                    Ack::of($deliveryTag),
-                ),
-            )
+            ->send(fn($protocol) => $protocol->basic()->ack(
+                $this->channel,
+                Ack::of($deliveryTag),
+            ))
             ->match(
                 static fn() => null,
                 static fn() => throw new \RuntimeException,
@@ -209,12 +207,10 @@ final class Consumer implements ConsumerInterface
     {
         $_ = $this
             ->connection
-            ->send(
-                $this->connection->protocol()->basic()->reject(
-                    $this->channel,
-                    RejectCommand::of($deliveryTag),
-                ),
-            )
+            ->send(fn($protocol) => $protocol->basic()->reject(
+                $this->channel,
+                RejectCommand::of($deliveryTag),
+            ))
             ->match(
                 static fn() => null,
                 static fn() => throw new \RuntimeException,
@@ -228,12 +224,10 @@ final class Consumer implements ConsumerInterface
     {
         $_ = $this
             ->connection
-            ->send(
-                $this->connection->protocol()->basic()->reject(
-                    $this->channel,
-                    RejectCommand::requeue($deliveryTag),
-                ),
-            )
+            ->send(fn($protocol) => $protocol->basic()->reject(
+                $this->channel,
+                RejectCommand::requeue($deliveryTag),
+            ))
             ->match(
                 static fn() => null,
                 static fn() => throw new \RuntimeException,
@@ -257,7 +251,7 @@ final class Consumer implements ConsumerInterface
 
         $_ = $this
             ->connection
-            ->send($this->connection->protocol()->basic()->cancel(
+            ->send(fn($protocol) => $protocol->basic()->cancel(
                 $this->channel,
                 CancelCommand::of($this->consumerTag),
             ))
@@ -285,7 +279,7 @@ final class Consumer implements ConsumerInterface
         // messages handling
         $_ = $this
             ->connection
-            ->send($this->connection->protocol()->basic()->recover(
+            ->send(fn($protocol) => $protocol->basic()->recover(
                 $this->channel,
                 Recover::requeue(),
             ))

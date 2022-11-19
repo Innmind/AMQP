@@ -120,25 +120,18 @@ final class Connection implements ConnectionInterface
             ->map(static fn($connection) => $connection->ready());
     }
 
-    public function protocol(): Protocol
+    public function send(callable $frames): Maybe
     {
-        return $this->protocol;
-    }
-
-    public function send(Frame $frame): Maybe
-    {
-        /** @var Maybe<ConnectionInterface> */
-        return Maybe::just($frame)
-            ->filter(fn($frame) => $this->maxChannels->allows($frame->channel()->toInt()))
-            ->map(static fn($frame) => $frame->pack()->toEncoding('ASCII'))
-            ->filter(fn($frame) => $this->maxFrameSize->allows($frame->length()))
-            ->flatMap(
-                fn($frame) => $this
-                    ->socket
-                    ->write($frame)
-                    ->maybe(),
-            )
-            ->map(fn() => $this);
+        /**
+         * @psalm-suppress MixedArgumentTypeCoercion
+         * @var Maybe<ConnectionInterface>
+         */
+        return $frames($this->protocol, $this->maxFrameSize)->reduce(
+            Maybe::just($this),
+            static fn(Maybe $connection, $frame) => $connection->flatMap(
+                static fn(self $connection) => $connection->sendFrame($frame),
+            ),
+        );
     }
 
     public function wait(Frame\Method ...$names): Frame
@@ -184,7 +177,7 @@ final class Connection implements ConnectionInterface
 
         if ($frame->is(Method::connectionClose)) {
             $_ = $this
-                ->send($this->protocol->connection()->closeOk())
+                ->send(static fn($protocol) => $protocol->connection()->closeOk())
                 ->match(
                     static fn() => null,
                     static fn() => throw new \RuntimeException,
@@ -226,11 +219,6 @@ final class Connection implements ConnectionInterface
         throw new UnexpectedFrame($frame, ...$names);
     }
 
-    public function maxFrameSize(): MaxFrameSize
-    {
-        return $this->maxFrameSize;
-    }
-
     public function close(): void
     {
         if (!$this->state->usable($this->socket)) {
@@ -238,7 +226,7 @@ final class Connection implements ConnectionInterface
         }
 
         $_ = $this
-            ->send($this->protocol->connection()->close(Close::demand()))
+            ->send(static fn($protocol) => $protocol->connection()->close(Close::demand()))
             ->match(
                 static fn() => null,
                 static fn() => throw new \RuntimeException,
@@ -295,5 +283,23 @@ final class Connection implements ConnectionInterface
             $this->maxChannels,
             $this->maxFrameSize,
         );
+    }
+
+    /**
+     * @return Maybe<self>
+     */
+    private function sendFrame(Frame $frame): Maybe
+    {
+        return Maybe::just($frame)
+            ->filter(fn($frame) => $this->maxChannels->allows($frame->channel()->toInt()))
+            ->map(static fn($frame) => $frame->pack()->toEncoding('ASCII'))
+            ->filter(fn($frame) => $this->maxFrameSize->allows($frame->length()))
+            ->flatMap(
+                fn($frame) => $this
+                    ->socket
+                    ->write($frame)
+                    ->maybe(),
+            )
+            ->map(fn() => $this);
     }
 }

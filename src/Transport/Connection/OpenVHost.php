@@ -21,7 +21,7 @@ final class OpenVHost
     public function __invoke(Connection $connection): Connection
     {
         return $connection
-            ->send($connection->protocol()->connection()->open(
+            ->send(fn($protocol) => $protocol->connection()->open(
                 Open::of($this->vhost),
             ))
             ->map(static fn($connection) => $connection->wait(Method::connectionOpenOk))

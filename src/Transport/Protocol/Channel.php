@@ -15,45 +15,60 @@ use Innmind\AMQP\{
     Transport\Frame\Value\Bits,
     Transport\Frame\Value\UnsignedShortInteger,
 };
-use Innmind\Immutable\Str;
+use Innmind\Immutable\{
+    Str,
+    Sequence,
+};
 
 final class Channel
 {
-    public function open(FrameChannel $channel): Frame
+    /**
+     * @return Sequence<Frame>
+     */
+    public function open(FrameChannel $channel): Sequence
     {
-        return Frame::method(
+        return Sequence::of(Frame::method(
             $channel,
             Method::channelOpen,
             ShortString::of(Str::of('')), // out of band (reserved)
-        );
+        ));
     }
 
-    public function flow(FrameChannel $channel, Flow $command): Frame
+    /**
+     * @return Sequence<Frame>
+     */
+    public function flow(FrameChannel $channel, Flow $command): Sequence
     {
-        return Frame::method(
+        return Sequence::of(Frame::method(
             $channel,
             Method::channelFlow,
             Bits::of($command->active()),
-        );
+        ));
     }
 
-    public function flowOk(FrameChannel $channel, FlowOk $command): Frame
+    /**
+     * @return Sequence<Frame>
+     */
+    public function flowOk(FrameChannel $channel, FlowOk $command): Sequence
     {
-        return Frame::method(
+        return Sequence::of(Frame::method(
             $channel,
             Method::channelFlowOk,
             Bits::of($command->active()),
-        );
+        ));
     }
 
-    public function close(FrameChannel $channel, Close $command): Frame
+    /**
+     * @return Sequence<Frame>
+     */
+    public function close(FrameChannel $channel, Close $command): Sequence
     {
         [$replyCode, $replyText] = $command->response()->match(
             static fn($info) => $info,
             static fn() => [0, ''],
         );
 
-        return Frame::method(
+        return Sequence::of(Frame::method(
             $channel,
             Method::channelClose,
             UnsignedShortInteger::internal($replyCode),
@@ -63,14 +78,17 @@ final class Channel
             // it also depends on the state of the connection
             UnsignedShortInteger::internal(0), // class
             UnsignedShortInteger::internal(0), // method
-        );
+        ));
     }
 
-    public function closeOk(FrameChannel $channel): Frame
+    /**
+     * @return Sequence<Frame>
+     */
+    public function closeOk(FrameChannel $channel): Sequence
     {
-        return Frame::method(
+        return Sequence::of(Frame::method(
             $channel,
             Method::channelCloseOk,
-        );
+        ));
     }
 }

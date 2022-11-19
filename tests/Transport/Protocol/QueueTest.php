@@ -51,6 +51,9 @@ class QueueTest extends TestCase
             Declaration::passive('foo')
                 ->withArgument('foo', 24)
                 ->withArgument('bar', 42),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -114,6 +117,9 @@ class QueueTest extends TestCase
         $frame = $this->queue->declare(
             $channel = new Channel(1),
             Declaration::durable(),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertSame('', $frame->values()->get(1)->match(
@@ -131,6 +137,9 @@ class QueueTest extends TestCase
         $frame = $this->queue->declare(
             $channel = new Channel(1),
             Declaration::temporary(),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertSame('', $frame->values()->get(1)->match(
@@ -148,6 +157,9 @@ class QueueTest extends TestCase
         $frame = $this->queue->declare(
             $channel = new Channel(1),
             Declaration::autoDelete(),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertSame('', $frame->values()->get(1)->match(
@@ -165,6 +177,9 @@ class QueueTest extends TestCase
         $frame = $this->queue->declare(
             $channel = new Channel(1),
             Declaration::autoDelete()->exclusive(),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertSame('', $frame->values()->get(1)->match(
@@ -182,6 +197,9 @@ class QueueTest extends TestCase
         $frame = $this->queue->declare(
             $channel = new Channel(1),
             Declaration::autoDelete()->dontWait(),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertSame('', $frame->values()->get(1)->match(
@@ -199,6 +217,9 @@ class QueueTest extends TestCase
         $frame = $this->queue->declare(
             $channel = new Channel(1),
             Declaration::autoDelete()->withName('foo'),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertSame('foo', $frame->values()->get(1)->match(
@@ -212,6 +233,9 @@ class QueueTest extends TestCase
         $frame = $this->queue->delete(
             $channel = new Channel(1),
             Deletion::of('foo'),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -253,6 +277,9 @@ class QueueTest extends TestCase
         $frame = $this->queue->delete(
             $channel = new Channel(1),
             Deletion::of('foo')->ifUnused(),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertSame(
@@ -266,6 +293,9 @@ class QueueTest extends TestCase
         $frame = $this->queue->delete(
             $channel = new Channel(1),
             Deletion::of('foo')->ifEmpty(),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertSame(
@@ -279,6 +309,9 @@ class QueueTest extends TestCase
         $frame = $this->queue->delete(
             $channel = new Channel(1),
             Deletion::of('foo')->dontWait(),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertSame(
@@ -306,6 +339,9 @@ class QueueTest extends TestCase
             Binding::of('ex', 'q', 'rk')
                 ->withArgument('foo', 24)
                 ->withArgument('bar', 42),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -385,6 +421,9 @@ class QueueTest extends TestCase
         $frame = $this->queue->bind(
             $channel = new Channel(1),
             Binding::of('ex', 'q', 'rk')->dontWait(),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertTrue($frame->values()->get(4)->match(
@@ -412,6 +451,9 @@ class QueueTest extends TestCase
             Unbinding::of('ex', 'q', 'rk')
                 ->withArgument('foo', 24)
                 ->withArgument('bar', 42),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -483,6 +525,9 @@ class QueueTest extends TestCase
         $frame = $this->queue->purge(
             $channel = new Channel(1),
             Purge::of('q'),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -524,6 +569,9 @@ class QueueTest extends TestCase
         $frame = $this->queue->purge(
             $channel = new Channel(1),
             Purge::of('q')->dontWait(),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertTrue($frame->values()->get(2)->match(

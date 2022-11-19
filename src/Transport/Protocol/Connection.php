@@ -28,11 +28,15 @@ use Innmind\Url\Authority\UserInformation\{
 use Innmind\Immutable\{
     Str,
     Map,
+    Sequence,
 };
 
 final class Connection
 {
-    public function startOk(StartOk $command): Frame
+    /**
+     * @return Sequence<Frame>
+     */
+    public function startOk(StartOk $command): Sequence
     {
         /** @psalm-suppress InvalidArgument */
         $clientProperties = Table::of(
@@ -57,29 +61,35 @@ final class Connection
             ),
         );
 
-        return Frame::method(
+        return Sequence::of(Frame::method(
             new Channel(0),
             Method::connectionStartOk,
             $clientProperties,
             ShortString::literal('AMQPLAIN'), // mechanism
             $this->response($command->user(), $command->password()),
             ShortString::literal('en_US'), // locale
-        );
+        ));
     }
 
-    public function secureOk(SecureOk $command): Frame
+    /**
+     * @return Sequence<Frame>
+     */
+    public function secureOk(SecureOk $command): Sequence
     {
-        return Frame::method(
+        return Sequence::of(Frame::method(
             new Channel(0),
             Method::connectionSecureOk,
             $this->response($command->user(), $command->password()),
-        );
+        ));
     }
 
-    public function tuneOk(TuneOk $command): Frame
+    /**
+     * @return Sequence<Frame>
+     */
+    public function tuneOk(TuneOk $command): Sequence
     {
         /** @psalm-suppress ArgumentTypeCoercion */
-        return Frame::method(
+        return Sequence::of(Frame::method(
             new Channel(0),
             Method::connectionTuneOk,
             UnsignedShortInteger::internal($command->maxChannels()),
@@ -87,28 +97,34 @@ final class Connection
             UnsignedShortInteger::of(
                 (int) ($command->heartbeat()->milliseconds() / 1000),
             ),
-        );
+        ));
     }
 
-    public function open(Open $command): Frame
+    /**
+     * @return Sequence<Frame>
+     */
+    public function open(Open $command): Sequence
     {
-        return Frame::method(
+        return Sequence::of(Frame::method(
             new Channel(0),
             Method::connectionOpen,
             ShortString::of(Str::of($command->virtualHost()->toString())),
             ShortString::literal(''), // capabilities (reserved)
             Bits::of(false), // insist (reserved)
-        );
+        ));
     }
 
-    public function close(Close $command): Frame
+    /**
+     * @return Sequence<Frame>
+     */
+    public function close(Close $command): Sequence
     {
         [$replyCode, $replyText] = $command->response()->match(
             static fn($info) => $info,
             static fn() => [0, ''],
         );
 
-        return Frame::method(
+        return Sequence::of(Frame::method(
             new Channel(0),
             Method::connectionClose,
             UnsignedShortInteger::internal($replyCode),
@@ -118,15 +134,18 @@ final class Connection
             // it also depends on the state of the connection
             UnsignedShortInteger::internal(0), // class
             UnsignedShortInteger::internal(0), // method
-        );
+        ));
     }
 
-    public function closeOk(): Frame
+    /**
+     * @return Sequence<Frame>
+     */
+    public function closeOk(): Sequence
     {
-        return Frame::method(
+        return Sequence::of(Frame::method(
             new Channel(0),
             Method::connectionCloseOk,
-        );
+        ));
     }
 
     private function response(User $user, Password $password): LongString

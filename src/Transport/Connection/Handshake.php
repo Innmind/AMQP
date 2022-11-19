@@ -33,7 +33,7 @@ final class Handshake
 
         if ($frame->is(Method::connectionSecure)) {
             $frame = $connection
-                ->send($connection->protocol()->connection()->secureOk(
+                ->send(fn($protocol) => $protocol->connection()->secureOk(
                     SecureOk::of(
                         $this->authority->userInformation()->user(),
                         $this->authority->userInformation()->password(),
@@ -86,7 +86,7 @@ final class Handshake
     ): Connection {
         return $connection
             ->tune($maxChannels, $maxFrameSize, $heartbeat)
-            ->send($connection->protocol()->connection()->tuneOk(
+            ->send(static fn($protocol) => $protocol->connection()->tuneOk(
                 TuneOk::of(
                     $maxChannels,
                     $maxFrameSize,

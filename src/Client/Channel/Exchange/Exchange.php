@@ -27,12 +27,10 @@ final class Exchange implements ExchangeInterface
     {
         $_ = $this
             ->connection
-            ->send(
-                $this->connection->protocol()->exchange()->declare(
-                    $this->channel,
-                    $command,
-                ),
-            )
+            ->send(fn($protocol) => $protocol->exchange()->declare(
+                $this->channel,
+                $command,
+            ))
             ->match(
                 static fn() => null,
                 static fn() => throw new \RuntimeException,
@@ -47,12 +45,10 @@ final class Exchange implements ExchangeInterface
     {
         $_ = $this
             ->connection
-            ->send(
-                $this->connection->protocol()->exchange()->delete(
-                    $this->channel,
-                    $command,
-                ),
-            )
+            ->send(fn($protocol) => $protocol->exchange()->delete(
+                $this->channel,
+                $command,
+            ))
             ->match(
                 static fn() => null,
                 static fn() => throw new \RuntimeException,

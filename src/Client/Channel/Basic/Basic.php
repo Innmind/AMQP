@@ -38,12 +38,10 @@ final class Basic implements BasicInterface
     {
         $_ = $this
             ->connection
-            ->send(
-                $this->connection->protocol()->basic()->ack(
-                    $this->channel,
-                    $command,
-                ),
-            )
+            ->send(fn($protocol) => $protocol->basic()->ack(
+                $this->channel,
+                $command,
+            ))
             ->match(
                 static fn() => null,
                 static fn() => throw new \RuntimeException,
@@ -54,12 +52,10 @@ final class Basic implements BasicInterface
     {
         $_ = $this
             ->connection
-            ->send(
-                $this->connection->protocol()->basic()->cancel(
-                    $this->channel,
-                    $command,
-                ),
-            )
+            ->send(fn($protocol) => $protocol->basic()->cancel(
+                $this->channel,
+                $command,
+            ))
             ->match(
                 static fn() => null,
                 static fn() => throw new \RuntimeException,
@@ -74,12 +70,10 @@ final class Basic implements BasicInterface
     {
         $_ = $this
             ->connection
-            ->send(
-                $this->connection->protocol()->basic()->consume(
-                    $this->channel,
-                    $command,
-                ),
-            )
+            ->send(fn($protocol) => $protocol->basic()->consume(
+                $this->channel,
+                $command,
+            ))
             ->match(
                 static fn() => null,
                 static fn() => throw new \RuntimeException,
@@ -112,7 +106,7 @@ final class Basic implements BasicInterface
     {
         $frame = $this
             ->connection
-            ->send($this->connection->protocol()->basic()->get(
+            ->send(fn($protocol) => $protocol->basic()->get(
                 $this->channel,
                 $command,
             ))
@@ -173,26 +167,22 @@ final class Basic implements BasicInterface
     {
         $_ = $this
             ->connection
-            ->protocol()
-            ->basic()
-            ->publish(
+            ->send(fn($protocol, $maxFrameSize) => $protocol->basic()->publish(
                 $this->channel,
                 $command,
-                $this->connection->maxFrameSize(),
-            )
-            ->foreach(function(Frame $frame): void {
-                $_ = $this->connection->send($frame)->match(
-                    static fn() => null,
-                    static fn() => throw new \RuntimeException,
-                );
-            });
+                $maxFrameSize,
+            ))
+            ->match(
+                static fn() => null,
+                static fn() => throw new \RuntimeException,
+            );
     }
 
     public function qos(Qos $command): void
     {
         $_ = $this
             ->connection
-            ->send($this->connection->protocol()->basic()->qos(
+            ->send(fn($protocol) => $protocol->basic()->qos(
                 $this->channel,
                 $command,
             ))
@@ -207,7 +197,7 @@ final class Basic implements BasicInterface
     {
         $_ = $this
             ->connection
-            ->send($this->connection->protocol()->basic()->recover(
+            ->send(fn($protocol) => $protocol->basic()->recover(
                 $this->channel,
                 $command,
             ))
@@ -222,12 +212,10 @@ final class Basic implements BasicInterface
     {
         $_ = $this
             ->connection
-            ->send(
-                $this->connection->protocol()->basic()->reject(
-                    $this->channel,
-                    $command,
-                ),
-            )
+            ->send(fn($protocol) => $protocol->basic()->reject(
+                $this->channel,
+                $command,
+            ))
             ->match(
                 static fn() => null,
                 static fn() => throw new \RuntimeException,

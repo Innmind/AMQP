@@ -72,7 +72,7 @@ final class GetOk implements Get
             if (!$this->command->shouldAutoAcknowledge()) {
                 $_ = $this
                     ->connection
-                    ->send($this->connection->protocol()->basic()->ack(
+                    ->send(fn($protocol) => $protocol->basic()->ack(
                         $this->channel,
                         Ack::of($this->deliveryTag),
                     ))
@@ -98,12 +98,10 @@ final class GetOk implements Get
     {
         $_ = $this
             ->connection
-            ->send(
-                $this->connection->protocol()->basic()->reject(
-                    $this->channel,
-                    RejectCommand::of($this->deliveryTag),
-                ),
-            )
+            ->send(fn($protocol) => $protocol->basic()->reject(
+                $this->channel,
+                RejectCommand::of($this->deliveryTag),
+            ))
             ->match(
                 static fn() => null,
                 static fn() => throw new \RuntimeException,
@@ -114,12 +112,10 @@ final class GetOk implements Get
     {
         $_ = $this
             ->connection
-            ->send(
-                $this->connection->protocol()->basic()->reject(
-                    $this->channel,
-                    RejectCommand::requeue($this->deliveryTag),
-                ),
-            )
+            ->send(fn($protocol) => $protocol->basic()->reject(
+                $this->channel,
+                RejectCommand::requeue($this->deliveryTag),
+            ))
             ->match(
                 static fn() => null,
                 static fn() => throw new \RuntimeException,

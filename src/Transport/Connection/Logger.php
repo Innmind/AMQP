@@ -34,26 +34,25 @@ final class Logger implements ConnectionInterface
         return static fn(ConnectionInterface $connection): ConnectionInterface => new self($connection, $logger);
     }
 
-    public function protocol(): Protocol
+    public function send(callable $frames): Maybe
     {
-        return $this->connection->protocol();
-    }
-
-    public function send(Frame $frame): Maybe
-    {
-        $this->logger->debug(
-            'AMQP frame about to be sent',
-            [
-                'type' => $frame->type()->toInt(),
-                'channel' => $frame->channel()->toInt(),
-                'uuid' => $uuid = Uuid::uuid4()->toString(),
-            ],
-        );
+        $uuid = Uuid::uuid4()->toString();
 
         /** @var Maybe<ConnectionInterface> */
         return $this
             ->connection
-            ->send($frame)
+            ->send(fn($protocol, $maxFrameSize) => $frames($protocol, $maxFrameSize)->map(function($frame) use ($uuid) {
+                $this->logger->debug(
+                    'AMQP frame about to be sent',
+                    [
+                        'type' => $frame->type()->toInt(),
+                        'channel' => $frame->channel()->toInt(),
+                        'uuid' => $uuid,
+                    ],
+                );
+
+                return $frame;
+            }))
             ->map(function() use ($uuid) {
                 $this->logger->debug('AMQP frame sent', ['uuid' => $uuid]);
 
@@ -74,11 +73,6 @@ final class Logger implements ConnectionInterface
         );
 
         return $frame;
-    }
-
-    public function maxFrameSize(): MaxFrameSize
-    {
-        return $this->connection->maxFrameSize();
     }
 
     public function close(): void

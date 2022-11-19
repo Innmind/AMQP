@@ -22,6 +22,7 @@ use Innmind\AMQP\{
 use Innmind\Immutable\{
     Str,
     Map,
+    Sequence,
 };
 
 final class Queue
@@ -33,14 +34,17 @@ final class Queue
         $this->translate = $translator;
     }
 
-    public function declare(FrameChannel $channel, Declaration $command): Frame
+    /**
+     * @return Sequence<Frame>
+     */
+    public function declare(FrameChannel $channel, Declaration $command): Sequence
     {
         $name = $command->name()->match(
             static fn($name) => $name,
             static fn() => '',
         );
 
-        return Frame::method(
+        return Sequence::of(Frame::method(
             $channel,
             Method::queueDeclare,
             UnsignedShortInteger::internal(0), // ticket (reserved)
@@ -53,12 +57,15 @@ final class Queue
                 !$command->shouldWait(),
             ),
             $this->translate($command->arguments()),
-        );
+        ));
     }
 
-    public function delete(FrameChannel $channel, Deletion $command): Frame
+    /**
+     * @return Sequence<Frame>
+     */
+    public function delete(FrameChannel $channel, Deletion $command): Sequence
     {
-        return Frame::method(
+        return Sequence::of(Frame::method(
             $channel,
             Method::queueDelete,
             UnsignedShortInteger::internal(0), // ticket (reserved)
@@ -68,12 +75,15 @@ final class Queue
                 $command->onlyIfEmpty(),
                 !$command->shouldWait(),
             ),
-        );
+        ));
     }
 
-    public function bind(FrameChannel $channel, Binding $command): Frame
+    /**
+     * @return Sequence<Frame>
+     */
+    public function bind(FrameChannel $channel, Binding $command): Sequence
     {
-        return Frame::method(
+        return Sequence::of(Frame::method(
             $channel,
             Method::queueBind,
             UnsignedShortInteger::internal(0), // ticket (reserved)
@@ -82,12 +92,15 @@ final class Queue
             ShortString::of(Str::of($command->routingKey())),
             Bits::of(!$command->shouldWait()),
             $this->translate($command->arguments()),
-        );
+        ));
     }
 
-    public function unbind(FrameChannel $channel, Unbinding $command): Frame
+    /**
+     * @return Sequence<Frame>
+     */
+    public function unbind(FrameChannel $channel, Unbinding $command): Sequence
     {
-        return Frame::method(
+        return Sequence::of(Frame::method(
             $channel,
             Method::queueUnbind,
             UnsignedShortInteger::internal(0), // ticket (reserved)
@@ -95,18 +108,21 @@ final class Queue
             ShortString::of(Str::of($command->exchange())),
             ShortString::of(Str::of($command->routingKey())),
             $this->translate($command->arguments()),
-        );
+        ));
     }
 
-    public function purge(FrameChannel $channel, Purge $command): Frame
+    /**
+     * @return Sequence<Frame>
+     */
+    public function purge(FrameChannel $channel, Purge $command): Sequence
     {
-        return Frame::method(
+        return Sequence::of(Frame::method(
             $channel,
             Method::queuePurge,
             UnsignedShortInteger::internal(0), // ticket (reserved)
             ShortString::of(Str::of($command->name())),
             Bits::of(!$command->shouldWait()),
-        );
+        ));
     }
 
     /**

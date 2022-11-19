@@ -18,6 +18,9 @@ class TransactionTest extends TestCase
     {
         $frame = (new Transaction)->select(
             $channel = new Channel(1),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -31,6 +34,9 @@ class TransactionTest extends TestCase
     {
         $frame = (new Transaction)->commit(
             $channel = new Channel(1),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -44,6 +50,9 @@ class TransactionTest extends TestCase
     {
         $frame = (new Transaction)->rollback(
             $channel = new Channel(1),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertInstanceOf(Frame::class, $frame);

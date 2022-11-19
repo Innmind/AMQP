@@ -47,6 +47,9 @@ class ExchangeTest extends TestCase
             Declaration::passive('foo', Type::direct)
                 ->withArgument('foo', 24)
                 ->withArgument('bar', 42),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -118,6 +121,9 @@ class ExchangeTest extends TestCase
         $frame = $this->exchange->declare(
             $channel = new Channel(1),
             Declaration::durable('foo', Type::direct),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertSame(
@@ -131,6 +137,9 @@ class ExchangeTest extends TestCase
         $frame = $this->exchange->declare(
             $channel = new Channel(1),
             Declaration::temporary('foo', Type::direct),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertSame(
@@ -144,6 +153,9 @@ class ExchangeTest extends TestCase
         $frame = $this->exchange->declare(
             $channel = new Channel(1),
             Declaration::autoDelete('foo', Type::direct),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertSame(
@@ -157,6 +169,9 @@ class ExchangeTest extends TestCase
         $frame = $this->exchange->declare(
             $channel = new Channel(1),
             Declaration::autoDelete('foo', Type::direct)->dontWait(),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertSame(
@@ -173,6 +188,9 @@ class ExchangeTest extends TestCase
         $frame = $this->exchange->delete(
             $channel = new Channel(1),
             Deletion::of('foo'),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -214,6 +232,9 @@ class ExchangeTest extends TestCase
         $frame = $this->exchange->delete(
             $channel = new Channel(1),
             Deletion::of('foo')->ifUnused(),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertSame(
@@ -227,6 +248,9 @@ class ExchangeTest extends TestCase
         $frame = $this->exchange->delete(
             $channel = new Channel(1),
             Deletion::of('foo')->dontWait(),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertSame(

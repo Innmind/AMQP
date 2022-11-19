@@ -24,6 +24,9 @@ class ChannelTest extends TestCase
     {
         $frame = (new Channel)->open(
             $channel = new FrameChannel(1),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -46,6 +49,9 @@ class ChannelTest extends TestCase
         $frame = (new Channel)->flow(
             $channel = new FrameChannel(1),
             Flow::start,
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -68,6 +74,9 @@ class ChannelTest extends TestCase
         $frame = (new Channel)->flow(
             $channel = new FrameChannel(1),
             Flow::stop,
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertFalse($frame->values()->get(0)->match(
@@ -84,6 +93,9 @@ class ChannelTest extends TestCase
         $frame = (new Channel)->flowOk(
             $channel = new FrameChannel(1),
             FlowOk::of(true),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -106,6 +118,9 @@ class ChannelTest extends TestCase
         $frame = (new Channel)->flowOk(
             $channel = new FrameChannel(1),
             FlowOk::of(false),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertFalse($frame->values()->get(0)->match(
@@ -122,6 +137,9 @@ class ChannelTest extends TestCase
         $frame = (new Channel)->close(
             $channel = new FrameChannel(1),
             Close::demand(),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -174,6 +192,9 @@ class ChannelTest extends TestCase
         $frame = (new Channel)->close(
             $channel = new FrameChannel(1),
             Close::reply(1, 'foo'),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertSame(1, $frame->values()->get(0)->match(
@@ -198,6 +219,9 @@ class ChannelTest extends TestCase
     {
         $frame = (new Channel)->closeOk(
             $channel = new FrameChannel(1),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertInstanceOf(Frame::class, $frame);

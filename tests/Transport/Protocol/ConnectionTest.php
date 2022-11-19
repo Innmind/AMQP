@@ -39,6 +39,9 @@ class ConnectionTest extends TestCase
                 User::of('foo'),
                 Password::of('bar'),
             ),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -331,6 +334,9 @@ class ConnectionTest extends TestCase
                 User::of('foo'),
                 Password::of('bar'),
             ),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -359,6 +365,9 @@ class ConnectionTest extends TestCase
                 MaxFrameSize::of(10),
                 ElapsedPeriod::of(3000),
             ),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -405,6 +414,9 @@ class ConnectionTest extends TestCase
     {
         $frame = (new Connection)->open(
             Open::of(Path::of('/')),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -454,6 +466,9 @@ class ConnectionTest extends TestCase
     {
         $frame = (new Connection)->close(
             Close::demand(),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -508,6 +523,9 @@ class ConnectionTest extends TestCase
 
         $frame = (new Connection)->close(
             Close::reply(1, 'foo'),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertSame(1, $frame->values()->get(0)->match(
@@ -530,7 +548,10 @@ class ConnectionTest extends TestCase
 
     public function testCloseOk()
     {
-        $frame = (new Connection)->closeOk();
+        $frame = (new Connection)->closeOk()->match(
+            static fn($frame) => $frame,
+            static fn() => null,
+        );
 
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame(Type::method, $frame->type());

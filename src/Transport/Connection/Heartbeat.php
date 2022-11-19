@@ -12,6 +12,7 @@ use Innmind\TimeContinuum\{
     PointInTime,
     ElapsedPeriod,
 };
+use Innmind\Immutable\Sequence;
 
 final class Heartbeat
 {
@@ -36,7 +37,7 @@ final class Heartbeat
                 ->longerThan($this->threshold)
         ) {
             $_ = $connection
-                ->send(Frame::heartbeat())
+                ->send(static fn() => Sequence::of(Frame::heartbeat()))
                 ->match(
                     static fn() => null,
                     static fn() => throw new \RuntimeException,

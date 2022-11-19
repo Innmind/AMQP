@@ -19,6 +19,7 @@ use Innmind\AMQP\{
 use Innmind\Immutable\{
     Str,
     Map,
+    Sequence,
 };
 
 final class Exchange
@@ -30,13 +31,16 @@ final class Exchange
         $this->translate = $translator;
     }
 
-    public function declare(FrameChannel $channel, Declaration $command): Frame
+    /**
+     * @return Sequence<Frame>
+     */
+    public function declare(FrameChannel $channel, Declaration $command): Sequence
     {
         $arguments = $command->arguments()->map(
             fn($_, $value) => ($this->translate)($value),
         );
 
-        return Frame::method(
+        return Sequence::of(Frame::method(
             $channel,
             Method::exchangeDeclare,
             UnsignedShortInteger::internal(0), // ticket (reserved)
@@ -50,12 +54,15 @@ final class Exchange
                 !$command->shouldWait(),
             ),
             Table::of($arguments),
-        );
+        ));
     }
 
-    public function delete(FrameChannel $channel, Deletion $command): Frame
+    /**
+     * @return Sequence<Frame>
+     */
+    public function delete(FrameChannel $channel, Deletion $command): Sequence
     {
-        return Frame::method(
+        return Sequence::of(Frame::method(
             $channel,
             Method::exchangeDelete,
             UnsignedShortInteger::internal(0), // ticket (reserved)
@@ -64,6 +71,6 @@ final class Exchange
                 $command->onlyIfUnused(),
                 !$command->shouldWait(),
             ),
-        );
+        ));
     }
 }

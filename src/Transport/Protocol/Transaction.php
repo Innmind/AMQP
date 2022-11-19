@@ -12,30 +12,40 @@ use Innmind\AMQP\{
     Transport\Frame\Type,
     Transport\Frame\Method,
 };
+use Innmind\Immutable\Sequence;
 
 final class Transaction
 {
-    public function select(FrameChannel $channel): Frame
+    /**
+     * @return Sequence<Frame>
+     */
+    public function select(FrameChannel $channel): Sequence
     {
-        return Frame::method(
+        return Sequence::of(Frame::method(
             $channel,
             Method::transactionSelect,
-        );
+        ));
     }
 
-    public function commit(FrameChannel $channel): Frame
+    /**
+     * @return Sequence<Frame>
+     */
+    public function commit(FrameChannel $channel): Sequence
     {
-        return Frame::method(
+        return Sequence::of(Frame::method(
             $channel,
             Method::transactionCommit,
-        );
+        ));
     }
 
-    public function rollback(FrameChannel $channel): Frame
+    /**
+     * @return Sequence<Frame>
+     */
+    public function rollback(FrameChannel $channel): Sequence
     {
-        return Frame::method(
+        return Sequence::of(Frame::method(
             $channel,
             Method::transactionRollback,
-        );
+        ));
     }
 }

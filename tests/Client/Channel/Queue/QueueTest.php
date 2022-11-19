@@ -57,7 +57,7 @@ class QueueTest extends TestCase
             new Channel(1),
         );
         $this->connection->send(
-            $this->connection->protocol()->channel()->open(new Channel(1)),
+            static fn($protocol) => $protocol->channel()->open(new Channel(1)),
         );
         $this->connection->wait(Method::channelOpenOk);
     }
@@ -65,7 +65,7 @@ class QueueTest extends TestCase
     public function tearDown(): void
     {
         $this->connection->send(
-            $this->connection->protocol()->channel()->close(
+            static fn($protocol) => $protocol->channel()->close(
                 new Channel(1),
                 Close::demand(),
             ),

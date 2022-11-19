@@ -27,7 +27,7 @@ final class Channel implements ChannelInterfce
         $this->number = $number;
 
         $_ = $connection
-            ->send($connection->protocol()->channel()->open($number))
+            ->send(static fn($protocol) => $protocol->channel()->open($number))
             ->map(static fn($connection) => $connection->wait(Method::channelOpenOk))
             ->match(
                 static fn() => null,
@@ -73,7 +73,7 @@ final class Channel implements ChannelInterfce
 
         $_ = $this
             ->connection
-            ->send($this->connection->protocol()->channel()->close(
+            ->send(fn($protocol) => $protocol->channel()->close(
                 $this->number,
                 Close::demand(),
             ))

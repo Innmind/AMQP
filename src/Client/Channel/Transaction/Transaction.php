@@ -25,7 +25,7 @@ final class Transaction implements TransactionInterface
     {
         $_ = $this
             ->connection
-            ->send($this->connection->protocol()->transaction()->select(
+            ->send(fn($protocol) => $protocol->transaction()->select(
                 $this->channel,
             ))
             ->map(static fn($connection) => $connection->wait(Method::transactionSelectOk))
@@ -39,7 +39,7 @@ final class Transaction implements TransactionInterface
     {
         $_ = $this
             ->connection
-            ->send($this->connection->protocol()->transaction()->commit(
+            ->send(fn($protocol) => $protocol->transaction()->commit(
                 $this->channel,
             ))
             ->map(static fn($connection) => $connection->wait(Method::transactionCommitOk))
@@ -53,7 +53,7 @@ final class Transaction implements TransactionInterface
     {
         $_ = $this
             ->connection
-            ->send($this->connection->protocol()->transaction()->rollback(
+            ->send(fn($protocol) => $protocol->transaction()->rollback(
                 $this->channel,
             ))
             ->map(static fn($connection) => $connection->wait(Method::transactionRollbackOk))

@@ -3,16 +3,20 @@ declare(strict_types = 1);
 
 namespace Tests\Innmind\AMQP\Transport\Connection;
 
-use Innmind\AMQP\Transport\{
-    Connection\Logger,
-    Connection,
-    Protocol,
-    Protocol\ArgumentTranslator,
-    Frame,
-    Frame\Method,
+use Innmind\AMQP\{
+    Transport\Connection\Logger,
+    Transport\Connection,
+    Transport\Frame,
+    Transport\Frame\Method,
+    Transport\Protocol,
+    Transport\Protocol\ArgumentTranslator,
+    Model\Connection\MaxFrameSize,
 };
-use Innmind\TimeContinuum\Earth\Clock;
-use Innmind\Immutable\Maybe;
+use Innmind\TimeContinuum\Clock;
+use Innmind\Immutable\{
+    Maybe,
+    Sequence,
+};
 use Psr\Log\LoggerInterface;
 use PHPUnit\Framework\TestCase;
 
@@ -29,31 +33,27 @@ class LoggerTest extends TestCase
         );
     }
 
-    public function testProtocol()
-    {
-        $connection = new Logger(
-            $inner = $this->createMock(Connection::class),
-            $this->createMock(LoggerInterface::class),
-        );
-        $inner
-            ->expects($this->once())
-            ->method('protocol')
-            ->willReturn($expected = new Protocol(new Clock, $this->createMock(ArgumentTranslator::class)));
-
-        $this->assertSame($expected, $connection->protocol());
-    }
-
     public function testSend()
     {
         $connection = new Logger(
             $inner = $this->createMock(Connection::class),
             $logger = $this->createMock(LoggerInterface::class),
         );
-        $frame = Frame::heartbeat();
+        $frames = static fn() => Sequence::of(Frame::heartbeat());
         $inner
             ->expects($this->once())
             ->method('send')
-            ->with($frame)
+            ->with($this->callback(function($frames) {
+                $frames(
+                    new Protocol(
+                        $this->createMock(Clock::class),
+                        $this->createMock(ArgumentTranslator::class),
+                    ),
+                    MaxFrameSize::unlimited(),
+                );
+
+                return true;
+            }))
             ->willReturn(Maybe::just($inner));
         $uuid = null;
         $logger
@@ -78,7 +78,7 @@ class LoggerTest extends TestCase
                 ],
             );
 
-        $this->assertSame($connection, $connection->send($frame)->match(
+        $this->assertSame($connection, $connection->send($frames)->match(
             static fn($connection) => $connection,
             static fn() => null,
         ));

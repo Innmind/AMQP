@@ -68,6 +68,9 @@ class BasicTest extends TestCase
         $frame = $this->basic->ack(
             $channel = new Channel(1),
             Ack::of(42),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -101,6 +104,9 @@ class BasicTest extends TestCase
         $frame = $this->basic->ack(
             $channel = new Channel(1),
             Ack::multiple(42),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertTrue($frame->values()->get(1)->match(
@@ -117,6 +123,9 @@ class BasicTest extends TestCase
         $frame = $this->basic->cancel(
             $channel = new Channel(1),
             Cancel::of('consumer'),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -147,6 +156,9 @@ class BasicTest extends TestCase
         $frame = $this->basic->cancel(
             $channel = new Channel(1),
             Cancel::of('consumer')->dontWait(),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertTrue($frame->values()->get(1)->match(
@@ -174,6 +186,9 @@ class BasicTest extends TestCase
             Consume::of('queue')
                 ->withArgument('foo', 24)
                 ->withArgument('bar', 42),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -245,6 +260,9 @@ class BasicTest extends TestCase
         $frame = $this->basic->consume(
             $channel = new Channel(1),
             Consume::of('queue')->withConsumerTag('tag'),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertSame('tag', $frame->values()->get(2)->match(
@@ -255,6 +273,9 @@ class BasicTest extends TestCase
         $frame = $this->basic->consume(
             $channel = new Channel(1),
             Consume::of('queue')->noLocal(),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertSame(
@@ -268,6 +289,9 @@ class BasicTest extends TestCase
         $frame = $this->basic->consume(
             $channel = new Channel(1),
             Consume::of('queue')->autoAcknowledge(),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertSame(
@@ -281,6 +305,9 @@ class BasicTest extends TestCase
         $frame = $this->basic->consume(
             $channel = new Channel(1),
             Consume::of('queue')->exclusive(),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertSame(
@@ -296,6 +323,9 @@ class BasicTest extends TestCase
             Consume::of('queue')
                 ->withConsumerTag('foo')
                 ->dontWait(),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertSame(
@@ -312,6 +342,9 @@ class BasicTest extends TestCase
         $frame = $this->basic->get(
             $channel = new Channel(1),
             Get::of('queue'),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -353,6 +386,9 @@ class BasicTest extends TestCase
         $frame = $this->basic->get(
             $channel = new Channel(1),
             Get::of('queue')->autoAcknowledge(),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertTrue($frame->values()->get(2)->match(
@@ -862,6 +898,9 @@ class BasicTest extends TestCase
         $frame = $this->basic->qos(
             $channel = new Channel(1),
             Qos::of(1, 2),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -906,6 +945,9 @@ class BasicTest extends TestCase
         $frame = $this->basic->qos(
             $channel = new Channel(1),
             Qos::global(1, 2),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->asserttrue($frame->values()->get(2)->match(
@@ -922,6 +964,9 @@ class BasicTest extends TestCase
         $frame = $this->basic->recover(
             $channel = new Channel(1),
             Recover::withoutRequeue(),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -944,6 +989,9 @@ class BasicTest extends TestCase
         $frame = $this->basic->recover(
             $channel = new Channel(1),
             Recover::requeue(),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertTrue($frame->values()->get(0)->match(
@@ -960,6 +1008,9 @@ class BasicTest extends TestCase
         $frame = $this->basic->reject(
             $channel = new Channel(1),
             Reject::of(42),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
@@ -993,6 +1044,9 @@ class BasicTest extends TestCase
         $frame = $this->basic->reject(
             $channel = new Channel(1),
             Reject::requeue(42),
+        )->match(
+            static fn($frame) => $frame,
+            static fn() => null,
         );
 
         $this->assertTrue($frame->values()->get(1)->match(

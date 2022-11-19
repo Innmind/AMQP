@@ -44,34 +44,43 @@ final class Basic
         $this->translate = $translator;
     }
 
-    public function ack(FrameChannel $channel, Ack $command): Frame
+    /**
+     * @return Sequence<Frame>
+     */
+    public function ack(FrameChannel $channel, Ack $command): Sequence
     {
-        return Frame::method(
+        return Sequence::of(Frame::method(
             $channel,
             Method::basicAck,
             UnsignedLongLongInteger::internal($command->deliveryTag()),
             Bits::of($command->isMultiple()),
-        );
+        ));
     }
 
-    public function cancel(FrameChannel $channel, Cancel $command): Frame
+    /**
+     * @return Sequence<Frame>
+     */
+    public function cancel(FrameChannel $channel, Cancel $command): Sequence
     {
-        return Frame::method(
+        return Sequence::of(Frame::method(
             $channel,
             Method::basicCancel,
             ShortString::of(Str::of($command->consumerTag())),
             Bits::of(!$command->shouldWait()),
-        );
+        ));
     }
 
-    public function consume(FrameChannel $channel, Consume $command): Frame
+    /**
+     * @return Sequence<Frame>
+     */
+    public function consume(FrameChannel $channel, Consume $command): Sequence
     {
         $consumerTag = $command->consumerTag()->match(
             static fn($tag) => $tag,
             static fn() => '',
         );
 
-        return Frame::method(
+        return Sequence::of(Frame::method(
             $channel,
             Method::basicConsume,
             UnsignedShortInteger::internal(0), // ticket (reserved)
@@ -84,18 +93,21 @@ final class Basic
                 !$command->shouldWait(),
             ),
             $this->arguments($command->arguments()),
-        );
+        ));
     }
 
-    public function get(FrameChannel $channel, Get $command): Frame
+    /**
+     * @return Sequence<Frame>
+     */
+    public function get(FrameChannel $channel, Get $command): Sequence
     {
-        return Frame::method(
+        return Sequence::of(Frame::method(
             $channel,
             Method::basicGet,
             UnsignedShortInteger::internal(0), // ticket (reserved)
             ShortString::of(Str::of($command->queue())),
             Bits::of($command->shouldAutoAcknowledge()),
-        );
+        ));
     }
 
     /**
@@ -135,34 +147,43 @@ final class Basic
         );
     }
 
-    public function qos(FrameChannel $channel, Qos $command): Frame
+    /**
+     * @return Sequence<Frame>
+     */
+    public function qos(FrameChannel $channel, Qos $command): Sequence
     {
-        return Frame::method(
+        return Sequence::of(Frame::method(
             $channel,
             Method::basicQos,
             UnsignedLongInteger::internal($command->prefetchSize()),
             UnsignedShortInteger::internal($command->prefetchCount()),
             Bits::of($command->isGlobal()),
-        );
+        ));
     }
 
-    public function recover(FrameChannel $channel, Recover $command): Frame
+    /**
+     * @return Sequence<Frame>
+     */
+    public function recover(FrameChannel $channel, Recover $command): Sequence
     {
-        return Frame::method(
+        return Sequence::of(Frame::method(
             $channel,
             Method::basicRecover,
             Bits::of($command->shouldRequeue()),
-        );
+        ));
     }
 
-    public function reject(FrameChannel $channel, Reject $command): Frame
+    /**
+     * @return Sequence<Frame>
+     */
+    public function reject(FrameChannel $channel, Reject $command): Sequence
     {
-        return Frame::method(
+        return Sequence::of(Frame::method(
             $channel,
             Method::basicReject,
             UnsignedLongLongInteger::internal($command->deliveryTag()),
             Bits::of($command->shouldRequeue()),
-        );
+        ));
     }
 
     /**

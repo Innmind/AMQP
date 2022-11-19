@@ -35,12 +35,10 @@ final class Queue implements QueueInterface
     {
         $_ = $this
             ->connection
-            ->send(
-                $this->connection->protocol()->queue()->declare(
-                    $this->channel,
-                    $command,
-                ),
-            )
+            ->send(fn($protocol) => $protocol->queue()->declare(
+                $this->channel,
+                $command,
+            ))
             ->match(
                 static fn() => null,
                 static fn() => throw new \RuntimeException,
@@ -78,12 +76,10 @@ final class Queue implements QueueInterface
     {
         $_ = $this
             ->connection
-            ->send(
-                $this->connection->protocol()->queue()->delete(
-                    $this->channel,
-                    $command,
-                ),
-            )
+            ->send(fn($protocol) => $protocol->queue()->delete(
+                $this->channel,
+                $command,
+            ))
             ->match(
                 static fn() => null,
                 static fn() => throw new \RuntimeException,
@@ -109,12 +105,10 @@ final class Queue implements QueueInterface
     {
         $_ = $this
             ->connection
-            ->send(
-                $this->connection->protocol()->queue()->bind(
-                    $this->channel,
-                    $command,
-                ),
-            )
+            ->send(fn($protocol) => $protocol->queue()->bind(
+                $this->channel,
+                $command,
+            ))
             ->match(
                 static fn() => null,
                 static fn() => throw new \RuntimeException,
@@ -129,7 +123,7 @@ final class Queue implements QueueInterface
     {
         $_ = $this
             ->connection
-            ->send($this->connection->protocol()->queue()->unbind(
+            ->send(fn($protocol) => $protocol->queue()->unbind(
                 $this->channel,
                 $command,
             ))
@@ -144,12 +138,10 @@ final class Queue implements QueueInterface
     {
         $_ = $this
             ->connection
-            ->send(
-                $this->connection->protocol()->queue()->purge(
-                    $this->channel,
-                    $command,
-                ),
-            )
+            ->send(fn($protocol) => $protocol->queue()->purge(
+                $this->channel,
+                $command,
+            ))
             ->match(
                 static fn() => null,
                 static fn() => throw new \RuntimeException,
