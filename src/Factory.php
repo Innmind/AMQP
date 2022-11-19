@@ -26,44 +26,27 @@ final class Factory
         return new self($os);
     }
 
-    /**
-     * @no-named-arguments
-     *
-     * @param callable(Transport\Connection): Transport\Connection $decorators
-     */
     public function make(
         Socket $transport,
         Url $server,
         ElapsedPeriod $timeout,
-        callable ...$decorators,
     ): Client {
-        $decorators = Sequence::of(...$decorators);
-
         return new Client\Client(
-            function() use ($transport, $server, $timeout, $decorators): Transport\Connection {
-                $connection = Transport\Connection\Connection::of(
-                    $transport,
-                    $server,
-                    new Transport\Protocol(
-                        $this->os->clock(),
-                        new Transport\Protocol\ArgumentTranslator\ValueTranslator,
-                    ),
-                    $timeout,
+            fn() => Transport\Connection::of(
+                $transport,
+                $server,
+                new Transport\Protocol(
                     $this->os->clock(),
-                    $this->os->remote(),
-                    $this->os->sockets(),
-                );
-
-                /** @psalm-suppress MixedArgumentTypeCoercion */
-                return $decorators
-                    ->reduce(
-                        $connection,
-                        static fn(Maybe $connection, $decorate): Maybe => $connection->map($decorate),
-                    )->match(
-                        static fn(Transport\Connection $connection) => $connection,
-                        static fn() => throw new \RuntimeException,
-                    );
-            },
+                    new Transport\Protocol\ArgumentTranslator\ValueTranslator,
+                ),
+                $timeout,
+                $this->os->clock(),
+                $this->os->remote(),
+                $this->os->sockets(),
+            )->match(
+                static fn($connection) => $connection,
+                static fn() => throw new \RuntimeException,
+            ),
             $this->os->process(),
         );
     }

@@ -4,6 +4,7 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Transport\Connection;
 
 use Innmind\AMQP\{
+    Transport\Connection,
     Transport\Frame\Method,
     Transport\Frame\Value,
     Model\Connection\SecureOk,

@@ -6,7 +6,7 @@ namespace Tests\Innmind\AMQP\Client\Channel\Queue;
 use Innmind\AMQP\{
     Client\Channel\Queue\Queue,
     Client\Channel\Queue as QueueInterface,
-    Transport\Connection\Connection,
+    Transport\Connection,
     Transport\Protocol,
     Transport\Protocol\ArgumentTranslator,
     Transport\Frame\Channel,

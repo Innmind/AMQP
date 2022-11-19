@@ -6,7 +6,7 @@ namespace Tests\Innmind\AMQP\Client\Channel\Transaction;
 use Innmind\AMQP\{
     Client\Channel\Transaction\Transaction,
     Client\Channel\Transaction as TransactionInterface,
-    Transport\Connection\Connection,
+    Transport\Connection,
     Transport\Frame\Channel,
     Transport\Frame\Method,
     Transport\Protocol,

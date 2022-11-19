@@ -6,7 +6,7 @@ namespace Tests\Innmind\AMQP\Client\Channel\Basic;
 use Innmind\AMQP\{
     Client\Channel\Basic\Basic,
     Client\Channel\Basic as BasicInterface,
-    Transport\Connection\Connection,
+    Transport\Connection,
     Transport\Frame\Channel,
     Transport\Frame\Method,
     Transport\Frame\Value,

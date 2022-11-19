@@ -4,8 +4,7 @@ declare(strict_types = 1);
 namespace Tests\Innmind\AMQP\Transport;
 
 use Innmind\AMQP\{
-    Transport\Connection\Connection,
-    Transport\Connection as ConnectionInterface,
+    Transport\Connection,
     Transport\Protocol,
     Transport\Protocol\ArgumentTranslator,
     Transport\Frame,
@@ -47,7 +46,6 @@ class ConnectionTest extends TestCase
             static fn() => null,
         );
 
-        $this->assertInstanceOf(ConnectionInterface::class, $connection);
         $this->assertSame(
             $connection,
             $connection

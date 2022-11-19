@@ -10,7 +10,7 @@ use Innmind\AMQP\{
     Client\Channel\Queue,
     Client\Channel\Basic,
     Client\Channel\Transaction,
-    Transport\Connection\Connection,
+    Transport\Connection,
     Transport\Protocol\ArgumentTranslator\ValueTranslator,
     Transport\Protocol,
     Transport\Frame\Channel as Number,
