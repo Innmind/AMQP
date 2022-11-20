@@ -16,4 +16,5 @@ enum Failure
     case toDeclareQueue;
     case toDeclareExchange;
     case toBind;
+    case toUnbind;
 }
