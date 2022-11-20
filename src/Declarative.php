@@ -18,18 +18,17 @@ use Innmind\Immutable\{
 /**
  * @template I
  * @template O
- * @template E
  */
 final class Declarative
 {
-    /** @var Maybe<Command<I, O, E>> */
+    /** @var Maybe<Command<I, O>> */
     private Maybe $command;
-    /** @var callable(): Connection */
+    /** @var callable(): Maybe<Connection> */
     private $load;
 
     /**
-     * @param Maybe<Command<I, O, E>> $command
-     * @param callable(): Connection $load
+     * @param Maybe<Command<I, O>> $command
+     * @param callable(): Maybe<Connection> $load
      */
     private function __construct(Maybe $command, callable $load)
     {
@@ -38,13 +37,13 @@ final class Declarative
     }
 
     /**
-     * @param callable(): Connection $load
+     * @param callable(): Maybe<Connection> $load
      *
-     * @return self<null, null, \Error>
+     * @return self<null, null>
      */
     public static function of(callable $load): self
     {
-        /** @var Maybe<Command<null, null, \Error>> */
+        /** @var Maybe<Command<null, null>> */
         $command = Maybe::nothing();
 
         return new self($command, $load);
@@ -52,11 +51,10 @@ final class Declarative
 
     /**
      * @template CO
-     * @template CE
      *
-     * @param Command<I, CO, CE> $command
+     * @param Command<I, CO> $command
      *
-     * @return self<I, CO, E|CE>
+     * @return self<I, CO>
      */
     public function with(Command $command): self
     {
@@ -70,7 +68,7 @@ final class Declarative
     }
 
     /**
-     * @return Either<E, O>
+     * @return Either<Failure, O>
      */
     public function run(): Either
     {
@@ -93,7 +91,7 @@ final class Declarative
     }
 
     /**
-     * @return Either<\RuntimeException, array{Connection, Channel}>
+     * @return Either<Failure, array{Connection, Channel}>
      */
     private function openChannel(): Either
     {
@@ -102,21 +100,30 @@ final class Declarative
         // channel per connection
         $channel = new Channel(1);
 
+        /**
+         * @psalm-suppress InvalidArgument Due to the last flatMap psalm is not capable of correctly understanding the returned Either
+         * @var Either<Failure, array{Connection, Channel}>
+         */
         return ($this->load)()
-            ->send(static fn($protocol) => $protocol->channel()->open($channel))
-            ->wait(Method::channelOpenOk)
-            ->match(
+            ->either()
+            ->leftMap(static fn() => Failure::toOpenConnection)
+            ->map(static fn($connection) => $connection->send(
+                static fn($protocol) => $protocol->channel()->open($channel)
+            ))
+            ->map(static fn($continuation) => $continuation->wait(Method::channelOpenOk))
+            ->flatMap(static fn($continuation) => $continuation->match(
                 static fn($connection) => Either::right([$connection, $channel]),
                 static fn($connection) => Either::right([$connection, $channel]),
-                static fn() => Either::left(new \RuntimeException),
-            );
+                static fn() => Either::left(Failure::toOpenChannel),
+            ));
     }
 
     /**
-     * @return Either<\Error, SideEffect>
+     * @return Either<Failure, SideEffect>
      */
     private function close(Connection $connection, Channel $channel): Either
     {
+        /** @var Either<Failure, SideEffect> */
         return $connection
             ->send(static fn($protocol) => $protocol->channel()->close(
                 $channel,
@@ -126,7 +133,7 @@ final class Declarative
             ->match(
                 static fn($connection) => Either::right($connection->close())->map(static fn() => new SideEffect),
                 static fn($connection) => Either::right($connection->close())->map(static fn() => new SideEffect),
-                static fn() => Either::left(new \RuntimeException),
+                static fn() => Either::left(Failure::toCloseChannel),
             );
     }
 }

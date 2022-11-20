@@ -9,6 +9,10 @@ use Innmind\AMQP\{
     Model\Connection\StartOk,
 };
 use Innmind\Url\Authority;
+use Innmind\Immutable\{
+    Maybe,
+    Predicate\Instance,
+};
 
 final class Start
 {
@@ -19,7 +23,10 @@ final class Start
         $this->authority = $authority;
     }
 
-    public function __invoke(Connection $connection): Connection
+    /**
+     * @return Maybe<Connection>
+     */
+    public function __invoke(Connection $connection): Maybe
     {
         // at this point the server could respond with a simple text "AMQP0xyz"
         // where xyz represent the version of the protocol it supports meaning
@@ -36,9 +43,10 @@ final class Start
                 ),
             ))
             ->match(
-                static fn($connection) => $connection,
-                static fn($connection) => $connection,
-                static fn() => throw new \RuntimeException,
-            );
+                static fn($connection) => Maybe::just($connection),
+                static fn($connection) => Maybe::just($connection),
+                static fn() => Maybe::nothing(),
+            )
+            ->keep(Instance::of(Connection::class));
     }
 }

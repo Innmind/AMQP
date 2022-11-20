@@ -9,6 +9,10 @@ use Innmind\AMQP\{
     Model\Connection\Open,
 };
 use Innmind\Url\Path;
+use Innmind\Immutable\{
+    Maybe,
+    Predicate\Instance,
+};
 
 final class OpenVHost
 {
@@ -19,7 +23,10 @@ final class OpenVHost
         $this->vhost = $vhost;
     }
 
-    public function __invoke(Connection $connection): Connection
+    /**
+     * @return Maybe<Connection>
+     */
+    public function __invoke(Connection $connection): Maybe
     {
         return $connection
             ->send(fn($protocol) => $protocol->connection()->open(
@@ -27,9 +34,10 @@ final class OpenVHost
             ))
             ->wait(Method::connectionOpenOk)
             ->match(
-                static fn($connection) => $connection,
-                static fn($connection) => $connection,
-                static fn() => throw new \RuntimeException,
-            );
+                static fn($connection) => Maybe::just($connection),
+                static fn($connection) => Maybe::just($connection),
+                static fn() => Maybe::nothing(),
+            )
+            ->keep(Instance::of(Connection::class));
     }
 }

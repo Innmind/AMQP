@@ -15,20 +15,18 @@ use Innmind\Immutable\Either;
  * @template A
  * @template B
  * @template C
- * @template D
- * @template E
- * @implements Command<A, D, C|E>
+ * @implements Command<A, C>
  */
 final class Pipe implements Command
 {
-    /** @var Command<A, B, C> */
+    /** @var Command<A, B> */
     private Command $first;
-    /** @var Command<B, D, E> */
+    /** @var Command<B, C> */
     private Command $second;
 
     /**
-     * @param Command<A, B, C> $first
-     * @param Command<B, D, E> $second
+     * @param Command<A, B> $first
+     * @param Command<B, C> $second
      */
     public function __construct(Command $first, Command $second)
     {

@@ -9,12 +9,13 @@ use Innmind\AMQP\{
     Transport\Connection,
     Transport\Frame\Channel,
     Transport\Frame\Method,
+    Failure,
 };
 use Innmind\Immutable\Either;
 
 /**
  * @template S
- * @implements Command<S, S, \Error>
+ * @implements Command<S, S>
  */
 final class DeleteExchange implements Command
 {
@@ -30,6 +31,7 @@ final class DeleteExchange implements Command
         Channel $channel,
         mixed $state,
     ): Either {
+        /** @var Either<Failure, array{Connection, S}> */
         return $connection
             ->send(fn($protocol) => $protocol->exchange()->delete(
                 $channel,
@@ -39,7 +41,7 @@ final class DeleteExchange implements Command
             ->match(
                 static fn($connection) => Either::right([$connection, $state]),
                 static fn($connection) => Either::right([$connection, $state]),
-                static fn() => Either::left(new \RuntimeException),
+                static fn() => Either::left(Failure::toDeleteExchange),
             );
     }
 

@@ -12,6 +12,7 @@ use Innmind\AMQP\{
     Transport\Frame\Channel,
     Transport\Frame\Method,
     Transport\Frame\Value,
+    Failure,
 };
 use Innmind\Immutable\{
     Maybe,
@@ -21,7 +22,7 @@ use Innmind\Immutable\{
 
 /**
  * @template S
- * @implements Command<S, S, \Error>
+ * @implements Command<S, S>
  */
 final class DeleteQueue implements Command
 {
@@ -37,6 +38,7 @@ final class DeleteQueue implements Command
         Channel $channel,
         mixed $state,
     ): Either {
+        /** @var Either<Failure, array{Connection, S}> */
         return $connection
             ->send(fn($protocol) => $protocol->queue()->delete(
                 $channel,
@@ -58,10 +60,10 @@ final class DeleteQueue implements Command
                     return $deleteOk
                         ->either()
                         ->map(static fn() => [$connection, $state])
-                        ->leftMap(static fn() => new \LogicException);
+                        ->leftMap(static fn() => Failure::toDeleteQueue);
                 },
                 static fn($connection) => Either::right([$connection, $state]),
-                static fn() => Either::left(new \RuntimeException),
+                static fn() => Either::left(Failure::toDeleteQueue),
             );
     }
 

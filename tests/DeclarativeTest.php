@@ -29,7 +29,7 @@ class DeclarativeTest extends TestCase
         $os = Factory::build();
 
         $this->client = Declarative::of(
-            fn() => $this->connection = Connection::open(
+            static fn() => Connection::open(
                 Transport::tcp(),
                 Url::of('//guest:guest@localhost:5672/'),
                 new Protocol($os->clock(), new ValueTranslator),
@@ -37,9 +37,6 @@ class DeclarativeTest extends TestCase
                 $os->clock(),
                 $os->remote(),
                 $os->sockets(),
-            )->match(
-                static fn($connection) => $connection,
-                static fn() => throw new \RuntimeException,
             ),
         );
     }
