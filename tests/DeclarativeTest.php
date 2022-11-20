@@ -16,12 +16,15 @@ use Innmind\AMQP\{
     Command\Unbind,
     Command\Purge,
     Command\Qos,
+    Command\Publish,
     Model\Exchange\Type,
+    Model\Basic,
 };
 use Innmind\Socket\Internet\Transport;
 use Innmind\OperatingSystem\Factory;
 use Innmind\TimeContinuum\Earth\ElapsedPeriod;
 use Innmind\Url\Url;
+use Innmind\Immutable\Str;
 use PHPUnit\Framework\TestCase;
 
 class DeclarativeTest extends TestCase
@@ -54,6 +57,10 @@ class DeclarativeTest extends TestCase
             ->with(Bind::of('foo', 'bar'))
             ->with(Unbind::of('foo', 'bar'))
             ->with(Qos::of(10))
+            ->with(Publish::one(
+                Basic\Publish::a(Basic\Message::of(Str::of('message')))
+                    ->to('foo'),
+            ))
             ->with(Purge::of('bar'))
             ->with(DeleteQueue::of('bar'))
             ->with(DeleteExchange::of('foo'))
