@@ -20,4 +20,5 @@ enum Failure
     case toPurge;
     case toAdjustQos;
     case toPublish;
+    case toGet;
 }

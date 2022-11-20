@@ -17,6 +17,7 @@ use Innmind\AMQP\{
     Command\Purge,
     Command\Qos,
     Command\Publish,
+    Command\Get,
     Model\Exchange\Type,
     Model\Basic,
 };
@@ -55,13 +56,23 @@ class DeclarativeTest extends TestCase
             ->with(DeclareExchange::of('foo', Type::direct))
             ->with(DeclareQueue::of('bar'))
             ->with(Bind::of('foo', 'bar'))
-            ->with(Unbind::of('foo', 'bar'))
             ->with(Qos::of(10))
             ->with(Publish::one(
                 Basic\Publish::a(Basic\Message::of(Str::of('message')))
                     ->to('foo'),
             ))
+            ->with(
+                Get::of('bar')->handle(function($state, $message, $details) {
+                    $this->assertNull($state);
+                    $this->assertFalse($details->redelivered());
+                    $this->assertSame('foo', $details->exchange());
+                    $this->assertSame('', $details->routingKey());
+
+                    return $message->body()->toString();
+                }),
+            )
             ->with(Purge::of('bar'))
+            ->with(Unbind::of('foo', 'bar'))
             ->with(DeleteQueue::of('bar'))
             ->with(DeleteExchange::of('foo'))
             ->run()
@@ -70,6 +81,6 @@ class DeclarativeTest extends TestCase
                 static fn($error) => $error,
             );
 
-        $this->assertNull($result);
+        $this->assertSame('message', $result);
     }
 }
