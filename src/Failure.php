@@ -18,4 +18,5 @@ enum Failure
     case toBind;
     case toUnbind;
     case toPurge;
+    case toAdjustQos;
 }
