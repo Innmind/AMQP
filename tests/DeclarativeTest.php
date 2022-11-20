@@ -10,6 +10,7 @@ use Innmind\AMQP\{
     Transport\Protocol,
     Command\DeclareExchange,
     Command\DeleteExchange,
+    Command\DeclareQueue,
     Model\Exchange\Type,
 };
 use Innmind\Socket\Internet\Transport;
@@ -48,6 +49,7 @@ class DeclarativeTest extends TestCase
             ->client
             ->with(DeclareExchange::of('foo', Type::direct))
             ->with(DeleteExchange::of('foo'))
+            ->with(DeclareQueue::of('bar'))
             ->run()
             ->match(
                 static fn($state) => $state,
