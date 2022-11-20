@@ -86,7 +86,7 @@ class DeclarativeTest extends TestCase
             ->with(Unbind::of('foo', 'bar'))
             ->with(DeleteQueue::of('bar'))
             ->with(DeleteExchange::of('foo'))
-            ->run()
+            ->run(null)
             ->match(
                 static fn($state) => $state,
                 static fn($error) => $error,

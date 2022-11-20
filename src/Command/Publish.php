@@ -15,10 +15,6 @@ use Innmind\Immutable\{
     Sequence,
 };
 
-/**
- * @template S
- * @implements Command<S, S>
- */
 final class Publish implements Command
 {
     /** @var Sequence<Model> */
@@ -32,6 +28,13 @@ final class Publish implements Command
         $this->commands = $commands;
     }
 
+    /**
+     * @template S
+     *
+     * @param S $state
+     *
+     * @return Either<Failure, array{Connection, S}>
+     */
     public function __invoke(
         Connection $connection,
         Channel $channel,

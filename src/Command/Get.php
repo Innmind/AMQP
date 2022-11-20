@@ -25,18 +25,16 @@ use Innmind\Immutable\{
 };
 
 /**
- * @template S
  * @template T
- * @implements Command<S, T>
  */
 final class Get implements Command
 {
     private Model $command;
-    /** @var callable(S, Message, Continuation<S>, Details): Continuation<T> */
+    /** @var callable(T, Message, Continuation<T>, Details): Continuation<T> */
     private $consume;
 
     /**
-     * @param callable(S, Message, Continuation<S>, Details): Continuation<T> $consume
+     * @param callable(T, Message, Continuation<T>, Details): Continuation<T> $consume
      */
     private function __construct(Model $command, callable $consume)
     {
@@ -44,6 +42,12 @@ final class Get implements Command
         $this->consume = $consume;
     }
 
+    /**
+     * @param T $state
+     *
+     * @psalm-suppress ImplementedReturnTypeMismatch TODO find why it complains
+     * @return Either<Failure, array{Connection, T}>
+     */
     public function __invoke(
         Connection $connection,
         Channel $channel,
@@ -69,12 +73,11 @@ final class Get implements Command
     }
 
     /**
-     * @template A
-     *
-     * @return self<A, A>
+     * @return self<mixed>
      */
     public static function of(string $queue): self
     {
+        /** @psalm-suppress MixedArgument */
         return new self(
             Model::of($queue),
             static fn(mixed $state, Message $_, Continuation $continuation) => $continuation->ack($state),
@@ -84,9 +87,9 @@ final class Get implements Command
     /**
      * @template A
      *
-     * @param callable(S, Message, Continuation<S>, Details): A $consume
+     * @param callable(A, Message, Continuation<A>, Details): Continuation<A> $consume
      *
-     * @return self<S, A>
+     * @return self<A>
      */
     public function handle(callable $consume): self
     {
@@ -94,7 +97,9 @@ final class Get implements Command
     }
 
     /**
-     * @param S $state
+     * @param T $state
+     *
+     * @return Either<Failure, array{Connection, T}>
      */
     private function maybeConsume(
         Connection $connection,
@@ -103,6 +108,7 @@ final class Get implements Command
         mixed $state,
     ): Either {
         if ($frame->is(Method::basicGetEmpty)) {
+            /** @var Either<Failure, array{Connection, T}> */
             return Either::right([$connection, $state]);
         }
 
@@ -149,7 +155,7 @@ final class Get implements Command
     }
 
     /**
-     * @param S $state
+     * @param T $state
      *
      * @return Either<Failure, array{Connection, T}>
      */

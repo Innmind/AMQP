@@ -13,10 +13,6 @@ use Innmind\AMQP\{
 };
 use Innmind\Immutable\Either;
 
-/**
- * @template S
- * @implements Command<S, S>
- */
 final class Unbind implements Command
 {
     private Unbinding $command;
@@ -26,6 +22,13 @@ final class Unbind implements Command
         $this->command = $command;
     }
 
+    /**
+     * @template S
+     *
+     * @param S $state
+     *
+     * @return Either<Failure, array{Connection, S}>
+     */
     public function __invoke(
         Connection $connection,
         Channel $channel,

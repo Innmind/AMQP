@@ -12,22 +12,12 @@ use Innmind\Immutable\Either;
 
 /**
  * @internal
- * @template A
- * @template B
- * @template C
- * @implements Command<A, C>
  */
 final class Pipe implements Command
 {
-    /** @var Command<A, B> */
     private Command $first;
-    /** @var Command<B, C> */
     private Command $second;
 
-    /**
-     * @param Command<A, B> $first
-     * @param Command<B, C> $second
-     */
     public function __construct(Command $first, Command $second)
     {
         $this->first = $first;

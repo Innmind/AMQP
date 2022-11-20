@@ -15,19 +15,15 @@ use Innmind\Immutable\{
     SideEffect,
 };
 
-/**
- * @template I
- * @template O
- */
 final class Declarative
 {
-    /** @var Maybe<Command<I, O>> */
+    /** @var Maybe<Command> */
     private Maybe $command;
     /** @var callable(): Maybe<Connection> */
     private $load;
 
     /**
-     * @param Maybe<Command<I, O>> $command
+     * @param Maybe<Command> $command
      * @param callable(): Maybe<Connection> $load
      */
     private function __construct(Maybe $command, callable $load)
@@ -38,24 +34,15 @@ final class Declarative
 
     /**
      * @param callable(): Maybe<Connection> $load
-     *
-     * @return self<null, null>
      */
     public static function of(callable $load): self
     {
-        /** @var Maybe<Command<null, null>> */
+        /** @var Maybe<Command> */
         $command = Maybe::nothing();
 
         return new self($command, $load);
     }
 
-    /**
-     * @template CO
-     *
-     * @param Command<I, CO> $command
-     *
-     * @return self<I, CO>
-     */
     public function with(Command $command): self
     {
         return new self(
@@ -68,17 +55,21 @@ final class Declarative
     }
 
     /**
-     * @return Either<Failure, O>
+     * @template T
+     *
+     * @param T $state
+     *
+     * @return Either<Failure, T>
      */
-    public function run(): Either
+    public function run(mixed $state): Either
     {
         return $this->command->match(
             fn($command) => $this
                 ->openChannel()
-                ->flatMap(function($in) use ($command) {
+                ->flatMap(function($in) use ($command, $state) {
                     [$connection, $channel] = $in;
 
-                    return $command($connection, $channel, null)->flatMap(function($out) use ($channel) {
+                    return $command($connection, $channel, $state)->flatMap(function($out) use ($channel) {
                         [$connection, $state] = $out;
 
                         return $this
@@ -86,7 +77,7 @@ final class Declarative
                             ->map(static fn() => $state);
                     });
                 }),
-            static fn() => Either::right(null),
+            static fn() => Either::right($state),
         );
     }
 

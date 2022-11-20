@@ -19,10 +19,6 @@ use Innmind\Immutable\{
     Predicate\Instance,
 };
 
-/**
- * @template S
- * @implements Command<S, S>
- */
 final class Purge implements Command
 {
     private Model $command;
@@ -32,6 +28,13 @@ final class Purge implements Command
         $this->command = $command;
     }
 
+    /**
+     * @template S
+     *
+     * @param S $state
+     *
+     * @return Either<Failure, array{Connection, S}>
+     */
     public function __invoke(
         Connection $connection,
         Channel $channel,

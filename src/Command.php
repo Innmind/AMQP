@@ -9,16 +9,14 @@ use Innmind\AMQP\Transport\{
 };
 use Innmind\Immutable\Either;
 
-/**
- * @template I
- * @template O
- */
 interface Command
 {
     /**
-     * @param I $state
+     * @template T
      *
-     * @return Either<Failure, array{Connection, O}>
+     * @param T $state
+     *
+     * @return Either<Failure, array{Connection, T}>
      */
     public function __invoke(
         Connection $connection,
