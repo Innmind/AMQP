@@ -62,15 +62,26 @@ class DeclarativeTest extends TestCase
                     ->to('foo'),
             ))
             ->with(
-                Get::of('bar')->handle(function($state, $message, $details) {
+                Get::of('bar')->handle(function($state, $message, $continuation, $details) {
                     $this->assertNull($state);
                     $this->assertFalse($details->redelivered());
                     $this->assertSame('foo', $details->exchange());
                     $this->assertSame('', $details->routingKey());
 
-                    return $message->body()->toString();
+                    return $continuation->requeue('requeued');
                 }),
             )
+            ->with(
+                Get::of('bar')->handle(function($state, $message, $continuation, $details) {
+                    $this->assertSame('requeued', $state);
+                    $this->assertTrue($details->redelivered());
+                    $this->assertSame('foo', $details->exchange());
+                    $this->assertSame('', $details->routingKey());
+
+                    return $continuation->ack($message->body()->toString());
+                }),
+            )
+            ->with(Get::of('bar'))
             ->with(Purge::of('bar'))
             ->with(Unbind::of('foo', 'bar'))
             ->with(DeleteQueue::of('bar'))

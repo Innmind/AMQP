@@ -7,6 +7,7 @@ use Innmind\AMQP\{
     Command,
     Failure,
     Consumer\Details,
+    Consumer\Continuation,
     Transport\Connection,
     Transport\Connection\MessageReader,
     Transport\Frame,
@@ -31,11 +32,11 @@ use Innmind\Immutable\{
 final class Get implements Command
 {
     private Model $command;
-    /** @var callable(S, Message, Details): T */
+    /** @var callable(S, Message, Continuation<S>, Details): Continuation<T> */
     private $consume;
 
     /**
-     * @param callable(S, Message, Details): T $consume
+     * @param callable(S, Message, Continuation<S>, Details): Continuation<T> $consume
      */
     private function __construct(Model $command, callable $consume)
     {
@@ -56,7 +57,12 @@ final class Get implements Command
             ))
             ->wait(Method::basicGetOk, Method::basicGetEmpty)
             ->match(
-                fn($connection, $frame) => $this->maybeConsume($connection, $frame, $state),
+                fn($connection, $frame) => $this->maybeConsume(
+                    $connection,
+                    $channel,
+                    $frame,
+                    $state,
+                ),
                 static fn($connection) => Either::right([$connection, $state]), // this case should not happen
                 static fn() => Either::left(Failure::toGet),
             );
@@ -70,15 +76,15 @@ final class Get implements Command
     public static function of(string $queue): self
     {
         return new self(
-            Model::of($queue)->autoAcknowledge(),
-            static fn(mixed $state): mixed => $state,
+            Model::of($queue),
+            static fn(mixed $state, Message $_, Continuation $continuation) => $continuation->ack($state),
         );
     }
 
     /**
      * @template A
      *
-     * @param callable(S, Message, Details): A $consume
+     * @param callable(S, Message, Continuation<S>, Details): A $consume
      *
      * @return self<S, A>
      */
@@ -92,6 +98,7 @@ final class Get implements Command
      */
     private function maybeConsume(
         Connection $connection,
+        Channel $channel,
         Frame $frame,
         mixed $state,
     ): Either {
@@ -132,24 +139,33 @@ final class Get implements Command
             ->map(Details::ofGet(...))
             ->either()
             ->leftMap(static fn() => Failure::toGet)
-            ->map(fn($details) => $this->consume(
+            ->flatMap(fn($details) => $this->consume(
+                $connection,
+                $channel,
                 $state,
                 $message,
                 $details,
-            ))
-            ->map(static fn($state) => [$connection, $state]);
+            ));
     }
 
     /**
      * @param S $state
      *
-     * @return T
+     * @return Either<Failure, array{Connection, T}>
      */
     private function consume(
+        Connection $connection,
+        Channel $channel,
         mixed $state,
         Message $message,
         Details $details,
-    ): mixed {
-        return ($this->consume)($state, $message, $details);
+    ): Either {
+        return ($this->consume)(
+            $state,
+            $message,
+            Continuation::of($state),
+            $details,
+        )
+            ->respond($connection, $channel, $details->deliveryTag());
     }
 }

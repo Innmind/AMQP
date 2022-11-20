@@ -21,4 +21,6 @@ enum Failure
     case toAdjustQos;
     case toPublish;
     case toGet;
+    case toAck;
+    case toReject;
 }

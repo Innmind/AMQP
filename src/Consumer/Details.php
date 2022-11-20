@@ -57,6 +57,8 @@ final class Details
     }
 
     /**
+     * @internal
+     *
      * @return int<0, max>
      */
     public function deliveryTag(): int
