@@ -15,4 +15,5 @@ enum Failure
     case toDeleteExchange;
     case toDeclareQueue;
     case toDeclareExchange;
+    case toBind;
 }
