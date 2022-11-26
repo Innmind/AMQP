@@ -96,4 +96,40 @@ class DeclarativeTest extends TestCase
 
         $this->assertSame('message', $result);
     }
+
+    public function testMultipleGet()
+    {
+        $result = $this
+            ->client
+            ->with(DeclareExchange::of('foo', Type::direct))
+            ->with(DeclareQueue::of('bar'))
+            ->with(Bind::of('foo', 'bar'))
+            ->with(Publish::one(
+                Basic\Publish::a(Basic\Message::of(Str::of('message0')))
+                    ->to('foo'),
+            ))
+            ->with(Publish::one(
+                Basic\Publish::a(Basic\Message::of(Str::of('message1')))
+                    ->to('foo'),
+            ))
+            ->with(
+                Get::of('bar')
+                    ->take(3)
+                    ->handle(function($state, $message, $continuation, $details) {
+                        $this->assertSame('message'.$state, $message->body()->toString());
+
+                        return $continuation->ack($state + 1);
+                    }),
+            )
+            ->with(Unbind::of('foo', 'bar'))
+            ->with(DeleteQueue::of('bar'))
+            ->with(DeleteExchange::of('foo'))
+            ->run(0)
+            ->match(
+                static fn($state) => $state,
+                static fn($error) => $error,
+            );
+
+        $this->assertSame(2, $result);
+    }
 }

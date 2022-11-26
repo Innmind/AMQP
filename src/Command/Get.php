@@ -21,6 +21,7 @@ use Innmind\AMQP\{
 use Innmind\Immutable\{
     Maybe,
     Either,
+    Sequence,
     Predicate\Instance,
 };
 
@@ -32,14 +33,18 @@ final class Get implements Command
     private Model $command;
     /** @var callable(T, Message, Continuation<T>, Details): Continuation<T> */
     private $consume;
+    /** @var positive-int */
+    private int $take;
 
     /**
      * @param callable(T, Message, Continuation<T>, Details): Continuation<T> $consume
+     * @param positive-int $take
      */
-    private function __construct(Model $command, callable $consume)
+    private function __construct(Model $command, callable $consume, int $take)
     {
         $this->command = $command;
         $this->consume = $consume;
+        $this->take = $take;
     }
 
     /**
@@ -49,6 +54,65 @@ final class Get implements Command
      * @return Either<Failure, array{Connection, T}>
      */
     public function __invoke(
+        Connection $connection,
+        Channel $channel,
+        mixed $state,
+    ): Either {
+        /**
+         * @psalm-suppress MixedArrayAccess
+         * @psalm-suppress MixedArgument
+         * @var Either<Failure, array{Connection, T}>
+         */
+        return Sequence::of(...\array_fill(0, $this->take, null))->reduce(
+            Either::right([$connection, $state]),
+            fn(Either $pair) => $pair->flatMap(
+                fn($pair) => $this->doGet($pair[0], $channel, $pair[1]),
+            ),
+        );
+    }
+
+    /**
+     * @return self<mixed>
+     */
+    public static function of(string $queue): self
+    {
+        /** @psalm-suppress MixedArgument */
+        return new self(
+            Model::of($queue),
+            static fn(mixed $state, Message $_, Continuation $continuation) => $continuation->ack($state),
+            1,
+        );
+    }
+
+    /**
+     * @template A
+     *
+     * @param callable(A, Message, Continuation<A>, Details): Continuation<A> $consume
+     *
+     * @return self<A>
+     */
+    public function handle(callable $consume): self
+    {
+        return new self($this->command, $consume, $this->take);
+    }
+
+    /**
+     * @param positive-int $take
+     *
+     * @return self<T>
+     */
+    public function take(int $take): self
+    {
+        return new self($this->command, $this->consume, $take);
+    }
+
+    /**
+     * @param T $state
+     *
+     * @psalm-suppress ImplementedReturnTypeMismatch TODO find why it complains
+     * @return Either<Failure, array{Connection, T}>
+     */
+    public function doGet(
         Connection $connection,
         Channel $channel,
         mixed $state,
@@ -70,30 +134,6 @@ final class Get implements Command
                 static fn($connection) => Either::right([$connection, $state]), // this case should not happen
                 static fn() => Either::left(Failure::toGet),
             );
-    }
-
-    /**
-     * @return self<mixed>
-     */
-    public static function of(string $queue): self
-    {
-        /** @psalm-suppress MixedArgument */
-        return new self(
-            Model::of($queue),
-            static fn(mixed $state, Message $_, Continuation $continuation) => $continuation->ack($state),
-        );
-    }
-
-    /**
-     * @template A
-     *
-     * @param callable(A, Message, Continuation<A>, Details): Continuation<A> $consume
-     *
-     * @return self<A>
-     */
-    public function handle(callable $consume): self
-    {
-        return new self($this->command, $consume);
     }
 
     /**
