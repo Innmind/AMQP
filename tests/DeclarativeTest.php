@@ -56,6 +56,7 @@ class DeclarativeTest extends TestCase
             ->with(DeclareExchange::of('foo', Type::direct))
             ->with(DeclareQueue::of('bar'))
             ->with(Bind::of('foo', 'bar'))
+            ->with(Purge::of('bar'))
             ->with(Qos::of(10))
             ->with(Publish::one(
                 Basic\Publish::a(Basic\Message::of(Str::of('message')))
@@ -84,7 +85,6 @@ class DeclarativeTest extends TestCase
                 }),
             )
             ->with(Get::of('bar'))
-            ->with(Purge::of('bar'))
             ->with(Unbind::of('foo', 'bar'))
             ->with(DeleteQueue::of('bar'))
             ->with(DeleteExchange::of('foo'))
@@ -104,6 +104,7 @@ class DeclarativeTest extends TestCase
             ->with(DeclareExchange::of('foo', Type::direct))
             ->with(DeclareQueue::of('bar'))
             ->with(Bind::of('foo', 'bar'))
+            ->with(Purge::of('bar'))
             ->with(Publish::one(
                 Basic\Publish::a(Basic\Message::of(Str::of('message0')))
                     ->to('foo'),
