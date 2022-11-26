@@ -12,62 +12,33 @@ use Innmind\AMQP\{
 };
 use Innmind\Immutable\Either;
 
-/**
- * @template T
- */
 final class Continuation
 {
-    /** @var T */
     private mixed $state;
     private State $response;
 
-    /**
-     * @param T $state
-     */
     private function __construct(mixed $state, State $response)
     {
         $this->state = $state;
         $this->response = $response;
     }
 
-    /**
-     * @template A
-     *
-     * @param A $state
-     *
-     * @return self<A>
-     */
     public static function of(mixed $state): self
     {
         // by default we auto ack the message
         return new self($state, State::ack);
     }
 
-    /**
-     * @param T $state
-     *
-     * @return self<T>
-     */
     public function ack(mixed $state): self
     {
         return new self($state, State::ack);
     }
 
-    /**
-     * @param T $state
-     *
-     * @return self<T>
-     */
     public function reject(mixed $state): self
     {
         return new self($state, State::reject);
     }
 
-    /**
-     * @param T $state
-     *
-     * @return self<T>
-     */
     public function requeue(mixed $state): self
     {
         return new self($state, State::requeue);
@@ -78,14 +49,14 @@ final class Continuation
      *
      * @param int<0, max> $deliveryTag
      *
-     * @return Either<Failure, array{Connection, T}>
+     * @return Either<Failure, array{Connection, mixed}>
      */
     public function respond(
         Connection $connection,
         Channel $channel,
         int $deliveryTag,
     ): Either {
-        /** @var Either<Failure, array{Connection, T}> */
+        /** @var Either<Failure, array{Connection, mixed}> */
         return $connection
             ->send(fn($protocol) => match ($this->response) {
                 State::ack => $protocol->basic()->ack(

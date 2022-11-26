@@ -25,19 +25,16 @@ use Innmind\Immutable\{
     Predicate\Instance,
 };
 
-/**
- * @template T
- */
 final class Get implements Command
 {
     private Model $command;
-    /** @var callable(T, Message, Continuation<T>, Details): Continuation<T> */
+    /** @var callable(mixed, Message, Continuation, Details): Continuation */
     private $consume;
     /** @var positive-int */
     private int $take;
 
     /**
-     * @param callable(T, Message, Continuation<T>, Details): Continuation<T> $consume
+     * @param callable(mixed, Message, Continuation, Details): Continuation $consume
      * @param positive-int $take
      */
     private function __construct(Model $command, callable $consume, int $take)
@@ -48,10 +45,7 @@ final class Get implements Command
     }
 
     /**
-     * @param T $state
-     *
-     * @psalm-suppress ImplementedReturnTypeMismatch TODO find why it complains
-     * @return Either<Failure, array{Connection, T}>
+     * @return Either<Failure, array{Connection, mixed}>
      */
     public function __invoke(
         Connection $connection,
@@ -61,7 +55,7 @@ final class Get implements Command
         /**
          * @psalm-suppress MixedArrayAccess
          * @psalm-suppress MixedArgument
-         * @var Either<Failure, array{Connection, T}>
+         * @var Either<Failure, array{Connection, mixed}>
          */
         return Sequence::of(...\array_fill(0, $this->take, null))->reduce(
             Either::right([$connection, $state]),
@@ -71,12 +65,8 @@ final class Get implements Command
         );
     }
 
-    /**
-     * @return self<mixed>
-     */
     public static function of(string $queue): self
     {
-        /** @psalm-suppress MixedArgument */
         return new self(
             Model::of($queue),
             static fn(mixed $state, Message $_, Continuation $continuation) => $continuation->ack($state),
@@ -87,9 +77,7 @@ final class Get implements Command
     /**
      * @template A
      *
-     * @param callable(A, Message, Continuation<A>, Details): Continuation<A> $consume
-     *
-     * @return self<A>
+     * @param callable(A, Message, Continuation, Details): Continuation $consume
      */
     public function handle(callable $consume): self
     {
@@ -98,8 +86,6 @@ final class Get implements Command
 
     /**
      * @param positive-int $take
-     *
-     * @return self<T>
      */
     public function take(int $take): self
     {
@@ -107,17 +93,14 @@ final class Get implements Command
     }
 
     /**
-     * @param T $state
-     *
-     * @psalm-suppress ImplementedReturnTypeMismatch TODO find why it complains
-     * @return Either<Failure, array{Connection, T}>
+     * @return Either<Failure, array{Connection, mixed}>
      */
     public function doGet(
         Connection $connection,
         Channel $channel,
         mixed $state,
     ): Either {
-        /** @var Either<Failure, array{Connection, T}> */
+        /** @var Either<Failure, array{Connection, mixed}> */
         return $connection
             ->send(fn($protocol) => $protocol->basic()->get(
                 $channel,
@@ -137,9 +120,7 @@ final class Get implements Command
     }
 
     /**
-     * @param T $state
-     *
-     * @return Either<Failure, array{Connection, T}>
+     * @return Either<Failure, array{Connection, mixed}>
      */
     private function maybeConsume(
         Connection $connection,
@@ -148,7 +129,7 @@ final class Get implements Command
         mixed $state,
     ): Either {
         if ($frame->is(Method::basicGetEmpty)) {
-            /** @var Either<Failure, array{Connection, T}> */
+            /** @var Either<Failure, array{Connection, mixed}> */
             return Either::right([$connection, $state]);
         }
 
@@ -180,7 +161,7 @@ final class Get implements Command
             ->map(static fn($value) => $value->original())
             ->map(Count::of(...));
 
-        /** @var Either<Failure, array{Connection, T}> */
+        /** @var Either<Failure, array{Connection, mixed}> */
         return Maybe::all($deliveryTag, $redelivered, $exchange, $routingKey, $messageCount)
             ->map(Details::ofGet(...))
             ->either()
@@ -195,9 +176,7 @@ final class Get implements Command
     }
 
     /**
-     * @param T $state
-     *
-     * @return Either<Failure, array{Connection, T}>
+     * @return Either<Failure, array{Connection, mixed}>
      */
     private function consume(
         Connection $connection,
