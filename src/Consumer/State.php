@@ -11,4 +11,5 @@ enum State
     case ack;
     case reject;
     case requeue;
+    case cancel;
 }

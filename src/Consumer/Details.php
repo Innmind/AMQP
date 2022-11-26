@@ -57,6 +57,27 @@ final class Details
     }
 
     /**
+     * @param int<0, max> $deliveryTag
+     */
+    public static function ofConsume(
+        int $deliveryTag,
+        bool $redelivered,
+        string $exchange,
+        string $routingKey,
+    ): self {
+        /** @var Maybe<Count> */
+        $messages = Maybe::nothing();
+
+        return new self(
+            $deliveryTag,
+            $redelivered,
+            $exchange,
+            $routingKey,
+            $messages,
+        );
+    }
+
+    /**
      * @internal
      *
      * @return int<0, max>

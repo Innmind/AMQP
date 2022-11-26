@@ -21,6 +21,9 @@ enum Failure
     case toAdjustQos;
     case toPublish;
     case toGet;
+    case toConsume;
     case toAck;
     case toReject;
+    case toCancel;
+    case toRecover;
 }

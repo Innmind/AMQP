@@ -9,6 +9,7 @@ use Innmind\AMQP\{
     Client\State,
     Consumer\Details,
     Consumer\Continuation,
+    Consumer\Canceled,
     Transport\Connection,
     Transport\Connection\MessageReader,
     Transport\Frame,
@@ -188,6 +189,10 @@ final class Get implements Command
             Continuation::of($state),
             $details,
         )
-            ->respond($connection, $channel, $details->deliveryTag());
+            ->respond($connection, $channel, $details->deliveryTag())
+            ->map(static fn($state) => match ($state instanceof Canceled) {
+                true => $state->state(),
+                false => $state,
+            });
     }
 }
