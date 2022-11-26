@@ -67,6 +67,7 @@ class DeclarativeTest extends TestCase
                     $this->assertFalse($details->redelivered());
                     $this->assertSame('foo', $details->exchange());
                     $this->assertSame('', $details->routingKey());
+                    $this->assertSame('message', $message->body()->toString());
 
                     return $continuation->requeue('requeued');
                 }),
@@ -77,6 +78,7 @@ class DeclarativeTest extends TestCase
                     $this->assertTrue($details->redelivered());
                     $this->assertSame('foo', $details->exchange());
                     $this->assertSame('', $details->routingKey());
+                    $this->assertSame('message', $message->body()->toString());
 
                     return $continuation->ack($message->body()->toString());
                 }),
