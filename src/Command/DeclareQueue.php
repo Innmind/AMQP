@@ -5,6 +5,7 @@ namespace Innmind\AMQP\Command;
 
 use Innmind\AMQP\{
     Command,
+    Client\State,
     Model\Queue\Declaration,
     Model\Queue\DeclareOk,
     Model\Count,
@@ -29,19 +30,12 @@ final class DeclareQueue implements Command
         $this->command = $command;
     }
 
-    /**
-     * @template S
-     *
-     * @param S $state
-     *
-     * @return Either<Failure, array{Connection, S}>
-     */
     public function __invoke(
         Connection $connection,
         Channel $channel,
         mixed $state,
     ): Either {
-        /** @var Either<Failure, array{Connection, S}> */
+        /** @var Either<Failure, State> */
         return $connection
             ->send(fn($protocol) => $protocol->queue()->declare(
                 $channel,
@@ -73,10 +67,10 @@ final class DeclareQueue implements Command
                     return Maybe::all($name, $message, $consumer)
                         ->map(DeclareOk::of(...))
                         ->either()
-                        ->map(static fn() => [$connection, $state])
+                        ->map(static fn() => State::of($connection, $state))
                         ->leftMap(static fn() => Failure::toDeclareQueue);
                 },
-                static fn($connection) => Either::right([$connection, $state]),
+                static fn($connection) => Either::right(State::of($connection, $state)),
                 static fn() => Either::left(Failure::toDeclareQueue),
             );
     }

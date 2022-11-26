@@ -6,6 +6,7 @@ namespace Innmind\AMQP\Command;
 use Innmind\AMQP\{
     Command,
     Failure,
+    Client\State,
     Transport\Connection,
     Transport\Frame\Channel,
     Transport\Frame\Method,
@@ -22,19 +23,12 @@ final class Qos implements Command
         $this->command = $command;
     }
 
-    /**
-     * @template S
-     *
-     * @param S $state
-     *
-     * @return Either<Failure, array{Connection, S}>
-     */
     public function __invoke(
         Connection $connection,
         Channel $channel,
         mixed $state,
     ): Either {
-        /** @var Either<Failure, array{Connection, S}> */
+        /** @var Either<Failure, State> */
         return $connection
             ->send(fn($protocol) => $protocol->basic()->qos(
                 $channel,
@@ -42,8 +36,8 @@ final class Qos implements Command
             ))
             ->wait(Method::basicQosOk)
             ->match(
-                static fn($connection) => Either::right([$connection, $state]),
-                static fn($connection) => Either::right([$connection, $state]),
+                static fn($connection) => Either::right(State::of($connection, $state)),
+                static fn($connection) => Either::right(State::of($connection, $state)),
                 static fn() => Either::left(Failure::toAdjustQos),
             );
     }

@@ -6,6 +6,7 @@ namespace Innmind\AMQP\Command;
 use Innmind\AMQP\{
     Command,
     Failure,
+    Client\State,
     Transport\Connection,
     Transport\Frame\Channel,
     Model\Basic\Publish as Model,
@@ -28,13 +29,6 @@ final class Publish implements Command
         $this->commands = $commands;
     }
 
-    /**
-     * @template S
-     *
-     * @param S $state
-     *
-     * @return Either<Failure, array{Connection, S}>
-     */
     public function __invoke(
         Connection $connection,
         Channel $channel,
@@ -42,7 +36,7 @@ final class Publish implements Command
     ): Either {
         /**
          * @psalm-suppress MixedArgumentTypeCoercion
-         * @var Either<Failure, array{Connection, S}>
+         * @var Either<Failure, State>
          */
         return $this
             ->commands
@@ -52,7 +46,7 @@ final class Publish implements Command
                     fn(Connection $connection) => $this->publish($connection, $channel, $command),
                 ),
             )
-            ->map(static fn($connection) => [$connection, $state]);
+            ->map(static fn($connection) => State::of($connection, $state));
     }
 
     public static function one(Model $command): self

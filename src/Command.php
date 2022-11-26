@@ -12,11 +12,7 @@ use Innmind\Immutable\Either;
 interface Command
 {
     /**
-     * @template T
-     *
-     * @param T $state
-     *
-     * @return Either<Failure, array{Connection, T}>
+     * @return Either<Failure, Client\State>
      */
     public function __invoke(
         Connection $connection,

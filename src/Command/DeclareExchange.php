@@ -5,6 +5,7 @@ namespace Innmind\AMQP\Command;
 
 use Innmind\AMQP\{
     Command,
+    Client\State,
     Model\Exchange\Declaration,
     Model\Exchange\Type,
     Transport\Connection,
@@ -23,19 +24,12 @@ final class DeclareExchange implements Command
         $this->command = $command;
     }
 
-    /**
-     * @template S
-     *
-     * @param S $state
-     *
-     * @return Either<Failure, array{Connection, S}>
-     */
     public function __invoke(
         Connection $connection,
         Channel $channel,
         mixed $state,
     ): Either {
-        /** @var Either<Failure, array{Connection, S}> */
+        /** @var Either<Failure, State> */
         return $connection
             ->send(fn($protocol) => $protocol->exchange()->declare(
                 $channel,
@@ -43,8 +37,8 @@ final class DeclareExchange implements Command
             ))
             ->maybeWait($this->command->shouldWait(), Method::exchangeDeclareOk)
             ->match(
-                static fn($connection) => Either::right([$connection, $state]),
-                static fn($connection) => Either::right([$connection, $state]),
+                static fn($connection) => Either::right(State::of($connection, $state)),
+                static fn($connection) => Either::right(State::of($connection, $state)),
                 static fn() => Either::left(Failure::toDeclareExchange),
             );
     }

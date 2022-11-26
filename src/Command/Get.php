@@ -6,6 +6,7 @@ namespace Innmind\AMQP\Command;
 use Innmind\AMQP\{
     Command,
     Failure,
+    Client\State,
     Consumer\Details,
     Consumer\Continuation,
     Transport\Connection,
@@ -44,23 +45,19 @@ final class Get implements Command
         $this->take = $take;
     }
 
-    /**
-     * @return Either<Failure, array{Connection, mixed}>
-     */
     public function __invoke(
         Connection $connection,
         Channel $channel,
         mixed $state,
     ): Either {
         /**
-         * @psalm-suppress MixedArrayAccess
-         * @psalm-suppress MixedArgument
-         * @var Either<Failure, array{Connection, mixed}>
+         * @psalm-suppress MixedArgumentTypeCoercion
+         * @var Either<Failure, State>
          */
         return Sequence::of(...\array_fill(0, $this->take, null))->reduce(
-            Either::right([$connection, $state]),
-            fn(Either $pair) => $pair->flatMap(
-                fn($pair) => $this->doGet($pair[0], $channel, $pair[1]),
+            Either::right(State::of($connection, $state)),
+            fn(Either $state) => $state->flatMap(
+                fn(State $state) => $this->doGet($state->connection(), $channel, $state->userState()),
             ),
         );
     }
@@ -93,14 +90,14 @@ final class Get implements Command
     }
 
     /**
-     * @return Either<Failure, array{Connection, mixed}>
+     * @return Either<Failure, State>
      */
     public function doGet(
         Connection $connection,
         Channel $channel,
         mixed $state,
     ): Either {
-        /** @var Either<Failure, array{Connection, mixed}> */
+        /** @var Either<Failure, State> */
         return $connection
             ->send(fn($protocol) => $protocol->basic()->get(
                 $channel,
@@ -114,13 +111,13 @@ final class Get implements Command
                     $frame,
                     $state,
                 ),
-                static fn($connection) => Either::right([$connection, $state]), // this case should not happen
+                static fn($connection) => Either::right(State::of($connection, $state)), // this case should not happen
                 static fn() => Either::left(Failure::toGet),
             );
     }
 
     /**
-     * @return Either<Failure, array{Connection, mixed}>
+     * @return Either<Failure, State>
      */
     private function maybeConsume(
         Connection $connection,
@@ -129,8 +126,8 @@ final class Get implements Command
         mixed $state,
     ): Either {
         if ($frame->is(Method::basicGetEmpty)) {
-            /** @var Either<Failure, array{Connection, mixed}> */
-            return Either::right([$connection, $state]);
+            /** @var Either<Failure, State> */
+            return Either::right(State::of($connection, $state));
         }
 
         $message = (new MessageReader)($connection);
@@ -161,7 +158,7 @@ final class Get implements Command
             ->map(static fn($value) => $value->original())
             ->map(Count::of(...));
 
-        /** @var Either<Failure, array{Connection, mixed}> */
+        /** @var Either<Failure, State> */
         return Maybe::all($deliveryTag, $redelivered, $exchange, $routingKey, $messageCount)
             ->map(Details::ofGet(...))
             ->either()
@@ -176,7 +173,7 @@ final class Get implements Command
     }
 
     /**
-     * @return Either<Failure, array{Connection, mixed}>
+     * @return Either<Failure, State>
      */
     private function consume(
         Connection $connection,

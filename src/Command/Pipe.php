@@ -5,6 +5,7 @@ namespace Innmind\AMQP\Command;
 
 use Innmind\AMQP\{
     Command,
+    Client\State,
     Transport\Connection,
     Transport\Frame\Channel,
 };
@@ -30,11 +31,11 @@ final class Pipe implements Command
         mixed $state,
     ): Either {
         return ($this->first)($connection, $channel, $state)->flatMap(
-            function($in) use ($channel) {
-                [$connection, $state] = $in;
-
-                return ($this->second)($connection, $channel, $state);
-            },
+            fn($state) => ($this->second)(
+                $state->connection(),
+                $channel,
+                $state->userState(),
+            ),
         );
     }
 }

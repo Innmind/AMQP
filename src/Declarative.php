@@ -69,13 +69,11 @@ final class Declarative
                 ->flatMap(function($in) use ($command, $state) {
                     [$connection, $channel] = $in;
 
-                    return $command($connection, $channel, $state)->flatMap(function($out) use ($channel) {
-                        [$connection, $state] = $out;
-
-                        return $this
-                            ->close($connection, $channel)
-                            ->map(static fn() => $state);
-                    });
+                    return $command($connection, $channel, $state)->flatMap(
+                        fn($clientState) => $this
+                            ->close($clientState->connection(), $channel)
+                            ->map(static fn(): mixed => $clientState->userState()),
+                    );
                 }),
             static fn() => Either::right($state),
         );

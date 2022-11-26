@@ -9,6 +9,7 @@ use Innmind\AMQP\{
     Model\Basic\Ack,
     Model\Basic\Reject,
     Failure,
+    Client,
 };
 use Innmind\Immutable\Either;
 
@@ -78,14 +79,14 @@ final class Continuation
      *
      * @param int<0, max> $deliveryTag
      *
-     * @return Either<Failure, array{Connection, T}>
+     * @return Either<Failure, Client\State>
      */
     public function respond(
         Connection $connection,
         Channel $channel,
         int $deliveryTag,
     ): Either {
-        /** @var Either<Failure, array{Connection, T}> */
+        /** @var Either<Failure, Client\State> */
         return $connection
             ->send(fn($protocol) => match ($this->response) {
                 State::ack => $protocol->basic()->ack(
@@ -102,8 +103,8 @@ final class Continuation
                 ),
             })
             ->match(
-                fn($connection) => Either::right([$connection, $this->state]),
-                fn($connection) => Either::right([$connection, $this->state]),
+                fn($connection) => Either::right(Client\State::of($connection, $this->state)),
+                fn($connection) => Either::right(Client\State::of($connection, $this->state)),
                 fn() => Either::left(match ($this->response) {
                     State::ack => Failure::toAck,
                     State::reject => Failure::toReject,

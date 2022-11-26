@@ -5,6 +5,7 @@ namespace Innmind\AMQP\Command;
 
 use Innmind\AMQP\{
     Command,
+    Client\State,
     Failure,
     Transport\Connection,
     Transport\Frame\Channel,
@@ -22,19 +23,12 @@ final class Bind implements Command
         $this->command = $command;
     }
 
-    /**
-     * @template S
-     *
-     * @param S $state
-     *
-     * @return Either<Failure, array{Connection, S}>
-     */
     public function __invoke(
         Connection $connection,
         Channel $channel,
         mixed $state,
     ): Either {
-        /** @var Either<Failure, array{Connection, S}> */
+        /** @var Either<Failure, State> */
         return $connection
             ->send(fn($protocol) => $protocol->queue()->bind(
                 $channel,
@@ -42,8 +36,8 @@ final class Bind implements Command
             ))
             ->maybeWait($this->command->shouldWait(), Method::queueBindOk)
             ->match(
-                static fn($connection) => Either::right([$connection, $state]),
-                static fn($connection) => Either::right([$connection, $state]),
+                static fn($connection) => Either::right(State::of($connection, $state)),
+                static fn($connection) => Either::right(State::of($connection, $state)),
                 static fn() => Either::left(Failure::toBind),
             );
     }
