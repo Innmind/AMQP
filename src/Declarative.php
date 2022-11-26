@@ -99,7 +99,7 @@ final class Declarative
             ->either()
             ->leftMap(static fn() => Failure::toOpenConnection)
             ->map(static fn($connection) => $connection->send(
-                static fn($protocol) => $protocol->channel()->open($channel)
+                static fn($protocol) => $protocol->channel()->open($channel),
             ))
             ->map(static fn($continuation) => $continuation->wait(Method::channelOpenOk))
             ->flatMap(static fn($continuation) => $continuation->match(

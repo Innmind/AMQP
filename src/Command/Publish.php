@@ -78,7 +78,7 @@ final class Publish implements Command
     ): Either {
         /** @var Either<Failure, Connection> */
         return $connection
-            ->send(fn($protocol, $maxFrameSize) => $protocol->basic()->publish(
+            ->send(static fn($protocol, $maxFrameSize) => $protocol->basic()->publish(
                 $channel,
                 $command,
                 $maxFrameSize,
