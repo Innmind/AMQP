@@ -110,45 +110,26 @@ final class Continuation
         int $deliveryTag,
         string $consumerTag = null,
     ): Either {
-        if ($this->response === State::cancel) {
-            /** @var Either<Failure, Client\State|Canceled> */
-            return $this
+        /** @var Either<Failure, Client\State|Canceled> */
+        return match ($this->response) {
+            State::cancel => $this
                 ->doAck($connection, $channel, $deliveryTag)
                 ->flatMap(fn($connection) => $this->doCancel(
                     $connection,
                     $channel,
                     $consumerTag,
                 ))
-                ->flatMap(fn($connection) => $this->recover($connection, $channel));
-        }
-
-        /** @var Either<Failure, Client\State|Canceled> */
-        return $connection
-            ->send(fn($protocol) => match ($this->response) {
-                State::ack => $protocol->basic()->ack(
-                    $channel,
-                    Ack::of($deliveryTag),
-                ),
-                State::reject => $protocol->basic()->reject(
-                    $channel,
-                    Reject::of($deliveryTag),
-                ),
-                State::requeue => $protocol->basic()->reject(
-                    $channel,
-                    Reject::requeue($deliveryTag),
-                ),
-                State::cancel => Sequence::of(), // cancelling handled above
-            })
-            ->match(
-                fn($connection) => Either::right(Client\State::of($connection, $this->state)),
-                fn($connection) => Either::right(Client\State::of($connection, $this->state)),
-                fn() => Either::left(match ($this->response) {
-                    State::ack => Failure::toAck,
-                    State::reject => Failure::toReject,
-                    State::requeue => Failure::toReject,
-                    State::cancel => Failure::toCancel,
-                }),
-            );
+                ->flatMap(fn($connection) => $this->recover($connection, $channel)),
+            State::ack => $this
+                ->doAck($connection, $channel, $deliveryTag)
+                ->map(fn($connection) => Client\State::of($connection, $this->state)),
+            State::reject => $this
+                ->doReject($connection, $channel, $deliveryTag)
+                ->map(fn($connection) => Client\State::of($connection, $this->state)),
+            State::requeue => $this
+                ->doRequeue($connection, $channel, $deliveryTag)
+                ->map(fn($connection) => Client\State::of($connection, $this->state)),
+        };
     }
 
     /**
@@ -211,6 +192,52 @@ final class Continuation
                 static fn($connection) => Either::right($connection),
                 static fn($connection) => Either::right($connection),
                 static fn() => Either::left(Failure::toAck),
+            );
+    }
+
+    /**
+     * @param int<0, max> $deliveryTag
+     *
+     * @return Either<Failure, Connection>
+     */
+    private function doReject(
+        Connection $connection,
+        Channel $channel,
+        int $deliveryTag,
+    ): Either {
+        /** @var Either<Failure, Connection> */
+        return $connection
+            ->send(static fn($protocol) => $protocol->basic()->reject(
+                $channel,
+                Reject::of($deliveryTag),
+            ))
+            ->match(
+                static fn($connection) => Either::right($connection),
+                static fn($connection) => Either::right($connection),
+                static fn() => Either::left(Failure::toReject),
+            );
+    }
+
+    /**
+     * @param int<0, max> $deliveryTag
+     *
+     * @return Either<Failure, Connection>
+     */
+    private function doRequeue(
+        Connection $connection,
+        Channel $channel,
+        int $deliveryTag,
+    ): Either {
+        /** @var Either<Failure, Connection> */
+        return $connection
+            ->send(static fn($protocol) => $protocol->basic()->reject(
+                $channel,
+                Reject::requeue($deliveryTag),
+            ))
+            ->match(
+                static fn($connection) => Either::right($connection),
+                static fn($connection) => Either::right($connection),
+                static fn() => Either::left(Failure::toReject),
             );
     }
 
