@@ -264,7 +264,6 @@ class DeclarativeTest extends TestCase
                     return $continuation->ack($message->body()->toString());
                 }),
             )
-            ->with(Get::of('bar'))
             ->with(Unbind::of('foo', 'bar'))
             ->with(DeleteQueue::of('bar'))
             ->with(DeleteExchange::of('foo'))
@@ -451,7 +450,6 @@ class DeclarativeTest extends TestCase
                     return $continuation->ack(true);
                 }),
             )
-            ->with(Get::of('bar'))
             ->with(Unbind::of('foo', 'bar'))
             ->with(DeleteQueue::of('bar'))
             ->with(DeleteExchange::of('foo'))
@@ -489,7 +487,6 @@ class DeclarativeTest extends TestCase
                     return $continuation->ack(true);
                 }),
             )
-            ->with(Get::of('bar'))
             ->with(Unbind::of('foo', 'bar'))
             ->with(DeleteQueue::of('bar'))
             ->with(DeleteExchange::of('foo'))
