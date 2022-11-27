@@ -8,6 +8,7 @@ use Innmind\AMQP\{
     Transport\Connection,
     Transport\Protocol\ArgumentTranslator\ValueTranslator,
     Transport\Protocol,
+    Transport\Frame\Value,
     Command\DeclareExchange,
     Command\DeleteExchange,
     Command\DeclareQueue,
@@ -21,6 +22,7 @@ use Innmind\AMQP\{
     Command\Consume,
     Model\Exchange\Type,
     Model\Basic,
+    TimeContinuum\Format\Timestamp as TimestampFormat,
     Exception\BasicGetNotCancellable,
 };
 use Innmind\Socket\Internet\Transport;
@@ -30,12 +32,14 @@ use Innmind\Url\Url;
 use Innmind\Immutable\{
     Str,
     Sequence,
+    Map,
 };
 use PHPUnit\Framework\TestCase;
 
 class DeclarativeTest extends TestCase
 {
     private Declarative $client;
+    private $clock;
 
     public function setUp(): void
     {
@@ -52,6 +56,7 @@ class DeclarativeTest extends TestCase
                 $os->sockets(),
             ),
         );
+        $this->clock = $os->clock();
     }
 
     public function testDeclareExchange()
@@ -266,5 +271,192 @@ class DeclarativeTest extends TestCase
             );
 
         $this->assertSame('rejected', $result);
+    }
+
+    public function testGetMessageWithAllProperties()
+    {
+        $message = Basic\Message::of(Str::of('message'))
+            ->withContentType(Basic\Message\ContentType::of('text', 'plain'))
+            ->withContentEncoding(Basic\Message\ContentEncoding::of('gzip'))
+            ->withDeliveryMode(Basic\Message\DeliveryMode::persistent)
+            ->withPriority(Basic\Message\Priority::five)
+            ->withCorrelationId(Basic\Message\CorrelationId::of('correlation'))
+            ->withReplyTo(Basic\Message\ReplyTo::of('reply'))
+            ->withExpiration(ElapsedPeriod::of(10000))
+            ->withId(Basic\Message\Id::of('id'))
+            ->withTimestamp($now = $this->clock->now())
+            ->withType(Basic\Message\Type::of('type'))
+            ->withUserId(Basic\Message\UserId::of('guest'))
+            ->withAppId(Basic\Message\AppId::of('webcrawler'))
+            ->withHeaders(
+                Map::of(
+                    ['bits', Value\Bits::of(true)],
+                    ['decimal', Value\Decimal::of(1, 1)],
+                    ['longstr', Value\LongString::literal('bar')],
+                    ['array', Value\Sequence::of(Value\Bits::of(true))],
+                    ['long', Value\SignedLongInteger::of(2)],
+                    ['octet', Value\SignedOctet::of(4)],
+                    ['table', Value\Table::of(Map::of(['inner', Value\Bits::of(true)]))],
+                    ['timestamp', Value\Timestamp::of($ts = $this->clock->now())],
+                    ['ulong', Value\UnsignedLongInteger::of(6)],
+                    ['ulonglong', Value\UnsignedLongLongInteger::of(7)],
+                    ['uoctet', Value\UnsignedOctet::of(8)],
+                    ['ushort', Value\UnsignedShortInteger::of(9)],
+                    ['void', new Value\VoidValue],
+                ),
+            );
+        $result = $this
+            ->client
+            ->with(DeclareExchange::of('foo', Type::direct))
+            ->with(DeclareQueue::of('bar'))
+            ->with(Bind::of('foo', 'bar'))
+            ->with(Purge::of('bar'))
+            ->with(Qos::of(10))
+            ->with(Publish::one(
+                Basic\Publish::a($message)
+                    ->to('foo'),
+            ))
+            ->with(
+                Get::of('bar')->handle(function($state, $message, $continuation, $details) use ($now, $ts) {
+                    $this->assertNull($state);
+                    $this->assertFalse($details->redelivered());
+                    $this->assertSame('text/plain', $message->contentType()->match(
+                        static fn($value) => $value->toString(),
+                        static fn() => null,
+                    ));
+                    $this->assertSame('gzip', $message->contentEncoding()->match(
+                        static fn($value) => $value->toString(),
+                        static fn() => null,
+                    ));
+
+                    $this->assertSame(true, $message->headers()->get('bits')->match(
+                        static fn($bits) => $bits->first()->match(
+                            static fn($bool) => $bool,
+                            static fn() => null,
+                        ),
+                        static fn() => null,
+                    ));
+                    $this->assertSame(0.1, $message->headers()->get('decimal')->match(
+                        static fn($value) => $value,
+                        static fn() => null,
+                    ));
+                    $this->assertSame('bar', $message->headers()->get('longstr')->match(
+                        static fn($value) => $value->toString(),
+                        static fn() => null,
+                    ));
+                    $this->assertSame(true, $message->headers()->get('array')->match(
+                        static fn($value) => $value->first()->match(
+                            static fn($first) => $first->original()->first()->match(
+                                static fn($bool) => $bool,
+                                static fn() => null,
+                            ),
+                            static fn() => null,
+                        ),
+                        static fn() => null,
+                    ));
+                    $this->assertSame(2, $message->headers()->get('long')->match(
+                        static fn($value) => $value,
+                        static fn() => null,
+                    ));
+                    $this->assertSame(4, $message->headers()->get('octet')->match(
+                        static fn($value) => $value,
+                        static fn() => null,
+                    ));
+                    $this->assertSame(true, $message->headers()->get('table')->match(
+                        static fn($value) => $value->get('inner')->match(
+                            static fn($value) => $value->original()->first()->match(
+                                static fn($bool) => $bool,
+                                static fn() => null,
+                            ),
+                            static fn() => null,
+                        ),
+                        static fn() => null,
+                    ));
+                    $this->assertSame(
+                        (int) ($ts->milliseconds() / 1000), //timestamp expressed in seconds and not milliseconds
+                        $message->headers()->get('timestamp')->match(
+                            static fn($value) => (int) ($value->milliseconds() / 1000),
+                            static fn() => null,
+                        ),
+                    );
+                    $this->assertSame(6, $message->headers()->get('ulong')->match(
+                        static fn($value) => $value,
+                        static fn() => null,
+                    ));
+                    $this->assertSame(7, $message->headers()->get('ulonglong')->match(
+                        static fn($value) => $value,
+                        static fn() => null,
+                    ));
+                    $this->assertSame(8, $message->headers()->get('uoctet')->match(
+                        static fn($value) => $value,
+                        static fn() => null,
+                    ));
+                    $this->assertSame(9, $message->headers()->get('ushort')->match(
+                        static fn($value) => $value,
+                        static fn() => null,
+                    ));
+                    $this->assertNull($message->headers()->get('void')->match(
+                        static fn($value) => $value,
+                        static fn() => false,
+                    ));
+
+                    $this->assertSame(2, $message->deliveryMode()->match(
+                        static fn($value) => $value->toInt(),
+                        static fn() => null,
+                    ));
+                    $this->assertSame(5, $message->priority()->match(
+                        static fn($value) => $value->toInt(),
+                        static fn() => null,
+                    ));
+                    $this->assertSame('correlation', $message->correlationId()->match(
+                        static fn($value) => $value->toString(),
+                        static fn() => null,
+                    ));
+                    $this->assertSame('reply', $message->replyTo()->match(
+                        static fn($value) => $value->toString(),
+                        static fn() => null,
+                    ));
+                    $this->assertSame(10000, $message->expiration()->match(
+                        static fn($value) => $value->milliseconds(),
+                        static fn() => null,
+                    ));
+                    $this->assertSame('id', $message->id()->match(
+                        static fn($value) => $value->toString(),
+                        static fn() => null,
+                    ));
+                    $this->assertSame(
+                        $now->format(new TimestampFormat),
+                        $message->timestamp()->match(
+                            static fn($value) => $value->format(new TimestampFormat),
+                            static fn() => null,
+                        ),
+                    );
+                    $this->assertSame('type', $message->type()->match(
+                        static fn($value) => $value->toString(),
+                        static fn() => null,
+                    ));
+                    $this->assertSame('guest', $message->userId()->match(
+                        static fn($value) => $value->toString(),
+                        static fn() => null,
+                    ));
+                    $this->assertSame('webcrawler', $message->appId()->match(
+                        static fn($value) => $value->toString(),
+                        static fn() => null,
+                    ));
+
+                    return $continuation->ack(true);
+                }),
+            )
+            ->with(Get::of('bar'))
+            ->with(Unbind::of('foo', 'bar'))
+            ->with(DeleteQueue::of('bar'))
+            ->with(DeleteExchange::of('foo'))
+            ->run(null)
+            ->match(
+                static fn($state) => $state,
+                static fn($error) => $error,
+            );
+
+        $this->assertTrue($result);
     }
 }
