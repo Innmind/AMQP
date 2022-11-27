@@ -120,7 +120,7 @@ class DeclarativeTest extends TestCase
             ))
             ->with(
                 Get::of('bar')
-                    ->take(3)
+                    ->take(3) // the third attempt will return a basic.get-empty and the handler is not called
                     ->handle(function($state, $message, $continuation, $details) {
                         $this->assertSame('message'.$state, $message->body()->toString());
 
