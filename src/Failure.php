@@ -26,4 +26,7 @@ enum Failure
     case toReject;
     case toCancel;
     case toRecover;
+    case toSelect;
+    case toCommit;
+    case toRollback;
 }

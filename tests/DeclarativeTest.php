@@ -20,6 +20,7 @@ use Innmind\AMQP\{
     Command\Publish,
     Command\Get,
     Command\Consume,
+    Command\Transaction,
     Model\Exchange\Type,
     Model\Basic,
     TimeContinuum\Format\Timestamp as TimestampFormat,
@@ -605,5 +606,83 @@ class DeclarativeTest extends TestCase
             );
 
         $this->assertNull($result);
+    }
+
+    public function testCommitTransaction()
+    {
+        $result = $this
+            ->client
+            ->with(DeclareExchange::of('foo', Type::direct))
+            ->with(DeclareQueue::of('bar'))
+            ->with(Bind::of('foo', 'bar'))
+            ->with(Purge::of('bar'))
+            ->with(Publish::one(
+                Basic\Publish::a(Basic\Message::of(Str::of('message')))
+                    ->to('foo'),
+            ))
+            ->with(
+                Transaction::of(
+                    static fn($state) => $state,
+                    Get::of('bar')->handle(static function($state, $message, $continuation) {
+                        return $continuation->ack(true);
+                    }),
+                ),
+            )
+            ->with(
+                Get::of('bar')->handle(static function($state, $message, $continuation, $details) {
+                    // if the transaction is not committed then this handler will
+                    // be called
+
+                    return $continuation->ack(false);
+                }),
+            )
+            ->with(Unbind::of('foo', 'bar'))
+            ->with(DeleteQueue::of('bar'))
+            ->with(DeleteExchange::of('foo'))
+            ->run(null)
+            ->match(
+                static fn($state) => $state,
+                static fn($error) => $error,
+            );
+
+        $this->assertTrue($result);
+    }
+
+    public function testRollbackTransaction()
+    {
+        $result = $this
+            ->client
+            ->with(DeclareExchange::of('foo', Type::direct))
+            ->with(DeclareQueue::of('bar'))
+            ->with(Bind::of('foo', 'bar'))
+            ->with(Purge::of('bar'))
+            ->with(
+                Transaction::of(
+                    static fn($state) => $state,
+                    Publish::one(
+                        Basic\Publish::a(Basic\Message::of(Str::of('message')))
+                            ->to('foo'),
+                    ),
+                ),
+            )
+            ->with(
+                Get::of('bar')->handle(static function($state, $message, $continuation, $details) {
+                    // since the publishing of the message is rollbacked because
+                    // of the state being false (the one given to ::run() below)
+                    // we never reach here
+
+                    return $continuation->ack($message->body()->toString());
+                }),
+            )
+            ->with(Unbind::of('foo', 'bar'))
+            ->with(DeleteQueue::of('bar'))
+            ->with(DeleteExchange::of('foo'))
+            ->run(false)
+            ->match(
+                static fn($state) => $state,
+                static fn($error) => $error,
+            );
+
+        $this->assertFalse($result);
     }
 }
