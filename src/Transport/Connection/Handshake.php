@@ -5,6 +5,7 @@ namespace Innmind\AMQP\Transport\Connection;
 
 use Innmind\AMQP\{
     Transport\Connection,
+    Transport\Frame,
     Transport\Frame\Method,
     Transport\Frame\Value,
     Model\Connection\SecureOk,
@@ -28,12 +29,15 @@ final class Handshake
         $this->authority = $authority;
     }
 
-    public function __invoke(Connection $connection): Connection
+    /**
+     * @return Maybe<Connection>
+     */
+    public function __invoke(Connection $connection): Maybe
     {
         $frame = $connection->wait(Method::connectionSecure, Method::connectionTune);
 
         if ($frame->is(Method::connectionSecure)) {
-            [$connection, $frame] = $connection
+            return $connection
                 ->send(fn($protocol) => $protocol->connection()->secureOk(
                     SecureOk::of(
                         $this->authority->userInformation()->user(),
@@ -42,12 +46,21 @@ final class Handshake
                 ))
                 ->wait(Method::connectionTune)
                 ->match(
-                    static fn($connection, $frame) => [$connection, $frame],
-                    static fn() => throw new \RuntimeException,
-                    static fn() => throw new \RuntimeException,
-                );
+                    fn($connection, $frame) => $this->maybeTune($connection, $frame),
+                    static fn() => Maybe::just($connection),
+                    static fn() => Maybe::nothing(),
+                )
+                ->keep(Instance::of(Connection::class));
         }
 
+        return $this->maybeTune($connection, $frame);
+    }
+
+    /**
+     * @return Maybe<Connection>
+     */
+    private function maybeTune(Connection $connection, Frame $frame): Maybe
+    {
         $maxChannels = $frame
             ->values()
             ->first()
@@ -73,11 +86,7 @@ final class Handshake
                 $maxChannels,
                 $maxFrameSize,
                 $heartbeat,
-            ))
-            ->match(
-                static fn($connection) => $connection,
-                static fn() => throw new \LogicException,
-            );
+            ));
     }
 
     private function tune(

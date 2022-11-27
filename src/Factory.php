@@ -31,7 +31,7 @@ final class Factory
         Url $server,
         ElapsedPeriod $timeout,
     ): Client {
-        return new Client\Client(
+        return Client::of(
             fn() => Transport\Connection::open(
                 $transport,
                 $server,
@@ -43,11 +43,7 @@ final class Factory
                 $this->os->clock(),
                 $this->os->remote(),
                 $this->os->sockets(),
-            )->match(
-                static fn($connection) => $connection,
-                static fn() => throw new \RuntimeException,
             ),
-            $this->os->process(),
         );
     }
 }

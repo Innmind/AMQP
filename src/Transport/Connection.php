@@ -121,9 +121,9 @@ final class Connection
                 MaxChannels::unlimited(),
                 MaxFrameSize::unlimited(),
             ))
-            ->map(new Start($server->authority()))
-            ->map(new Handshake($server->authority()))
-            ->map(new OpenVHost($server->path()))
+            ->flatMap(new Start($server->authority()))
+            ->flatMap(new Handshake($server->authority()))
+            ->flatMap(new OpenVHost($server->path()))
             ->map(static fn($connection) => $connection->ready());
     }
 
