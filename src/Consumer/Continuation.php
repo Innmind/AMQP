@@ -143,7 +143,10 @@ final class Continuation
 
         // walk over prefetched messages
         do {
-            $frame = $connection->wait();
+            $frame = $connection->wait()->match(
+                static fn($received) => $received->frame(),
+                static fn() => throw new \RuntimeException,
+            );
 
             if ($frame->type() === Type::method && $frame->is(Method::basicDeliver)) {
                 // read all the frames for the prefetched message

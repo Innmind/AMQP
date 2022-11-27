@@ -15,7 +15,7 @@ use Innmind\AMQP\{
     Model\Basic\Message\Type,
     Model\Basic\Message\UserId,
     Model\Basic\Message\AppId,
-    Transport\Connection as ConnectionInterface,
+    Transport\Connection,
     Transport\Frame\Value,
     Predicate\IsInt,
 };
@@ -32,9 +32,14 @@ use Innmind\Immutable\{
 
 final class MessageReader
 {
-    public function __invoke(ConnectionInterface $connection): Message
+    public function __invoke(Connection $connection): Message
     {
-        $header = $connection->wait();
+        $received = $connection->wait()->match(
+            static fn($received) => $received,
+            static fn() => throw new \RuntimeException,
+        );
+        $connection = $received->connection();
+        $header = $received->frame();
 
         return $header
             ->values()
@@ -207,7 +212,7 @@ final class MessageReader
      * @return Maybe<Content>
      */
     private function readPayload(
-        ConnectionInterface $connection,
+        Connection $connection,
         int $bodySize,
     ): Maybe {
         $walk = $bodySize !== 0;
@@ -217,6 +222,11 @@ final class MessageReader
         while ($walk) {
             $read = $connection
                 ->wait()
+                ->map(static fn($received) => $received->frame())
+                ->match(
+                    static fn($frame) => $frame,
+                    static fn() => throw new \RuntimeException,
+                )
                 ->content()
                 ->map(static fn($chunk) => \fwrite($stream, $chunk->toString()))
                 ->keep(IsInt::natural())

@@ -11,9 +11,7 @@ use Innmind\AMQP\{
     Transport\Frame\Channel,
     Transport\Frame\Method,
     Model\Connection\MaxFrameSize,
-    Exception\VersionNotUsable,
-    Exception\ConnectionClosed,
-    Exception\UnexpectedFrame,
+    Failure,
 };
 use Innmind\Socket\Internet\Transport;
 use Innmind\Url\Url;
@@ -61,8 +59,17 @@ class ConnectionTest extends TestCase
                     static fn() => null,
                 ),
         );
-        $this->assertInstanceOf(Frame::class, $connection->wait(Method::channelOpenOk));
-        $connection->close(); //test it closes without exception
+        $this->assertInstanceOf(Frame::class, $connection->wait(Method::channelOpenOk)->match(
+            static fn($received) => $received->frame(),
+            static fn() => null,
+        ));
+        $this->assertInstanceOf(
+            SideEffect::class,
+            $connection->close()->match(
+                static fn($sideEffect) => $sideEffect,
+                static fn() => null,
+            ),
+        ); //test it closes without exception
     }
 
     public function testClose()
@@ -88,7 +95,7 @@ class ConnectionTest extends TestCase
         $this->assertTrue($connection->closed());
     }
 
-    public function testThrowWhenReceivedFrameIsNotTheExpectedOne()
+    public function testReturnFailureWhenReceivedFrameIsNotTheExpectedOne()
     {
         $connection = Connection::open(
             Transport::tcp(),
@@ -103,13 +110,20 @@ class ConnectionTest extends TestCase
             static fn() => null,
         );
 
-        $this->expectException(UnexpectedFrame::class);
-
-        $connection->send(static fn($protocol) => $protocol->channel()->open(new Channel(2)));
-        $connection->wait(Method::connectionOpen);
+        $this->assertSame(
+            Failure::unexpectedFrame,
+            $connection
+                ->send(static fn($protocol) => $protocol->channel()->open(new Channel(2)))
+                ->wait(Method::connectionOpen)
+                ->either()
+                ->match(
+                    static fn() => null,
+                    static fn($failure) => $failure,
+                ),
+        );
     }
 
-    public function testThrowWhenConnectionClosedByServer()
+    public function testReturnFailureWhenConnectionClosedByServer()
     {
         $connection = Connection::open(
             Transport::tcp(),
@@ -124,21 +138,21 @@ class ConnectionTest extends TestCase
             static fn() => null,
         );
 
-        try {
-            $connection->send(static fn() => Sequence::of(Frame::method(
-                new Channel(0),
-                Method::of(20, 10),
-                //missing arguments
-            )));
-            $connection->wait(Method::channelOpenOk);
-        } catch (ConnectionClosed $e) {
-            $this->assertTrue($connection->closed());
-            $this->assertSame('INTERNAL_ERROR', $e->getMessage());
-            $this->assertSame(541, $e->getCode());
-            $this->assertNull($e->cause()->match(
-                static fn($method) => $method,
+        $connection = $connection->send(static fn() => Sequence::of(Frame::method(
+            new Channel(0),
+            Method::of(20, 10),
+            //missing arguments
+        )))->match(
+            static fn($connection) => $connection,
+            static fn($connection) => $connection,
+            static fn() => null,
+        );
+        $this->assertSame(
+            Failure::closedByServer,
+            $connection->wait(Method::channelOpenOk)->match(
                 static fn() => null,
-            ));
-        }
+                static fn($failure) => $failure,
+            ),
+        );
     }
 }

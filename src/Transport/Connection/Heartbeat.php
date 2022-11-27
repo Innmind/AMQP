@@ -20,11 +20,19 @@ final class Heartbeat
     private ElapsedPeriod $threshold;
     private PointInTime $lastReceivedData;
 
-    public function __construct(Clock $clock, ElapsedPeriod $threshold)
-    {
+    private function __construct(
+        Clock $clock,
+        ElapsedPeriod $threshold,
+        PointInTime $lastReceivedData,
+    ) {
         $this->clock = $clock;
         $this->threshold = $threshold;
-        $this->lastReceivedData = $clock->now();
+        $this->lastReceivedData = $lastReceivedData;
+    }
+
+    public static function start(Clock $clock, ElapsedPeriod $threshold): self
+    {
+        return new self($clock, $threshold, $clock->now());
     }
 
     public function ping(Connection $connection): void
@@ -46,9 +54,13 @@ final class Heartbeat
         }
     }
 
-    public function active(): void
+    public function active(): self
     {
-        $this->lastReceivedData = $this->clock->now();
+        return new self(
+            $this->clock,
+            $this->threshold,
+            $this->clock->now(),
+        );
     }
 
     public function adjust(ElapsedPeriod $threshold): self

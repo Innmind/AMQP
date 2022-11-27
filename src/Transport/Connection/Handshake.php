@@ -34,7 +34,10 @@ final class Handshake
      */
     public function __invoke(Connection $connection): Maybe
     {
-        $frame = $connection->wait(Method::connectionSecure, Method::connectionTune);
+        $frame = $connection->wait(Method::connectionSecure, Method::connectionTune)->match(
+            static fn($received) => $received->frame(),
+            static fn() => throw new \RuntimeException,
+        );
 
         if ($frame->is(Method::connectionSecure)) {
             return $connection

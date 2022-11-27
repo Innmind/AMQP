@@ -26,6 +26,7 @@ use Innmind\AMQP\{
     Exception\UnexpectedFrame,
     Exception\ConnectionClosed,
     Exception\ExpectedMethodFrame,
+    Failure,
 };
 use Innmind\Socket\{
     Internet\Transport,
@@ -47,6 +48,7 @@ use Innmind\Immutable\{
     Str,
     Set,
     Maybe,
+    Either,
     Sequence,
     SideEffect,
     Predicate\Instance,
@@ -73,13 +75,14 @@ final class Connection
         State $state,
         MaxChannels $maxChannels,
         MaxFrameSize $maxFrameSize,
+        FrameReader $read,
     ) {
         $this->state = $state;
         $this->protocol = $protocol;
         $this->sockets = $sockets;
         $this->socket = $socket;
         $this->watch = $watch;
-        $this->read = new FrameReader;
+        $this->read = $read;
         $this->maxChannels = $maxChannels;
         $this->maxFrameSize = $maxFrameSize;
         $this->heartbeat = $heartbeat;
@@ -115,12 +118,13 @@ final class Connection
             ->map(static fn($socket) => new self(
                 $protocol,
                 $sockets,
-                new Heartbeat($clock, $timeout),
+                Heartbeat::start($clock, $timeout),
                 $socket,
                 $sockets->watch($timeout)->forRead($socket),
                 State::opening,
                 MaxChannels::unlimited(),
                 MaxFrameSize::unlimited(),
+                new FrameReader,
             ))
             ->flatMap(new Start($server->authority()))
             ->flatMap(new Handshake($server->authority()))
@@ -139,10 +143,13 @@ final class Connection
      */
     public function send(callable $frames): Continuation
     {
-        /** @psalm-suppress MixedArgumentTypeCoercion */
+        /**
+         * @psalm-suppress MixedArgumentTypeCoercion
+         * @var Either<Failure, self>
+         */
         $connection = $frames($this->protocol, $this->maxFrameSize)->reduce(
-            Maybe::just($this),
-            static fn(Maybe $connection, $frame) => $connection->flatMap(
+            Either::right($this),
+            static fn(Either $connection, $frame) => $connection->flatMap(
                 static fn(self $connection) => $connection->sendFrame($frame),
             ),
         );
@@ -154,11 +161,15 @@ final class Connection
      * @throws ExpectedMethodFrame When expecting a method frame but another type is received
      * @throws ConnectionClosed When the server sent a connection.close method
      * @throws UnexpectedFrame When the received frame is not one of the expected one
+     *
+     * @return Either<Failure, Received>
      */
-    public function wait(Frame\Method ...$names): Frame
+    public function wait(Frame\Method ...$names): Either
     {
         do {
             if (!$this->state->listenable($this->socket)) {
+                // TODO remove this check as the connection is never exposed to
+                // the user in the client so there is no need to keep track
                 throw new ConnectionClosed;
             }
 
@@ -171,74 +182,17 @@ final class Connection
             );
         } while (!$toRead->contains($this->socket));
 
-        $frame = ($this->read)($this->socket, $this->protocol)->match(
-            static fn($frame) => $frame,
-            static fn() => throw new \RuntimeException,
-        );
-        $this->heartbeat->active();
-
-        if ($frame->type() === Type::heartbeat) {
-            return $this->wait(...$names);
-        }
-
-        if (\count($names) === 0) {
-            return $frame;
-        }
-
-        if ($frame->type() !== Type::method) {
-            // someone must have forgot a wait() call
-            throw new ExpectedMethodFrame($frame->type());
-        }
-
-        foreach ($names as $name) {
-            if ($frame->is($name)) {
-                return $frame;
-            }
-        }
-
-        if ($frame->is(Method::connectionClose)) {
-            $_ = $this
-                ->send(static fn($protocol) => $protocol->connection()->closeOk())
-                ->match(
-                    static fn() => null,
-                    static fn() => null,
-                    static fn() => throw new \RuntimeException,
-                );
-            $this->state = State::closed;
-
-            /** @var Value\ShortString */
-            $message = $frame->values()->get(1)->match(
-                static fn($value) => $value,
-                static fn() => throw new \LogicException,
-            );
-            /** @var Value\UnsignedShortInteger */
-            $code = $frame->values()->get(0)->match(
-                static fn($value) => $value,
-                static fn() => throw new \LogicException,
-            );
-            $class = $frame
-                ->values()
-                ->get(2)
-                ->keep(Instance::of(Value\UnsignedShortInteger::class))
-                ->map(static fn($value) => $value->original())
-                ->filter(static fn($class) => $class !== 0);
-            $method = $frame
-                ->values()
-                ->get(3)
-                ->keep(Instance::of(Value\UnsignedShortInteger::class))
-                ->map(static fn($value) => $value->original())
-                ->filter(static fn($method) => $method !== 0);
-
-            throw ConnectionClosed::byServer(
-                $message->original()->toString(),
-                $code->original(),
-                Maybe::all($class, $method)->map(
-                    static fn(int $class, int $method) => Method::of($class, $method),
-                ),
-            );
-        }
-
-        throw new UnexpectedFrame($frame, ...$names);
+        return ($this->read)($this->socket, $this->protocol)
+            ->map(fn($frame) => Received::of(
+                $this->asActive(),
+                $frame,
+            ))
+            ->either()
+            ->leftMap(static fn() => Failure::toReadFrame)
+            ->flatMap(fn($received) => match ($received->frame()->type()) {
+                Type::heartbeat => $this->wait(...$names),
+                default => $this->ensureValidFrame($received, ...$names),
+            });
     }
 
     /**
@@ -292,6 +246,7 @@ final class Connection
             $this->state,
             $maxChannels,
             $maxFrameSize,
+            $this->read,
         );
     }
 
@@ -309,14 +264,31 @@ final class Connection
             State::opened,
             $this->maxChannels,
             $this->maxFrameSize,
+            $this->read,
+        );
+    }
+
+    public function asActive(): self
+    {
+        return new self(
+            $this->protocol,
+            $this->sockets,
+            $this->heartbeat->active(),
+            $this->socket,
+            $this->watch,
+            $this->state,
+            $this->maxChannels,
+            $this->maxFrameSize,
+            $this->read,
         );
     }
 
     /**
-     * @return Maybe<self>
+     * @return Either<Failure, self>
      */
-    private function sendFrame(Frame $frame): Maybe
+    private function sendFrame(Frame $frame): Either
     {
+        /** @var Either<Failure, self> */
         return Maybe::just($frame)
             ->filter(fn($frame) => $this->maxChannels->allows($frame->channel()->toInt()))
             ->map(static fn($frame) => $frame->pack()->toEncoding('ASCII'))
@@ -327,6 +299,83 @@ final class Connection
                     ->write($frame)
                     ->maybe(),
             )
-            ->map(fn() => $this);
+            ->map(fn() => $this)
+            ->either()
+            ->leftMap(static fn() => Failure::toSendFrame);
+    }
+
+    /**
+     * @return Either<Failure, Received>
+     */
+    private function ensureValidFrame(
+        Received $received,
+        Method ...$names,
+    ): Either {
+        if (\count($names) === 0) {
+            /** @var Either<Failure, Received> */
+            return Either::right($received);
+        }
+
+        if ($received->frame()->type() !== Type::method) {
+            // someone must have forgot a wait() call
+            /** @var Either<Failure, Received> */
+            return Either::left(Failure::unexpectedFrame);
+        }
+
+        if ($received->oneOf(...$names)) {
+            /** @var Either<Failure, Received> */
+            return Either::right($received);
+        }
+
+        if ($received->frame()->is(Method::connectionClose)) {
+            /** @var Either<Failure, Received> */
+            return $received
+                ->connection()
+                ->send(static fn($protocol) => $protocol->connection()->closeOk())
+                ->either()
+                ->leftMap(static fn() => Failure::toCloseConnection)
+                ->map(static function($connection) {
+                    $connection->state = State::closed;
+
+                    return $connection;
+                })
+                ->flatMap(static function() use ($received) {
+                    $message = $received
+                        ->frame()
+                        ->values()
+                        ->get(1)
+                        ->keep(Instance::of(Value\ShortString::class))
+                        ->map(static fn($value) => $value->original()->toString());
+                    $code = $received
+                        ->frame()
+                        ->values()
+                        ->first()
+                        ->keep(Instance::of(Value\UnsignedShortInteger::class))
+                        ->map(static fn($value) => $value->original());
+                    $class = $received
+                        ->frame()
+                        ->values()
+                        ->get(2)
+                        ->keep(Instance::of(Value\UnsignedShortInteger::class))
+                        ->map(static fn($value) => $value->original())
+                        ->filter(static fn($class) => $class !== 0);
+                    $method = $received
+                        ->frame()
+                        ->values()
+                        ->get(3)
+                        ->keep(Instance::of(Value\UnsignedShortInteger::class))
+                        ->map(static fn($value) => $value->original())
+                        ->filter(static fn($method) => $method !== 0);
+                    $method = Maybe::all($class, $method)->map(
+                        static fn(int $class, int $method) => Method::of($class, $method),
+                    );
+
+                    // TODO give access to the information above to the user
+                    return Either::left(Failure::closedByServer);
+                });
+        }
+
+        /** @var Either<Failure, Received> */
+        return Either::left(Failure::unexpectedFrame);
     }
 }

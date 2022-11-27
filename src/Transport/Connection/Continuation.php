@@ -3,10 +3,13 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport\Connection;
 
-use Innmind\AMQP\Transport\{
-    Connection,
-    Frame,
-    Frame\Method,
+use Innmind\AMQP\{
+    Transport\Connection,
+    Transport\Received,
+    Transport\Frame,
+    Transport\Frame\Method,
+    Failure,
+    Exception\LogicException,
 };
 use Innmind\Immutable\{
     Maybe,
@@ -15,30 +18,24 @@ use Innmind\Immutable\{
 
 final class Continuation
 {
-    /** @var Maybe<Connection> */
-    private Maybe $connection;
-    /** @var Maybe<Frame> */
-    private Maybe $frame;
+    /** @var Either<Failure, Connection|Received> */
+    private Either $connection;
 
     /**
-     * @param Maybe<Connection> $connection
-     * @param Maybe<Frame> $frame
+     * @param Either<Failure, Connection|Received> $connection
      */
-    private function __construct(Maybe $connection, Maybe $frame)
+    private function __construct(Either $connection)
     {
         $this->connection = $connection;
-        $this->frame = $frame;
     }
 
     /**
-     * @param Maybe<Connection> $connection
+     * @param Either<Failure, Connection> $connection
      */
-    public static function of(Maybe $connection): self
+    public static function of(Either $connection): self
     {
-        /** @var Maybe<Frame> */
-        $frame = Maybe::nothing();
-
-        return new self($connection, $frame);
+        /** @psalm-suppress InvalidArgument Because it's always Connection */
+        return new self($connection);
     }
 
     /**
@@ -46,12 +43,13 @@ final class Continuation
      */
     public function wait(Method ...$methods): self
     {
-        return new self(
-            $this->connection,
-            $this->connection->map(
-                static fn($connection) => $connection->wait(...$methods),
-            ),
-        );
+        /** @psalm-suppress InvalidArgument Because the right side is always Received */
+        return new self($this->connection->flatMap(
+            static fn($connection) => match ($connection instanceof Connection) {
+                true => $connection->wait(...$methods),
+                false => throw new LogicException("Can't call wait multiple time"),
+            },
+        ));
     }
 
     public function maybeWait(bool $wait, Method $method): self
@@ -60,12 +58,13 @@ final class Continuation
             return $this;
         }
 
-        return new self(
-            $this->connection,
-            $this->connection->map(
-                static fn($connection) => $connection->wait($method),
-            ),
-        );
+        /** @psalm-suppress InvalidArgument Because the right side is always Received */
+        return new self($this->connection->flatMap(
+            static fn($connection) => match ($connection instanceof Connection) {
+                true => $connection->wait($method),
+                false => throw new LogicException("Can't call wait multiple time"),
+            },
+        ));
     }
 
     /**
@@ -78,20 +77,26 @@ final class Continuation
      */
     public function then(callable $withFrame, callable $withoutFrame): Maybe
     {
-        return $this->connection->flatMap(
-            fn($connection) => $this->frame->match(
-                static fn($frame) => $withFrame($connection, $frame),
-                static fn() => Maybe::just($withoutFrame($connection)),
-            ),
-        );
+        return $this
+            ->connection
+            ->maybe()
+            ->flatMap(static fn($received) => match ($received instanceof Connection) {
+                true => Maybe::just($withoutFrame($received)),
+                false => $withFrame($received->connection(), $received->frame()),
+            });
     }
 
     /**
-     * @return Either<null, Connection>
+     * @return Either<Failure, Connection>
      */
     public function either(): Either
     {
-        return $this->connection->either();
+        return $this->connection->map(
+            static fn($received) => match ($received instanceof Connection) {
+                true => $received,
+                false => $received->connection(),
+            },
+        );
     }
 
     /**
@@ -101,7 +106,7 @@ final class Continuation
      *
      * @param callable(Connection, Frame): A $withFrame
      * @param callable(Connection): B $withoutFrame
-     * @param callable(): C $error
+     * @param callable(Failure): C $error
      *
      * @return A|B|C
      */
@@ -111,10 +116,10 @@ final class Continuation
         callable $error,
     ) {
         return $this->connection->match(
-            fn($connection) => $this->frame->match(
-                static fn($frame) => $withFrame($connection, $frame),
-                static fn() => $withoutFrame($connection),
-            ),
+            static fn($received) => match ($received instanceof Connection) {
+                true => $withoutFrame($received),
+                false => $withFrame($received->connection(), $received->frame()),
+            },
             $error,
         );
     }

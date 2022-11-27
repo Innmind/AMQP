@@ -30,4 +30,8 @@ enum Failure
     case toSelect;
     case toCommit;
     case toRollback;
+    case toSendFrame;
+    case toReadFrame;
+    case unexpectedFrame;
+    case closedByServer;
 }
