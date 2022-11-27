@@ -45,12 +45,10 @@ final class Handshake
                     ),
                 ))
                 ->wait(Method::connectionTune)
-                ->match(
-                    fn($connection, $frame) => $this->maybeTune($connection, $frame),
-                    static fn() => Maybe::just($connection),
-                    static fn() => Maybe::nothing(),
-                )
-                ->keep(Instance::of(Connection::class));
+                ->then(
+                    $this->maybeTune(...),
+                    static fn($connection) => $connection,
+                );
         }
 
         return $this->maybeTune($connection, $frame);
@@ -81,7 +79,7 @@ final class Handshake
             ->map(ElapsedPeriod::of(...));
 
         return Maybe::all($maxChannels, $maxFrameSize, $heartbeat)
-            ->map(fn(MaxChannels $maxChannels, MaxFrameSize $maxFrameSize, ElapsedPeriod $heartbeat) => $this->tune(
+            ->flatMap(fn(MaxChannels $maxChannels, MaxFrameSize $maxFrameSize, ElapsedPeriod $heartbeat) => $this->tune(
                 $connection,
                 $maxChannels,
                 $maxFrameSize,
@@ -89,12 +87,15 @@ final class Handshake
             ));
     }
 
+    /**
+     * @return Maybe<Connection>
+     */
     private function tune(
         Connection $connection,
         MaxChannels $maxChannels,
         MaxFrameSize $maxFrameSize,
         ElapsedPeriod $heartbeat,
-    ): Connection {
+    ): Maybe {
         return $connection
             ->tune($maxChannels, $maxFrameSize, $heartbeat)
             ->send(static fn($protocol) => $protocol->connection()->tuneOk(
@@ -104,10 +105,7 @@ final class Handshake
                     $heartbeat,
                 ),
             ))
-            ->match(
-                static fn($connection) => $connection,
-                static fn($connection) => $connection,
-                static fn() => throw new \RuntimeException,
-            );
+            ->either()
+            ->maybe();
     }
 }

@@ -42,26 +42,21 @@ final class DeleteQueue implements Command
                 $this->command,
             ))
             ->maybeWait($this->command->shouldWait(), Method::queueDeleteOk)
-            ->match(
-                static function($connection, $frame) use ($state) {
-                    $deleteOk = $frame
-                        ->values()
-                        ->first()
-                        ->keep(Instance::of(Value\UnsignedLongInteger::class))
-                        ->map(static fn($value) => $value->original())
-                        ->map(Count::of(...))
-                        ->map(DeleteOk::of(...));
-
-                    // this is here just to make sure the response is valid
-                    // maybe in the future we could expose this info to the user
-                    return $deleteOk
-                        ->either()
-                        ->map(static fn() => State::of($connection, $state))
-                        ->leftMap(static fn() => Failure::toDeleteQueue);
-                },
-                static fn($connection) => Either::right(State::of($connection, $state)),
-                static fn() => Either::left(Failure::toDeleteQueue),
-            );
+            ->then(
+                // this is here just to make sure the response is valid maybe in
+                // the future we could expose this info to the user
+                static fn($connection, $frame) => $frame
+                    ->values()
+                    ->first()
+                    ->keep(Instance::of(Value\UnsignedLongInteger::class))
+                    ->map(static fn($value) => $value->original())
+                    ->map(Count::of(...))
+                    ->map(DeleteOk::of(...))
+                    ->map(static fn() => State::of($connection, $state)),
+                static fn($connection) => State::of($connection, $state),
+            )
+            ->either()
+            ->leftMap(static fn() => Failure::toDeleteQueue);
     }
 
     public static function of(string $name): self

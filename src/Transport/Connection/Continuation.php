@@ -69,6 +69,24 @@ final class Continuation
     }
 
     /**
+     * @template R
+     *
+     * @param callable(Connection, Frame): Maybe<R> $withFrame
+     * @param callable(Connection): R $withoutFrame
+     *
+     * @return Maybe<R>
+     */
+    public function then(callable $withFrame, callable $withoutFrame): Maybe
+    {
+        return $this->connection->flatMap(
+            fn($connection) => $this->frame->match(
+                static fn($frame) => $withFrame($connection, $frame),
+                static fn() => Maybe::just($withoutFrame($connection)),
+            ),
+        );
+    }
+
+    /**
      * @return Either<null, Connection>
      */
     public function either(): Either

@@ -41,26 +41,21 @@ final class Purge implements Command
                 $this->command,
             ))
             ->maybeWait($this->command->shouldWait(), Method::queuePurgeOk)
-            ->match(
-                static function($connection, $frame) use ($state) {
-                    $purgeOk = $frame
-                        ->values()
-                        ->first()
-                        ->keep(Instance::of(Value\UnsignedLongInteger::class))
-                        ->map(static fn($value) => $value->original())
-                        ->map(Count::of(...))
-                        ->map(PurgeOk::of(...));
-
-                    // this is here just to make sure the response is valid
-                    // maybe in the future we could expose this info to the user
-                    return $purgeOk
-                        ->either()
-                        ->map(static fn() => State::of($connection, $state))
-                        ->leftMap(static fn() => Failure::toPurge);
-                },
-                static fn($connection) => Either::right(State::of($connection, $state)),
-                static fn() => Either::left(Failure::toPurge),
-            );
+            ->then(
+                // this is here just to make sure the response is valid maybe in
+                // the future we could expose this info to the user
+                static fn($connection, $frame) => $frame
+                    ->values()
+                    ->first()
+                    ->keep(Instance::of(Value\UnsignedLongInteger::class))
+                    ->map(static fn($value) => $value->original())
+                    ->map(Count::of(...))
+                    ->map(PurgeOk::of(...))
+                    ->map(static fn() => State::of($connection, $state)),
+                static fn($connection) => State::of($connection, $state),
+            )
+            ->either()
+            ->leftMap(static fn() => Failure::toPurge);
     }
 
     public static function of(string $queue): self
