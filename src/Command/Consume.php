@@ -60,7 +60,7 @@ final class Consume implements Command
                     $frame,
                     $state,
                 ),
-                static fn($connection) => Either::right([$connection, $state]), // this case should not happen
+                static fn($connection) => Either::right(State::of($connection, $state)), // this case should not happen
                 static fn() => Either::left(Failure::toConsume),
             );
     }
