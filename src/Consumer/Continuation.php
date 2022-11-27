@@ -86,6 +86,8 @@ final class Continuation
     /**
      * Only a consumer is cancellable, not a get
      *
+     * Before canceling the consumer, the current message will be acknowledged
+     *
      * @param T $state
      *
      * @return self<T>
@@ -109,22 +111,15 @@ final class Continuation
         string $consumerTag = null,
     ): Either {
         if ($this->response === State::cancel) {
-            if (\is_null($consumerTag)) {
-                // this means the user called self::cancel when inside a Get
-                throw new BasicGetNotCancellable;
-            }
-
             /** @var Either<Failure, Client\State|Canceled> */
-            return $connection
-                ->send(static fn($protocol) => $protocol->basic()->cancel(
+            return $this
+                ->doAck($connection, $channel, $deliveryTag)
+                ->flatMap(fn($connection) => $this->doCancel(
+                    $connection,
                     $channel,
-                    Cancel::of($consumerTag),
+                    $consumerTag,
                 ))
-                ->match(
-                    fn($connection) => $this->recover($connection, $channel),
-                    fn($connection) => $this->recover($connection, $channel),
-                    static fn() => Failure::toCancel,
-                );
+                ->flatMap(fn($connection) => $this->recover($connection, $channel));
         }
 
         /** @var Either<Failure, Client\State|Canceled> */
@@ -193,6 +188,55 @@ final class Continuation
                 fn($connection) => Either::right(Canceled::of(Client\State::of($connection, $this->state))),
                 fn($connection) => Either::right(Canceled::of(Client\State::of($connection, $this->state))),
                 static fn() => Either::left(Failure::toRecover),
+            );
+    }
+
+    /**
+     * @param int<0, max> $deliveryTag
+     *
+     * @return Either<Failure, Connection>
+     */
+    private function doAck(
+        Connection $connection,
+        Channel $channel,
+        int $deliveryTag,
+    ): Either {
+        /** @var Either<Failure, Connection> */
+        return $connection
+            ->send(static fn($protocol) => $protocol->basic()->ack(
+                $channel,
+                Ack::of($deliveryTag),
+            ))
+            ->match(
+                static fn($connection) => Either::right($connection),
+                static fn($connection) => Either::right($connection),
+                static fn() => Either::left(Failure::toAck),
+            );
+    }
+
+    /**
+     * @return Either<Failure, Connection>
+     */
+    private function doCancel(
+        Connection $connection,
+        Channel $channel,
+        ?string $consumerTag,
+    ): Either {
+        if (\is_null($consumerTag)) {
+            // this means the user called self::cancel when inside a Get
+            throw new BasicGetNotCancellable;
+        }
+
+        /** @var Either<Failure, Connection> */
+        return $connection
+            ->send(static fn($protocol) => $protocol->basic()->cancel(
+                $channel,
+                Cancel::of($consumerTag),
+            ))
+            ->match(
+                static fn($connection) => Either::right($connection),
+                static fn($connection) => Either::right($connection),
+                static fn() => Either::left(Failure::toCancel),
             );
     }
 }

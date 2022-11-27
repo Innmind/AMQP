@@ -201,10 +201,7 @@ class DeclarativeTest extends TestCase
                     $this->assertSame('message'.$state, $message->body()->toString());
 
                     if ($state === 1) {
-                        // we don't increment the state because the message with
-                        // the content "message1" will be requeued and will be
-                        // delivered in the second consumer below
-                        return $continuation->cancel($state);
+                        return $continuation->cancel($state + 1);
                     }
 
                     return $continuation->ack($state + 1);
@@ -506,7 +503,7 @@ class DeclarativeTest extends TestCase
                 ->to('foo'),
         );
 
-        [$result] = $this
+        $result = $this
             ->client
             ->with(DeclareExchange::of('foo', Type::direct))
             ->with(DeclareQueue::of('bar'))
@@ -517,14 +514,13 @@ class DeclarativeTest extends TestCase
             // consume all messages in 10 iterations
             ->with(
                 $consumer = Consume::of('bar')->handle(function($state, $message, $continuation, $details) {
-                    [$count, $canceled] = $state;
-                    $this->assertSame("$count", $message->body()->toString());
+                    $this->assertSame("$state", $message->body()->toString());
 
-                    if ($count % 10 === 0 && !$canceled) {
-                        return $continuation->cancel([$count, true]);
+                    if ($state % 10 === 0) {
+                        return $continuation->cancel($state + 1);
                     }
 
-                    return $continuation->ack([$count + 1, false]);
+                    return $continuation->ack($state + 1);
                 }),
             )
             ->with($consumer)
@@ -539,13 +535,13 @@ class DeclarativeTest extends TestCase
             ->with(Unbind::of('foo', 'bar'))
             ->with(DeleteQueue::of('bar'))
             ->with(DeleteExchange::of('foo'))
-            ->run([1, false])
+            ->run(1)
             ->match(
                 static fn($state) => $state,
                 static fn($error) => $error,
             );
 
-        $this->assertSame(100, $result);
+        $this->assertSame(101, $result);
     }
 
     public function testSegmentedConsumingDoesntAlterMessageOrderingBetweenConnections()
@@ -571,16 +567,15 @@ class DeclarativeTest extends TestCase
         $this->assertNull($result);
 
         $consumer = Consume::of('bar')->handle(function($state, $message, $continuation, $details) {
-            [$count, $canceled] = $state;
-            $this->assertSame("$count", $message->body()->toString());
+            $this->assertSame("$state", $message->body()->toString());
 
-            if ($count % 10 === 0 && !$canceled) {
-                return $continuation->cancel([$count, true]);
+            if ($state % 10 === 0) {
+                return $continuation->cancel($state + 1);
             }
 
-            return $continuation->ack([$count + 1, false]);
+            return $continuation->ack($state + 1);
         });
-        $result = [1, false];
+        $result = 1;
 
         // consume all messages in 10 iterations with different connections
         foreach (\range(1, 10) as $_) {
@@ -595,8 +590,7 @@ class DeclarativeTest extends TestCase
                 );
         }
 
-        [$count] = $result;
-        $this->assertSame(100, $count);
+        $this->assertSame(101, $result);
 
         // cleanup
         $result = $this
