@@ -165,11 +165,11 @@ final class Get implements Command
             ->leftMap(static fn() => Failure::toGet)
             ->flatMap(
                 fn($details) => (new MessageReader)($connection)->flatMap(
-                    fn($message) => $this->consume(
-                        $connection,
+                    fn($received) => $this->consume(
+                        $received->connection(),
                         $channel,
                         $state,
-                        $message,
+                        $received->message(),
                         $details,
                     ),
                 ),

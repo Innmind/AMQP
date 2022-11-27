@@ -164,13 +164,13 @@ final class Consume implements Command
             ->wait(Method::basicDeliver)
             ->match(
                 fn($connection, $frame) => $read($connection)->flatMap(
-                    fn($message) => $this->maybeConsume(
-                        $connection,
+                    fn($received) => $this->maybeConsume(
+                        $received->connection(),
                         $channel,
                         $state,
                         $consumerTag,
                         $frame,
-                        $message,
+                        $received->message(),
                     ),
                 ),
                 static fn($connection) => Either::right(State::of($connection, $state)), // this case should not happen

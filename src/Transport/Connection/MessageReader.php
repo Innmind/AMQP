@@ -18,12 +18,11 @@ use Innmind\AMQP\{
     Transport\Connection,
     Transport\Frame,
     Transport\Frame\Value,
-    Predicate\IsInt,
     Failure,
 };
 use Innmind\TimeContinuum\Earth\ElapsedPeriod;
 use Innmind\Filesystem\File\Content;
-use Innmind\Stream\Readable;
+use Innmind\Stream\Stream\Bidirectional;
 use Innmind\Immutable\{
     Map,
     Str,
@@ -36,7 +35,7 @@ use Innmind\Immutable\{
 final class MessageReader
 {
     /**
-     * @return Either<Failure, Message> TODO return the connection as well
+     * @return Either<Failure, Received>
      */
     public function __invoke(Connection $connection): Either
     {
@@ -49,48 +48,53 @@ final class MessageReader
     }
 
     /**
-     * @return Either<Failure, Message>
+     * @return Either<Failure, Received>
      */
     private function decode(
         Connection $connection,
         Frame $header,
     ): Either {
-        /** @var Either<Failure, Message> */
+        /** @var Either<Failure, Received> */
         return $header
             ->values()
             ->first()
             ->keep(Instance::of(Value\UnsignedLongLongInteger::class))
             ->map(static fn($value) => $value->original())
-            ->flatMap(fn($bodySize) => $this->readPayload($connection, $bodySize))
-            ->map(Message::file(...))
+            ->either()
+            ->leftMap(static fn() => Failure::toReadMessage)
+            ->flatMap(fn($bodySize) => $this->readMessage($connection, $bodySize))
             ->flatMap(
-                fn($message) => $header
+                fn($received) => $header
                     ->values()
                     ->get(1)
                     ->keep(Instance::of(Value\UnsignedShortInteger::class))
                     ->map(static fn($value) => $value->original())
+                    ->either()
+                    ->leftMap(static fn() => Failure::toReadMessage)
                     ->flatMap(fn($flagBits) => $this->addProperties(
-                        $message,
+                        $received->message(),
                         $flagBits,
                         $header
                             ->values()
                             ->drop(2), // for bodySize and flagBits
+                    ))
+                    ->map(static fn($message) => Received::of(
+                        $received->connection(),
+                        $message,
                     )),
-            )
-            ->either()
-            ->leftMap(static fn() => Failure::toReadMessage);
+            );
     }
 
     /**
      * @param Sequence<Value> $properties
      *
-     * @return Maybe<Message>
+     * @return Either<Failure, Message>
      */
     private function addProperties(
         Message $message,
         int $flagBits,
         Sequence $properties,
-    ): Maybe {
+    ): Either {
         /** @var Sequence<array{int, callable(Maybe<Value>, Message): Maybe<Message>}> */
         $toParse = Sequence::of(
             [
@@ -207,6 +211,7 @@ final class MessageReader
          * @psalm-suppress MixedArrayAccess
          * @psalm-suppress MixedArgument
          * @psalm-suppress MixedMethodCall
+         * @var Either<Failure, Message>
          */
         return $toParse
             ->filter(static fn($pair) => (bool) ($flagBits & (1 << $pair[0])))
@@ -218,41 +223,79 @@ final class MessageReader
                         ->map(static fn($message) => [$state[0]->drop(1), $message]),
                 ),
             )
-            ->map(static fn($state) => $state[1]);
+            ->map(static fn($state) => $state[1])
+            ->either()
+            ->leftMap(static fn() => Failure::toReadMessage);
     }
 
     /**
-     * @return Maybe<Content>
+     * @return Either<Failure, Received>
      */
-    private function readPayload(
+    private function readMessage(
         Connection $connection,
         int $bodySize,
-    ): Maybe {
+    ): Either {
         $walk = $bodySize !== 0;
-        $read = Maybe::just(0);
-        $stream = \fopen('php://temp', 'r+');
+        $stream = Bidirectional::of(\fopen('php://temp', 'r+'));
+        $read = Either::right([$connection, $stream, 0]);
 
         while ($walk) {
-            $read = $connection
-                ->wait()
-                ->map(static fn($received) => $received->frame())
-                ->match(
-                    static fn($frame) => $frame,
-                    static fn() => throw new \RuntimeException,
-                )
-                ->content()
-                ->map(static fn($chunk) => \fwrite($stream, $chunk->toString()))
-                ->keep(IsInt::natural())
-                ->flatMap(static fn(int $written) => $read->map(
-                    static fn(int $read) => $written + $read,
-                ));
+            $read = $read->flatMap($this->readChunk(...));
             $walk = $read->match(
-                static fn($read) => $read !== $bodySize,
+                static fn($read) => $read[2] !== $bodySize,
                 static fn() => false, // because no content was found in the last frame or failed to write the chunk to the temp stream
             );
         }
 
-        /** @var Maybe<Content> */
-        return $read->map(static fn() => Content\OfStream::of(Readable\Stream::of($stream)));
+        return $read->map(static fn($in) => Received::of(
+            $in[0],
+            Message::file(Content\OfStream::of($in[1])),
+        ));
+    }
+
+    /**
+     * @param array{Connection, Bidirectional, int} $in
+     *
+     * @return Either<Failure, array{Connection, Bidirectional, int}>
+     */
+    private function readChunk(array $in): Either
+    {
+        [$connection, $stream, $read] = $in;
+
+        return $connection
+            ->wait()
+            ->flatMap(
+                fn($received) => $this
+                    ->accumulateChunk($received->frame(), $stream, $read)
+                    ->map(static function($in) use ($received) {
+                        [$stream, $read] = $in;
+
+                        return [$received->connection(), $stream, $read];
+                    }),
+            );
+    }
+
+    /**
+     * @return Either<Failure, array{Bidirectional, int}>
+     */
+    private function accumulateChunk(
+        Frame $frame,
+        Bidirectional $stream,
+        int $read,
+    ): Either {
+        /** @var Either<Failure, array{Bidirectional, int}> */
+        return $frame
+            ->content()
+            ->either()
+            ->map(static fn($chunk) => $chunk->toEncoding('ASCII'))
+            ->flatMap(
+                static fn($chunk) => $stream
+                    ->write($chunk)
+                    ->map(static fn($stream) => [
+                        $stream,
+                        $read + $chunk->length(),
+                    ]),
+            )
+            ->leftMap(static fn() => Failure::toReadMessage);
     }
 }
