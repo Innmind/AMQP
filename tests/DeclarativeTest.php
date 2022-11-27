@@ -498,4 +498,118 @@ class DeclarativeTest extends TestCase
 
         $this->assertTrue($result);
     }
+
+    public function testSegmentedConsumingDoesntAlterMessageOrdering()
+    {
+        $messages = Sequence::of(...\range(1, 100))->map(
+            static fn($i) => Basic\Publish::a(Basic\Message::of(Str::of("$i")))
+                ->to('foo'),
+        );
+
+        [$result] = $this
+            ->client
+            ->with(DeclareExchange::of('foo', Type::direct))
+            ->with(DeclareQueue::of('bar'))
+            ->with(Bind::of('foo', 'bar'))
+            ->with(Purge::of('bar'))
+            ->with(Qos::of(20))
+            ->with(Publish::many($messages))
+            // consume all messages in 10 iterations
+            ->with(
+                $consumer = Consume::of('bar')->handle(function($state, $message, $continuation, $details) {
+                    [$count, $canceled] = $state;
+                    $this->assertSame("$count", $message->body()->toString());
+
+                    if ($count % 10 === 0 && !$canceled) {
+                        return $continuation->cancel([$count, true]);
+                    }
+
+                    return $continuation->ack([$count + 1, false]);
+                }),
+            )
+            ->with($consumer)
+            ->with($consumer)
+            ->with($consumer)
+            ->with($consumer)
+            ->with($consumer)
+            ->with($consumer)
+            ->with($consumer)
+            ->with($consumer)
+            ->with($consumer)
+            ->with(Unbind::of('foo', 'bar'))
+            ->with(DeleteQueue::of('bar'))
+            ->with(DeleteExchange::of('foo'))
+            ->run([1, false])
+            ->match(
+                static fn($state) => $state,
+                static fn($error) => $error,
+            );
+
+        $this->assertSame(100, $result);
+    }
+
+    public function testSegmentedConsumingDoesntAlterMessageOrderingBetweenConnections()
+    {
+        $messages = Sequence::of(...\range(1, 100))->map(
+            static fn($i) => Basic\Publish::a(Basic\Message::of(Str::of("$i")))
+                ->to('foo'),
+        );
+
+        $result = $this
+            ->client
+            ->with(DeclareExchange::of('foo', Type::direct))
+            ->with(DeclareQueue::of('bar'))
+            ->with(Bind::of('foo', 'bar'))
+            ->with(Purge::of('bar'))
+            ->with(Publish::many($messages))
+            ->run(null)
+            ->match(
+                static fn($result) => $result,
+                static fn($error) => $error,
+            );
+
+        $this->assertNull($result);
+
+        $consumer = Consume::of('bar')->handle(function($state, $message, $continuation, $details) {
+            [$count, $canceled] = $state;
+            $this->assertSame("$count", $message->body()->toString());
+
+            if ($count % 10 === 0 && !$canceled) {
+                return $continuation->cancel([$count, true]);
+            }
+
+            return $continuation->ack([$count + 1, false]);
+        });
+        $result = [1, false];
+
+        // consume all messages in 10 iterations with different connections
+        foreach (\range(1, 10) as $_) {
+            $result = $this
+                ->client
+                ->with(Qos::of(20))
+                ->with($consumer)
+                ->run($result)
+                ->match(
+                    static fn($result) => $result,
+                    static fn($error) => $error,
+                );
+        }
+
+        [$count] = $result;
+        $this->assertSame(100, $count);
+
+        // cleanup
+        $result = $this
+            ->client
+            ->with(Unbind::of('foo', 'bar'))
+            ->with(DeleteQueue::of('bar'))
+            ->with(DeleteExchange::of('foo'))
+            ->run(null)
+            ->match(
+                static fn($state) => $state,
+                static fn($error) => $error,
+            );
+
+        $this->assertNull($result);
+    }
 }
