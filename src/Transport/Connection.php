@@ -168,9 +168,8 @@ final class Connection
     {
         do {
             if (!$this->state->listenable($this->socket)) {
-                // TODO remove this check as the connection is never exposed to
-                // the user in the client so there is no need to keep track
-                throw new ConnectionClosed;
+                /** @var Either<Failure, Received> */
+                return Either::left(Failure::toReadFrame);
             }
 
             $this->heartbeat->ping($this);
