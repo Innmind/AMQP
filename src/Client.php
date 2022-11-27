@@ -89,10 +89,7 @@ final class Client
         // channel per connection
         $channel = new Channel(1);
 
-        /**
-         * @psalm-suppress InvalidArgument Due to the last flatMap psalm is not capable of correctly understanding the returned Either
-         * @var Either<Failure, array{Connection, Channel}>
-         */
+        /** @var Either<Failure, array{Connection, Channel}> */
         return ($this->load)()
             ->either()
             ->leftMap(static fn() => Failure::toOpenConnection)
@@ -100,11 +97,12 @@ final class Client
                 static fn($protocol) => $protocol->channel()->open($channel),
             ))
             ->map(static fn($continuation) => $continuation->wait(Method::channelOpenOk))
-            ->flatMap(static fn($continuation) => $continuation->match(
-                static fn($connection) => Either::right([$connection, $channel]),
-                static fn($connection) => Either::right([$connection, $channel]),
-                static fn() => Either::left(Failure::toOpenChannel),
-            ));
+            ->flatMap(
+                static fn($continuation) => $continuation
+                    ->either()
+                    ->map(static fn($connection) => [$connection, $channel])
+                    ->leftMap(static fn() => Failure::toOpenChannel),
+            );
     }
 
     /**
@@ -119,10 +117,9 @@ final class Client
                 CloseChannel::demand(),
             ))
             ->wait(Method::channelCloseOk)
-            ->match(
-                static fn($connection) => Either::right($connection->close())->map(static fn() => new SideEffect),
-                static fn($connection) => Either::right($connection->close())->map(static fn() => new SideEffect),
-                static fn() => Either::left(Failure::toCloseChannel),
-            );
+            ->either()
+            ->map(static fn($connection) => $connection->close())
+            ->map(static fn() => new SideEffect)
+            ->leftMap(static fn() => Failure::toCloseChannel);
     }
 }

@@ -8,7 +8,10 @@ use Innmind\AMQP\Transport\{
     Frame,
     Frame\Method,
 };
-use Innmind\Immutable\Maybe;
+use Innmind\Immutable\{
+    Maybe,
+    Either,
+};
 
 final class Continuation
 {
@@ -63,6 +66,14 @@ final class Continuation
                 static fn($connection) => $connection->wait($method),
             ),
         );
+    }
+
+    /**
+     * @return Either<null, Connection>
+     */
+    public function either(): Either
+    {
+        return $this->connection->either();
     }
 
     /**

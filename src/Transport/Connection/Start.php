@@ -9,10 +9,7 @@ use Innmind\AMQP\{
     Model\Connection\StartOk,
 };
 use Innmind\Url\Authority;
-use Innmind\Immutable\{
-    Maybe,
-    Predicate\Instance,
-};
+use Innmind\Immutable\Maybe;
 
 final class Start
 {
@@ -42,11 +39,7 @@ final class Start
                     $this->authority->userInformation()->password(),
                 ),
             ))
-            ->match(
-                static fn($connection) => Maybe::just($connection),
-                static fn($connection) => Maybe::just($connection),
-                static fn() => Maybe::nothing(),
-            )
-            ->keep(Instance::of(Connection::class));
+            ->either()
+            ->maybe();
     }
 }

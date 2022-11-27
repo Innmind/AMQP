@@ -165,11 +165,9 @@ final class Continuation
                 Recover::requeue(),
             ))
             ->wait(Method::basicRecoverOk)
-            ->match(
-                fn($connection) => Either::right(Canceled::of(Client\State::of($connection, $this->state))),
-                fn($connection) => Either::right(Canceled::of(Client\State::of($connection, $this->state))),
-                static fn() => Either::left(Failure::toRecover),
-            );
+            ->either()
+            ->map(fn($connection) => Canceled::of(Client\State::of($connection, $this->state)))
+            ->leftMap(static fn() => Failure::toRecover);
     }
 
     /**
@@ -188,11 +186,8 @@ final class Continuation
                 $channel,
                 Ack::of($deliveryTag),
             ))
-            ->match(
-                static fn($connection) => Either::right($connection),
-                static fn($connection) => Either::right($connection),
-                static fn() => Either::left(Failure::toAck),
-            );
+            ->either()
+            ->leftMap(static fn() => Failure::toAck);
     }
 
     /**
@@ -211,11 +206,8 @@ final class Continuation
                 $channel,
                 Reject::of($deliveryTag),
             ))
-            ->match(
-                static fn($connection) => Either::right($connection),
-                static fn($connection) => Either::right($connection),
-                static fn() => Either::left(Failure::toReject),
-            );
+            ->either()
+            ->leftMap(static fn() => Failure::toReject);
     }
 
     /**
@@ -234,11 +226,8 @@ final class Continuation
                 $channel,
                 Reject::requeue($deliveryTag),
             ))
-            ->match(
-                static fn($connection) => Either::right($connection),
-                static fn($connection) => Either::right($connection),
-                static fn() => Either::left(Failure::toReject),
-            );
+            ->either()
+            ->leftMap(static fn() => Failure::toReject);
     }
 
     /**
@@ -260,10 +249,7 @@ final class Continuation
                 $channel,
                 Cancel::of($consumerTag),
             ))
-            ->match(
-                static fn($connection) => Either::right($connection),
-                static fn($connection) => Either::right($connection),
-                static fn() => Either::left(Failure::toCancel),
-            );
+            ->either()
+            ->leftMap(static fn() => Failure::toCancel);
     }
 }

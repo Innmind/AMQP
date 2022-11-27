@@ -35,11 +35,9 @@ final class Unbind implements Command
                 $this->command,
             ))
             ->wait(Method::queueUnbindOk)
-            ->match(
-                static fn($connection) => Either::right(State::of($connection, $state)),
-                static fn($connection) => Either::right(State::of($connection, $state)),
-                static fn() => Either::left(Failure::toUnbind),
-            );
+            ->either()
+            ->map(static fn($connection) => State::of($connection, $state))
+            ->leftMap(static fn() => Failure::toUnbind);
     }
 
     public static function of(

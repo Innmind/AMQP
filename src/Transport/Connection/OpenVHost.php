@@ -9,10 +9,7 @@ use Innmind\AMQP\{
     Model\Connection\Open,
 };
 use Innmind\Url\Path;
-use Innmind\Immutable\{
-    Maybe,
-    Predicate\Instance,
-};
+use Innmind\Immutable\Maybe;
 
 final class OpenVHost
 {
@@ -33,11 +30,7 @@ final class OpenVHost
                 Open::of($this->vhost),
             ))
             ->wait(Method::connectionOpenOk)
-            ->match(
-                static fn($connection) => Maybe::just($connection),
-                static fn($connection) => Maybe::just($connection),
-                static fn() => Maybe::nothing(),
-            )
-            ->keep(Instance::of(Connection::class));
+            ->either()
+            ->maybe();
     }
 }

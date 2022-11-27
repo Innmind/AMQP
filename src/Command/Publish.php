@@ -77,10 +77,7 @@ final class Publish implements Command
                 $command,
                 $maxFrameSize,
             ))
-            ->match(
-                static fn($connection) => Either::right($connection),
-                static fn($connection) => Either::right($connection),
-                static fn() => Either::left(Failure::toPublish),
-            );
+            ->either()
+            ->leftMap(static fn() => Failure::toPublish);
     }
 }

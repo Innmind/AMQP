@@ -36,11 +36,9 @@ final class DeclareExchange implements Command
                 $this->command,
             ))
             ->maybeWait($this->command->shouldWait(), Method::exchangeDeclareOk)
-            ->match(
-                static fn($connection) => Either::right(State::of($connection, $state)),
-                static fn($connection) => Either::right(State::of($connection, $state)),
-                static fn() => Either::left(Failure::toDeclareExchange),
-            );
+            ->either()
+            ->map(static fn($connection) => State::of($connection, $state))
+            ->leftMap(static fn() => Failure::toDeclareExchange);
     }
 
     public static function of(string $name, Type $type): self

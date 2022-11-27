@@ -74,11 +74,8 @@ final class Transaction implements Command
         return $connection
             ->send(static fn($protocol) => $protocol->transaction()->select($channel))
             ->wait(Method::transactionSelectOk)
-            ->match(
-                static fn($connection) => Either::right($connection),
-                static fn($connection) => Either::right($connection),
-                static fn() => Either::left(Failure::toSelect),
-            );
+            ->either()
+            ->leftMap(static fn() => Failure::toSelect);
     }
 
     /**
@@ -102,11 +99,9 @@ final class Transaction implements Command
             ->connection()
             ->send(static fn($protocol) => $protocol->transaction()->commit($channel))
             ->wait(Method::transactionCommitOk)
-            ->match(
-                static fn($connection) => Either::right(State::of($connection, $state->userState())),
-                static fn($connection) => Either::right(State::of($connection, $state->userState())),
-                static fn() => Either::left(Failure::toCommit),
-            );
+            ->either()
+            ->map(static fn($connection) => State::of($connection, $state->userState()))
+            ->leftMap(static fn() => Failure::toCommit);
     }
 
     /**
@@ -119,10 +114,8 @@ final class Transaction implements Command
             ->connection()
             ->send(static fn($protocol) => $protocol->transaction()->rollback($channel))
             ->wait(Method::transactionRollbackOk)
-            ->match(
-                static fn($connection) => Either::right(State::of($connection, $state->userState())),
-                static fn($connection) => Either::right(State::of($connection, $state->userState())),
-                static fn() => Either::left(Failure::toRollback),
-            );
+            ->either()
+            ->map(static fn($connection) => State::of($connection, $state->userState()))
+            ->leftMap(static fn() => Failure::toRollback);
     }
 }
