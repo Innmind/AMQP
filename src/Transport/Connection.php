@@ -58,7 +58,6 @@ final class Connection
     private Socket $socket;
     private Watch $watch;
     private FrameReader $read;
-    private State $state;
     private MaxChannels $maxChannels;
     private MaxFrameSize $maxFrameSize;
     private Heartbeat $heartbeat;
@@ -69,12 +68,10 @@ final class Connection
         Heartbeat $heartbeat,
         Socket $socket,
         Watch $watch,
-        State $state,
         MaxChannels $maxChannels,
         MaxFrameSize $maxFrameSize,
         FrameReader $read,
     ) {
-        $this->state = $state;
         $this->protocol = $protocol;
         $this->sockets = $sockets;
         $this->socket = $socket;
@@ -118,15 +115,13 @@ final class Connection
                 Heartbeat::start($clock, $timeout),
                 $socket,
                 $sockets->watch($timeout)->forRead($socket),
-                State::opening,
                 MaxChannels::unlimited(),
                 MaxFrameSize::unlimited(),
                 new FrameReader,
             ))
             ->flatMap(new Start($server->authority()))
             ->flatMap(new Handshake($server->authority()))
-            ->flatMap(new OpenVHost($server->path()))
-            ->map(static fn($connection) => $connection->ready());
+            ->flatMap(new OpenVHost($server->path()));
     }
 
     /**
@@ -160,7 +155,7 @@ final class Connection
     public function wait(Frame\Method ...$names): Either
     {
         do {
-            if (!$this->state->listenable($this->socket)) {
+            if ($this->closed()) {
                 /** @var Either<Failure, Received> */
                 return Either::left(Failure::toReadFrame);
             }
@@ -192,25 +187,18 @@ final class Connection
      */
     public function close(): Maybe
     {
-        if (!$this->state->usable($this->socket)) {
+        if ($this->closed()) {
             /** @var Maybe<SideEffect> */
             return Maybe::nothing();
         }
 
-        try {
-            return $this
-                ->send(static fn($protocol) => $protocol->connection()->close(Close::demand()))
-                ->wait(Method::connectionCloseOk)
-                ->either()
-                ->flatMap(static fn($connection) => $connection->socket->close())
-                ->maybe()
-                ->map(static fn() => new SideEffect);
-        } finally {
-            // we modify the state of the current instance instead of creating a
-            // new instance like in self::ready() to prevent anyone from trying
-            // to reuse this instance after it has been closed
-            $this->state = State::closed;
-        }
+        return $this
+            ->send(static fn($protocol) => $protocol->connection()->close(Close::demand()))
+            ->wait(Method::connectionCloseOk)
+            ->either()
+            ->flatMap(static fn($connection) => $connection->socket->close())
+            ->maybe()
+            ->map(static fn() => new SideEffect);
     }
 
     /**
@@ -231,7 +219,6 @@ final class Connection
             $this->heartbeat->adjust($heartbeat),
             $this->socket,
             $this->sockets->watch($heartbeat)->forRead($this->socket),
-            $this->state,
             $maxChannels,
             $maxFrameSize,
             $this->read,
@@ -241,21 +228,6 @@ final class Connection
     /**
      * @internal
      */
-    public function ready(): self
-    {
-        return new self(
-            $this->protocol,
-            $this->sockets,
-            $this->heartbeat,
-            $this->socket,
-            $this->watch,
-            State::opened,
-            $this->maxChannels,
-            $this->maxFrameSize,
-            $this->read,
-        );
-    }
-
     public function asActive(): self
     {
         return new self(
@@ -264,7 +236,6 @@ final class Connection
             $this->heartbeat->active(),
             $this->socket,
             $this->watch,
-            $this->state,
             $this->maxChannels,
             $this->maxFrameSize,
             $this->read,
@@ -322,11 +293,6 @@ final class Connection
                 ->send(static fn($protocol) => $protocol->connection()->closeOk())
                 ->either()
                 ->leftMap(static fn() => Failure::toCloseConnection)
-                ->map(static function($connection) {
-                    $connection->state = State::closed;
-
-                    return $connection;
-                })
                 ->flatMap(static function() use ($received) {
                     $message = $received
                         ->frame()
@@ -365,5 +331,10 @@ final class Connection
 
         /** @var Either<Failure, Received> */
         return Either::left(Failure::unexpectedFrame);
+    }
+
+    private function closed(): bool
+    {
+        return $this->socket->closed();
     }
 }
