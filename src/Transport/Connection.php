@@ -201,7 +201,8 @@ final class Connection
     public function close(): Maybe
     {
         if (!$this->state->usable($this->socket)) {
-            return Maybe::just(new SideEffect);
+            /** @var Maybe<SideEffect> */
+            return Maybe::nothing();
         }
 
         try {
