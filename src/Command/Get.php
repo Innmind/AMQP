@@ -131,7 +131,6 @@ final class Get implements Command
             return Either::right(State::of($connection, $state));
         }
 
-        $message = (new MessageReader)($connection);
         $deliveryTag = $frame
             ->values()
             ->first()
@@ -164,13 +163,17 @@ final class Get implements Command
             ->map(Details::ofGet(...))
             ->either()
             ->leftMap(static fn() => Failure::toGet)
-            ->flatMap(fn($details) => $this->consume(
-                $connection,
-                $channel,
-                $state,
-                $message,
-                $details,
-            ));
+            ->flatMap(
+                fn($details) => (new MessageReader)($connection)->flatMap(
+                    fn($message) => $this->consume(
+                        $connection,
+                        $channel,
+                        $state,
+                        $message,
+                        $details,
+                    ),
+                ),
+            );
     }
 
     /**

@@ -163,13 +163,15 @@ final class Consume implements Command
             ->send(static fn() => Sequence::of()) // just to access the Continuation, TODO find a way to bypass that
             ->wait(Method::basicDeliver)
             ->match(
-                fn($connection, $frame) => $this->maybeConsume(
-                    $connection,
-                    $channel,
-                    $state,
-                    $consumerTag,
-                    $frame,
-                    $read($connection),
+                fn($connection, $frame) => $read($connection)->flatMap(
+                    fn($message) => $this->maybeConsume(
+                        $connection,
+                        $channel,
+                        $state,
+                        $consumerTag,
+                        $frame,
+                        $message,
+                    ),
                 ),
                 static fn($connection) => Either::right(State::of($connection, $state)), // this case should not happen
                 static fn() => Either::left(Failure::toConsume),

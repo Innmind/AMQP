@@ -150,7 +150,10 @@ final class Continuation
 
             if ($frame->type() === Type::method && $frame->is(Method::basicDeliver)) {
                 // read all the frames for the prefetched message
-                $read($connection);
+                $_ = $read($connection)->match(
+                    static fn() => null,
+                    static fn() => throw new \RuntimeException,
+                );
             }
         } while (!$frame->is(Method::basicCancelOk));
 

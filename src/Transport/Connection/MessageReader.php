@@ -16,8 +16,10 @@ use Innmind\AMQP\{
     Model\Basic\Message\UserId,
     Model\Basic\Message\AppId,
     Transport\Connection,
+    Transport\Frame,
     Transport\Frame\Value,
     Predicate\IsInt,
+    Failure,
 };
 use Innmind\TimeContinuum\Earth\ElapsedPeriod;
 use Innmind\Filesystem\File\Content;
@@ -28,19 +30,32 @@ use Innmind\Immutable\{
     Predicate\Instance,
     Sequence,
     Maybe,
+    Either,
 };
 
 final class MessageReader
 {
-    public function __invoke(Connection $connection): Message
+    /**
+     * @return Either<Failure, Message> TODO return the connection as well
+     */
+    public function __invoke(Connection $connection): Either
     {
-        $received = $connection->wait()->match(
-            static fn($received) => $received,
-            static fn() => throw new \RuntimeException,
-        );
-        $connection = $received->connection();
-        $header = $received->frame();
+        return $connection
+            ->wait()
+            ->flatMap(fn($received) => $this->decode(
+                $received->connection(),
+                $received->frame(),
+            ));
+    }
 
+    /**
+     * @return Either<Failure, Message>
+     */
+    private function decode(
+        Connection $connection,
+        Frame $header,
+    ): Either {
+        /** @var Either<Failure, Message> */
         return $header
             ->values()
             ->first()
@@ -62,10 +77,8 @@ final class MessageReader
                             ->drop(2), // for bodySize and flagBits
                     )),
             )
-            ->match(
-                static fn($message) => $message,
-                static fn() => throw new \LogicException,
-            );
+            ->either()
+            ->leftMap(static fn() => Failure::toReadMessage);
     }
 
     /**

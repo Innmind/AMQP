@@ -32,6 +32,7 @@ enum Failure
     case toRollback;
     case toSendFrame;
     case toReadFrame;
+    case toReadMessage;
     case unexpectedFrame;
     case closedByServer;
 }
