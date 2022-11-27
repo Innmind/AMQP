@@ -26,13 +26,4 @@ enum State
             self::closed => false,
         };
     }
-
-    public function closed(Client $socket): bool
-    {
-        return match ($this) {
-            self::opening => true,
-            self::opened => $socket->closed(),
-            self::closed => true,
-        };
-    }
 }

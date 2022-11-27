@@ -87,12 +87,10 @@ class ConnectionTest extends TestCase
             static fn() => null,
         );
 
-        $this->assertFalse($connection->closed());
         $this->assertInstanceOf(SideEffect::class, $connection->close()->match(
             static fn($sideEffect) => $sideEffect,
             static fn() => null,
         ));
-        $this->assertTrue($connection->closed());
     }
 
     public function testReturnFailureWhenReceivedFrameIsNotTheExpectedOne()

@@ -220,11 +220,6 @@ final class Connection
         }
     }
 
-    public function closed(): bool
-    {
-        return $this->state->closed($this->socket);
-    }
-
     /**
      * This only modify the internal values for the connection, it doesn't
      * notify the server we applied the changes on our end. The notification is
