@@ -4,7 +4,7 @@ declare(strict_types = 1);
 namespace Tests\Innmind\AMQP;
 
 use Innmind\AMQP\{
-    Declarative,
+    Client,
     Factory,
     Transport\Frame\Value,
     Command\DeclareExchange,
@@ -39,9 +39,9 @@ use Innmind\Immutable\{
 };
 use PHPUnit\Framework\TestCase;
 
-class DeclarativeTest extends TestCase
+class ClientTest extends TestCase
 {
-    private Declarative $client;
+    private Client $client;
     private $clock;
 
     public function setUp(): void

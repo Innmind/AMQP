@@ -30,8 +30,8 @@ final class Factory
         Socket $transport,
         Url $server,
         ElapsedPeriod $timeout,
-    ): Declarative {
-        return Declarative::of(
+    ): Client {
+        return Client::of(
             fn() => Transport\Connection::open(
                 $transport,
                 $server,

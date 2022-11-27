@@ -15,7 +15,7 @@ use Innmind\Immutable\{
     SideEffect,
 };
 
-final class Declarative
+final class Client
 {
     /** @var Maybe<Command> */
     private Maybe $command;
