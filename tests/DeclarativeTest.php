@@ -226,4 +226,45 @@ class DeclarativeTest extends TestCase
 
         $this->assertSame(4, $result);
     }
+
+    public function testReject()
+    {
+        $result = $this
+            ->client
+            ->with(DeclareExchange::of('foo', Type::direct))
+            ->with(DeclareQueue::of('bar'))
+            ->with(Bind::of('foo', 'bar'))
+            ->with(Purge::of('bar'))
+            ->with(Qos::of(10))
+            ->with(Publish::one(
+                Basic\Publish::a(Basic\Message::of(Str::of('message')))
+                    ->to('foo'),
+            ))
+            ->with(
+                Get::of('bar')->handle(function($state, $message, $continuation, $details) {
+                    $this->assertNull($state);
+                    $this->assertFalse($details->redelivered());
+
+                    return $continuation->reject('rejected');
+                }),
+            )
+            ->with(
+                Get::of('bar')->handle(function($state, $message, $continuation, $details) {
+                    $this->assertFalse(true, 'The second handler should not be called');
+
+                    return $continuation->ack($message->body()->toString());
+                }),
+            )
+            ->with(Get::of('bar'))
+            ->with(Unbind::of('foo', 'bar'))
+            ->with(DeleteQueue::of('bar'))
+            ->with(DeleteExchange::of('foo'))
+            ->run(null)
+            ->match(
+                static fn($state) => $state,
+                static fn($error) => $error,
+            );
+
+        $this->assertSame('rejected', $result);
+    }
 }
