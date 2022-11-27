@@ -59,7 +59,7 @@ final class Purge implements Command
                         ->leftMap(static fn() => Failure::toPurge);
                 },
                 static fn($connection) => Either::right(State::of($connection, $state)),
-                static fn() => Either::left(Failure::toBind),
+                static fn() => Either::left(Failure::toPurge),
             );
     }
 
