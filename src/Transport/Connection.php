@@ -23,9 +23,6 @@ use Innmind\AMQP\{
     Model\Connection\Close,
     Model\Connection\MaxChannels,
     Model\Connection\MaxFrameSize,
-    Exception\UnexpectedFrame,
-    Exception\ConnectionClosed,
-    Exception\ExpectedMethodFrame,
     Failure,
 };
 use Innmind\Socket\{
@@ -158,10 +155,6 @@ final class Connection
     }
 
     /**
-     * @throws ExpectedMethodFrame When expecting a method frame but another type is received
-     * @throws ConnectionClosed When the server sent a connection.close method
-     * @throws UnexpectedFrame When the received frame is not one of the expected one
-     *
      * @return Either<Failure, Received>
      */
     public function wait(Frame\Method ...$names): Either
