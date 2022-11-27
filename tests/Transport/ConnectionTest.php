@@ -26,7 +26,10 @@ use Innmind\OperatingSystem\{
     Sockets,
 };
 use Innmind\Server\Control\Server;
-use Innmind\Immutable\Sequence;
+use Innmind\Immutable\{
+    Sequence,
+    SideEffect,
+};
 use PHPUnit\Framework\TestCase;
 
 class ConnectionTest extends TestCase
@@ -78,7 +81,10 @@ class ConnectionTest extends TestCase
         );
 
         $this->assertFalse($connection->closed());
-        $this->assertNull($connection->close());
+        $this->assertInstanceOf(SideEffect::class, $connection->close()->match(
+            static fn($sideEffect) => $sideEffect,
+            static fn() => null,
+        ));
         $this->assertTrue($connection->closed());
     }
 

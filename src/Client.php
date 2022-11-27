@@ -118,8 +118,12 @@ final class Client
             ))
             ->wait(Method::channelCloseOk)
             ->either()
-            ->map(static fn($connection) => $connection->close())
-            ->map(static fn() => new SideEffect)
-            ->leftMap(static fn() => Failure::toCloseChannel);
+            ->leftMap(static fn() => Failure::toCloseChannel)
+            ->flatMap(
+                static fn($connection) => $connection
+                    ->close()
+                    ->either()
+                    ->leftMap(static fn() => Failure::toCloseConnection),
+            );
     }
 }

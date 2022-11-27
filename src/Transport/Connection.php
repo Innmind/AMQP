@@ -48,6 +48,7 @@ use Innmind\Immutable\{
     Set,
     Maybe,
     Sequence,
+    SideEffect,
     Predicate\Instance,
 };
 
@@ -240,25 +241,29 @@ final class Connection
         throw new UnexpectedFrame($frame, ...$names);
     }
 
-    public function close(): void
+    /**
+     * @return Maybe<SideEffect>
+     */
+    public function close(): Maybe
     {
         if (!$this->state->usable($this->socket)) {
-            return;
+            return Maybe::just(new SideEffect);
         }
 
-        $_ = $this
-            ->send(static fn($protocol) => $protocol->connection()->close(Close::demand()))
-            ->wait(Method::connectionCloseOk)
-            ->match(
-                static fn() => null,
-                static fn() => null,
-                static fn() => throw new \RuntimeException,
-            );
-        $this->socket->close();
-        // we modify the state of the current instance instead of creating a new
-        // instance like in self::ready() to prevent anyone from trying to reuse
-        // this instance after it has been closed
-        $this->state = State::closed;
+        try {
+            return $this
+                ->send(static fn($protocol) => $protocol->connection()->close(Close::demand()))
+                ->wait(Method::connectionCloseOk)
+                ->either()
+                ->flatMap(static fn($connection) => $connection->socket->close())
+                ->maybe()
+                ->map(static fn() => new SideEffect);
+        } finally {
+            // we modify the state of the current instance instead of creating a
+            // new instance like in self::ready() to prevent anyone from trying
+            // to reuse this instance after it has been closed
+            $this->state = State::closed;
+        }
     }
 
     public function closed(): bool

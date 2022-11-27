@@ -11,6 +11,7 @@ enum Failure
     case toOpenConnection;
     case toOpenChannel;
     case toCloseChannel;
+    case toCloseConnection;
     case toDeleteQueue;
     case toDeleteExchange;
     case toDeclareQueue;
