@@ -677,4 +677,35 @@ class ClientTest extends TestCase
 
         $this->assertFalse($result);
     }
+
+    public function testPurge()
+    {
+        $result = $this
+            ->client
+            ->with(DeclareExchange::of('foo', Type::direct))
+            ->with(DeclareQueue::of('bar'))
+            ->with(Bind::of('foo', 'bar'))
+            ->with(Purge::of('bar'))
+            ->with(Publish::one(
+                Basic\Publish::a(Basic\Message::of(Str::of('message')))
+                    ->to('foo'),
+            ))
+            ->with(Purge::of('bar'))
+            ->with(
+                Get::of('bar')->handle(static function($state, $message, $continuation) {
+                    return $continuation->ack($message->body()->toString());
+                }),
+            )
+            ->with(Get::of('bar'))
+            ->with(Unbind::of('foo', 'bar'))
+            ->with(DeleteQueue::of('bar'))
+            ->with(DeleteExchange::of('foo'))
+            ->run(null)
+            ->match(
+                static fn($state) => $state,
+                static fn($error) => $error,
+            );
+
+        $this->assertNull($result);
+    }
 }
