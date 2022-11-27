@@ -5,9 +5,7 @@ namespace Tests\Innmind\AMQP;
 
 use Innmind\AMQP\{
     Declarative,
-    Transport\Connection,
-    Transport\Protocol\ArgumentTranslator\ValueTranslator,
-    Transport\Protocol,
+    Factory,
     Transport\Frame\Value,
     Command\DeclareExchange,
     Command\DeleteExchange,
@@ -27,7 +25,7 @@ use Innmind\AMQP\{
     Exception\BasicGetNotCancellable,
 };
 use Innmind\Socket\Internet\Transport;
-use Innmind\OperatingSystem\Factory;
+use Innmind\OperatingSystem\Factory as OSFactory;
 use Innmind\TimeContinuum\Earth\ElapsedPeriod;
 use Innmind\Filesystem\File\Content;
 use Innmind\Url\{
@@ -48,18 +46,12 @@ class DeclarativeTest extends TestCase
 
     public function setUp(): void
     {
-        $os = Factory::build();
+        $os = OSFactory::build();
 
-        $this->client = Declarative::of(
-            static fn() => Connection::open(
-                Transport::tcp(),
-                Url::of('//guest:guest@localhost:5672/'),
-                new Protocol($os->clock(), new ValueTranslator),
-                new ElapsedPeriod(1000),
-                $os->clock(),
-                $os->remote(),
-                $os->sockets(),
-            ),
+        $this->client = Factory::of($os)->make(
+            Transport::tcp(),
+            Url::of('//guest:guest@localhost:5672/'),
+            new ElapsedPeriod(1000),
         );
         $this->clock = $os->clock();
     }
