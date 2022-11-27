@@ -47,7 +47,7 @@ final class Continuation
         return new self($this->connection->flatMap(
             static fn($connection) => match ($connection instanceof Connection) {
                 true => $connection->wait(...$methods),
-                false => throw new LogicException("Can't call wait multiple time"),
+                false => throw new LogicException("Can't call wait multiple times"),
             },
         ));
     }
@@ -62,7 +62,7 @@ final class Continuation
         return new self($this->connection->flatMap(
             static fn($connection) => match ($connection instanceof Connection) {
                 true => $connection->wait($method),
-                false => throw new LogicException("Can't call wait multiple time"),
+                false => throw new LogicException("Can't call wait multiple times"),
             },
         ));
     }
