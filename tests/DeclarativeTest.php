@@ -28,7 +28,11 @@ use Innmind\AMQP\{
 use Innmind\Socket\Internet\Transport;
 use Innmind\OperatingSystem\Factory;
 use Innmind\TimeContinuum\Earth\ElapsedPeriod;
-use Innmind\Url\Url;
+use Innmind\Filesystem\File\Content;
+use Innmind\Url\{
+    Url,
+    Path,
+};
 use Innmind\Immutable\{
     Str,
     Sequence,
@@ -443,6 +447,44 @@ class DeclarativeTest extends TestCase
                         static fn($value) => $value->toString(),
                         static fn() => null,
                     ));
+
+                    return $continuation->ack(true);
+                }),
+            )
+            ->with(Get::of('bar'))
+            ->with(Unbind::of('foo', 'bar'))
+            ->with(DeleteQueue::of('bar'))
+            ->with(DeleteExchange::of('foo'))
+            ->run(null)
+            ->match(
+                static fn($state) => $state,
+                static fn($error) => $error,
+            );
+
+        $this->assertTrue($result);
+    }
+
+    public function testPublishContentOfAFile()
+    {
+        $result = $this
+            ->client
+            ->with(DeclareExchange::of('foo', Type::direct))
+            ->with(DeclareQueue::of('bar'))
+            ->with(Bind::of('foo', 'bar'))
+            ->with(Purge::of('bar'))
+            ->with(Qos::of(10))
+            ->with(Publish::one(
+                Basic\Publish::a(Basic\Message::file(Content\AtPath::of(Path::of(__FILE__))))
+                    ->to('foo'),
+            ))
+            ->with(
+                Get::of('bar')->handle(function($state, $message, $continuation, $details) {
+                    $this->assertNull($state);
+                    $this->assertFalse($details->redelivered());
+                    $this->assertSame(
+                        \file_get_contents(__FILE__),
+                        $message->body()->toString(),
+                    );
 
                     return $continuation->ack(true);
                 }),
