@@ -176,9 +176,9 @@ final class Connection
             ))
             ->either()
             ->leftMap(static fn() => Failure::toReadFrame)
-            ->flatMap(fn($received) => match ($received->frame()->type()) {
-                Type::heartbeat => $this->wait(...$names),
-                default => $this->ensureValidFrame($received, ...$names),
+            ->flatMap(static fn($received) => match ($received->frame()->type()) {
+                Type::heartbeat => $received->connection()->wait(...$names),
+                default => $received->connection()->ensureValidFrame($received, ...$names),
             });
     }
 
