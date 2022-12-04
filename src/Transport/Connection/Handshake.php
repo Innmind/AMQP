@@ -34,27 +34,32 @@ final class Handshake
      */
     public function __invoke(Connection $connection): Maybe
     {
-        $frame = $connection->wait(Method::connectionSecure, Method::connectionTune)->match(
-            static fn($received) => $received->frame(),
-            static fn() => throw new \RuntimeException,
-        );
+        return $connection
+            ->wait(Method::connectionSecure, Method::connectionTune)
+            ->maybe()
+            ->flatMap(fn($received) => match ($received->frame()->is(Method::connectionSecure)) {
+                true => $this->secure($received->connection()),
+                false => $this->maybeTune($received->connection(), $received->frame()),
+            });
+    }
 
-        if ($frame->is(Method::connectionSecure)) {
-            return $connection
-                ->send(fn($protocol) => $protocol->connection()->secureOk(
-                    SecureOk::of(
-                        $this->authority->userInformation()->user(),
-                        $this->authority->userInformation()->password(),
-                    ),
-                ))
-                ->wait(Method::connectionTune)
-                ->then(
-                    $this->maybeTune(...),
-                    static fn($connection) => $connection,
-                );
-        }
-
-        return $this->maybeTune($connection, $frame);
+    /**
+     * @return Maybe<Connection>
+     */
+    private function secure(Connection $connection): Maybe
+    {
+        return $connection
+            ->send(fn($protocol) => $protocol->connection()->secureOk(
+                SecureOk::of(
+                    $this->authority->userInformation()->user(),
+                    $this->authority->userInformation()->password(),
+                ),
+            ))
+            ->wait(Method::connectionTune)
+            ->then(
+                $this->maybeTune(...),
+                static fn($connection) => $connection,
+            );
     }
 
     /**
