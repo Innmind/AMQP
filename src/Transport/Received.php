@@ -3,6 +3,9 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport;
 
+/**
+ * @internal
+ */
 final class Received
 {
     private Connection $connection;

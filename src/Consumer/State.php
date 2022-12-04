@@ -5,6 +5,7 @@ namespace Innmind\AMQP\Consumer;
 
 /**
  * @psalm-immutable
+ * @internal
  */
 enum State
 {

@@ -35,6 +35,9 @@ use Innmind\Immutable\{
     Sequence,
 };
 
+/**
+ * @internal
+ */
 final class Basic
 {
     private ArgumentTranslator $translate;

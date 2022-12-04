@@ -5,6 +5,9 @@ namespace Innmind\AMQP\Client;
 
 use Innmind\AMQP\Transport\Connection;
 
+/**
+ * @internal
+ */
 final class State
 {
     private Connection $connection;

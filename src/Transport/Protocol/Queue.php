@@ -25,6 +25,9 @@ use Innmind\Immutable\{
     Sequence,
 };
 
+/**
+ * @internal
+ */
 final class Queue
 {
     private ArgumentTranslator $translate;

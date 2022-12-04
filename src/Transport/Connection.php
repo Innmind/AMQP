@@ -51,6 +51,9 @@ use Innmind\Immutable\{
     Predicate\Instance,
 };
 
+/**
+ * @internal You should use the Client instead
+ */
 final class Connection
 {
     private Protocol $protocol;

@@ -30,6 +30,9 @@ use Innmind\Immutable\{
     Maybe,
 };
 
+/**
+ * @internal
+ */
 final class Protocol
 {
     private Clock $clock;

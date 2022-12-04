@@ -18,6 +18,9 @@ use Innmind\Immutable\{
     Either,
 };
 
+/**
+ * @internal
+ */
 final class Heartbeat
 {
     private Clock $clock;

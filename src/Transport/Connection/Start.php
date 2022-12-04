@@ -11,6 +11,9 @@ use Innmind\AMQP\{
 use Innmind\Url\Authority;
 use Innmind\Immutable\Maybe;
 
+/**
+ * @internal
+ */
 final class Start
 {
     private Authority $authority;

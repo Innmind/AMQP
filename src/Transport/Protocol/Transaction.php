@@ -14,6 +14,9 @@ use Innmind\AMQP\{
 };
 use Innmind\Immutable\Sequence;
 
+/**
+ * @internal
+ */
 final class Transaction
 {
     /**

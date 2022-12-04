@@ -7,6 +7,7 @@ use Innmind\Immutable\Maybe;
 
 /**
  * @psalm-immutable
+ * @internal
  */
 enum MethodClass
 {

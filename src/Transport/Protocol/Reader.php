@@ -23,6 +23,9 @@ use Innmind\Immutable\{
     Maybe,
 };
 
+/**
+ * @internal
+ */
 final class Reader
 {
     private Clock $clock;

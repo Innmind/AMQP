@@ -10,6 +10,9 @@ use Innmind\Immutable\{
     Maybe,
 };
 
+/**
+ * @internal
+ */
 final class ChunkArguments
 {
     /** @var Sequence<callable(Readable): Maybe<Value>> */

@@ -16,6 +16,9 @@ use Innmind\Immutable\{
     Either,
 };
 
+/**
+ * @internal
+ */
 final class Continuation
 {
     /** @var Either<Failure, Connection|Received> */

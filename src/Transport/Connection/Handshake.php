@@ -20,6 +20,9 @@ use Innmind\Immutable\{
     Predicate\Instance,
 };
 
+/**
+ * @internal
+ */
 final class Handshake
 {
     private Authority $authority;

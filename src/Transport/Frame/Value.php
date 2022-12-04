@@ -9,6 +9,7 @@ use Innmind\Immutable\Str;
  * @template T
  *
  * @psalm-immutable
+ * @internal
  */
 interface Value
 {

@@ -7,6 +7,7 @@ use Innmind\TimeContinuum\Format;
 
 /**
  * @psalm-immutable
+ * @internal
  */
 final class Timestamp implements Format
 {

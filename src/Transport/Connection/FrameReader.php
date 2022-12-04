@@ -17,6 +17,9 @@ use Innmind\AMQP\Transport\{
 use Innmind\Stream\Readable;
 use Innmind\Immutable\Maybe;
 
+/**
+ * @internal
+ */
 final class FrameReader
 {
     /**

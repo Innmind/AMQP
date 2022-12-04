@@ -8,6 +8,9 @@ use Innmind\AMQP\{
     Transport\Connection,
 };
 
+/**
+ * @internal
+ */
 final class Received
 {
     private Connection $connection;

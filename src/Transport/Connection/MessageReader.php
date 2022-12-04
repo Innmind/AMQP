@@ -35,6 +35,9 @@ use Innmind\Immutable\{
     Either,
 };
 
+/**
+ * @internal
+ */
 final class MessageReader
 {
     private Streams $streams;

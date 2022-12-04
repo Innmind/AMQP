@@ -5,6 +5,9 @@ namespace Innmind\AMQP\Consumer;
 
 use Innmind\AMQP\Client\State;
 
+/**
+ * @internal
+ */
 final class Canceled
 {
     private State $state;

@@ -11,6 +11,9 @@ use Innmind\AMQP\{
 use Innmind\Url\Path;
 use Innmind\Immutable\Maybe;
 
+/**
+ * @internal
+ */
 final class OpenVHost
 {
     private Path $vhost;

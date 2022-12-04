@@ -31,6 +31,9 @@ use Innmind\Immutable\{
     Sequence,
 };
 
+/**
+ * @internal
+ */
 final class Connection
 {
     /**

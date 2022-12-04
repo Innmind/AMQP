@@ -22,6 +22,9 @@ use Innmind\Immutable\{
     Sequence,
 };
 
+/**
+ * @internal
+ */
 final class Exchange
 {
     private ArgumentTranslator $translate;

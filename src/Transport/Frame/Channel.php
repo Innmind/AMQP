@@ -5,6 +5,7 @@ namespace Innmind\AMQP\Transport\Frame;
 
 /**
  * @psalm-immutable
+ * @internal
  */
 final class Channel
 {
