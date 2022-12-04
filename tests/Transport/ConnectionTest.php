@@ -109,14 +109,14 @@ class ConnectionTest extends TestCase
         );
 
         $this->assertSame(
-            Failure::unexpectedFrame,
+            Failure\Kind::unexpectedFrame,
             $connection
                 ->send(static fn($protocol) => $protocol->channel()->open(new Channel(2)))
                 ->wait(Method::connectionOpen)
                 ->either()
                 ->match(
                     static fn() => null,
-                    static fn($failure) => $failure,
+                    static fn($failure) => $failure->kind(),
                 ),
         );
     }
@@ -146,10 +146,10 @@ class ConnectionTest extends TestCase
             static fn() => null,
         );
         $this->assertSame(
-            Failure::closedByServer,
+            Failure\Kind::closedByServer,
             $connection->wait(Method::channelOpenOk)->match(
                 static fn() => null,
-                static fn($failure) => $failure,
+                static fn($failure) => $failure->kind(),
             ),
         );
     }

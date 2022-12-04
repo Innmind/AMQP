@@ -79,7 +79,7 @@ final class MessageReader
             ->keep(Instance::of(Value\UnsignedLongLongInteger::class))
             ->map(static fn($value) => $value->original())
             ->either()
-            ->leftMap(static fn() => Failure::toReadMessage)
+            ->leftMap(static fn() => Failure::toReadMessage())
             ->flatMap(fn($bodySize) => $this->readMessage($connection, $bodySize))
             ->flatMap(
                 fn($received) => $header
@@ -88,7 +88,7 @@ final class MessageReader
                     ->keep(Instance::of(Value\UnsignedShortInteger::class))
                     ->map(static fn($value) => $value->original())
                     ->either()
-                    ->leftMap(static fn() => Failure::toReadMessage)
+                    ->leftMap(static fn() => Failure::toReadMessage())
                     ->flatMap(fn($flagBits) => $this->addProperties(
                         $received->message(),
                         $flagBits,
@@ -243,7 +243,7 @@ final class MessageReader
             )
             ->map(static fn($state) => $state[1])
             ->either()
-            ->leftMap(static fn() => Failure::toReadMessage);
+            ->leftMap(static fn() => Failure::toReadMessage());
     }
 
     /**
@@ -314,6 +314,6 @@ final class MessageReader
                         $read + $chunk->length(),
                     ]),
             )
-            ->leftMap(static fn() => Failure::toReadMessage);
+            ->leftMap(static fn() => Failure::toReadMessage());
     }
 }

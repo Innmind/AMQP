@@ -98,7 +98,7 @@ final class Client
         /** @var Either<Failure, array{Connection, Channel}> */
         return ($this->load)()
             ->either()
-            ->leftMap(static fn() => Failure::toOpenConnection)
+            ->leftMap(static fn() => Failure::toOpenConnection())
             ->map(static fn($connection) => $connection->send(
                 static fn($protocol) => $protocol->channel()->open($channel),
             ))
@@ -107,7 +107,7 @@ final class Client
                 static fn($continuation) => $continuation
                     ->either()
                     ->map(static fn($connection) => [$connection, $channel])
-                    ->leftMap(static fn() => Failure::toOpenChannel),
+                    ->leftMap(static fn() => Failure::toOpenChannel()),
             );
     }
 
@@ -124,12 +124,12 @@ final class Client
             ))
             ->wait(Method::channelCloseOk)
             ->either()
-            ->leftMap(static fn() => Failure::toCloseChannel)
+            ->leftMap(static fn() => Failure::toCloseChannel())
             ->flatMap(
                 static fn($connection) => $connection
                     ->close()
                     ->either()
-                    ->leftMap(static fn() => Failure::toCloseConnection),
+                    ->leftMap(static fn() => Failure::toCloseConnection()),
             );
     }
 }

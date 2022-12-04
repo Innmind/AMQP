@@ -58,7 +58,7 @@ final class DeleteQueue implements Command
                 static fn($connection) => State::of($connection, $state),
             )
             ->either()
-            ->leftMap(static fn() => Failure::toDeleteQueue);
+            ->leftMap(fn() => Failure::toDeleteQueue($this->command));
     }
 
     public static function of(string $name): self

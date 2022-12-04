@@ -181,7 +181,7 @@ final class Connection
                     )),
             )
             ->either()
-            ->leftMap(static fn() => Failure::toReadFrame)
+            ->leftMap(static fn() => Failure::toReadFrame())
             ->flatMap(static fn($received) => match ($received->frame()->type()) {
                 Type::heartbeat => $received->connection()->wait(...$names),
                 default => $received->connection()->ensureValidFrame($received, ...$names),
@@ -266,7 +266,7 @@ final class Connection
             )
             ->map(fn() => $this)
             ->either()
-            ->leftMap(static fn() => Failure::toSendFrame);
+            ->leftMap(static fn() => Failure::toSendFrame());
     }
 
     /**
@@ -280,7 +280,7 @@ final class Connection
 
         if ($connection->closed()) {
             /** @var Either<Failure, array{Connection, Set<Socket>}> */
-            return Either::left(Failure::toReadFrame);
+            return Either::left(Failure::toReadFrame());
         }
 
         /** @var Either<Failure, array{Connection, Set<Socket>}> */
@@ -311,7 +311,7 @@ final class Connection
         if ($received->frame()->type() !== Type::method) {
             // someone must have forgot a wait() call
             /** @var Either<Failure, Received> */
-            return Either::left(Failure::unexpectedFrame);
+            return Either::left(Failure::unexpectedFrame());
         }
 
         if ($received->oneOf(...$names)) {
@@ -325,20 +325,28 @@ final class Connection
                 ->connection()
                 ->send(static fn($protocol) => $protocol->connection()->closeOk())
                 ->either()
-                ->leftMap(static fn() => Failure::toCloseConnection)
+                ->leftMap(static fn() => Failure::toCloseConnection())
                 ->flatMap(static function() use ($received) {
                     $message = $received
                         ->frame()
                         ->values()
                         ->get(1)
                         ->keep(Instance::of(Value\ShortString::class))
-                        ->map(static fn($value) => $value->original()->toString());
+                        ->map(static fn($value) => $value->original()->toString())
+                        ->match(
+                            static fn($message) => $message,
+                            static fn() => 'Invalid message sent by server',
+                        );
                     $code = $received
                         ->frame()
                         ->values()
                         ->first()
                         ->keep(Instance::of(Value\UnsignedShortInteger::class))
-                        ->map(static fn($value) => $value->original());
+                        ->map(static fn($value) => $value->original())
+                        ->match(
+                            static fn($code) => $code,
+                            static fn() => 0,
+                        );
                     $class = $received
                         ->frame()
                         ->values()
@@ -357,13 +365,12 @@ final class Connection
                         static fn(int $class, int $method) => Method::of($class, $method),
                     );
 
-                    // TODO give access to the information above to the user
-                    return Either::left(Failure::closedByServer);
+                    return Either::left(Failure::closedByServer($message, $code, $method));
                 });
         }
 
         /** @var Either<Failure, Received> */
-        return Either::left(Failure::unexpectedFrame);
+        return Either::left(Failure::unexpectedFrame());
     }
 
     private function closed(): bool

@@ -73,7 +73,7 @@ final class DeclareQueue implements Command
                 static fn($connection) => State::of($connection, $state),
             )
             ->either()
-            ->leftMap(static fn() => Failure::toDeclareQueue);
+            ->leftMap(fn() => Failure::toDeclareQueue($this->command));
     }
 
     public static function of(string $name): self

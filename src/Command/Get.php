@@ -121,7 +121,7 @@ final class Get implements Command
                     $state,
                 ),
                 static fn($connection) => Either::right(State::of($connection, $state)), // this case should not happen
-                static fn() => Either::left(Failure::toGet),
+                fn() => Either::left(Failure::toGet($this->command)),
             );
     }
 
@@ -171,7 +171,7 @@ final class Get implements Command
         return Maybe::all($deliveryTag, $redelivered, $exchange, $routingKey, $messageCount)
             ->map(Details::ofGet(...))
             ->either()
-            ->leftMap(static fn() => Failure::toGet)
+            ->leftMap(fn() => Failure::toGet($this->command))
             ->flatMap(
                 fn($details) => $read($connection)->flatMap(
                     fn($received) => $this->consume(
@@ -203,7 +203,13 @@ final class Get implements Command
             Continuation::of($state),
             $details,
         )
-            ->respond($connection, $channel, $read, $details->deliveryTag())
+            ->respond(
+                $this->command->queue(),
+                $connection,
+                $channel,
+                $read,
+                $details->deliveryTag(),
+            )
             ->map(static fn($state) => match ($state instanceof Canceled) {
                 true => $state->state(),
                 false => $state,

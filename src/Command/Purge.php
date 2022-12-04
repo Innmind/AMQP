@@ -57,7 +57,7 @@ final class Purge implements Command
                 static fn($connection) => State::of($connection, $state),
             )
             ->either()
-            ->leftMap(static fn() => Failure::toPurge);
+            ->leftMap(fn() => Failure::toPurge($this->command));
     }
 
     public static function of(string $queue): self

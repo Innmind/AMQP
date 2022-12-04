@@ -105,6 +105,7 @@ final class Continuation
      * @return Either<Failure, Client\State|Canceled>
      */
     public function respond(
+        string $queue,
         Connection $connection,
         Channel $channel,
         MessageReader $read,
@@ -114,21 +115,22 @@ final class Continuation
         /** @var Either<Failure, Client\State|Canceled> */
         return match ($this->response) {
             State::cancel => $this
-                ->doAck($connection, $channel, $deliveryTag)
+                ->doAck($queue, $connection, $channel, $deliveryTag)
                 ->flatMap(fn($connection) => $this->doCancel(
+                    $queue,
                     $connection,
                     $channel,
                     $consumerTag,
                 ))
-                ->flatMap(fn($connection) => $this->recover($connection, $channel, $read)),
+                ->flatMap(fn($connection) => $this->recover($queue, $connection, $channel, $read)),
             State::ack => $this
-                ->doAck($connection, $channel, $deliveryTag)
+                ->doAck($queue, $connection, $channel, $deliveryTag)
                 ->map(fn($connection) => Client\State::of($connection, $this->state)),
             State::reject => $this
-                ->doReject($connection, $channel, $deliveryTag)
+                ->doReject($queue, $connection, $channel, $deliveryTag)
                 ->map(fn($connection) => Client\State::of($connection, $this->state)),
             State::requeue => $this
-                ->doRequeue($connection, $channel, $deliveryTag)
+                ->doRequeue($queue, $connection, $channel, $deliveryTag)
                 ->map(fn($connection) => Client\State::of($connection, $this->state)),
         };
     }
@@ -137,6 +139,7 @@ final class Continuation
      * @return Either<Failure, Canceled>
      */
     private function recover(
+        string $queue,
         Connection $connection,
         Channel $channel,
         MessageReader $read,
@@ -181,7 +184,7 @@ final class Continuation
                     ->either(),
             )
             ->map(fn($connection) => Canceled::of(Client\State::of($connection, $this->state)))
-            ->leftMap(static fn() => Failure::toRecover);
+            ->leftMap(static fn() => Failure::toRecover($queue));
     }
 
     /**
@@ -190,6 +193,7 @@ final class Continuation
      * @return Either<Failure, Connection>
      */
     private function doAck(
+        string $queue,
         Connection $connection,
         Channel $channel,
         int $deliveryTag,
@@ -201,7 +205,7 @@ final class Continuation
                 Ack::of($deliveryTag),
             ))
             ->either()
-            ->leftMap(static fn() => Failure::toAck);
+            ->leftMap(static fn() => Failure::toAck($queue));
     }
 
     /**
@@ -210,6 +214,7 @@ final class Continuation
      * @return Either<Failure, Connection>
      */
     private function doReject(
+        string $queue,
         Connection $connection,
         Channel $channel,
         int $deliveryTag,
@@ -221,7 +226,7 @@ final class Continuation
                 Reject::of($deliveryTag),
             ))
             ->either()
-            ->leftMap(static fn() => Failure::toReject);
+            ->leftMap(static fn() => Failure::toReject($queue));
     }
 
     /**
@@ -230,6 +235,7 @@ final class Continuation
      * @return Either<Failure, Connection>
      */
     private function doRequeue(
+        string $queue,
         Connection $connection,
         Channel $channel,
         int $deliveryTag,
@@ -241,13 +247,14 @@ final class Continuation
                 Reject::requeue($deliveryTag),
             ))
             ->either()
-            ->leftMap(static fn() => Failure::toReject);
+            ->leftMap(static fn() => Failure::toReject($queue));
     }
 
     /**
      * @return Either<Failure, Connection>
      */
     private function doCancel(
+        string $queue,
         Connection $connection,
         Channel $channel,
         ?string $consumerTag,
@@ -264,6 +271,6 @@ final class Continuation
                 Cancel::of($consumerTag),
             ))
             ->either()
-            ->leftMap(static fn() => Failure::toCancel);
+            ->leftMap(static fn() => Failure::toCancel($queue));
     }
 }

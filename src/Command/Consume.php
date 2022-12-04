@@ -63,7 +63,7 @@ final class Consume implements Command
                     $state,
                 ),
                 static fn($connection) => Either::right(State::of($connection, $state)), // this case should not happen
-                static fn() => Either::left(Failure::toConsume),
+                fn() => Either::left(Failure::toConsume($this->command)),
             );
     }
 
@@ -101,7 +101,7 @@ final class Consume implements Command
             ->keep(Instance::of(Value\ShortString::class))
             ->map(static fn($value) => $value->original()->toString())
             ->either()
-            ->leftMap(static fn() => Failure::toConsume)
+            ->leftMap(fn() => Failure::toConsume($this->command))
             ->flatMap(fn($consumerTag) => $this->start(
                 $connection,
                 $channel,
@@ -179,7 +179,7 @@ final class Consume implements Command
                     ),
                 ),
                 static fn($connection) => Either::right(State::of($connection, $state)), // this case should not happen
-                static fn() => Either::left(Failure::toConsume),
+                fn() => Either::left(Failure::toConsume($this->command)),
             );
     }
 
@@ -228,7 +228,7 @@ final class Consume implements Command
                 static fn() => $details, // this manipulation is to make sure the consumerTag is indeed for this consumer
             ))
             ->either()
-            ->leftMap(static fn() => Failure::toConsume)
+            ->leftMap(fn() => Failure::toConsume($this->command))
             ->flatMap(fn($details) => $this->consume(
                 $connection,
                 $channel,
@@ -259,6 +259,7 @@ final class Consume implements Command
             $details,
         )
             ->respond(
+                $this->command->queue(),
                 $connection,
                 $channel,
                 $read,
