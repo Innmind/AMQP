@@ -140,22 +140,25 @@ final class Continuation
         Channel $channel,
     ): Either {
         $read = new MessageReader;
+        $received = $connection->wait();
+        $walkOverPrefetchedMessages = $received->match(
+            static fn($received) => $received->frame()->is(Method::basicDeliver),
+            static fn() => false,
+        );
 
-        // walk over prefetched messages
-        do {
-            $frame = $connection->wait()->match(
-                static fn($received) => $received->frame(),
-                static fn() => throw new \RuntimeException,
+        while ($walkOverPrefetchedMessages) {
+            // read all the frames for the prefetched message then wait for next
+            // frame
+            $received = $received->flatMap(
+                static fn($received) => $read($received->connection())->flatMap(
+                    static fn($received) => $received->connection()->wait(),
+                ),
             );
-
-            if ($frame->type() === Type::method && $frame->is(Method::basicDeliver)) {
-                // read all the frames for the prefetched message
-                $_ = $read($connection)->match(
-                    static fn() => null,
-                    static fn() => throw new \RuntimeException,
-                );
-            }
-        } while (!$frame->is(Method::basicCancelOk));
+            $walkOverPrefetchedMessages = $received->match(
+                static fn($received) => $received->frame()->is(Method::basicDeliver),
+                static fn() => false,
+            );
+        }
 
         // requeue all the messages sent right before the cancel method
         //
@@ -165,13 +168,17 @@ final class Continuation
         // won't receive previously prefetched messages leading to out of order
         // messages handling
         /** @var Either<Failure, Canceled> */
-        return $connection
-            ->send(static fn($protocol) => $protocol->basic()->recover(
-                $channel,
-                Recover::requeue(),
-            ))
-            ->wait(Method::basicRecoverOk)
-            ->either()
+        return $received
+            ->flatMap(
+                static fn($received) => $received
+                    ->connection()
+                    ->send(static fn($protocol) => $protocol->basic()->recover(
+                        $channel,
+                        Recover::requeue(),
+                    ))
+                    ->wait(Method::basicRecoverOk)
+                    ->either(),
+            )
             ->map(fn($connection) => Canceled::of(Client\State::of($connection, $this->state)))
             ->leftMap(static fn() => Failure::toRecover);
     }
