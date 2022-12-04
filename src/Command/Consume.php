@@ -22,7 +22,6 @@ use Innmind\AMQP\{
 use Innmind\Immutable\{
     Maybe,
     Either,
-    Sequence,
     Predicate\Instance,
 };
 
@@ -164,23 +163,21 @@ final class Consume implements Command
     ): Either {
         /** @var Either<Failure, State|Canceled> */
         return $connection
-            ->send(static fn() => Sequence::of()) // just to access the Continuation, TODO find a way to bypass that
             ->wait(Method::basicDeliver)
-            ->match(
-                fn($connection, $frame) => $read($connection)->flatMap(
-                    fn($received) => $this->maybeConsume(
-                        $received->connection(),
+            ->flatMap(
+                fn($receivedFrame) => $read($receivedFrame->connection())->flatMap(
+                    fn($receivedMessage) => $this->maybeConsume(
+                        $receivedMessage->connection(),
                         $channel,
                         $read,
                         $state,
                         $consumerTag,
-                        $frame,
-                        $received->message(),
+                        $receivedFrame->frame(),
+                        $receivedMessage->message(),
                     ),
                 ),
-                static fn($connection) => Either::right(State::of($connection, $state)), // this case should not happen
-                fn() => Either::left(Failure::toConsume($this->command)),
-            );
+            )
+            ->leftMap(fn() => Failure::toConsume($this->command));
     }
 
     /**
