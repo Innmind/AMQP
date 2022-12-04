@@ -154,26 +154,29 @@ final class Connection
      */
     public function wait(Frame\Method ...$names): Either
     {
+        /** @var Either<Failure, array{Connection, Set<Socket>}> */
+        $ready = Either::right([$this, Set::of()]);
+
         do {
-            if ($this->closed()) {
-                /** @var Either<Failure, Received> */
-                return Either::left(Failure::toReadFrame);
-            }
+            $ready = $ready->flatMap($this->doWait(...));
+        } while ($ready->match(
+            static fn($ready) => !$ready[1]->contains($ready[0]->socket),
+            static fn() => false,
+        ));
 
-            $this->heartbeat->ping($this);
-
-            /** @var Set<Socket> */
-            $toRead = ($this->watch)()->match(
-                static fn($ready) => $ready->toRead(),
-                static fn() => Set::of(),
-            );
-        } while (!$toRead->contains($this->socket));
-
-        return ($this->read)($this->socket, $this->protocol)
-            ->map(fn($frame) => Received::of(
-                $this->asActive(),
-                $frame,
-            ))
+        return $ready
+            ->maybe()
+            ->map(static fn($ready) => $ready[0])
+            ->flatMap(
+                static fn($connection) => ($connection->read)(
+                    $connection->socket,
+                    $connection->protocol,
+                )
+                    ->map(static fn($frame) => Received::of(
+                        $connection->asActive(),
+                        $frame,
+                    )),
+            )
             ->either()
             ->leftMap(static fn() => Failure::toReadFrame)
             ->flatMap(static fn($received) => match ($received->frame()->type()) {
@@ -261,6 +264,33 @@ final class Connection
             ->map(fn() => $this)
             ->either()
             ->leftMap(static fn() => Failure::toSendFrame);
+    }
+
+    /**
+     * @param array{Connection, Set<Socket>} $in
+     *
+     * @return Either<Failure, array{Connection, Set<Socket>}>
+     */
+    private function doWait(array $in): Either
+    {
+        [$connection] = $in;
+
+        if ($connection->closed()) {
+            /** @var Either<Failure, array{Connection, Set<Socket>}> */
+            return Either::left(Failure::toReadFrame);
+        }
+
+        /** @var Either<Failure, array{Connection, Set<Socket>}> */
+        return $connection
+            ->heartbeat
+            ->ping($connection)
+            ->map(static fn($connection) => [
+                $connection,
+                ($connection->watch)()->match(
+                    static fn($ready) => $ready->toRead(),
+                    static fn() => Set::of(),
+                ),
+            ]);
     }
 
     /**

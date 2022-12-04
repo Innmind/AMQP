@@ -3,16 +3,20 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport\Connection;
 
-use Innmind\AMQP\Transport\{
-    Connection,
-    Frame,
+use Innmind\AMQP\{
+    Transport\Connection,
+    Transport\Frame,
+    Failure,
 };
 use Innmind\TimeContinuum\{
     Clock,
     PointInTime,
     ElapsedPeriod,
 };
-use Innmind\Immutable\Sequence;
+use Innmind\Immutable\{
+    Sequence,
+    Either,
+};
 
 final class Heartbeat
 {
@@ -35,7 +39,10 @@ final class Heartbeat
         return new self($clock, $threshold, $clock->now());
     }
 
-    public function ping(Connection $connection): void
+    /**
+     * @return Either<Failure, Connection>
+     */
+    public function ping(Connection $connection): Either
     {
         if (
             $this
@@ -44,14 +51,13 @@ final class Heartbeat
                 ->elapsedSince($this->lastReceivedData)
                 ->longerThan($this->threshold)
         ) {
-            $_ = $connection
+            return $connection
                 ->send(static fn() => Sequence::of(Frame::heartbeat()))
-                ->match(
-                    static fn() => null,
-                    static fn() => null,
-                    static fn() => throw new \RuntimeException,
-                );
+                ->either();
         }
+
+        /** @var Either<Failure, Connection> */
+        return Either::right($connection);
     }
 
     public function active(): self
