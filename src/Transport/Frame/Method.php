@@ -20,6 +20,7 @@ enum Method
     case connectionOpenOk;
     case connectionClose;
     case connectionCloseOk;
+    // connectionBlocked and connectionsUnblocked (methods 10.60 and 10.61) are not supported (RabbitMQ extension)
     case channelOpen;
     case channelOpenOk;
     case channelFlow;
