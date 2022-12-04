@@ -22,7 +22,10 @@ use Innmind\AMQP\{
 };
 use Innmind\TimeContinuum\Earth\ElapsedPeriod;
 use Innmind\Filesystem\File\Content;
-use Innmind\Stream\Stream\Bidirectional;
+use Innmind\Stream\{
+    Streams,
+    Bidirectional,
+};
 use Innmind\Immutable\{
     Map,
     Str,
@@ -34,6 +37,13 @@ use Innmind\Immutable\{
 
 final class MessageReader
 {
+    private Streams $streams;
+
+    private function __construct(Streams $streams)
+    {
+        $this->streams = $streams;
+    }
+
     /**
      * @return Either<Failure, Received>
      */
@@ -45,6 +55,11 @@ final class MessageReader
                 $received->connection(),
                 $received->frame(),
             ));
+    }
+
+    public static function of(Streams $streams): self
+    {
+        return new self($streams);
     }
 
     /**
@@ -236,7 +251,7 @@ final class MessageReader
         int $bodySize,
     ): Either {
         $walk = $bodySize !== 0;
-        $stream = Bidirectional::of(\fopen('php://temp', 'r+'));
+        $stream = $this->streams->temporary()->new();
         $read = Either::right([$connection, $stream, 0]);
 
         while ($walk) {

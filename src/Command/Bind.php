@@ -8,6 +8,7 @@ use Innmind\AMQP\{
     Client\State,
     Failure,
     Transport\Connection,
+    Transport\Connection\MessageReader,
     Transport\Frame\Channel,
     Transport\Frame\Method,
     Model\Queue\Binding,
@@ -26,6 +27,7 @@ final class Bind implements Command
     public function __invoke(
         Connection $connection,
         Channel $channel,
+        MessageReader $read,
         mixed $state,
     ): Either {
         /** @var Either<Failure, State> */

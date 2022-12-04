@@ -8,6 +8,7 @@ use Innmind\AMQP\{
     Failure,
     Client\State,
     Transport\Connection,
+    Transport\Connection\MessageReader,
     Transport\Frame\Channel,
     Model\Basic\Publish as Model,
 };
@@ -32,6 +33,7 @@ final class Publish implements Command
     public function __invoke(
         Connection $connection,
         Channel $channel,
+        MessageReader $read,
         mixed $state,
     ): Either {
         /**

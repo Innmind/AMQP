@@ -10,6 +10,7 @@ use Innmind\AMQP\{
     Model\Queue\DeclareOk,
     Model\Count,
     Transport\Connection,
+    Transport\Connection\MessageReader,
     Transport\Frame\Channel,
     Transport\Frame\Method,
     Transport\Frame\Value,
@@ -33,6 +34,7 @@ final class DeclareQueue implements Command
     public function __invoke(
         Connection $connection,
         Channel $channel,
+        MessageReader $read,
         mixed $state,
     ): Either {
         /** @var Either<Failure, State> */

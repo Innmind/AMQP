@@ -49,6 +49,7 @@ final class Get implements Command
     public function __invoke(
         Connection $connection,
         Channel $channel,
+        MessageReader $read,
         mixed $state,
     ): Either {
         /**
@@ -58,7 +59,12 @@ final class Get implements Command
         return Sequence::of(...\array_fill(0, $this->take, null))->reduce(
             Either::right(State::of($connection, $state)),
             fn(Either $state) => $state->flatMap(
-                fn(State $state) => $this->doGet($state->connection(), $channel, $state->userState()),
+                fn(State $state) => $this->doGet(
+                    $state->connection(),
+                    $channel,
+                    $read,
+                    $state->userState(),
+                ),
             ),
         );
     }
@@ -96,6 +102,7 @@ final class Get implements Command
     public function doGet(
         Connection $connection,
         Channel $channel,
+        MessageReader $read,
         mixed $state,
     ): Either {
         /** @var Either<Failure, State> */
@@ -109,6 +116,7 @@ final class Get implements Command
                 fn($connection, $frame) => $this->maybeConsume(
                     $connection,
                     $channel,
+                    $read,
                     $frame,
                     $state,
                 ),
@@ -123,6 +131,7 @@ final class Get implements Command
     private function maybeConsume(
         Connection $connection,
         Channel $channel,
+        MessageReader $read,
         Frame $frame,
         mixed $state,
     ): Either {
@@ -164,10 +173,11 @@ final class Get implements Command
             ->either()
             ->leftMap(static fn() => Failure::toGet)
             ->flatMap(
-                fn($details) => (new MessageReader)($connection)->flatMap(
+                fn($details) => $read($connection)->flatMap(
                     fn($received) => $this->consume(
                         $received->connection(),
                         $channel,
+                        $read,
                         $state,
                         $received->message(),
                         $details,
@@ -182,6 +192,7 @@ final class Get implements Command
     private function consume(
         Connection $connection,
         Channel $channel,
+        MessageReader $read,
         mixed $state,
         Message $message,
         Details $details,
@@ -192,7 +203,7 @@ final class Get implements Command
             Continuation::of($state),
             $details,
         )
-            ->respond($connection, $channel, $details->deliveryTag())
+            ->respond($connection, $channel, $read, $details->deliveryTag())
             ->map(static fn($state) => match ($state instanceof Canceled) {
                 true => $state->state(),
                 false => $state,

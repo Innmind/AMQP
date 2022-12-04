@@ -8,6 +8,7 @@ use Innmind\AMQP\{
     Failure,
     Client\State,
     Transport\Connection,
+    Transport\Connection\MessageReader,
     Transport\Frame\Channel,
     Transport\Frame\Method,
 };
@@ -31,6 +32,7 @@ final class Transaction implements Command
     public function __invoke(
         Connection $connection,
         Channel $channel,
+        MessageReader $read,
         mixed $state,
     ): Either {
         return $this
@@ -38,6 +40,7 @@ final class Transaction implements Command
             ->flatMap(fn($connection) => ($this->command)(
                 $connection,
                 $channel,
+                $read,
                 $state,
             ))
             ->flatMap(fn($state) => $this->finish($state, $channel));

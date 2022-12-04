@@ -44,6 +44,7 @@ final class Consume implements Command
     public function __invoke(
         Connection $connection,
         Channel $channel,
+        MessageReader $read,
         mixed $state,
     ): Either {
         /** @var Either<Failure, State> */
@@ -57,6 +58,7 @@ final class Consume implements Command
                 fn($connection, $frame) => $this->maybeStart(
                     $connection,
                     $channel,
+                    $read,
                     $frame,
                     $state,
                 ),
@@ -89,6 +91,7 @@ final class Consume implements Command
     private function maybeStart(
         Connection $connection,
         Channel $channel,
+        MessageReader $read,
         Frame $frame,
         mixed $state,
     ): Either {
@@ -102,6 +105,7 @@ final class Consume implements Command
             ->flatMap(fn($consumerTag) => $this->start(
                 $connection,
                 $channel,
+                $read,
                 $state,
                 $consumerTag,
             ));
@@ -113,12 +117,12 @@ final class Consume implements Command
     private function start(
         Connection $connection,
         Channel $channel,
+        MessageReader $read,
         mixed $state,
         string $consumerTag,
     ): Either {
         /** @var Either<Failure, State|Canceled> */
         $consumed = Either::right(State::of($connection, $state));
-        $read = new MessageReader;
         // here the best approach would be to use recursion to avoid unwrapping
         // the monads but it would end up with a too deep call stack for inifite
         // consumers as each new message would mean a new function call in the
@@ -167,6 +171,7 @@ final class Consume implements Command
                     fn($received) => $this->maybeConsume(
                         $received->connection(),
                         $channel,
+                        $read,
                         $state,
                         $consumerTag,
                         $frame,
@@ -184,6 +189,7 @@ final class Consume implements Command
     private function maybeConsume(
         Connection $connection,
         Channel $channel,
+        MessageReader $read,
         mixed $state,
         string $consumerTag,
         Frame $frame,
@@ -226,6 +232,7 @@ final class Consume implements Command
             ->flatMap(fn($details) => $this->consume(
                 $connection,
                 $channel,
+                $read,
                 $state,
                 $details,
                 $message,
@@ -239,6 +246,7 @@ final class Consume implements Command
     private function consume(
         Connection $connection,
         Channel $channel,
+        MessageReader $read,
         mixed $state,
         Details $details,
         Message $message,
@@ -253,6 +261,7 @@ final class Consume implements Command
             ->respond(
                 $connection,
                 $channel,
+                $read,
                 $details->deliveryTag(),
                 $consumerTag,
             );

@@ -5,10 +5,12 @@ namespace Innmind\AMQP;
 
 use Innmind\AMQP\{
     Transport\Connection,
+    Transport\Connection\MessageReader,
     Transport\Frame\Channel,
     Transport\Frame\Method,
     Model\Channel\Close as CloseChannel,
 };
+use Innmind\Stream\Streams;
 use Innmind\Immutable\{
     Either,
     Maybe,
@@ -21,26 +23,28 @@ final class Client
     private Maybe $command;
     /** @var callable(): Maybe<Connection> */
     private $load;
+    private Streams $streams;
 
     /**
      * @param Maybe<Command> $command
      * @param callable(): Maybe<Connection> $load
      */
-    private function __construct(Maybe $command, callable $load)
+    private function __construct(Maybe $command, callable $load, Streams $streams)
     {
         $this->command = $command;
         $this->load = $load;
+        $this->streams = $streams;
     }
 
     /**
      * @param callable(): Maybe<Connection> $load
      */
-    public static function of(callable $load): self
+    public static function of(callable $load, Streams $streams = null): self
     {
         /** @var Maybe<Command> */
         $command = Maybe::nothing();
 
-        return new self($command, $load);
+        return new self($command, $load, $streams ?? Streams::of());
     }
 
     public function with(Command $command): self
@@ -51,6 +55,7 @@ final class Client
                 ->map(static fn($previous) => new Command\Pipe($previous, $command))
                 ->otherwise(static fn() => Maybe::just($command)),
             $this->load,
+            $this->streams,
         );
     }
 
@@ -68,8 +73,9 @@ final class Client
                 ->openChannel()
                 ->flatMap(function($in) use ($command, $state) {
                     [$connection, $channel] = $in;
+                    $read = MessageReader::of($this->streams);
 
-                    return $command($connection, $channel, $state)->flatMap(
+                    return $command($connection, $channel, $read, $state)->flatMap(
                         fn($clientState) => $this
                             ->close($clientState->connection(), $channel)
                             ->map(static fn(): mixed => $clientState->userState()),

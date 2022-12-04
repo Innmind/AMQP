@@ -107,6 +107,7 @@ final class Continuation
     public function respond(
         Connection $connection,
         Channel $channel,
+        MessageReader $read,
         int $deliveryTag,
         string $consumerTag = null,
     ): Either {
@@ -119,7 +120,7 @@ final class Continuation
                     $channel,
                     $consumerTag,
                 ))
-                ->flatMap(fn($connection) => $this->recover($connection, $channel)),
+                ->flatMap(fn($connection) => $this->recover($connection, $channel, $read)),
             State::ack => $this
                 ->doAck($connection, $channel, $deliveryTag)
                 ->map(fn($connection) => Client\State::of($connection, $this->state)),
@@ -138,8 +139,8 @@ final class Continuation
     private function recover(
         Connection $connection,
         Channel $channel,
+        MessageReader $read,
     ): Either {
-        $read = new MessageReader;
         $received = $connection->wait();
         $walkOverPrefetchedMessages = $received->match(
             static fn($received) => $received->frame()->is(Method::basicDeliver),

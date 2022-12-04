@@ -8,6 +8,7 @@ use Innmind\AMQP\{
     Failure,
     Client\State,
     Transport\Connection,
+    Transport\Connection\MessageReader,
     Transport\Frame\Channel,
     Transport\Frame\Method,
     Model\Queue\Unbinding,
@@ -26,6 +27,7 @@ final class Unbind implements Command
     public function __invoke(
         Connection $connection,
         Channel $channel,
+        MessageReader $read,
         mixed $state,
     ): Either {
         /** @var Either<Failure, State> */
