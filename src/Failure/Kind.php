@@ -35,4 +35,5 @@ enum Kind
     case toReadMessage;
     case unexpectedFrame;
     case closedByServer;
+    case closedBySignal;
 }

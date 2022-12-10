@@ -11,8 +11,10 @@ use Innmind\AMQP\{
     Transport\Connection\FrameReader,
     Transport\Connection\State,
     Transport\Connection\Continuation,
+    Transport\Connection\SignalListener,
     Transport\Frame,
     Transport\Protocol,
+    Transport\Frame\Channel,
     Transport\Frame\Type,
     Transport\Frame\Method,
     Transport\Frame\Value,
@@ -25,6 +27,7 @@ use Innmind\AMQP\{
     Model\Connection\MaxFrameSize,
     Failure,
 };
+use Innmind\OperatingSystem\CurrentProcess\Signals;
 use Innmind\Socket\{
     Internet\Transport,
     Client as Socket,
@@ -64,6 +67,7 @@ final class Connection
     private MaxChannels $maxChannels;
     private MaxFrameSize $maxFrameSize;
     private Heartbeat $heartbeat;
+    private SignalListener $signals;
 
     private function __construct(
         Protocol $protocol,
@@ -74,6 +78,7 @@ final class Connection
         MaxChannels $maxChannels,
         MaxFrameSize $maxFrameSize,
         FrameReader $read,
+        SignalListener $signals,
     ) {
         $this->protocol = $protocol;
         $this->sockets = $sockets;
@@ -83,6 +88,7 @@ final class Connection
         $this->maxChannels = $maxChannels;
         $this->maxFrameSize = $maxFrameSize;
         $this->heartbeat = $heartbeat;
+        $this->signals = $signals;
     }
 
     /**
@@ -121,6 +127,7 @@ final class Connection
                 MaxChannels::unlimited(),
                 MaxFrameSize::unlimited(),
                 new FrameReader,
+                SignalListener::uninstalled(),
             ))
             ->flatMap(new Start($server->authority()))
             ->flatMap(new Handshake($server->authority()))
@@ -143,7 +150,7 @@ final class Connection
          * @var Either<Failure, self>
          */
         $connection = $frames($this->protocol, $this->maxFrameSize)->reduce(
-            Either::right($this),
+            $this->signals->safe($this),
             static fn(Either $connection, $frame) => $connection->flatMap(
                 static fn(self $connection) => $connection->sendFrame($frame),
             ),
@@ -228,6 +235,7 @@ final class Connection
             $maxChannels,
             $maxFrameSize,
             $this->read,
+            $this->signals,
         );
     }
 
@@ -245,6 +253,22 @@ final class Connection
             $this->maxChannels,
             $this->maxFrameSize,
             $this->read,
+            $this->signals,
+        );
+    }
+
+    public function listenSignals(Signals $signals, Channel $channel): self
+    {
+        return new self(
+            $this->protocol,
+            $this->sockets,
+            $this->heartbeat,
+            $this->socket,
+            $this->watch,
+            $this->maxChannels,
+            $this->maxFrameSize,
+            $this->read,
+            $this->signals->install($signals, $channel),
         );
     }
 
@@ -285,8 +309,9 @@ final class Connection
 
         /** @var Either<Failure, array{Connection, Set<Socket>}> */
         return $connection
-            ->heartbeat
-            ->ping($connection)
+            ->signals
+            ->safe($connection)
+            ->flatMap(static fn($connection) => $connection->heartbeat->ping($connection))
             ->map(static fn($connection) => [
                 $connection,
                 ($connection->watch)()->match(

@@ -26,8 +26,15 @@ use Innmind\AMQP\{
 };
 use Innmind\Socket\Internet\Transport;
 use Innmind\OperatingSystem\Factory as OSFactory;
-use Innmind\TimeContinuum\Earth\ElapsedPeriod;
+use Innmind\TimeContinuum\Earth\{
+    ElapsedPeriod,
+    Period\Millisecond,
+};
 use Innmind\Filesystem\File\Content;
+use Innmind\Server\Control\Server\{
+    Signal,
+    Command,
+};
 use Innmind\Url\{
     Url,
     Path,
@@ -37,23 +44,28 @@ use Innmind\Immutable\{
     Sequence,
     Map,
 };
+use Innmind\BlackBox\{
+    PHPUnit\BlackBox,
+    Set,
+};
 use PHPUnit\Framework\TestCase;
 
 class ClientTest extends TestCase
 {
+    use BlackBox;
+
     private Client $client;
-    private $clock;
+    private $os;
 
     public function setUp(): void
     {
-        $os = OSFactory::build();
+        $this->os = OSFactory::build();
 
-        $this->client = Factory::of($os)->make(
+        $this->client = Factory::of($this->os)->make(
             Transport::tcp(),
             Url::of('//guest:guest@localhost:5672/'),
             new ElapsedPeriod(1000),
         );
-        $this->clock = $os->clock();
     }
 
     public function testDeclareExchange()
@@ -277,7 +289,7 @@ class ClientTest extends TestCase
             ->withReplyTo(Basic\Message\ReplyTo::of('reply'))
             ->withExpiration(ElapsedPeriod::of(10000))
             ->withId(Basic\Message\Id::of('id'))
-            ->withTimestamp($now = $this->clock->now())
+            ->withTimestamp($now = $this->os->clock()->now())
             ->withType(Basic\Message\Type::of('type'))
             ->withUserId(Basic\Message\UserId::of('guest'))
             ->withAppId(Basic\Message\AppId::of('webcrawler'))
@@ -290,7 +302,7 @@ class ClientTest extends TestCase
                     ['long', Value\SignedLongInteger::of(2)],
                     ['octet', Value\SignedOctet::of(4)],
                     ['table', Value\Table::of(Map::of(['inner', Value\Bits::of(true)]))],
-                    ['timestamp', Value\Timestamp::of($ts = $this->clock->now())],
+                    ['timestamp', Value\Timestamp::of($ts = $this->os->clock()->now())],
                     ['ulong', Value\UnsignedLongInteger::of(6)],
                     ['ulonglong', Value\UnsignedLongLongInteger::of(7)],
                     ['uoctet', Value\UnsignedOctet::of(8)],
@@ -707,5 +719,50 @@ class ClientTest extends TestCase
             );
 
         $this->assertNull($result);
+    }
+
+    /**
+     * @dataProvider signals
+     */
+    public function testSignals($signal)
+    {
+        $process = $this
+            ->os
+            ->control()
+            ->processes()
+            ->execute(
+                Command::foreground('php')
+                    ->withArgument('fixtures/forever-consumer.php')
+                    ->withEnvironment('PATH', $_SERVER['PATH'])
+                    ->withWorkingDirectory(Path::of(\getcwd())),
+            );
+        $this->os->process()->halt(new Millisecond(100));
+        $this
+            ->os
+            ->control()
+            ->processes()
+            ->kill(
+                $process->pid()->match(
+                    static fn($pid) => $pid,
+                    static fn() => null,
+                ),
+                $signal,
+            );
+
+        $this->assertSame(
+            1,
+            $process->wait()->match(
+                static fn() => null,
+                static fn($failed) => $failed->exitCode()->toInt(),
+            ),
+        );
+    }
+
+    public function signals(): iterable
+    {
+        yield [Signal::interrupt];
+        yield [Signal::abort];
+        yield [Signal::terminate];
+        yield [Signal::alarm];
     }
 }

@@ -10,6 +10,7 @@ use Innmind\AMQP\{
     Transport\Frame\Method,
     Model\Channel\Close as CloseChannel,
 };
+use Innmind\OperatingSystem\CurrentProcess;
 use Innmind\Stream\Streams;
 use Innmind\Immutable\{
     Either,
@@ -24,16 +25,24 @@ final class Client
     /** @var callable(): Maybe<Connection> */
     private $load;
     private Streams $streams;
+    /** @var Maybe<CurrentProcess> */
+    private Maybe $signals;
 
     /**
      * @param Maybe<Command> $command
      * @param callable(): Maybe<Connection> $load
+     * @param Maybe<CurrentProcess> $signals
      */
-    private function __construct(Maybe $command, callable $load, Streams $streams)
-    {
+    private function __construct(
+        Maybe $command,
+        callable $load,
+        Streams $streams,
+        Maybe $signals,
+    ) {
         $this->command = $command;
         $this->load = $load;
         $this->streams = $streams;
+        $this->signals = $signals;
     }
 
     /**
@@ -43,8 +52,10 @@ final class Client
     {
         /** @var Maybe<Command> */
         $command = Maybe::nothing();
+        /** @var Maybe<CurrentProcess> */
+        $signals = Maybe::nothing();
 
-        return new self($command, $load, $streams ?? Streams::of());
+        return new self($command, $load, $streams ?? Streams::of(), $signals);
     }
 
     public function with(Command $command): self
@@ -56,6 +67,22 @@ final class Client
                 ->otherwise(static fn() => Maybe::just($command)),
             $this->load,
             $this->streams,
+            $this->signals,
+        );
+    }
+
+    public function listenSignals(CurrentProcess $currentProcess): self
+    {
+        // We ask for the current process instead of the signals wrapper directly
+        // because the user may fork the process between the time this method is
+        // called and the time the listeners are installed (when run is called).
+        // This would result on the listeners being installed for the parent
+        // process instead of the child.
+        return new self(
+            $this->command,
+            $this->load,
+            $this->streams,
+            Maybe::just($currentProcess),
         );
     }
 
@@ -104,8 +131,15 @@ final class Client
             ))
             ->map(static fn($continuation) => $continuation->wait(Method::channelOpenOk))
             ->flatMap(
-                static fn($continuation) => $continuation
+                fn($continuation) => $continuation
                     ->either()
+                    ->map(fn($connection) => $this->signals->match(
+                        static fn($process) => $connection->listenSignals(
+                            $process->signals(),
+                            $channel,
+                        ),
+                        static fn() => $connection,
+                    ))
                     ->map(static fn($connection) => [$connection, $channel])
                     ->leftMap(static fn() => Failure::toOpenChannel()),
             );

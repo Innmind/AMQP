@@ -7,6 +7,7 @@ use Innmind\AMQP\{
     Model,
     Transport\Frame\Method,
 };
+use Innmind\Signals\Signal;
 use Innmind\Immutable\Maybe;
 
 /**
@@ -154,6 +155,11 @@ abstract class Failure
         Maybe $method,
     ): self {
         return new Failure\ClosedByServer($message, $code, $method);
+    }
+
+    final public static function closedBySignal(Signal $signal): self
+    {
+        return new Failure\ClosedBySignal($signal);
     }
 
     abstract public function kind(): Failure\Kind;
