@@ -16,6 +16,7 @@ use Innmind\AMQP\{
     Model\Basic\Message\UserId,
     Model\Basic\Message\AppId,
     Transport\Connection,
+    Transport\ReceivedMessage,
     Transport\Frame,
     Transport\Frame\Value,
     Failure,
@@ -48,7 +49,7 @@ final class MessageReader
     }
 
     /**
-     * @return Either<Failure, Received>
+     * @return Either<Failure, ReceivedMessage>
      */
     public function __invoke(Connection $connection): Either
     {
@@ -66,13 +67,13 @@ final class MessageReader
     }
 
     /**
-     * @return Either<Failure, Received>
+     * @return Either<Failure, ReceivedMessage>
      */
     private function decode(
         Connection $connection,
         Frame $header,
     ): Either {
-        /** @var Either<Failure, Received> */
+        /** @var Either<Failure, ReceivedMessage> */
         return $header
             ->values()
             ->first()
@@ -96,7 +97,7 @@ final class MessageReader
                             ->values()
                             ->drop(2), // for bodySize and flagBits
                     ))
-                    ->map(static fn($message) => Received::of(
+                    ->map(static fn($message) => ReceivedMessage::of(
                         $received->connection(),
                         $message,
                     )),
@@ -247,7 +248,7 @@ final class MessageReader
     }
 
     /**
-     * @return Either<Failure, Received>
+     * @return Either<Failure, ReceivedMessage>
      */
     private function readMessage(
         Connection $connection,
@@ -265,7 +266,7 @@ final class MessageReader
             );
         }
 
-        return $read->map(static fn($in) => Received::of(
+        return $read->map(static fn($in) => ReceivedMessage::of(
             $in[0],
             Message::file(Content\OfStream::of($in[1])),
         ));

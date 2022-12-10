@@ -6,7 +6,7 @@ namespace Innmind\AMQP\Transport;
 /**
  * @internal
  */
-final class Received
+final class ReceivedFrame
 {
     private Connection $connection;
     private Frame $frame;

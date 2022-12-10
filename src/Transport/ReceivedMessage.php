@@ -1,17 +1,14 @@
 <?php
 declare(strict_types = 1);
 
-namespace Innmind\AMQP\Transport\Connection;
+namespace Innmind\AMQP\Transport;
 
-use Innmind\AMQP\{
-    Model\Basic\Message,
-    Transport\Connection,
-};
+use Innmind\AMQP\Model\Basic\Message;
 
 /**
  * @internal
  */
-final class Received
+final class ReceivedMessage
 {
     private Connection $connection;
     private Message $message;

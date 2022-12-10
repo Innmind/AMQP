@@ -5,7 +5,7 @@ namespace Innmind\AMQP\Transport\Connection;
 
 use Innmind\AMQP\{
     Transport\Connection,
-    Transport\Received,
+    Transport\ReceivedFrame,
     Transport\Frame,
     Transport\Frame\Method,
     Failure,
@@ -21,11 +21,11 @@ use Innmind\Immutable\{
  */
 final class Continuation
 {
-    /** @var Either<Failure, Connection|Received> */
+    /** @var Either<Failure, Connection|ReceivedFrame> */
     private Either $connection;
 
     /**
-     * @param Either<Failure, Connection|Received> $connection
+     * @param Either<Failure, Connection|ReceivedFrame> $connection
      */
     private function __construct(Either $connection)
     {
@@ -46,7 +46,7 @@ final class Continuation
      */
     public function wait(Method ...$methods): self
     {
-        /** @psalm-suppress InvalidArgument Because the right side is always Received */
+        /** @psalm-suppress InvalidArgument Because the right side is always ReceivedFrame */
         return new self($this->connection->flatMap(
             static fn($connection) => match ($connection instanceof Connection) {
                 true => $connection->wait(...$methods),
@@ -61,7 +61,7 @@ final class Continuation
             return $this;
         }
 
-        /** @psalm-suppress InvalidArgument Because the right side is always Received */
+        /** @psalm-suppress InvalidArgument Because the right side is always ReceivedFrame */
         return new self($this->connection->flatMap(
             static fn($connection) => match ($connection instanceof Connection) {
                 true => $connection->wait($method),

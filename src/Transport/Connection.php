@@ -160,7 +160,7 @@ final class Connection
     }
 
     /**
-     * @return Either<Failure, Received>
+     * @return Either<Failure, ReceivedFrame>
      */
     public function wait(Frame\Method ...$names): Either
     {
@@ -182,7 +182,7 @@ final class Connection
                     $connection->socket,
                     $connection->protocol,
                 )
-                    ->map(static fn($frame) => Received::of(
+                    ->map(static fn($frame) => ReceivedFrame::of(
                         $connection->asActive(),
                         $frame,
                     )),
@@ -322,30 +322,30 @@ final class Connection
     }
 
     /**
-     * @return Either<Failure, Received>
+     * @return Either<Failure, ReceivedFrame>
      */
     private function ensureValidFrame(
-        Received $received,
+        ReceivedFrame $received,
         Method ...$names,
     ): Either {
         if (\count($names) === 0) {
-            /** @var Either<Failure, Received> */
+            /** @var Either<Failure, ReceivedFrame> */
             return Either::right($received);
         }
 
         if ($received->frame()->type() !== Type::method) {
             // someone must have forgot a wait() call
-            /** @var Either<Failure, Received> */
+            /** @var Either<Failure, ReceivedFrame> */
             return Either::left(Failure::unexpectedFrame());
         }
 
         if ($received->oneOf(...$names)) {
-            /** @var Either<Failure, Received> */
+            /** @var Either<Failure, ReceivedFrame> */
             return Either::right($received);
         }
 
         if ($received->frame()->is(Method::connectionClose)) {
-            /** @var Either<Failure, Received> */
+            /** @var Either<Failure, ReceivedFrame> */
             return $received
                 ->connection()
                 ->send(static fn($protocol) => $protocol->connection()->closeOk())
@@ -394,7 +394,7 @@ final class Connection
                 });
         }
 
-        /** @var Either<Failure, Received> */
+        /** @var Either<Failure, ReceivedFrame> */
         return Either::left(Failure::unexpectedFrame());
     }
 
