@@ -148,18 +148,16 @@ Of course you can use both at the same time if you want to be thorough.
 
 ## Benchmarks
 
-`make benchmark` run on a MacBookPro11,2 (2GHz, 8Gb RAM) with a RabbitMQ running in a container (via docker for mac) produces this result:
+`make benchmark` run on a MacBookPro18,2 (M1 Max, 32Gb RAM) with a RabbitMQ running in a container (via docker for mac) produces this result:
 
 ```
+make benchmark
 Publishing 4000 msgs with 1KB of content:
 php benchmark/producer.php 4000
-0.58265900611877
+0.39038109779358
 Consuming 4000:
 php benchmark/consumer.php
-Pid: 67408, Count: 4000, Time: 1.8081
-Stream produce 100:
-php benchmark/stream_tmp_produce.php 100
-0.22138905525208
+Pid: 701, Count: 4000, Time: 1.6017
 ```
 
 By comparison, the `php-amqplib` produces this result:
@@ -167,13 +165,10 @@ By comparison, the `php-amqplib` produces this result:
 ```
 Publishing 4000 msgs with 1KB of content:
 php benchmark/producer.php 4000
-0.13555884361267
+0.14082598686218
 Consuming 4000:
 php benchmark/consumer.php
-Pid: 9227, Count: 4000, Time: 0.5299
-Stream produce 100:
-php benchmark/stream_tmp_produce.php 100
-0.29217886924744
+Pid: 88562, Count: 4000, Time: 0.1710
 ```
 
 So it appears _pure_ functions come at a cost!
