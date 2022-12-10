@@ -47,7 +47,7 @@ $client = Factory::of($os)
     ->with(DeclareExchange::of('crawler', Type::direct))
     ->with(DeclareQueue::of('parser'))
     ->with(Bind::of('crawler', 'parser'))
-    ->with(Publish::one(Model\Publish::a(Message::of(Str::of('https://github.com')))))
+    ->with(Publish::one(Model\Publish::a(Message::of(Str::of('https://github.com')))->to('crawler')))
     ->run(null)
     ->match(
         static fn() => null, // success
