@@ -165,10 +165,12 @@ By comparison, the `php-amqplib` produces this result:
 ```
 Publishing 4000 msgs with 1KB of content:
 php benchmark/producer.php 4000
-0.14082598686218
+0.15483689308167
 Consuming 4000:
 php benchmark/consumer.php
-Pid: 88562, Count: 4000, Time: 0.1710
+Pid: 46862, Count: 4000, Time: 0.2366
 ```
 
 So it appears _pure_ functions come at a cost!
+
+**Note**: both benchmarks use manual acknowledgement of messages
