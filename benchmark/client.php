@@ -4,31 +4,20 @@ declare(strict_types = 1);
 require_once  __DIR__.'/../vendor/autoload.php';
 
 use Innmind\AMQP\{
-    Client\SignalAware,
-    Client\Client,
-    Transport\Connection\Connection,
-    Transport\Protocol\ArgumentTranslator\ValueTranslator,
-    Transport\Protocol,
+    Factory,
+    Transport\Connection,
 };
 use Innmind\Socket\Internet\Transport;
 use Innmind\TimeContinuum\Earth\ElapsedPeriod;
 use Innmind\Url\Url;
-use Innmind\OperatingSystem\Factory;
+use Innmind\OperatingSystem\Factory as OSFactory;
 
-$os = Factory::build();
+$os = OSFactory::build();
 
-return new SignalAware(
-    new Client(
-        new Connection(
-            Transport::tcp(),
-            Url::of('//guest:guest@localhost:5672/'),
-            new Protocol(new ValueTranslator),
-            new ElapsedPeriod(1000),
-            $os->clock(),
-            $os->remote(),
-            $os->sockets(),
-        ),
-        $os->process()
-    ),
-    $os->process()->signals()
-);
+return Factory::of($os)
+    ->make(
+        Transport::tcp(),
+        Url::of('//guest:guest@localhost:5672/'),
+        new ElapsedPeriod(1000),
+    )
+    ->listenSignals($os->process());
