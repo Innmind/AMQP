@@ -208,7 +208,7 @@ final class Connection
         return $this
             ->send(static fn($protocol) => $protocol->connection()->close(Close::demand()))
             ->wait(Method::connectionCloseOk)
-            ->either()
+            ->connection()
             ->flatMap(static fn($connection) => $connection->socket->close())
             ->maybe()
             ->map(static fn() => new SideEffect);
@@ -349,7 +349,7 @@ final class Connection
             return $received
                 ->connection()
                 ->send(static fn($protocol) => $protocol->connection()->closeOk())
-                ->either()
+                ->connection()
                 ->leftMap(static fn() => Failure::toCloseConnection())
                 ->flatMap(static function() use ($received) {
                     $message = $received

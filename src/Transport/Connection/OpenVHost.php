@@ -33,7 +33,7 @@ final class OpenVHost
                 Open::of($this->vhost),
             ))
             ->wait(Method::connectionOpenOk)
-            ->either()
+            ->connection()
             ->maybe();
     }
 }

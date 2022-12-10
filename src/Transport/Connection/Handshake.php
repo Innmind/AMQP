@@ -120,7 +120,7 @@ final class Handshake
                     $heartbeat,
                 ),
             ))
-            ->either()
+            ->connection()
             ->maybe();
     }
 }

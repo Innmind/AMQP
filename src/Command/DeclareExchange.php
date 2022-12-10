@@ -38,7 +38,7 @@ final class DeclareExchange implements Command
                 $this->command,
             ))
             ->maybeWait($this->command->shouldWait(), Method::exchangeDeclareOk)
-            ->either()
+            ->connection()
             ->map(static fn($connection) => State::of($connection, $state))
             ->leftMap(fn() => Failure::toDeclareExchange($this->command));
     }

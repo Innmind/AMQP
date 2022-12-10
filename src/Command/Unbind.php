@@ -37,7 +37,7 @@ final class Unbind implements Command
                 $this->command,
             ))
             ->wait(Method::queueUnbindOk)
-            ->either()
+            ->connection()
             ->map(static fn($connection) => State::of($connection, $state))
             ->leftMap(fn() => Failure::toUnbind($this->command));
     }

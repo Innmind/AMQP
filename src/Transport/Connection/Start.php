@@ -42,7 +42,7 @@ final class Start
                     $this->authority->userInformation()->password(),
                 ),
             ))
-            ->either()
+            ->connection()
             ->maybe();
     }
 }

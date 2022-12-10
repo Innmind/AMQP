@@ -53,7 +53,7 @@ class ConnectionTest extends TestCase
                 ->send(
                     static fn($protocol) => $protocol->channel()->open(new Channel(1)),
                 )
-                ->either()
+                ->connection()
                 ->match(
                     static fn($connection) => $connection,
                     static fn() => null,
@@ -113,7 +113,7 @@ class ConnectionTest extends TestCase
             $connection
                 ->send(static fn($protocol) => $protocol->channel()->open(new Channel(2)))
                 ->wait(Method::connectionOpen)
-                ->either()
+                ->connection()
                 ->match(
                     static fn() => null,
                     static fn($failure) => $failure->kind(),
@@ -141,7 +141,7 @@ class ConnectionTest extends TestCase
             Method::of(20, 10),
             //missing arguments
         )))
-            ->either()
+            ->connection()
             ->match(
                 static fn($connection) => $connection,
                 static fn() => null,

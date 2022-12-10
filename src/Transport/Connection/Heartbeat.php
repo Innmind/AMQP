@@ -56,7 +56,7 @@ final class Heartbeat
         ) {
             return $connection
                 ->send(static fn() => Sequence::of(Frame::heartbeat()))
-                ->either();
+                ->connection();
         }
 
         /** @var Either<Failure, Connection> */

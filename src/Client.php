@@ -132,7 +132,7 @@ final class Client
             ->map(static fn($continuation) => $continuation->wait(Method::channelOpenOk))
             ->flatMap(
                 fn($continuation) => $continuation
-                    ->either()
+                    ->connection()
                     ->map(fn($connection) => $this->signals->match(
                         static fn($process) => $connection->listenSignals(
                             $process->signals(),
@@ -157,7 +157,7 @@ final class Client
                 CloseChannel::demand(),
             ))
             ->wait(Method::channelCloseOk)
-            ->either()
+            ->connection()
             ->leftMap(static fn() => Failure::toCloseChannel())
             ->flatMap(
                 static fn($connection) => $connection

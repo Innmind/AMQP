@@ -37,7 +37,7 @@ final class Bind implements Command
                 $this->command,
             ))
             ->maybeWait($this->command->shouldWait(), Method::queueBindOk)
-            ->either()
+            ->connection()
             ->map(static fn($connection) => State::of($connection, $state))
             ->leftMap(fn() => Failure::toBind($this->command));
     }

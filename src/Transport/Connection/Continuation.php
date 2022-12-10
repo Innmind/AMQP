@@ -92,7 +92,7 @@ final class Continuation
     /**
      * @return Either<Failure, Connection>
      */
-    public function either(): Either
+    public function connection(): Either
     {
         return $this->connection->map(
             static fn($received) => match ($received instanceof Connection) {

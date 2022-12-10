@@ -148,7 +148,7 @@ final class Continuation
                         Recover::requeue(),
                     ))
                     ->wait(Method::basicRecoverOk)
-                    ->either(),
+                    ->connection(),
             )
             ->map(fn($connection) => Canceled::of(Client\State::of($connection, $this->state)))
             ->leftMap(static fn() => Failure::toRecover($queue));
@@ -171,7 +171,7 @@ final class Continuation
                 $channel,
                 Ack::of($deliveryTag),
             ))
-            ->either()
+            ->connection()
             ->leftMap(static fn() => Failure::toAck($queue));
     }
 
@@ -192,7 +192,7 @@ final class Continuation
                 $channel,
                 Reject::of($deliveryTag),
             ))
-            ->either()
+            ->connection()
             ->leftMap(static fn() => Failure::toReject($queue));
     }
 
@@ -213,7 +213,7 @@ final class Continuation
                 $channel,
                 Reject::requeue($deliveryTag),
             ))
-            ->either()
+            ->connection()
             ->leftMap(static fn() => Failure::toReject($queue));
     }
 
@@ -237,7 +237,7 @@ final class Continuation
                 $channel,
                 Cancel::of($consumerTag),
             ))
-            ->either()
+            ->connection()
             ->leftMap(static fn() => Failure::toCancel($queue));
     }
 }

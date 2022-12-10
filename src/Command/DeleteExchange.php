@@ -37,7 +37,7 @@ final class DeleteExchange implements Command
                 $this->command,
             ))
             ->maybeWait($this->command->shouldWait(), Method::exchangeDeleteOk)
-            ->either()
+            ->connection()
             ->map(static fn($connection) => State::of($connection, $state))
             ->leftMap(fn() => Failure::toDeleteExchange($this->command));
     }

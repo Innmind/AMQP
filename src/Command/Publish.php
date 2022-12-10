@@ -79,7 +79,7 @@ final class Publish implements Command
                 $command,
                 $maxFrameSize,
             ))
-            ->either()
+            ->connection()
             ->leftMap(static fn() => Failure::toPublish($command));
     }
 }

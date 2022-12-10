@@ -128,7 +128,7 @@ final class SignalListener
             ->map(static fn($continuation) => $continuation->wait(Method::channelCloseOk))
             ->flatMap(
                 static fn($continuation) => $continuation
-                    ->either()
+                    ->connection()
                     ->leftMap(static fn() => Failure::toCloseChannel()),
             );
     }

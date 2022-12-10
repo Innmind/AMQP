@@ -37,7 +37,7 @@ final class Qos implements Command
                 $this->command,
             ))
             ->wait(Method::basicQosOk)
-            ->either()
+            ->connection()
             ->map(static fn($connection) => State::of($connection, $state))
             ->leftMap(static fn() => Failure::toAdjustQos());
     }

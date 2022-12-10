@@ -75,7 +75,7 @@ final class Transaction implements Command
         return $connection
             ->send(static fn($protocol) => $protocol->transaction()->select($channel))
             ->wait(Method::transactionSelectOk)
-            ->either()
+            ->connection()
             ->leftMap(static fn() => Failure::toSelect());
     }
 
@@ -100,7 +100,7 @@ final class Transaction implements Command
             ->connection()
             ->send(static fn($protocol) => $protocol->transaction()->commit($channel))
             ->wait(Method::transactionCommitOk)
-            ->either()
+            ->connection()
             ->map(static fn($connection) => State::of($connection, $state->userState()))
             ->leftMap(static fn() => Failure::toCommit());
     }
@@ -115,7 +115,7 @@ final class Transaction implements Command
             ->connection()
             ->send(static fn($protocol) => $protocol->transaction()->rollback($channel))
             ->wait(Method::transactionRollbackOk)
-            ->either()
+            ->connection()
             ->map(static fn($connection) => State::of($connection, $state->userState()))
             ->leftMap(static fn() => Failure::toRollback());
     }
