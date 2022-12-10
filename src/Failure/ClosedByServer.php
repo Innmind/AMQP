@@ -21,6 +21,8 @@ final class ClosedByServer extends Failure
     private Maybe $method;
 
     /**
+     * @internal
+     *
      * @param int<0, 65535> $code
      * @param Maybe<Method> $method
      */

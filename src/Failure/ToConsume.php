@@ -15,6 +15,9 @@ final class ToConsume extends Failure
 {
     private Command $command;
 
+    /**
+     * @internal
+     */
     public function __construct(Command $command)
     {
         $this->command = $command;

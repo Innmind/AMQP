@@ -10,6 +10,13 @@ use Innmind\AMQP\Failure;
  */
 final class ToCloseChannel extends Failure
 {
+    /**
+     * @internal
+     */
+    public function __construct()
+    {
+    }
+
     public function kind(): Kind
     {
         return Kind::toCloseChannel;

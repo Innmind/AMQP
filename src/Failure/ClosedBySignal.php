@@ -16,6 +16,9 @@ final class ClosedBySignal extends Failure
 {
     private Signal $signal;
 
+    /**
+     * @internal
+     */
     public function __construct(Signal $signal)
     {
         $this->signal = $signal;

@@ -12,6 +12,9 @@ final class ToReject extends Failure
 {
     private string $queue;
 
+    /**
+     * @internal
+     */
     public function __construct(string $queue)
     {
         $this->queue = $queue;
