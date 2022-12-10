@@ -22,62 +22,33 @@ use Innmind\Immutable\{
     Sequence,
 };
 
-/**
- * @template T
- */
 final class Continuation
 {
-    /** @var T */
     private mixed $state;
     private State $response;
 
-    /**
-     * @param T $state
-     */
     private function __construct(mixed $state, State $response)
     {
         $this->state = $state;
         $this->response = $response;
     }
 
-    /**
-     * @template A
-     *
-     * @param A $state
-     *
-     * @return self<A>
-     */
     public static function of(mixed $state): self
     {
         // by default we auto ack the message
         return new self($state, State::ack);
     }
 
-    /**
-     * @param T $state
-     *
-     * @return self<T>
-     */
     public function ack(mixed $state): self
     {
         return new self($state, State::ack);
     }
 
-    /**
-     * @param T $state
-     *
-     * @return self<T>
-     */
     public function reject(mixed $state): self
     {
         return new self($state, State::reject);
     }
 
-    /**
-     * @param T $state
-     *
-     * @return self<T>
-     */
     public function requeue(mixed $state): self
     {
         return new self($state, State::requeue);
@@ -87,10 +58,6 @@ final class Continuation
      * Only a consumer is cancellable, not a get
      *
      * Before canceling the consumer, the current message will be acknowledged
-     *
-     * @param T $state
-     *
-     * @return self<T>
      */
     public function cancel(mixed $state): self
     {

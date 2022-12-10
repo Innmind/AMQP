@@ -28,11 +28,11 @@ use Innmind\Immutable\{
 final class Consume implements Command
 {
     private Model $command;
-    /** @var callable(mixed, Message, Continuation<mixed>, Details): Continuation<mixed> */
+    /** @var callable(mixed, Message, Continuation, Details): Continuation */
     private $consume;
 
     /**
-     * @param callable(mixed, Message, Continuation<mixed>, Details): Continuation<mixed> $consume
+     * @param callable(mixed, Message, Continuation, Details): Continuation $consume
      */
     private function __construct(Model $command, callable $consume)
     {
@@ -75,9 +75,7 @@ final class Consume implements Command
     }
 
     /**
-     * @template A
-     *
-     * @param callable(A, Message, Continuation<A>, Details): Continuation<A> $consume
+     * @param callable(mixed, Message, Continuation, Details): Continuation $consume
      */
     public function handle(callable $consume): self
     {

@@ -47,9 +47,7 @@ final class Transaction implements Command
     }
 
     /**
-     * @template A
-     *
-     * @param callable(A): bool $predicate If true it will commit otherwise it will rollback
+     * @param callable(mixed): bool $predicate If true it will commit otherwise it will rollback
      */
     public static function of(
         callable $predicate,
