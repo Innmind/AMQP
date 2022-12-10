@@ -53,7 +53,7 @@ final class Consume implements Command
                 $this->command,
             ))
             ->maybeWait($this->command->shouldWait(), Method::basicConsumeOk)
-            ->match(
+            ->then(
                 fn($connection, $frame) => $this->maybeStart(
                     $connection,
                     $channel,
@@ -61,9 +61,9 @@ final class Consume implements Command
                     $frame,
                     $state,
                 ),
-                static fn($connection) => Either::right(State::of($connection, $state)), // this case should not happen
-                fn() => Either::left(Failure::toConsume($this->command)),
-            );
+                static fn($connection) => State::of($connection, $state), // this case should not happen
+            )
+            ->leftMap(fn() => Failure::toConsume($this->command));
     }
 
     public static function of(string $queue): self

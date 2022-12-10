@@ -45,7 +45,7 @@ final class DeclareQueue implements Command
             ))
             ->maybeWait($this->command->shouldWait(), Method::queueDeclareOk)
             ->then(
-                static function($connection, $frame) use ($state) {
+                function($connection, $frame) use ($state) {
                     $name = $frame
                         ->values()
                         ->first()
@@ -68,12 +68,12 @@ final class DeclareQueue implements Command
                     // maybe in the future we could expose this info to the user
                     return Maybe::all($name, $message, $consumer)
                         ->map(DeclareOk::of(...))
-                        ->map(static fn() => State::of($connection, $state));
+                        ->map(static fn() => State::of($connection, $state))
+                        ->either()
+                        ->leftMap(fn() => Failure::toDeclareQueue($this->command));
                 },
                 static fn($connection) => State::of($connection, $state),
-            )
-            ->either()
-            ->leftMap(fn() => Failure::toDeclareQueue($this->command));
+            );
     }
 
     public static function of(string $name): self

@@ -110,7 +110,7 @@ final class Get implements Command
                 $this->command,
             ))
             ->wait(Method::basicGetOk, Method::basicGetEmpty)
-            ->match(
+            ->then(
                 fn($connection, $frame) => $this->maybeConsume(
                     $connection,
                     $channel,
@@ -118,9 +118,9 @@ final class Get implements Command
                     $frame,
                     $state,
                 ),
-                static fn($connection) => Either::right(State::of($connection, $state)), // this case should not happen
-                fn() => Either::left(Failure::toGet($this->command)),
-            );
+                static fn($connection) => State::of($connection, $state), // this case should not happen
+            )
+            ->leftMap(fn() => Failure::toGet($this->command));
     }
 
     /**

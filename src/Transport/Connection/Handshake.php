@@ -12,11 +12,13 @@ use Innmind\AMQP\{
     Model\Connection\TuneOk,
     Model\Connection\MaxChannels,
     Model\Connection\MaxFrameSize,
+    Failure,
 };
 use Innmind\TimeContinuum\Earth\ElapsedPeriod;
 use Innmind\Url\Authority;
 use Innmind\Immutable\{
     Maybe,
+    Either,
     Predicate\Instance,
 };
 
@@ -39,17 +41,17 @@ final class Handshake
     {
         return $connection
             ->wait(Method::connectionSecure, Method::connectionTune)
-            ->maybe()
             ->flatMap(fn($received) => match ($received->frame()->is(Method::connectionSecure)) {
                 true => $this->secure($received->connection()),
                 false => $this->maybeTune($received->connection(), $received->frame()),
-            });
+            })
+            ->maybe();
     }
 
     /**
-     * @return Maybe<Connection>
+     * @return Either<Failure, Connection>
      */
-    private function secure(Connection $connection): Maybe
+    private function secure(Connection $connection): Either
     {
         return $connection
             ->send(fn($protocol) => $protocol->connection()->secureOk(
@@ -66,9 +68,9 @@ final class Handshake
     }
 
     /**
-     * @return Maybe<Connection>
+     * @return Either<Failure, Connection>
      */
-    private function maybeTune(Connection $connection, Frame $frame): Maybe
+    private function maybeTune(Connection $connection, Frame $frame): Either
     {
         $maxChannels = $frame
             ->values()
@@ -95,7 +97,9 @@ final class Handshake
                 $maxChannels,
                 $maxFrameSize,
                 $heartbeat,
-            ));
+            ))
+            ->either()
+            ->leftMap(static fn() => Failure::toOpenConnection());
     }
 
     /**

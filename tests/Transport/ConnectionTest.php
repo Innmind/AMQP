@@ -53,8 +53,8 @@ class ConnectionTest extends TestCase
                 ->send(
                     static fn($protocol) => $protocol->channel()->open(new Channel(1)),
                 )
+                ->either()
                 ->match(
-                    static fn($connection) => $connection,
                     static fn($connection) => $connection,
                     static fn() => null,
                 ),
@@ -140,11 +140,12 @@ class ConnectionTest extends TestCase
             new Channel(0),
             Method::of(20, 10),
             //missing arguments
-        )))->match(
-            static fn($connection) => $connection,
-            static fn($connection) => $connection,
-            static fn() => null,
-        );
+        )))
+            ->either()
+            ->match(
+                static fn($connection) => $connection,
+                static fn() => null,
+            );
         $this->assertSame(
             Failure\Kind::closedByServer,
             $connection->wait(Method::channelOpenOk)->match(

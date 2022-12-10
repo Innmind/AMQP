@@ -47,18 +47,18 @@ final class DeleteQueue implements Command
             ->then(
                 // this is here just to make sure the response is valid maybe in
                 // the future we could expose this info to the user
-                static fn($connection, $frame) => $frame
+                fn($connection, $frame) => $frame
                     ->values()
                     ->first()
                     ->keep(Instance::of(Value\UnsignedLongInteger::class))
                     ->map(static fn($value) => $value->original())
                     ->map(Count::of(...))
                     ->map(DeleteOk::of(...))
-                    ->map(static fn() => State::of($connection, $state)),
+                    ->map(static fn() => State::of($connection, $state))
+                    ->either()
+                    ->leftMap(fn() => Failure::toDeleteQueue($this->command)),
                 static fn($connection) => State::of($connection, $state),
-            )
-            ->either()
-            ->leftMap(fn() => Failure::toDeleteQueue($this->command));
+            );
     }
 
     public static function of(string $name): self

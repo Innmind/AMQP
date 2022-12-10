@@ -73,18 +73,18 @@ final class Continuation
     /**
      * @template R
      *
-     * @param callable(Connection, Frame): Maybe<R> $withFrame
+     * @param callable(Connection, Frame): Either<Failure, R> $withFrame
      * @param callable(Connection): R $withoutFrame
      *
-     * @return Maybe<R>
+     * @return Either<Failure, R>
      */
-    public function then(callable $withFrame, callable $withoutFrame): Maybe
+    public function then(callable $withFrame, callable $withoutFrame): Either
     {
+        /** @psalm-suppress InvalidArgument Due to Either::right call */
         return $this
             ->connection
-            ->maybe()
             ->flatMap(static fn($received) => match ($received instanceof Connection) {
-                true => Maybe::just($withoutFrame($received)),
+                true => Either::right($withoutFrame($received)),
                 false => $withFrame($received->connection(), $received->frame()),
             });
     }
@@ -99,31 +99,6 @@ final class Continuation
                 true => $received,
                 false => $received->connection(),
             },
-        );
-    }
-
-    /**
-     * @template A
-     * @template B
-     * @template C
-     *
-     * @param callable(Connection, Frame): A $withFrame
-     * @param callable(Connection): B $withoutFrame
-     * @param callable(Failure): C $error
-     *
-     * @return A|B|C
-     */
-    public function match(
-        callable $withFrame,
-        callable $withoutFrame,
-        callable $error,
-    ) {
-        return $this->connection->match(
-            static fn($received) => match ($received instanceof Connection) {
-                true => $withoutFrame($received),
-                false => $withFrame($received->connection(), $received->frame()),
-            },
-            $error,
         );
     }
 }
