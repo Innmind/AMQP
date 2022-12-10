@@ -27,6 +27,8 @@ jobs:
         uses: "ramsey/composer-install@v2"
       - name: PHPUnit
         run: vendor/bin/phpunit --coverage-clover=coverage.clover
+        env:
+          CI: 'true'
       - uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
