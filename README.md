@@ -27,7 +27,6 @@ use Innmind\AMQP\{
     Command\DeclareQueue,
     Command\Bind,
     Command\Publish,
-    Model\Basic as Model,
     Model\Basic\Message,
     Model\Exchange\Type,
 };
@@ -47,7 +46,7 @@ $client = Factory::of($os)
     ->with(DeclareExchange::of('crawler', Type::direct))
     ->with(DeclareQueue::of('parser'))
     ->with(Bind::of('crawler', 'parser'))
-    ->with(Publish::one(Model\Publish::a(Message::of(Str::of('https://github.com')))->to('crawler')))
+    ->with(Publish::one(Message::of(Str::of('https://github.com')))->to('crawler'))
     ->run(null)
     ->match(
         static fn() => null, // success

@@ -6,7 +6,6 @@ use Innmind\AMQP\{
     Command\DeclareExchange,
     Command\Bind,
     Command\Publish,
-    Model\Basic as Model,
     Model\Basic\Message,
     Model\Exchange\Type,
 };
@@ -38,10 +37,8 @@ $client = $client
         Sequence::lazyStartingWith(...\range(1, isset($argv[1]) ? (int) $argv[1] : 1))
             ->map(static fn() => Str::of($msgBody))
             ->map(Message::of(...))
-            ->map(Model\Publish::a(...))
-            ->add(Model\Publish::a(Message::of(Str::of('quit'))))
-            ->map(static fn($publish) => $publish->to('bench_exchange')),
-    ));
+            ->add(Message::of(Str::of('quit'))),
+    )->to('bench_exchange'));
 
 $time = microtime(true);
 

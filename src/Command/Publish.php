@@ -11,6 +11,7 @@ use Innmind\AMQP\{
     Transport\Connection\MessageReader,
     Transport\Frame\Channel,
     Model\Basic\Publish as Model,
+    Model\Basic\Message,
 };
 use Innmind\Immutable\{
     Either,
@@ -51,17 +52,31 @@ final class Publish implements Command
             ->map(static fn($connection) => State::of($connection, $state));
     }
 
-    public static function one(Model $command): self
+    public static function one(Message $message): self
     {
-        return new self(Sequence::of($command));
+        return new self(Sequence::of(Model::a($message)));
     }
 
     /**
-     * @param Sequence<Model> $commands
+     * @param Sequence<Message> $messages
      */
-    public static function many(Sequence $commands): self
+    public static function many(Sequence $messages): self
     {
-        return new self($commands);
+        return new self($messages->map(Model::a(...)));
+    }
+
+    public function to(string $exchange): self
+    {
+        return new self($this->commands->map(
+            static fn($publish) => $publish->to($exchange),
+        ));
+    }
+
+    public function withRoutingKey(string $routingKey): self
+    {
+        return new self($this->commands->map(
+            static fn($publish) => $publish->withRoutingKey($routingKey),
+        ));
     }
 
     /**

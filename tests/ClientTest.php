@@ -20,7 +20,7 @@ use Innmind\AMQP\{
     Command\Consume,
     Command\Transaction,
     Model\Exchange\Type,
-    Model\Basic,
+    Model\Basic\Message,
     TimeContinuum\Format\Timestamp as TimestampFormat,
     Exception\BasicGetNotCancellable,
 };
@@ -77,10 +77,7 @@ class ClientTest extends TestCase
             ->with(Bind::of('foo', 'bar'))
             ->with(Purge::of('bar'))
             ->with(Qos::of(10))
-            ->with(Publish::one(
-                Basic\Publish::a(Basic\Message::of(Str::of('message')))
-                    ->to('foo'),
-            ))
+            ->with(Publish::one(Message::of(Str::of('message')))->to('foo'))
             ->with(
                 Get::of('bar')->handle(function($state, $message, $continuation, $details) {
                     $this->assertNull($state);
@@ -124,14 +121,8 @@ class ClientTest extends TestCase
             ->with(DeclareQueue::of('bar'))
             ->with(Bind::of('foo', 'bar'))
             ->with(Purge::of('bar'))
-            ->with(Publish::one(
-                Basic\Publish::a(Basic\Message::of(Str::of('message0')))
-                    ->to('foo'),
-            ))
-            ->with(Publish::one(
-                Basic\Publish::a(Basic\Message::of(Str::of('message1')))
-                    ->to('foo'),
-            ))
+            ->with(Publish::one(Message::of(Str::of('message0')))->to('foo'))
+            ->with(Publish::one(Message::of(Str::of('message1')))->to('foo'))
             ->with(
                 Get::of('bar')
                     ->take(3) // the third attempt will return a basic.get-empty and the handler is not called
@@ -163,10 +154,7 @@ class ClientTest extends TestCase
             ->with(DeclareQueue::of('bar'))
             ->with(Bind::of('foo', 'bar'))
             ->with(Purge::of('bar'))
-            ->with(Publish::one(
-                Basic\Publish::a(Basic\Message::of(Str::of('message')))
-                    ->to('foo'),
-            ))
+            ->with(Publish::one(Message::of(Str::of('message')))->to('foo'))
             ->with(
                 Get::of('bar')
                     ->take(3)
@@ -192,15 +180,11 @@ class ClientTest extends TestCase
             ->with(Purge::of('bar'))
             ->with(Qos::of(10))
             ->with(Publish::many(Sequence::of(
-                Basic\Publish::a(Basic\Message::of(Str::of('message0')))
-                    ->to('foo'),
-                Basic\Publish::a(Basic\Message::of(Str::of('message1')))
-                    ->to('foo'),
-                Basic\Publish::a(Basic\Message::of(Str::of('message2')))
-                    ->to('foo'),
-                Basic\Publish::a(Basic\Message::of(Str::of('message3')))
-                    ->to('foo'),
-            )))
+                Message::of(Str::of('message0')),
+                Message::of(Str::of('message1')),
+                Message::of(Str::of('message2')),
+                Message::of(Str::of('message3')),
+            ))->to('foo'))
             ->with(
                 Consume::of('bar')->handle(function($state, $message, $continuation, $details) {
                     $this->assertSame('message'.$state, $message->body()->toString());
@@ -247,10 +231,7 @@ class ClientTest extends TestCase
             ->with(Bind::of('foo', 'bar'))
             ->with(Purge::of('bar'))
             ->with(Qos::of(10))
-            ->with(Publish::one(
-                Basic\Publish::a(Basic\Message::of(Str::of('message')))
-                    ->to('foo'),
-            ))
+            ->with(Publish::one(Message::of(Str::of('message')))->to('foo'))
             ->with(
                 Get::of('bar')->handle(function($state, $message, $continuation, $details) {
                     $this->assertNull($state);
@@ -280,19 +261,19 @@ class ClientTest extends TestCase
 
     public function testGetMessageWithAllProperties()
     {
-        $message = Basic\Message::of(Str::of('message'))
-            ->withContentType(Basic\Message\ContentType::of('text', 'plain'))
-            ->withContentEncoding(Basic\Message\ContentEncoding::of('gzip'))
-            ->withDeliveryMode(Basic\Message\DeliveryMode::persistent)
-            ->withPriority(Basic\Message\Priority::five)
-            ->withCorrelationId(Basic\Message\CorrelationId::of('correlation'))
-            ->withReplyTo(Basic\Message\ReplyTo::of('reply'))
+        $message = Message::of(Str::of('message'))
+            ->withContentType(Message\ContentType::of('text', 'plain'))
+            ->withContentEncoding(Message\ContentEncoding::of('gzip'))
+            ->withDeliveryMode(Message\DeliveryMode::persistent)
+            ->withPriority(Message\Priority::five)
+            ->withCorrelationId(Message\CorrelationId::of('correlation'))
+            ->withReplyTo(Message\ReplyTo::of('reply'))
             ->withExpiration(ElapsedPeriod::of(10000))
-            ->withId(Basic\Message\Id::of('id'))
+            ->withId(Message\Id::of('id'))
             ->withTimestamp($now = $this->os->clock()->now())
-            ->withType(Basic\Message\Type::of('type'))
-            ->withUserId(Basic\Message\UserId::of('guest'))
-            ->withAppId(Basic\Message\AppId::of('webcrawler'))
+            ->withType(Message\Type::of('type'))
+            ->withUserId(Message\UserId::of('guest'))
+            ->withAppId(Message\AppId::of('webcrawler'))
             ->withHeaders(
                 Map::of(
                     ['bits', Value\Bits::of(true)],
@@ -317,10 +298,7 @@ class ClientTest extends TestCase
             ->with(Bind::of('foo', 'bar'))
             ->with(Purge::of('bar'))
             ->with(Qos::of(10))
-            ->with(Publish::one(
-                Basic\Publish::a($message)
-                    ->to('foo'),
-            ))
+            ->with(Publish::one($message)->to('foo'))
             ->with(
                 Get::of('bar')->handle(function($state, $message, $continuation, $details) use ($now, $ts) {
                     $this->assertNull($state);
@@ -473,10 +451,7 @@ class ClientTest extends TestCase
             ->with(Bind::of('foo', 'bar'))
             ->with(Purge::of('bar'))
             ->with(Qos::of(10))
-            ->with(Publish::one(
-                Basic\Publish::a(Basic\Message::file(Content\AtPath::of(Path::of(__FILE__))))
-                    ->to('foo'),
-            ))
+            ->with(Publish::one(Message::file(Content\AtPath::of(Path::of(__FILE__))))->to('foo'))
             ->with(
                 Get::of('bar')->handle(function($state, $message, $continuation, $details) {
                     $this->assertNull($state);
@@ -504,8 +479,7 @@ class ClientTest extends TestCase
     public function testSegmentedConsumingDoesntAlterMessageOrdering()
     {
         $messages = Sequence::of(...\range(1, 100))->map(
-            static fn($i) => Basic\Publish::a(Basic\Message::of(Str::of("$i")))
-                ->to('foo'),
+            static fn($i) => Message::of(Str::of("$i")),
         );
 
         $result = $this
@@ -515,7 +489,7 @@ class ClientTest extends TestCase
             ->with(Bind::of('foo', 'bar'))
             ->with(Purge::of('bar'))
             ->with(Qos::of(20))
-            ->with(Publish::many($messages))
+            ->with(Publish::many($messages)->to('foo'))
             // consume all messages in 10 iterations
             ->with(
                 $consumer = Consume::of('bar')->handle(function($state, $message, $continuation, $details) {
@@ -552,8 +526,7 @@ class ClientTest extends TestCase
     public function testSegmentedConsumingDoesntAlterMessageOrderingBetweenConnections()
     {
         $messages = Sequence::of(...\range(1, 100))->map(
-            static fn($i) => Basic\Publish::a(Basic\Message::of(Str::of("$i")))
-                ->to('foo'),
+            static fn($i) => Message::of(Str::of("$i")),
         );
 
         $result = $this
@@ -562,7 +535,7 @@ class ClientTest extends TestCase
             ->with(DeclareQueue::of('bar'))
             ->with(Bind::of('foo', 'bar'))
             ->with(Purge::of('bar'))
-            ->with(Publish::many($messages))
+            ->with(Publish::many($messages)->to('foo'))
             ->run(null)
             ->match(
                 static fn($result) => $result,
@@ -620,10 +593,7 @@ class ClientTest extends TestCase
             ->with(DeclareQueue::of('bar'))
             ->with(Bind::of('foo', 'bar'))
             ->with(Purge::of('bar'))
-            ->with(Publish::one(
-                Basic\Publish::a(Basic\Message::of(Str::of('message')))
-                    ->to('foo'),
-            ))
+            ->with(Publish::one(Message::of(Str::of('message')))->to('foo'))
             ->with(
                 Transaction::of(
                     static fn($state) => $state,
@@ -663,10 +633,7 @@ class ClientTest extends TestCase
             ->with(
                 Transaction::of(
                     static fn($state) => $state,
-                    Publish::one(
-                        Basic\Publish::a(Basic\Message::of(Str::of('message')))
-                            ->to('foo'),
-                    ),
+                    Publish::one(Message::of(Str::of('message')))->to('foo'),
                 ),
             )
             ->with(
@@ -698,10 +665,7 @@ class ClientTest extends TestCase
             ->with(DeclareQueue::of('bar'))
             ->with(Bind::of('foo', 'bar'))
             ->with(Purge::of('bar'))
-            ->with(Publish::one(
-                Basic\Publish::a(Basic\Message::of(Str::of('message')))
-                    ->to('foo'),
-            ))
+            ->with(Publish::one(Message::of(Str::of('message')))->to('foo'))
             ->with(Purge::of('bar'))
             ->with(
                 Get::of('bar')->handle(static function($state, $message, $continuation) {
