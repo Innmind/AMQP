@@ -5,7 +5,6 @@ namespace Innmind\AMQP\Transport\Connection;
 
 use Innmind\AMQP\{
     Model\Basic\Message,
-    Model\Basic\Message\Generic,
     Model\Basic\Message\ContentType,
     Model\Basic\Message\ContentEncoding,
     Model\Basic\Message\DeliveryMode,
@@ -16,181 +15,306 @@ use Innmind\AMQP\{
     Model\Basic\Message\Type,
     Model\Basic\Message\UserId,
     Model\Basic\Message\AppId,
-    Transport\Connection as ConnectionInterface,
+    Transport\Connection,
+    Transport\ReceivedMessage,
+    Transport\Frame,
     Transport\Frame\Value,
+    Failure,
 };
 use Innmind\TimeContinuum\Earth\ElapsedPeriod;
+use Innmind\Filesystem\File\Content;
+use Innmind\Stream\{
+    Streams,
+    Bidirectional,
+};
 use Innmind\Immutable\{
     Map,
     Str,
+    Predicate\Instance,
+    Sequence,
+    Maybe,
+    Either,
 };
 
+/**
+ * @internal
+ */
 final class MessageReader
 {
-    public function __invoke(ConnectionInterface $connection): Message
+    private Streams $streams;
+
+    private function __construct(Streams $streams)
     {
-        $header = $connection->wait();
-        /** @var Value\UnsignedLongLongInteger */
-        $value = $header->values()->first();
-        $bodySize = $value
-            ->original()
-            ->value();
-        /** @var Value\UnsignedShortInteger */
-        $value = $header->values()->get(1);
-        $flagBits = $value
-            ->original()
-            ->value();
-        $payload = Str::of('');
+        $this->streams = $streams;
+    }
 
-        while ($payload->length() !== $bodySize) {
-            /** @var Value\Text */
-            $value = $connection
-                ->wait()
-                ->values()
-                ->first();
-            $payload = $payload->append(
-                $value
-                    ->original()
-                    ->toString(),
-            );
-        }
+    /**
+     * @return Either<Failure, ReceivedMessage>
+     */
+    public function __invoke(Connection $connection): Either
+    {
+        return $connection
+            ->wait()
+            ->flatMap(fn($received) => $this->decode(
+                $received->connection(),
+                $received->frame(),
+            ));
+    }
 
-        $message = new Generic($payload);
-        $properties = $header
+    public static function of(Streams $streams): self
+    {
+        return new self($streams);
+    }
+
+    /**
+     * @return Either<Failure, ReceivedMessage>
+     */
+    private function decode(
+        Connection $connection,
+        Frame $header,
+    ): Either {
+        /** @var Either<Failure, ReceivedMessage> */
+        return $header
             ->values()
-            ->drop(2);
-
-        if ($flagBits & (1 << 15)) {
-            /** @var Value\ShortString */
-            $value = $properties->first();
-            [$topLevel, $subType] = \explode(
-                '/',
-                $value->original()->toString(),
+            ->first()
+            ->keep(Instance::of(Value\UnsignedLongLongInteger::class))
+            ->map(static fn($value) => $value->original())
+            ->either()
+            ->leftMap(static fn() => Failure::toReadMessage())
+            ->flatMap(fn($bodySize) => $this->readMessage($connection, $bodySize))
+            ->flatMap(
+                fn($received) => $header
+                    ->values()
+                    ->get(1)
+                    ->keep(Instance::of(Value\UnsignedShortInteger::class))
+                    ->map(static fn($value) => $value->original())
+                    ->either()
+                    ->leftMap(static fn() => Failure::toReadMessage())
+                    ->flatMap(fn($flagBits) => $this->addProperties(
+                        $received->message(),
+                        $flagBits,
+                        $header
+                            ->values()
+                            ->drop(2), // for bodySize and flagBits
+                    ))
+                    ->map(static fn($message) => ReceivedMessage::of(
+                        $received->connection(),
+                        $message,
+                    )),
             );
-            $message = $message->withContentType(new ContentType(
-                $topLevel,
-                $subType,
-            ));
-            $properties = $properties->drop(1);
-        }
+    }
 
-        if ($flagBits & (1 << 14)) {
-            /** @var Value\ShortString */
-            $value = $properties->first();
-            $message = $message->withContentEncoding(new ContentEncoding(
-                $value->original()->toString(),
-            ));
-            $properties = $properties->drop(1);
-        }
+    /**
+     * @param Sequence<Value> $properties
+     *
+     * @return Either<Failure, Message>
+     */
+    private function addProperties(
+        Message $message,
+        int $flagBits,
+        Sequence $properties,
+    ): Either {
+        /** @var Sequence<array{int, callable(Maybe<Value>, Message): Maybe<Message>}> */
+        $toParse = Sequence::of(
+            [
+                15,
+                static fn(Maybe $value, Message $message) => $value
+                    ->keep(Instance::of(Value\ShortString::class))
+                    ->map(static fn($value) => $value->original()->toString())
+                    ->flatMap(ContentType::maybe(...))
+                    ->map(static fn($type) => $message->withContentType($type)),
+            ],
+            [
+                14,
+                static fn(Maybe $value, Message $message) => $value
+                    ->keep(Instance::of(Value\ShortString::class))
+                    ->map(static fn($value) => $value->original()->toString())
+                    ->flatMap(ContentEncoding::maybe(...))
+                    ->map(static fn($encoding) => $message->withContentEncoding($encoding)),
+            ],
+            [
+                13,
+                static fn(Maybe $value, Message $message) => $value
+                    ->keep(Instance::of(Value\Table::class))
+                    ->map(static fn($value) => $value->original())
+                    ->map(static fn($headers) => $headers->map(
+                        static fn($_, $value): mixed => $value->original(),
+                    ))
+                    ->map(static fn($headers) => $message->withHeaders($headers)),
+            ],
+            [
+                12,
+                static fn(Maybe $value, Message $message) => $value
+                    ->keep(Instance::of(Value\UnsignedOctet::class))
+                    ->map(static fn($value) => $value->original())
+                    ->map(static fn($mode) => match ($mode) {
+                        DeliveryMode::persistent->toInt() => DeliveryMode::persistent,
+                        default => DeliveryMode::nonPersistent,
+                    })
+                    ->map(static fn($mode) => $message->withDeliveryMode($mode)),
+            ],
+            [
+                11,
+                static fn(Maybe $value, Message $message) => $value
+                    ->keep(Instance::of(Value\UnsignedOctet::class))
+                    ->map(static fn($value) => $value->original())
+                    ->flatMap(Priority::maybe(...))
+                    ->map(static fn($priority) => $message->withPriority($priority)),
+            ],
+            [
+                10,
+                static fn(Maybe $value, Message $message) => $value
+                    ->keep(Instance::of(Value\ShortString::class))
+                    ->map(static fn($value) => $value->original()->toString())
+                    ->map(CorrelationId::of(...))
+                    ->map(static fn($id) => $message->withCorrelationId($id)),
+            ],
+            [
+                9,
+                static fn(Maybe $value, Message $message) => $value
+                    ->keep(Instance::of(Value\ShortString::class))
+                    ->map(static fn($value) => $value->original()->toString())
+                    ->map(ReplyTo::of(...))
+                    ->map(static fn($replyTo) => $message->withReplyTo($replyTo)),
+            ],
+            [
+                8,
+                static fn(Maybe $value, Message $message) => $value
+                    ->keep(Instance::of(Value\ShortString::class))
+                    ->map(static fn($value) => (int) $value->original()->toString())
+                    ->flatMap(ElapsedPeriod::maybe(...))
+                    ->map(static fn($expiration) => $message->withExpiration($expiration)),
+            ],
+            [
+                7,
+                static fn(Maybe $value, Message $message) => $value
+                    ->keep(Instance::of(Value\ShortString::class))
+                    ->map(static fn($value) => $value->original()->toString())
+                    ->map(Id::of(...))
+                    ->map(static fn($id) => $message->withId($id)),
+            ],
+            [
+                6,
+                static fn(Maybe $value, Message $message) => $value
+                    ->keep(Instance::of(Value\Timestamp::class))
+                    ->map(static fn($value) => $value->original())
+                    ->map(static fn($timestamp) => $message->withTimestamp($timestamp)),
+            ],
+            [
+                5,
+                static fn(Maybe $value, Message $message) => $value
+                    ->keep(Instance::of(Value\ShortString::class))
+                    ->map(static fn($value) => $value->original()->toString())
+                    ->map(Type::of(...))
+                    ->map(static fn($type) => $message->withType($type)),
+            ],
+            [
+                4,
+                static fn(Maybe $value, Message $message) => $value
+                    ->keep(Instance::of(Value\ShortString::class))
+                    ->map(static fn($value) => $value->original()->toString())
+                    ->map(UserId::of(...))
+                    ->map(static fn($id) => $message->withUserId($id)),
+            ],
+            [
+                3,
+                static fn(Maybe $value, Message $message) => $value
+                    ->keep(Instance::of(Value\ShortString::class))
+                    ->map(static fn($value) => $value->original()->toString())
+                    ->map(AppId::of(...))
+                    ->map(static fn($id) => $message->withAppId($id)),
+            ],
+        );
 
-        if ($flagBits & (1 << 13)) {
-            /** @var Value\Table */
-            $value = $properties->first();
-            /** @var Map<string, mixed> */
-            $headers = $value
-                ->original()
-                ->toMapOf(
-                    'string',
-                    'mixed',
-                    static function(string $key, Value $value): \Generator {
-                        yield $key => $value->original();
-                    },
-                );
-            $message = $message->withHeaders($headers);
-            $properties = $properties->drop(1);
-        }
+        /**
+         * @psalm-suppress MixedArrayAccess
+         * @psalm-suppress MixedArgument
+         * @psalm-suppress MixedMethodCall
+         * @var Either<Failure, Message>
+         */
+        return $toParse
+            ->filter(static fn($pair) => (bool) ($flagBits & (1 << $pair[0])))
+            ->map(static fn($pair) => $pair[1])
+            ->reduce(
+                Maybe::just([$properties, $message]),
+                static fn(Maybe $state, $parse): Maybe => $state->flatMap(
+                    static fn($state) => $parse($state[0]->first(), $state[1])
+                        ->map(static fn($message) => [$state[0]->drop(1), $message]),
+                ),
+            )
+            ->map(static fn($state) => $state[1])
+            ->either()
+            ->leftMap(static fn() => Failure::toReadMessage());
+    }
 
-        if ($flagBits & (1 << 12)) {
-            /** @var Value\UnsignedOctet */
-            $value = $properties->first();
-            $message = $message->withDeliveryMode(
-                $value->original()->value() === DeliveryMode::persistent()->toInt() ?
-                    DeliveryMode::persistent() : DeliveryMode::nonPersistent(),
+    /**
+     * @return Either<Failure, ReceivedMessage>
+     */
+    private function readMessage(
+        Connection $connection,
+        int $bodySize,
+    ): Either {
+        $walk = $bodySize !== 0;
+        $stream = $this->streams->temporary()->new();
+        $read = Either::right([$connection, $stream, 0]);
+
+        while ($walk) {
+            $read = $read->flatMap($this->readChunk(...));
+            $walk = $read->match(
+                static fn($read) => $read[2] !== $bodySize,
+                static fn() => false, // because no content was found in the last frame or failed to write the chunk to the temp stream
             );
-            $properties = $properties->drop(1);
         }
 
-        if ($flagBits & (1 << 11)) {
-            /** @var Value\UnsignedOctet */
-            $value = $properties->first();
-            $message = $message->withPriority(new Priority(
-                $value->original()->value(),
-            ));
-            $properties = $properties->drop(1);
-        }
+        return $read->map(static fn($in) => ReceivedMessage::of(
+            $in[0],
+            Message::file(Content\OfStream::of($in[1])),
+        ));
+    }
 
-        if ($flagBits & (1 << 10)) {
-            /** @var Value\ShortString */
-            $value = $properties->first();
-            $message = $message->withCorrelationId(new CorrelationId(
-                $value->original()->toString(),
-            ));
-            $properties = $properties->drop(1);
-        }
+    /**
+     * @param array{Connection, Bidirectional, int} $in
+     *
+     * @return Either<Failure, array{Connection, Bidirectional, int}>
+     */
+    private function readChunk(array $in): Either
+    {
+        [$connection, $stream, $read] = $in;
 
-        if ($flagBits & (1 << 9)) {
-            /** @var Value\ShortString */
-            $value = $properties->first();
-            $message = $message->withReplyTo(new ReplyTo(
-                $value->original()->toString(),
-            ));
-            $properties = $properties->drop(1);
-        }
+        return $connection
+            ->wait()
+            ->flatMap(
+                fn($received) => $this
+                    ->accumulateChunk($received->frame(), $stream, $read)
+                    ->map(static function($in) use ($received) {
+                        [$stream, $read] = $in;
 
-        if ($flagBits & (1 << 8)) {
-            /** @var Value\ShortString */
-            $value = $properties->first();
-            $message = $message->withExpiration(new ElapsedPeriod(
-                (int) $value->original()->toString(),
-            ));
-            $properties = $properties->drop(1);
-        }
-
-        if ($flagBits & (1 << 7)) {
-            /** @var Value\ShortString */
-            $value = $properties->first();
-            $message = $message->withId(new Id(
-                $value->original()->toString(),
-            ));
-            $properties = $properties->drop(1);
-        }
-
-        if ($flagBits & (1 << 6)) {
-            /** @var Value\Timestamp */
-            $value = $properties->first();
-            $message = $message->withTimestamp(
-                $value->original(),
+                        return [$received->connection(), $stream, $read];
+                    }),
             );
-            $properties = $properties->drop(1);
-        }
+    }
 
-        if ($flagBits & (1 << 5)) {
-            /** @var Value\ShortString */
-            $value = $properties->first();
-            $message = $message->withType(new Type(
-                $value->original()->toString(),
-            ));
-            $properties = $properties->drop(1);
-        }
-
-        if ($flagBits & (1 << 4)) {
-            /** @var Value\ShortString */
-            $value = $properties->first();
-            $message = $message->withUserId(new UserId(
-                $value->original()->toString(),
-            ));
-            $properties = $properties->drop(1);
-        }
-
-        if ($flagBits & (1 << 3)) {
-            /** @var Value\ShortString */
-            $value = $properties->first();
-            $message = $message->withAppId(new AppId(
-                $value->original()->toString(),
-            ));
-            $properties = $properties->drop(1);
-        }
-
-        return $message;
+    /**
+     * @return Either<Failure, array{Bidirectional, int}>
+     */
+    private function accumulateChunk(
+        Frame $frame,
+        Bidirectional $stream,
+        int $read,
+    ): Either {
+        /** @var Either<Failure, array{Bidirectional, int}> */
+        return $frame
+            ->content()
+            ->either()
+            ->map(static fn($chunk) => $chunk->toEncoding('ASCII'))
+            ->flatMap(
+                static fn($chunk) => $stream
+                    ->write($chunk)
+                    ->map(static fn($stream) => [
+                        $stream,
+                        $read + $chunk->length(),
+                    ]),
+            )
+            ->leftMap(static fn() => Failure::toReadMessage());
     }
 }

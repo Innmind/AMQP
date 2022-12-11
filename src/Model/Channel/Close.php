@@ -3,60 +3,48 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Model\Channel;
 
+use Innmind\Immutable\Maybe;
+
+/**
+ * @psalm-immutable
+ */
 final class Close
 {
-    private ?int $replyCode = null;
-    private ?string $replyText = null;
-    private ?string $cause = null;
+    /** @var Maybe<array{int<0, 65535>, string}> */
+    private Maybe $reply;
 
+    private function __construct()
+    {
+        /** @var Maybe<array{int<0, 65535>, string}> */
+        $this->reply = Maybe::nothing();
+    }
+
+    /**
+     * @psalm-pure
+     */
+    public static function demand(): self
+    {
+        return new self;
+    }
+
+    /**
+     * @psalm-pure
+     *
+     * @param int<0, 65535> $code
+     */
     public static function reply(int $code, string $text): self
     {
         $self = new self;
-        $self->replyCode = $code;
-        $self->replyText = $text;
+        $self->reply = Maybe::just([$code, $text]);
 
         return $self;
     }
 
     /**
-     * @param string $method ie: exchange.declare, channel.open, etc
+     * @return Maybe<array{int<0, 65535>, string}>
      */
-    public function causedBy(string $method): self
+    public function response(): Maybe
     {
-        $self = clone $this;
-        $self->cause = $method;
-
-        return $self;
-    }
-
-    public function hasReply(): bool
-    {
-        return \is_int($this->replyCode);
-    }
-
-    /** @psalm-suppress InvalidNullableReturnType */
-    public function replyCode(): int
-    {
-        /** @psalm-suppress NullableReturnStatement */
-        return $this->replyCode;
-    }
-
-    /** @psalm-suppress InvalidNullableReturnType */
-    public function replyText(): string
-    {
-        /** @psalm-suppress NullableReturnStatement */
-        return $this->replyText;
-    }
-
-    public function causedKnown(): bool
-    {
-        return \is_string($this->cause);
-    }
-
-    /** @psalm-suppress InvalidNullableReturnType */
-    public function cause(): string
-    {
-        /** @psalm-suppress NullableReturnStatement */
-        return $this->cause;
+        return $this->reply;
     }
 }

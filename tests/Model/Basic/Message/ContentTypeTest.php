@@ -15,7 +15,7 @@ class ContentTypeTest extends TestCase
     {
         $this->assertSame(
             'application/json',
-            (new ContentType('application', 'json'))->toString(),
+            ContentType::of('application', 'json')->toString(),
         );
     }
 
@@ -23,6 +23,6 @@ class ContentTypeTest extends TestCase
     {
         $this->expectException(DomainException::class);
 
-        new ContentType('foo', 'json');
+        ContentType::of('foo', 'json');
     }
 }

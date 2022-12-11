@@ -4,62 +4,62 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
-use Innmind\Math\{
-    Algebra\Number,
-    Algebra\Integer,
-    DefinitionSet\Set,
-    DefinitionSet\NaturalNumbers,
-};
 use Innmind\Stream\Readable;
+use Innmind\Immutable\{
+    Str,
+    Maybe,
+};
 
 /**
- * @implements Value<Number>
+ * @implements Value<int|float>
+ * @psalm-immutable
  */
 final class Decimal implements Value
 {
-    private static ?NaturalNumbers $definitionSet = null;
+    private SignedLongInteger $value;
+    private UnsignedOctet $scale;
 
-    private Integer $value;
-    private Integer $scale;
-    private Number $original;
-
-    public function __construct(Integer $value, Integer $scale)
+    private function __construct(SignedLongInteger $value, UnsignedOctet $scale)
     {
         $this->scale = $scale;
         $this->value = $value;
-        $this->original = $value->divideBy(
-            (new Integer(10))->power($scale),
+    }
+
+    /**
+     * @psalm-pure
+     *
+     * @param int<-2147483648, 2147483647> $value
+     * @param int<0, 255> $scale
+     */
+    public static function of(int $value, int $scale): self
+    {
+        return new self(SignedLongInteger::of($value), UnsignedOctet::of($scale));
+    }
+
+    /**
+     * @return Maybe<self>
+     */
+    public static function unpack(Readable $stream): Maybe
+    {
+        return UnsignedOctet::unpack($stream)->flatMap(
+            static fn($scale) => SignedLongInteger::unpack($stream)->map(
+                static fn($value) => new self($value, $scale),
+            ),
         );
     }
 
-    public static function of(Integer $value, Integer $scale): self
+    public function original(): int|float
     {
-        SignedLongInteger::of($value);
-        UnsignedOctet::of($scale);
-
-        return new self($value, $scale);
+        return $this->value->original() / (10 ** $this->scale->original());
     }
 
-    public static function unpack(Readable $stream): self
+    public function symbol(): Symbol
     {
-        $scale = UnsignedOctet::unpack($stream)->original();
-        $value = SignedLongInteger::unpack($stream)->original();
-
-        return new self($value, $scale);
+        return Symbol::decimal;
     }
 
-    public function original(): Number
+    public function pack(): Str
     {
-        return $this->original;
-    }
-
-    public function pack(): string
-    {
-        return (new UnsignedOctet($this->scale))->pack().(new SignedLongInteger($this->value))->pack();
-    }
-
-    public static function definitionSet(): Set
-    {
-        return self::$definitionSet ?? self::$definitionSet = new NaturalNumbers;
+        return $this->scale->pack()->append($this->value->pack()->toString());
     }
 }

@@ -14,12 +14,15 @@ final class Delegate implements ArgumentTranslator
     /** @var list<ArgumentTranslator> */
     private array $translators;
 
+    /**
+     * @no-named-arguments
+     */
     public function __construct(ArgumentTranslator ...$translators)
     {
         $this->translators = $translators;
     }
 
-    public function __invoke($value): Value
+    public function __invoke(mixed $value): Value
     {
         foreach ($this->translators as $translate) {
             try {

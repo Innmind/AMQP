@@ -3,37 +3,18 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Model\Exchange;
 
-final class Type
+/**
+ * @psalm-immutable
+ */
+enum Type
 {
-    private string $value;
-
-    public function __construct(string $value)
-    {
-        $this->value = $value;
-    }
-
-    public static function direct(): self
-    {
-        return new self('direct');
-    }
-
-    public static function fanout(): self
-    {
-        return new self('fanout');
-    }
-
-    public static function topic(): self
-    {
-        return new self('topic');
-    }
-
-    public static function headers(): self
-    {
-        return new self('headers');
-    }
+    case direct;
+    case fanout;
+    case topic;
+    case headers;
 
     public function toString(): string
     {
-        return $this->value;
+        return $this->name;
     }
 }

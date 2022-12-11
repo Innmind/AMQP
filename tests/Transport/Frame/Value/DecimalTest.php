@@ -7,11 +7,7 @@ use Innmind\AMQP\{
     Transport\Frame\Value\Decimal,
     Transport\Frame\Value,
 };
-use Innmind\Math\{
-    Algebra\Number,
-    Algebra\Integer,
-    Exception\OutOfDefinitionSet,
-};
+use Innmind\Math\Exception\OutOfDefinitionSet;
 use Innmind\Stream\Readable\Stream;
 use PHPUnit\Framework\TestCase;
 
@@ -21,7 +17,7 @@ class DecimalTest extends TestCase
     {
         $this->assertInstanceOf(
             Value::class,
-            new Decimal(new Integer(100), new Integer(2))
+            Decimal::of(100, 2),
         );
     }
 
@@ -30,11 +26,9 @@ class DecimalTest extends TestCase
      */
     public function testStringCast($number, $scale, $expected)
     {
-        $value = new Decimal(new Integer($number), new Integer($scale));
-        $this->assertSame($expected, $value->pack());
-        $this->assertInstanceOf(Number::class, $value->original());
-        $this->assertSame("$number ÷ (10^$scale)", $value->original()->toString());
-        $this->assertSame($number / (10**$scale), $value->original()->value());
+        $value = Decimal::of($number, $scale);
+        $this->assertSame($expected, $value->pack()->toString());
+        $this->assertSame($number / (10**$scale), $value->original());
     }
 
     /**
@@ -42,11 +36,14 @@ class DecimalTest extends TestCase
      */
     public function testFromStream($number, $scale, $string)
     {
-        $value = Decimal::unpack(Stream::ofContent($string));
+        $value = Decimal::unpack(Stream::ofContent($string))->match(
+            static fn($value) => $value,
+            static fn() => null,
+        );
 
         $this->assertInstanceOf(Decimal::class, $value);
-        $this->assertSame(($number / (10**$scale)), $value->original()->value());
-        $this->assertSame($string, $value->pack());
+        $this->assertSame(($number / (10**$scale)), $value->original());
+        $this->assertSame($string, $value->pack()->toString());
     }
 
     public function testThrowWhenValueTooHigh()
@@ -54,7 +51,7 @@ class DecimalTest extends TestCase
         $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('2147483648 ∉ [-2147483648;2147483647]');
 
-        Decimal::of(new Integer(2147483648), new Integer(0));
+        Decimal::of(2147483648, 0);
     }
 
     public function testThrowWhenValueTooLow()
@@ -62,7 +59,7 @@ class DecimalTest extends TestCase
         $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('-2147483649 ∉ [-2147483648;2147483647]');
 
-        Decimal::of(new Integer(-2147483649), new Integer(0));
+        Decimal::of(-2147483649, 0);
     }
 
     public function testThrowWhenScaleTooHigh()
@@ -70,7 +67,7 @@ class DecimalTest extends TestCase
         $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('256 ∉ [0;255]');
 
-        Decimal::of(new Integer(1), new Integer(256));
+        Decimal::of(1, 256);
     }
 
     public function testThrowWhenScaleTooLow()
@@ -78,7 +75,7 @@ class DecimalTest extends TestCase
         $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('-1 ∉ [0;255]');
 
-        Decimal::of(new Integer(1), new Integer(-1));
+        Decimal::of(1, -1);
     }
 
     public function cases(): array

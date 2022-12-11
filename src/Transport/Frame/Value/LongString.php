@@ -4,34 +4,61 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
-use Innmind\Math\Algebra\Integer;
 use Innmind\Stream\Readable;
-use Innmind\Immutable\Str;
+use Innmind\Immutable\{
+    Str,
+    Maybe,
+};
 
 /**
  * @implements Value<Str>
+ * @psalm-immutable
  */
 final class LongString implements Value
 {
     private Str $original;
 
-    public function __construct(Str $string)
+    private function __construct(Str $string)
     {
         $this->original = $string;
     }
 
+    /**
+     * @psalm-pure
+     *
+     * @param literal-string $string Of maximum 4294967295 length
+     */
+    public static function literal(string $string): self
+    {
+        return new self(Str::of($string));
+    }
+
+    /**
+     * @psalm-pure
+     */
     public static function of(Str $string): self
     {
-        UnsignedLongInteger::of(new Integer($string->toEncoding('ASCII')->length()));
+        /** @psalm-suppress ArgumentTypeCoercion */
+        $_ = UnsignedLongInteger::of($string->toEncoding('ASCII')->length());
 
         return new self($string);
     }
 
-    public static function unpack(Readable $stream): self
+    /**
+     * @return Maybe<self>
+     */
+    public static function unpack(Readable $stream): Maybe
     {
-        $length = UnsignedLongInteger::unpack($stream)->original();
-
-        return new self($stream->read($length->value()));
+        /** @psalm-suppress InvalidArgument */
+        return UnsignedLongInteger::unpack($stream)
+            ->map(static fn($length) => $length->original())
+            ->flatMap(
+                static fn($length) => $stream
+                    ->read($length)
+                    ->map(static fn($string) => $string->toEncoding('ASCII'))
+                    ->filter(static fn($string) => $string->length() === $length),
+            )
+            ->map(static fn($string) => new self($string));
     }
 
     public function original(): Str
@@ -39,10 +66,18 @@ final class LongString implements Value
         return $this->original;
     }
 
-    public function pack(): string
+    public function symbol(): Symbol
     {
-        return (new UnsignedLongInteger(
-            new Integer($this->original->toEncoding('ASCII')->length())
-        ))->pack().$this->original->toString();
+        return Symbol::longString;
+    }
+
+    public function pack(): Str
+    {
+        /** @psalm-suppress ArgumentTypeCoercion */
+        return UnsignedLongInteger::of(
+            $this->original->toEncoding('ASCII')->length(),
+        )
+            ->pack()
+            ->append($this->original->toString());
     }
 }

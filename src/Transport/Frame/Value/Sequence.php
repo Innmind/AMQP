@@ -3,59 +3,64 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport\Frame\Value;
 
-use Innmind\AMQP\{
-    Transport\Frame\Value,
-    Exception\UnboundedTextCannotBeWrapped,
-};
-use Innmind\Math\Algebra\Integer;
+use Innmind\AMQP\Transport\Frame\Value;
+use Innmind\TimeContinuum\Clock;
 use Innmind\Stream\Readable;
-use Innmind\Immutable\Sequence as Seq;
-use function Innmind\Immutable\join;
+use Innmind\Immutable\{
+    Sequence as Seq,
+    Monoid\Concat,
+    Str,
+    Maybe,
+};
 
 /**
  * It's an array, but "array" is a reserved keyword in PHP
  *
  * @implements Value<Seq<Value>>
+ * @psalm-immutable
  */
 final class Sequence implements Value
 {
     /** @var Seq<Value> */
     private Seq $original;
 
-    public function __construct(Value ...$values)
+    /**
+     * @param Seq<Value> $values
+     */
+    private function __construct(Seq $values)
     {
-        /** @var Seq<Value> */
-        $values = Seq::of(Value::class, ...$values);
-
-        $texts = $values->filter(static function(Value $value): bool {
-            return $value instanceof Text;
-        });
-
-        if (!$texts->empty()) {
-            throw new UnboundedTextCannotBeWrapped;
-        }
-
         $this->original = $values;
     }
 
-    public static function unpack(Readable $stream): self
+    /**
+     * @psalm-pure
+     * @no-named-arguments
+     */
+    public static function of(Value ...$values): self
     {
-        $length = UnsignedLongInteger::unpack($stream)->original();
-        $position = $stream->position()->toInt();
-        $boundary = $position + $length->value();
+        return new self(Seq::of(...$values));
+    }
 
-        /** @var list<Value> */
-        $values = [];
+    /**
+     * @return Maybe<self>
+     */
+    public static function unpack(Clock $clock, Readable $stream): Maybe
+    {
+        /** @var Seq<Value> */
+        $values = Seq::of();
 
-        while ($position < $boundary) {
-            $class = Symbols::class($stream->read(1)->toString());
-            /** @var Value */
-            $value = [$class, 'unpack']($stream);
-            $values[] = $value;
-            $position = $stream->position()->toInt();
-        }
-
-        return new self(...$values);
+        return UnsignedLongInteger::unpack($stream)
+            ->map(static fn($length) => $length->original())
+            ->flatMap(static fn($length) => match ($length) {
+                0 => Maybe::just($values),
+                default => self::unpackNested(
+                    $clock,
+                    $length + $stream->position()->toInt(),
+                    $stream,
+                    $values,
+                ),
+            })
+            ->map(static fn($values) => new self($values));
     }
 
     /**
@@ -66,21 +71,51 @@ final class Sequence implements Value
         return $this->original;
     }
 
-    public function pack(): string
+    public function symbol(): Symbol
     {
-        /** @var Seq<string> */
-        $data = $this->original->toSequenceOf(
-            'string',
-            static function(Value $value): \Generator {
-                yield Symbols::symbol(\get_class($value));
-                yield $value->pack();
-            },
-        );
-        $data = join('', $data)->toEncoding('ASCII');
-        $value = (new UnsignedLongInteger(
-            new Integer($data->length()),
-        ))->pack();
+        return Symbol::sequence;
+    }
 
-        return $value .= $data->toString();
+    public function pack(): Str
+    {
+        $data = $this
+            ->original
+            ->flatMap(static fn($value) => Seq::of(
+                $value->symbol()->pack(),
+                $value->pack(),
+            ))
+            ->fold(new Concat)
+            ->toEncoding('ASCII');
+        /** @psalm-suppress ArgumentTypeCoercion */
+        $value = UnsignedLongInteger::of($data->length())->pack();
+
+        return $value->append($data->toString());
+    }
+
+    /**
+     * @param Seq<Value> $values
+     *
+     * @return Maybe<Seq<Value>>
+     */
+    private static function unpackNested(
+        Clock $clock,
+        int $boundary,
+        Readable $stream,
+        Seq $values,
+    ): Maybe {
+        return $stream
+            ->read(1)
+            ->map(static fn($chunk) => $chunk->toEncoding('ASCII'))
+            ->filter(static fn($chunk) => $chunk->length() === 1)
+            ->flatMap(static fn($chunk) => Symbol::unpack($clock, $chunk->toString(), $stream))
+            ->flatMap(static fn($value) => match ($stream->position()->toInt() < $boundary) {
+                true => self::unpackNested(
+                    $clock,
+                    $boundary,
+                    $stream,
+                    ($values)($value),
+                ),
+                false => Maybe::just(($values)($value)),
+            });
     }
 }

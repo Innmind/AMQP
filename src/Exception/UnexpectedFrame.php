@@ -9,11 +9,14 @@ final class UnexpectedFrame extends RuntimeException
 {
     private Frame $frame;
 
-    public function __construct(Frame $frame, string ...$names)
+    public function __construct(Frame $frame, Frame\Method ...$names)
     {
         parent::__construct(\sprintf(
             'Expected %s',
-            \implode(' or ', $names),
+            \implode(' or ', \array_map(
+                static fn($method) => $method->name,
+                $names,
+            )),
         ));
         $this->frame = $frame;
     }

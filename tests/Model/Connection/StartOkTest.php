@@ -14,7 +14,7 @@ class StartOkTest extends TestCase
 {
     public function testInterface()
     {
-        $command = new StartOk(
+        $command = StartOk::of(
             $user = User::none(),
             $password = Password::none(),
         );

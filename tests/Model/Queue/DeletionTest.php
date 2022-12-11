@@ -10,7 +10,7 @@ class DeletionTest extends TestCase
 {
     public function testInterface()
     {
-        $command = new Deletion('foo');
+        $command = Deletion::of('foo');
 
         $this->assertSame('foo', $command->name());
         $this->assertFalse($command->onlyIfUnused());
@@ -20,7 +20,7 @@ class DeletionTest extends TestCase
 
     public function testIfUnused()
     {
-        $command = new Deletion('foo');
+        $command = Deletion::of('foo');
         $command2 = $command->ifUnused();
 
         $this->assertInstanceOf(Deletion::class, $command2);
@@ -31,7 +31,7 @@ class DeletionTest extends TestCase
 
     public function testIfUsed()
     {
-        $command = new Deletion('foo');
+        $command = Deletion::of('foo');
         $command2 = $command->ifUsed();
 
         $this->assertInstanceOf(Deletion::class, $command2);
@@ -42,7 +42,7 @@ class DeletionTest extends TestCase
 
     public function testIfEmpty()
     {
-        $command = new Deletion('foo');
+        $command = Deletion::of('foo');
         $command2 = $command->ifEmpty();
 
         $this->assertInstanceOf(Deletion::class, $command2);
@@ -53,7 +53,7 @@ class DeletionTest extends TestCase
 
     public function testIfNotEmpty()
     {
-        $command = new Deletion('foo');
+        $command = Deletion::of('foo');
         $command2 = $command->ifNotEmpty();
 
         $this->assertInstanceOf(Deletion::class, $command2);
@@ -64,7 +64,7 @@ class DeletionTest extends TestCase
 
     public function testDontWait()
     {
-        $command = new Deletion('foo');
+        $command = Deletion::of('foo');
         $command2 = $command->dontWait();
 
         $this->assertInstanceOf(Deletion::class, $command2);
@@ -75,7 +75,7 @@ class DeletionTest extends TestCase
 
     public function testWait()
     {
-        $command = new Deletion('foo');
+        $command = Deletion::of('foo');
         $command2 = $command->wait();
 
         $this->assertInstanceOf(Deletion::class, $command2);

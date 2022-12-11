@@ -8,15 +8,26 @@ use Innmind\Url\Authority\UserInformation\{
     Password,
 };
 
+/**
+ * @psalm-immutable
+ */
 final class StartOk
 {
     private User $user;
     private Password $password;
 
-    public function __construct(User $user, Password $password)
+    private function __construct(User $user, Password $password)
     {
         $this->user = $user;
         $this->password = $password;
+    }
+
+    /**
+     * @psalm-pure
+     */
+    public static function of(User $user, Password $password): self
+    {
+        return new self($user, $password);
     }
 
     public function user(): User

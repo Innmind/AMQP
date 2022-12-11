@@ -2,51 +2,34 @@
 declare(strict_types = 1);
 
 use Innmind\AMQP\{
-    Model\Queue\Declaration as Queue,
-    Model\Queue\Binding,
-    Model\Exchange\Declaration as Exchange,
+    Command\DeclareQueue,
+    Command\DeclareExchange,
+    Command\Bind,
+    Command\Consume,
     Model\Exchange\Type,
-    Model\Basic\Consume,
-    Exception\Cancel
 };
 
 $client = require 'client.php';
 
-$channel = $client->channel();
-$channel
-    ->queue()
-    ->declare(
-        Queue::temporary()
-            ->withName('bench_queue')
-    );
-$channel
-    ->exchange()
-    ->declare(
-        Exchange::temporary('bench_exchange', Type::direct())
-    );
-$channel
-    ->queue()
-    ->bind(
-        new Binding('bench_exchange', 'bench_queue')
-    );
-$consumer = $channel
-    ->basic()
-    ->consume(
-        (new Consume('bench_queue'))
-            ->autoAcknowledge()
+$client = $client
+    ->with(DeclareQueue::of('bench_queue'))
+    ->with(DeclareExchange::of('bench_exchange', Type::direct))
+    ->with(Bind::of('bench_exchange', 'bench_queue'))
+    ->with(
+        Consume::of('bench_queue')->handle(function(int $count, $message, $continuation) {
+            return match ($message->body()->toString()) {
+                'quit' => $continuation->cancel($count),
+                default => $continuation->ack($count + 1),
+            };
+        }),
     );
 
 $start = microtime(true);
-$count = 0;
-
-$consumer->foreach(static function($message) use (&$count): void {
-    if ($message->body()->toString() === 'quit') {
-        throw new Cancel;
-    }
-
-    ++$count;
-});
+$count = $client
+    ->run(0)
+    ->match(
+        static fn($count) => $count,
+        static fn($failure) => throw new \RuntimeException($failure::class),
+    );
 
 printf("Pid: %s, Count: %s, Time: %.4f\n", getmypid(), $count, microtime(true) - $start);
-
-$client->close();

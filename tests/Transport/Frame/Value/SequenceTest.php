@@ -8,21 +8,20 @@ use Innmind\AMQP\{
     Transport\Frame\Value\LongString,
     Transport\Frame\Value\Text,
     Transport\Frame\Value,
-    Exception\UnboundedTextCannotBeWrapped,
 };
+use Innmind\TimeContinuum\Earth\Clock;
 use Innmind\Stream\Readable\Stream;
 use Innmind\Immutable\{
     Sequence as Seq,
     Str,
 };
-use function Innmind\Immutable\unwrap;
 use PHPUnit\Framework\TestCase;
 
 class SequenceTest extends TestCase
 {
     public function testInterface()
     {
-        $this->assertInstanceOf(Value::class, new Sequence);
+        $this->assertInstanceOf(Value::class, Sequence::of());
     }
 
     /**
@@ -30,11 +29,10 @@ class SequenceTest extends TestCase
      */
     public function testStringCast($expected, $values)
     {
-        $value = new Sequence(...$values);
-        $this->assertSame($expected, $value->pack());
+        $value = Sequence::of(...$values);
+        $this->assertSame($expected, $value->pack()->toString());
         $this->assertInstanceOf(Seq::class, $value->original());
-        $this->assertSame(Value::class, (string) $value->original()->type());
-        $this->assertSame($values, unwrap($value->original()));
+        $this->assertSame($values, $value->original()->toList());
     }
 
     /**
@@ -42,7 +40,10 @@ class SequenceTest extends TestCase
      */
     public function testFromStream($string, $expected)
     {
-        $value = Sequence::unpack(Stream::ofContent($string));
+        $value = Sequence::unpack(new Clock, Stream::ofContent($string))->match(
+            static fn($value) => $value,
+            static fn() => null,
+        );
 
         $this->assertInstanceOf(Sequence::class, $value);
         $this->assertCount(\count($expected), $value->original());
@@ -50,22 +51,21 @@ class SequenceTest extends TestCase
         foreach ($expected as $i => $v) {
             $this->assertInstanceOf(
                 \get_class($v),
-                $value->original()->get($i)
+                $value->original()->get($i)->match(
+                    static fn($value) => $value,
+                    static fn() => null,
+                ),
             );
             $this->assertSame(
-                $v->pack(),
-                $value->original()->get($i)->pack()
+                $v->pack()->toString(),
+                $value->original()->get($i)->match(
+                    static fn($value) => $value->pack()->toString(),
+                    static fn() => null,
+                ),
             );
         }
 
-        $this->assertSame($string, $value->pack());
-    }
-
-    public function testThrowWhenUsingUnboundedText()
-    {
-        $this->expectException(UnboundedTextCannotBeWrapped::class);
-
-        new Sequence(new Text(Str::of('')));
+        $this->assertSame($string, $value->pack()->toString());
     }
 
     public function cases(): array
@@ -73,13 +73,13 @@ class SequenceTest extends TestCase
         return [
             [
                 \pack('N', 8).'S'.\pack('N', 3).'foo',
-                [new LongString(Str::of('foo'))],
+                [LongString::literal('foo')],
             ],
             [
                 \pack('N', 20).'S'.\pack('N', 3).'fooS'.\pack('N', 7).'🙏bar',
                 [
-                    new LongString(Str::of('foo')),
-                    new LongString(Str::of('🙏bar')),
+                    LongString::literal('foo'),
+                    LongString::literal('🙏bar'),
                 ],
             ],
         ];

@@ -4,36 +4,63 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
-use Innmind\Math\Algebra\Integer;
 use Innmind\Stream\Readable;
+use Innmind\Immutable\{
+    Str,
+    Maybe,
+};
 
 /**
- * @implements Value<Integer>
+ * @implements Value<int>
+ * @psalm-immutable
  */
 final class SignedLongLongInteger implements Value
 {
-    private Integer $original;
+    private int $original;
 
-    public function __construct(Integer $value)
+    private function __construct(int $value)
     {
         $this->original = $value;
     }
 
-    public static function unpack(Readable $stream): self
+    /**
+     * @psalm-pure
+     */
+    public static function of(int $value): self
     {
-        /** @var int $value */
-        [, $value] = \unpack('q', $stream->read(8)->toString());
-
-        return new self(new Integer($value));
+        return new self($value);
     }
 
-    public function original(): Integer
+    /**
+     * @return Maybe<self>
+     */
+    public static function unpack(Readable $stream): Maybe
+    {
+        return $stream
+            ->read(8)
+            ->map(static fn($chunk) => $chunk->toEncoding('ASCII'))
+            ->filter(static fn($chunk) => $chunk->length() === 8)
+            ->map(static function($chunk) {
+                /** @var int $value */
+                [, $value] = \unpack('q', $chunk->toString());
+
+                return $value;
+            })
+            ->map(static fn($value) => new self($value));
+    }
+
+    public function original(): int
     {
         return $this->original;
     }
 
-    public function pack(): string
+    public function symbol(): Symbol
     {
-        return \pack('q', $this->original->value());
+        return Symbol::signedLongLongInteger;
+    }
+
+    public function pack(): Str
+    {
+        return Str::of(\pack('q', $this->original));
     }
 }

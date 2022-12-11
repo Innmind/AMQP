@@ -10,53 +10,97 @@ use Innmind\Math\{
     DefinitionSet\Range,
 };
 use Innmind\Stream\Readable;
+use Innmind\Immutable\{
+    Str,
+    Maybe,
+};
 
 /**
  * Same as unsigned shortshort
  *
- * @implements Value<Integer>
+ * @implements Value<int<0, 255>>
+ * @psalm-immutable
  */
 final class UnsignedOctet implements Value
 {
-    private static ?Set $definitionSet = null;
+    /** @var int<0, 255> */
+    private int $original;
 
-    private Integer $original;
-
-    public function __construct(Integer $octet)
+    /**
+     * @param int<0, 255> $octet
+     */
+    private function __construct(int $octet)
     {
         $this->original = $octet;
     }
 
-    public static function of(Integer $octet): self
+    /**
+     * @psalm-pure
+     * @internal
+     *
+     * @param int<0, 255> $octet
+     */
+    public static function internal(int $octet): self
     {
-        self::definitionSet()->accept($octet);
+        return new self($octet);
+    }
+
+    /**
+     * @psalm-pure
+     *
+     * @param int<0, 255> $octet
+     */
+    public static function of(int $octet): self
+    {
+        self::definitionSet()->accept(Integer::of($octet));
 
         return new self($octet);
     }
 
-    public static function unpack(Readable $stream): self
+    /**
+     * @return Maybe<self>
+     */
+    public static function unpack(Readable $stream): Maybe
     {
-        /** @var int $octet */
-        [, $octet] = \unpack('C', $stream->read(1)->toString());
+        return $stream
+            ->read(1)
+            ->map(static fn($chunk) => $chunk->toEncoding('ASCII'))
+            ->filter(static fn($chunk) => $chunk->length() === 1)
+            ->map(static function($chunk) {
+                /** @var int<0, 255> $octet */
+                [, $octet] = \unpack('C', $chunk->toString());
 
-        return new self(new Integer($octet));
+                return $octet;
+            })
+            ->map(static fn($octet) => new self($octet));
     }
 
-    public function original(): Integer
+    /**
+     * @return int<0, 255>
+     */
+    public function original(): int
     {
         return $this->original;
     }
 
-    public function pack(): string
+    public function symbol(): Symbol
     {
-        return \chr($this->original->value());
+        return Symbol::unsignedOctet;
     }
 
+    public function pack(): Str
+    {
+        return Str::of(\chr($this->original));
+    }
+
+    /**
+     * @psalm-pure
+     */
     public static function definitionSet(): Set
     {
-        return self::$definitionSet ?? self::$definitionSet = Range::inclusive(
-            new Integer(0),
-            new Integer(255),
+        return Range::inclusive(
+            Integer::of(0),
+            Integer::of(255),
         );
     }
 }

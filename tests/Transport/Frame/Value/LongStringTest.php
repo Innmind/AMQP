@@ -15,7 +15,7 @@ class LongStringTest extends TestCase
 {
     public function testInterface()
     {
-        $this->assertInstanceOf(Value::class, new LongString(Str::of('')));
+        $this->assertInstanceOf(Value::class, LongString::literal(''));
     }
 
     /**
@@ -23,9 +23,9 @@ class LongStringTest extends TestCase
      */
     public function testStringCast($string, $expected)
     {
-        $value = new LongString($str = Str::of($string));
-        $this->assertSame($expected, $value->pack());
-        $this->assertSame($str, $value->original());
+        $value = LongString::literal($string);
+        $this->assertSame($expected, $value->pack()->toString());
+        $this->assertSame($string, $value->original()->toString());
     }
 
     /**
@@ -33,12 +33,15 @@ class LongStringTest extends TestCase
      */
     public function testFromStream($expected, $string)
     {
-        $value = LongString::unpack(Stream::ofContent($string));
+        $value = LongString::unpack(Stream::ofContent($string))->match(
+            static fn($value) => $value,
+            static fn() => null,
+        );
 
         $this->assertInstanceOf(LongString::class, $value);
         $this->assertInstanceOf(Str::class, $value->original());
         $this->assertSame($expected, $value->original()->toString());
-        $this->assertSame($string, $value->pack());
+        $this->assertSame($string, $value->pack()->toString());
     }
 
     public function cases(): array

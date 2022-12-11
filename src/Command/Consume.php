@@ -4,72 +4,262 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Command;
 
 use Innmind\AMQP\{
-    Client,
-    Client\Channel,
-    Consumers,
-    Model\Basic,
-    Model\Basic\Qos,
-};
-use Innmind\CLI\{
     Command,
-    Command\Arguments,
-    Command\Options,
-    Environment,
+    Failure,
+    Client\State,
+    Transport\Connection,
+    Transport\Connection\MessageReader,
+    Transport\Frame,
+    Transport\Frame\Channel,
+    Transport\Frame\Value,
+    Transport\Frame\Method,
+    Model\Basic\Consume as Model,
+    Model\Basic\Message,
+    Consumer\Details,
+    Consumer\Continuation,
+    Consumer\Canceled,
+};
+use Innmind\Immutable\{
+    Maybe,
+    Either,
+    Predicate\Instance,
 };
 
 final class Consume implements Command
 {
-    private Client $client;
-    private Consumers $consumers;
+    private Model $command;
+    /** @var callable(mixed, Message, Continuation, Details): Continuation */
+    private $consume;
 
-    public function __construct(Client $client, Consumers $consumers)
+    /**
+     * @param callable(mixed, Message, Continuation, Details): Continuation $consume
+     */
+    private function __construct(Model $command, callable $consume)
     {
-        $this->client = $client;
-        $this->consumers = $consumers;
+        $this->command = $command;
+        $this->consume = $consume;
     }
 
-    public function __invoke(Environment $env, Arguments $arguments, Options $options): void
-    {
-        $queue = $arguments->get('queue');
-        $consume = $this->consumers->get($queue);
-        $basic = $this->client->channel()->basic();
-
-        $this->qos($arguments, $basic);
-
-        $consumer = $basic->consume(new Basic\Consume($queue));
-
-        if ($arguments->contains('number')) {
-            $consumer->take((int) $arguments->get('number'));
-        }
-
-        try {
-            $consumer->foreach($consume);
-        } finally {
-            $this->client->close();
-        }
+    public function __invoke(
+        Connection $connection,
+        Channel $channel,
+        MessageReader $read,
+        mixed $state,
+    ): Either {
+        /** @var Either<Failure, State> */
+        return $connection
+            ->send(fn($protocol) => $protocol->basic()->consume(
+                $channel,
+                $this->command,
+            ))
+            ->maybeWait($this->command->shouldWait(), Method::basicConsumeOk)
+            ->then(
+                fn($connection, $frame) => $this->maybeStart(
+                    $connection,
+                    $channel,
+                    $read,
+                    $frame,
+                    $state,
+                ),
+                static fn($connection) => State::of($connection, $state), // this case should not happen
+            )
+            ->leftMap(fn() => Failure::toConsume($this->command));
     }
 
-    public function toString(): string
+    public static function of(string $queue): self
     {
-        return <<<USAGE
-innmind:amqp:consume queue [number] [prefetch]
-
-Will process messages from the given queue
-USAGE;
+        return new self(
+            Model::of($queue),
+            static fn(mixed $state, Message $_, Continuation $continuation) => $continuation->ack($state),
+        );
     }
 
-    private function qos(Arguments $arguments, Channel\Basic $basic): void
+    /**
+     * @param callable(mixed, Message, Continuation, Details): Continuation $consume
+     */
+    public function handle(callable $consume): self
     {
-        if ($arguments->contains('prefetch')) {
-            $basic->qos(new Qos(0, (int) $arguments->get('prefetch')));
+        return new self($this->command, $consume);
+    }
 
-            return;
-        }
+    /**
+     * @return Either<Failure, State>
+     */
+    private function maybeStart(
+        Connection $connection,
+        Channel $channel,
+        MessageReader $read,
+        Frame $frame,
+        mixed $state,
+    ): Either {
+        return $frame
+            ->values()
+            ->first()
+            ->keep(Instance::of(Value\ShortString::class))
+            ->map(static fn($value) => $value->original()->toString())
+            ->either()
+            ->leftMap(fn() => Failure::toConsume($this->command))
+            ->flatMap(fn($consumerTag) => $this->start(
+                $connection,
+                $channel,
+                $read,
+                $state,
+                $consumerTag,
+            ));
+    }
 
-        if ($arguments->contains('number')) {
-            $basic->qos(new Qos(0, (int) $arguments->get('number')));
+    /**
+     * @return Either<Failure, State>
+     */
+    private function start(
+        Connection $connection,
+        Channel $channel,
+        MessageReader $read,
+        mixed $state,
+        string $consumerTag,
+    ): Either {
+        /** @var Either<Failure, State|Canceled> */
+        $consumed = Either::right(State::of($connection, $state));
+        // here the best approach would be to use recursion to avoid unwrapping
+        // the monads but it would end up with a too deep call stack for inifite
+        // consumers as each new message would mean a new function call in the
+        // stack
 
-            return;
-        }
+        do {
+            $consumed = $consumed
+                ->map(static fn($state) => match ($state instanceof Canceled) {
+                    true => $state->state(), // this SHOULD NEVER happen as we stop the loop below
+                    false => $state,
+                })
+                ->flatMap(fn($state) => $this->waitDeliver(
+                    $state->connection(),
+                    $channel,
+                    $state->userState(),
+                    $consumerTag,
+                    $read,
+                ));
+        } while ($consumed->match(
+            static fn($state) => !($state instanceof Canceled),
+            static fn() => false,
+        ));
+
+        return $consumed->map(static fn($state) => match ($state instanceof Canceled) {
+            true => $state->state(),
+            false => $state,
+        });
+    }
+
+    /**
+     * @return Either<Failure, State|Canceled>
+     */
+    private function waitDeliver(
+        Connection $connection,
+        Channel $channel,
+        mixed $state,
+        string $consumerTag,
+        MessageReader $read,
+    ): Either {
+        /** @var Either<Failure, State|Canceled> */
+        return $connection
+            ->wait(Method::basicDeliver)
+            ->flatMap(
+                fn($receivedFrame) => $read($receivedFrame->connection())->flatMap(
+                    fn($receivedMessage) => $this->maybeConsume(
+                        $receivedMessage->connection(),
+                        $channel,
+                        $read,
+                        $state,
+                        $consumerTag,
+                        $receivedFrame->frame(),
+                        $receivedMessage->message(),
+                    ),
+                ),
+            )
+            ->leftMap(fn() => Failure::toConsume($this->command));
+    }
+
+    /**
+     * @return Either<Failure, State|Canceled>
+     */
+    private function maybeConsume(
+        Connection $connection,
+        Channel $channel,
+        MessageReader $read,
+        mixed $state,
+        string $consumerTag,
+        Frame $frame,
+        Message $message,
+    ): Either {
+        $destinationConsumerTag = $frame
+            ->values()
+            ->first()
+            ->keep(Instance::of(Value\ShortString::class))
+            ->map(static fn($value) => $value->original()->toString())
+            ->filter(static fn($destination) => $destination === $consumerTag);
+        $deliveryTag = $frame
+            ->values()
+            ->get(1)
+            ->keep(Instance::of(Value\UnsignedLongLongInteger::class))
+            ->map(static fn($value) => $value->original());
+        $redelivered = $frame
+            ->values()
+            ->get(2)
+            ->keep(Instance::of(Value\Bits::class))
+            ->flatMap(static fn($value) => $value->original()->first());
+        $exchange = $frame
+            ->values()
+            ->get(3)
+            ->keep(Instance::of(Value\ShortString::class))
+            ->map(static fn($value) => $value->original()->toString());
+        $routingKey = $frame
+            ->values()
+            ->get(4)
+            ->keep(Instance::of(Value\ShortString::class))
+            ->map(static fn($value) => $value->original()->toString());
+
+        return Maybe::all($deliveryTag, $redelivered, $exchange, $routingKey)
+            ->map(Details::ofConsume(...))
+            ->flatMap(static fn($details) => $destinationConsumerTag->map(
+                static fn() => $details, // this manipulation is to make sure the consumerTag is indeed for this consumer
+            ))
+            ->either()
+            ->leftMap(fn() => Failure::toConsume($this->command))
+            ->flatMap(fn($details) => $this->consume(
+                $connection,
+                $channel,
+                $read,
+                $state,
+                $details,
+                $message,
+                $consumerTag,
+            ));
+    }
+
+    /**
+     * @return Either<Failure, State|Canceled>
+     */
+    private function consume(
+        Connection $connection,
+        Channel $channel,
+        MessageReader $read,
+        mixed $state,
+        Details $details,
+        Message $message,
+        string $consumerTag,
+    ): Either {
+        return ($this->consume)(
+            $state,
+            $message,
+            Continuation::of($state),
+            $details,
+        )
+            ->respond(
+                $this->command->queue(),
+                $connection,
+                $channel,
+                $read,
+                $details->deliveryTag(),
+                $consumerTag,
+            );
     }
 }

@@ -10,7 +10,7 @@ class PurgeTest extends TestCase
 {
     public function testInterface()
     {
-        $command = new Purge('foo');
+        $command = Purge::of('foo');
 
         $this->assertSame('foo', $command->name());
         $this->assertTrue($command->shouldWait());
@@ -18,7 +18,7 @@ class PurgeTest extends TestCase
 
     public function testDontWait()
     {
-        $command = new Purge('foo');
+        $command = Purge::of('foo');
         $command2 = $command->dontWait();
 
         $this->assertInstanceOf(Purge::class, $command2);
@@ -29,7 +29,7 @@ class PurgeTest extends TestCase
 
     public function testWait()
     {
-        $command = new Purge('foo');
+        $command = Purge::of('foo');
         $command2 = $command->wait();
 
         $this->assertInstanceOf(Purge::class, $command2);

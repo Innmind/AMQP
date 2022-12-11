@@ -15,7 +15,7 @@ class DeclarationTest extends TestCase
 {
     public function testPassive()
     {
-        $command = Declaration::passive('foo', $type = Type::direct());
+        $command = Declaration::passive('foo', $type = Type::direct);
 
         $this->assertInstanceOf(Declaration::class, $command);
         $this->assertSame('foo', $command->name());
@@ -25,14 +25,12 @@ class DeclarationTest extends TestCase
         $this->assertFalse($command->isAutoDeleted());
         $this->assertTrue($command->shouldWait());
         $this->assertInstanceOf(Map::class, $command->arguments());
-        $this->assertSame('string', (string) $command->arguments()->keyType());
-        $this->assertSame('mixed', (string) $command->arguments()->valueType());
         $this->assertCount(0, $command->arguments());
     }
 
     public function testDurable()
     {
-        $command = Declaration::durable('foo', $type = Type::direct());
+        $command = Declaration::durable('foo', $type = Type::direct);
 
         $this->assertInstanceOf(Declaration::class, $command);
         $this->assertSame('foo', $command->name());
@@ -42,14 +40,12 @@ class DeclarationTest extends TestCase
         $this->assertFalse($command->isAutoDeleted());
         $this->assertTrue($command->shouldWait());
         $this->assertInstanceOf(Map::class, $command->arguments());
-        $this->assertSame('string', (string) $command->arguments()->keyType());
-        $this->assertSame('mixed', (string) $command->arguments()->valueType());
         $this->assertCount(0, $command->arguments());
     }
 
     public function testTemporary()
     {
-        $command = Declaration::temporary('foo', $type = Type::direct());
+        $command = Declaration::temporary('foo', $type = Type::direct);
 
         $this->assertInstanceOf(Declaration::class, $command);
         $this->assertSame('foo', $command->name());
@@ -59,14 +55,12 @@ class DeclarationTest extends TestCase
         $this->assertFalse($command->isAutoDeleted());
         $this->assertTrue($command->shouldWait());
         $this->assertInstanceOf(Map::class, $command->arguments());
-        $this->assertSame('string', (string) $command->arguments()->keyType());
-        $this->assertSame('mixed', (string) $command->arguments()->valueType());
         $this->assertCount(0, $command->arguments());
     }
 
     public function testAutoDeleted()
     {
-        $command = Declaration::autoDelete('foo', $type = Type::direct());
+        $command = Declaration::autoDelete('foo', $type = Type::direct);
 
         $this->assertInstanceOf(Declaration::class, $command);
         $this->assertSame('foo', $command->name());
@@ -76,14 +70,12 @@ class DeclarationTest extends TestCase
         $this->assertTrue($command->isAutoDeleted());
         $this->assertTrue($command->shouldWait());
         $this->assertInstanceOf(Map::class, $command->arguments());
-        $this->assertSame('string', (string) $command->arguments()->keyType());
-        $this->assertSame('mixed', (string) $command->arguments()->valueType());
         $this->assertCount(0, $command->arguments());
     }
 
     public function testDontWait()
     {
-        $command = Declaration::durable('too', Type::direct());
+        $command = Declaration::durable('too', Type::direct);
         $command2 = $command->dontWait();
 
         $this->assertInstanceOf(Declaration::class, $command2);
@@ -96,12 +88,12 @@ class DeclarationTest extends TestCase
     {
         $this->expectException(NotWaitingPassiveDeclarationDoesNothing::class);
 
-        Declaration::passive('foo', Type::direct())->dontWait();
+        Declaration::passive('foo', Type::direct)->dontWait();
     }
 
     public function testWait()
     {
-        $command = Declaration::passive('foo', Type::direct());
+        $command = Declaration::passive('foo', Type::direct);
         $command2 = $command->wait();
 
         $this->assertInstanceOf(Declaration::class, $command2);
@@ -112,13 +104,16 @@ class DeclarationTest extends TestCase
 
     public function testWithArgument()
     {
-        $command = Declaration::durable('foo', Type::direct());
+        $command = Declaration::durable('foo', Type::direct);
         $command2 = $command->withArgument('bar', [42]);
 
         $this->assertInstanceOf(Declaration::class, $command2);
         $this->assertNotSame($command2, $command);
         $this->assertCount(0, $command->arguments());
         $this->assertCount(1, $command2->arguments());
-        $this->assertSame([42], $command2->arguments()->get('bar'));
+        $this->assertSame([42], $command2->arguments()->get('bar')->match(
+            static fn($argument) => $argument,
+            static fn() => null,
+        ));
     }
 }

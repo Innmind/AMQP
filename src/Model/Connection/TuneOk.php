@@ -5,27 +5,47 @@ namespace Innmind\AMQP\Model\Connection;
 
 use Innmind\TimeContinuum\ElapsedPeriod;
 
+/**
+ * @psalm-immutable
+ */
 final class TuneOk
 {
     private MaxChannels $maxChannels;
     private MaxFrameSize $maxFrameSize;
     private ElapsedPeriod $heartbeat;
 
-    public function __construct(
+    private function __construct(
         MaxChannels $maxChannels,
         MaxFrameSize $maxFrameSize,
-        ElapsedPeriod $heartbeat
+        ElapsedPeriod $heartbeat,
     ) {
         $this->maxChannels = $maxChannels;
         $this->maxFrameSize = $maxFrameSize;
         $this->heartbeat = $heartbeat;
     }
 
+    /**
+     * @psalm-pure
+     */
+    public static function of(
+        MaxChannels $maxChannels,
+        MaxFrameSize $maxFrameSize,
+        ElapsedPeriod $heartbeat,
+    ): self {
+        return new self($maxChannels, $maxFrameSize, $heartbeat);
+    }
+
+    /**
+     * @return int<0, 65535>
+     */
     public function maxChannels(): int
     {
         return $this->maxChannels->toInt();
     }
 
+    /**
+     * @return int<0, 4294967295>
+     */
     public function maxFrameSize(): int
     {
         return $this->maxFrameSize->toInt();

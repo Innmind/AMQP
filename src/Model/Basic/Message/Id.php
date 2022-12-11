@@ -5,14 +5,24 @@ namespace Innmind\AMQP\Model\Basic\Message;
 
 /**
  * Use this property in case you want to reference the message in your application
+ *
+ * @psalm-immutable
  */
 final class Id
 {
     private string $value;
 
-    public function __construct(string $value)
+    private function __construct(string $value)
     {
         $this->value = $value;
+    }
+
+    /**
+     * @psalm-pure
+     */
+    public static function of(string $value): self
+    {
+        return new self($value);
     }
 
     public function toString(): string

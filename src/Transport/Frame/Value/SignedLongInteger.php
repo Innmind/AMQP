@@ -10,51 +10,84 @@ use Innmind\Math\{
     DefinitionSet\Range,
 };
 use Innmind\Stream\Readable;
+use Innmind\Immutable\{
+    Str,
+    Maybe,
+};
 
 /**
- * @implements Value<Integer>
+ * @implements Value<int<-2147483648, 2147483647>>
+ * @psalm-immutable
  */
 final class SignedLongInteger implements Value
 {
-    private static ?Set $definitionSet = null;
+    /** @var int<-2147483648, 2147483647> */
+    private int $original;
 
-    private Integer $original;
-
-    public function __construct(Integer $value)
+    /**
+     * @param int<-2147483648, 2147483647> $value
+     */
+    private function __construct(int $value)
     {
         $this->original = $value;
     }
 
-    public static function of(Integer $value): self
+    /**
+     * @psalm-pure
+     *
+     * @param int<-2147483648, 2147483647> $value
+     */
+    public static function of(int $value): self
     {
-        self::definitionSet()->accept($value);
+        self::definitionSet()->accept(Integer::of($value));
 
         return new self($value);
     }
 
-    public static function unpack(Readable $stream): self
+    /**
+     * @return Maybe<self>
+     */
+    public static function unpack(Readable $stream): Maybe
     {
-        /** @var int $value */
-        [, $value] = \unpack('l', $stream->read(4)->toString());
+        return $stream
+            ->read(4)
+            ->map(static fn($chunk) => $chunk->toEncoding('ASCII'))
+            ->filter(static fn($chunk) => $chunk->length() === 4)
+            ->map(static function($chunk) {
+                /** @var int<-2147483648, 2147483647> $value */
+                [, $value] = \unpack('l', $chunk->toString());
 
-        return new self(new Integer($value));
+                return $value;
+            })
+            ->map(static fn($value) => new self($value));
     }
 
-    public function original(): Integer
+    /**
+     * @return int<-2147483648, 2147483647>
+     */
+    public function original(): int
     {
         return $this->original;
     }
 
-    public function pack(): string
+    public function symbol(): Symbol
     {
-        return \pack('l', $this->original->value());
+        return Symbol::signedLongInteger;
     }
 
+    public function pack(): Str
+    {
+        return Str::of(\pack('l', $this->original));
+    }
+
+    /**
+     * @psalm-pure
+     */
     public static function definitionSet(): Set
     {
-        return self::$definitionSet ?? self::$definitionSet = Range::inclusive(
-            new Integer(-2147483648),
-            new Integer(2147483647),
+        return Range::inclusive(
+            Integer::of(-2147483648),
+            Integer::of(2147483647),
         );
     }
 }

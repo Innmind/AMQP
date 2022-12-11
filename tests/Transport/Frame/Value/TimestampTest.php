@@ -10,6 +10,7 @@ use Innmind\AMQP\Transport\Frame\{
 use Innmind\TimeContinuum\{
     Earth\PointInTime\Now,
     Earth\PointInTime\PointInTime,
+    Earth\Clock,
     PointInTime as PointInTimeInterface,
 };
 use Innmind\Stream\Readable\Stream;
@@ -21,28 +22,31 @@ class TimestampTest extends TestCase
     {
         $this->assertInstanceOf(
             Value::class,
-            new Timestamp(new Now)
+            Timestamp::of(new Now),
         );
     }
 
     public function testStringCast()
     {
-        $value = new Timestamp($now = new Now);
-        $this->assertSame(\pack('J', \time()), $value->pack());
+        $value = Timestamp::of($now = new Now);
+        $this->assertSame(\pack('J', \time()), $value->pack()->toString());
         $this->assertSame($now, $value->original());
     }
 
     public function testFromStream()
     {
-        $value = Timestamp::unpack(Stream::ofContent(\pack('J', $time = \time())));
+        $value = Timestamp::unpack(new Clock, Stream::ofContent(\pack('J', $time = \time())))->match(
+            static fn($value) => $value,
+            static fn() => null,
+        );
 
         $this->assertInstanceOf(Timestamp::class, $value);
         $this->assertInstanceOf(PointInTimeInterface::class, $value->original());
         $this->assertTrue(
             $value->original()->equals(
-                new PointInTime(\date(\DateTime::ATOM, $time))
-            )
+                new PointInTime(\date(\DateTime::ATOM, $time)),
+            ),
         );
-        $this->assertSame(\pack('J', $time), $value->pack());
+        $this->assertSame(\pack('J', $time), $value->pack()->toString());
     }
 }

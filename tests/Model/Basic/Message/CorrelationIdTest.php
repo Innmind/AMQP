@@ -10,6 +10,6 @@ class CorrelationIdTest extends TestCase
 {
     public function testInterface()
     {
-        $this->assertSame('foo', (new CorrelationId('foo'))->toString());
+        $this->assertSame('foo', CorrelationId::of('foo')->toString());
     }
 }

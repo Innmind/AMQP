@@ -4,51 +4,64 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Command;
 
 use Innmind\AMQP\{
-    Client,
-    Model\Queue,
-    Exception\UnexpectedFrame,
-};
-use Innmind\CLI\{
     Command,
-    Command\Arguments,
-    Command\Options,
-    Environment,
+    Failure,
+    Client\State,
+    Transport\Connection,
+    Transport\Connection\MessageReader,
+    Transport\Frame\Channel,
+    Transport\Frame\Method,
+    Transport\Frame\Value,
+    Model\Queue\Purge as Model,
+    Model\Queue\PurgeOk,
+    Model\Count,
 };
-use Innmind\Immutable\Str;
+use Innmind\Immutable\{
+    Either,
+    Predicate\Instance,
+};
 
 final class Purge implements Command
 {
-    private Client $client;
+    private Model $command;
 
-    public function __construct(Client $client)
+    private function __construct(Model $command)
     {
-        $this->client = $client;
+        $this->command = $command;
     }
 
-    public function __invoke(Environment $env, Arguments $arguments, Options $options): void
-    {
-        $queue = $arguments->get('queue');
-
-        try {
-            $this
-                ->client
-                ->channel()
-                ->queue()
-                ->purge(new Queue\Purge($queue));
-        } catch (UnexpectedFrame $e) {
-            $env->error()->write(Str::of("Purging \"$queue\" failed"));
-            $env->exit(1);
-        } finally {
-            $this->client->close();
-        }
+    public function __invoke(
+        Connection $connection,
+        Channel $channel,
+        MessageReader $read,
+        mixed $state,
+    ): Either {
+        /** @var Either<Failure, State> */
+        return $connection
+            ->send(fn($protocol) => $protocol->queue()->purge(
+                $channel,
+                $this->command,
+            ))
+            ->maybeWait($this->command->shouldWait(), Method::queuePurgeOk)
+            ->then(
+                // this is here just to make sure the response is valid maybe in
+                // the future we could expose this info to the user
+                fn($connection, $frame) => $frame
+                    ->values()
+                    ->first()
+                    ->keep(Instance::of(Value\UnsignedLongInteger::class))
+                    ->map(static fn($value) => $value->original())
+                    ->map(Count::of(...))
+                    ->map(PurgeOk::of(...))
+                    ->map(static fn() => State::of($connection, $state))
+                    ->either()
+                    ->leftMap(fn() => Failure::toPurge($this->command)),
+                static fn($connection) => State::of($connection, $state),
+            );
     }
 
-    public function toString(): string
+    public static function of(string $queue): self
     {
-        return <<<USAGE
-innmind:amqp:purge queue
-
-Will delete all messages for the given queue
-USAGE;
+        return new self(Model::of($queue));
     }
 }

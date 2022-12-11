@@ -5,35 +5,65 @@ namespace Innmind\AMQP\Transport\Frame\Visitor;
 
 use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\Stream\Readable;
-use Innmind\Immutable\Sequence;
+use Innmind\Immutable\{
+    Sequence,
+    Maybe,
+};
 
+/**
+ * @internal
+ */
 final class ChunkArguments
 {
-    /** @var list<class-string<Value>> */
-    private array $types;
+    /** @var Sequence<callable(Readable): Maybe<Value>> */
+    private Sequence $types;
 
     /**
-     * @param list<class-string<Value>> $types
+     * @no-named-arguments
+     *
+     * @param list<callable(Readable): Maybe<Value>> $types
      */
-    public function __construct(string ...$types)
+    public function __construct(callable ...$types)
     {
-        $this->types = $types;
+        $this->types = Sequence::of(...$types);
     }
 
     /**
-     * @return Sequence<Value>
+     * @return Maybe<Sequence<Value>>
      */
-    public function __invoke(Readable $arguments): Sequence
+    public function __invoke(Readable $arguments): Maybe
     {
         /** @var Sequence<Value> */
-        $sequence = Sequence::of(Value::class);
+        $values = Sequence::of();
 
-        foreach ($this->types as $type) {
-            /** @var Value */
-            $value = [$type, 'unpack']($arguments);
-            $sequence = ($sequence)($value);
-        }
+        /** @psalm-suppress MixedArgumentTypeCoercion */
+        return $this
+            ->types
+            ->reduce(
+                Maybe::just($values),
+                fn(Maybe $maybe, $unpack) => $this->unpack(
+                    $maybe,
+                    $unpack,
+                    $arguments,
+                ),
+            );
+    }
 
-        return $sequence;
+    /**
+     * @param Maybe<Sequence<Value>> $maybe
+     * @param callable(Readable): Maybe<Value> $unpack
+     *
+     * @return Maybe<Sequence<Value>>
+     */
+    private function unpack(
+        Maybe $maybe,
+        callable $unpack,
+        Readable $arguments,
+    ): Maybe {
+        return $maybe->flatMap(
+            static fn($values) => $unpack($arguments)->map(
+                static fn($value) => ($values)($value),
+            ),
+        );
     }
 }

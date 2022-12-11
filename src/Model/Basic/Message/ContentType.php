@@ -8,22 +8,47 @@ use Innmind\MediaType\{
     MediaType,
     Exception\Exception,
 };
+use Innmind\Immutable\Maybe;
 
 /**
  * Same behaviour as HTTP Content-Type header
+ *
+ * @psalm-immutable
  */
 final class ContentType
 {
     private string $value;
 
-    public function __construct(string $topLevel, string $subType)
+    private function __construct(MediaType $type)
+    {
+        $this->value = $type->topLevel().'/'.$type->subType();
+    }
+
+    /**
+     * @psalm-pure
+     *
+     * @param literal-string $topLevel
+     * @param literal-string $subType
+     *
+     * @throws DomainException
+     */
+    public static function of(string $topLevel, string $subType): self
     {
         try {
-            $mediaType = new MediaType($topLevel, $subType);
-            $this->value = $topLevel.'/'.$subType;
+            return new self(new MediaType($topLevel, $subType));
         } catch (Exception $e) {
-            throw new DomainException($topLevel.'/'.$subType);
+            throw new DomainException("$topLevel/$subType");
         }
+    }
+
+    /**
+     * @psalm-pure
+     *
+     * @return Maybe<self>
+     */
+    public static function maybe(string $value): Maybe
+    {
+        return MediaType::maybe($value)->map(static fn($type) => new self($type));
     }
 
     public function toString(): string

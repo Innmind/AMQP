@@ -10,7 +10,7 @@ class AckTest extends TestCase
 {
     public function testInterface()
     {
-        $command = new Ack(42);
+        $command = Ack::of(42);
 
         $this->assertSame(42, $command->deliveryTag());
         $this->assertFalse($command->isMultiple());

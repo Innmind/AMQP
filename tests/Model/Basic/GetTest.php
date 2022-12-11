@@ -10,7 +10,7 @@ class GetTest extends TestCase
 {
     public function testInterface()
     {
-        $command = new Get('queue');
+        $command = Get::of('queue');
 
         $this->assertSame('queue', $command->queue());
         $this->assertFalse($command->shouldAutoAcknowledge());
@@ -18,7 +18,7 @@ class GetTest extends TestCase
 
     public function testAutoAcknowledge()
     {
-        $command = new Get('queue');
+        $command = Get::of('queue');
         $command2 = $command->autoAcknowledge();
 
         $this->assertInstanceOf(Get::class, $command2);

@@ -8,15 +8,15 @@ use Innmind\AMQP\Transport\{
     Frame\Type,
     Frame\Channel,
     Frame\Method,
+    Frame\MethodClass,
     Frame\Value,
     Frame\Value\Bits,
-    Frame\Value\Text,
+    Frame\Value\LongString,
 };
 use Innmind\Immutable\{
     Str,
     Sequence,
 };
-use function Innmind\Immutable\unwrap;
 use PHPUnit\Framework\TestCase;
 
 class FrameTest extends TestCase
@@ -25,21 +25,20 @@ class FrameTest extends TestCase
     {
         $frame = Frame::method(
             $channel = new Channel(42),
-            $method = new Method(10, 10),
-            $bit = new Bits(true),
-            $text = new Text(Str::of('foobar'))
+            $method = Method::of(10, 10),
+            $bit = Bits::of(true),
+            $text = LongString::of(Str::of('foobar')),
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
-        $this->assertSame(Type::method(), $frame->type());
+        $this->assertSame(Type::method, $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertTrue($frame->is($method));
         $this->assertInstanceOf(Sequence::class, $frame->values());
-        $this->assertSame(Value::class, (string) $frame->values()->type());
-        $this->assertSame([$bit, $text], unwrap($frame->values()));
+        $this->assertSame([$bit, $text], $frame->values()->toList());
         $this->assertSame(
-            \chr(1).\pack('n', 42).\pack('N', 11).\pack('n', 10).\pack('n', 10).$bit->pack().$text->pack().\chr(0xCE),
-            $frame->toString(),
+            \chr(1).\pack('n', 42).\pack('N', 15).\pack('n', 10).\pack('n', 10).$bit->pack()->toString().$text->pack()->toString().\chr(0xCE),
+            $frame->pack()->toString(),
         );
     }
 
@@ -47,20 +46,18 @@ class FrameTest extends TestCase
     {
         $frame = Frame::header(
             $channel = new Channel(42),
-            60,
-            $value = new Text(Str::of('foobar'))
+            MethodClass::basic,
+            $value = LongString::of(Str::of('foobar')),
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
-        $this->assertSame(Type::header(), $frame->type());
+        $this->assertSame(Type::header, $frame->type());
         $this->assertSame($channel, $frame->channel());
-        $this->assertFalse($frame->is(new Method(0, 0)));
         $this->assertInstanceOf(Sequence::class, $frame->values());
-        $this->assertSame(Value::class, (string) $frame->values()->type());
-        $this->assertSame([$value], unwrap($frame->values()));
+        $this->assertSame([$value], $frame->values()->toList());
         $this->assertSame(
-            \chr(2).\pack('n', 42).\pack('N', 10).\pack('n', 60).\pack('n', 0).'foobar'.\chr(0xCE),
-            $frame->toString(),
+            \chr(2).\pack('n', 42).\pack('N', 14).\pack('n', 60).\pack('n', 0).$value->pack()->toString().\chr(0xCE),
+            $frame->pack()->toString(),
         );
     }
 
@@ -68,20 +65,20 @@ class FrameTest extends TestCase
     {
         $frame = Frame::body(
             $channel = new Channel(42),
-            $text = Str::of('foobar')
+            $text = Str::of('foobar'),
         );
 
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame($channel, $frame->channel());
-        $this->assertFalse($frame->is(new Method(0, 0)));
         $this->assertInstanceOf(Sequence::class, $frame->values());
-        $this->assertSame(Value::class, (string) $frame->values()->type());
-        $this->assertCount(1, $frame->values());
-        $this->assertInstanceOf(Text::class, $frame->values()->first());
-        $this->assertSame($text, $frame->values()->first()->original());
+        $this->assertCount(0, $frame->values());
+        $this->assertSame($text, $frame->content()->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
         $this->assertSame(
             \chr(3).\pack('n', 42).\pack('N', 6).'foobar'.\chr(0xCE),
-            $frame->toString(),
+            $frame->pack()->toString(),
         );
     }
 
@@ -92,13 +89,11 @@ class FrameTest extends TestCase
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertInstanceOf(Channel::class, $frame->channel());
         $this->assertSame(0, $frame->channel()->toInt());
-        $this->assertFalse($frame->is(new Method(0, 0)));
         $this->assertInstanceOf(Sequence::class, $frame->values());
-        $this->assertSame(Value::class, (string) $frame->values()->type());
         $this->assertCount(0, $frame->values());
         $this->assertSame(
             \chr(8).\pack('n', 0).\pack('N', 0).\chr(0xCE),
-            $frame->toString(),
+            $frame->pack()->toString(),
         );
     }
 }

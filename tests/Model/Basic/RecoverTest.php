@@ -10,7 +10,7 @@ class RecoverTest extends TestCase
 {
     public function testInterface()
     {
-        $command = new Recover;
+        $command = Recover::withoutRequeue();
 
         $this->assertFalse($command->shouldRequeue());
     }

@@ -10,7 +10,7 @@ class CancelTest extends TestCase
 {
     public function testInterface()
     {
-        $command = new Cancel('consumer');
+        $command = Cancel::of('consumer');
 
         $this->assertSame('consumer', $command->consumerTag());
         $this->assertTrue($command->shouldWait());
@@ -18,7 +18,7 @@ class CancelTest extends TestCase
 
     public function testWait()
     {
-        $command = new Cancel('consumer');
+        $command = Cancel::of('consumer');
         $command2 = $command->dontWait();
 
         $this->assertInstanceOf(Cancel::class, $command2);
