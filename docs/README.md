@@ -6,7 +6,7 @@ This package tries to abstract away as much as possible the technical details of
 
 This is achieved via a declarative API. You specify the _commands_ you want to run but are only executed when you call `run()` on the `Client`.
 
-The `run` method asks for a state variable that will be passed to each command and will be returned on the right hand side of the `Either`, you can think of this behaviour as a _reduce_ operation. You can [learn more here](Handle state.md).
+The `run` method asks for a state variable that will be passed to each command and will be returned on the right hand side of the `Either`, you can think of this behaviour as a _reduce_ operation. You can [learn more here](Handle%20state.md).
 
 The `Client` never throws any `Exception`, instead all errors are return on the left hand side of the `Either` returned by `run`. All objects are instances of `Innmind\AMQP\Failure` and you can make sure you handle all of them thanks to the enum `Failure\Kind`.
 
