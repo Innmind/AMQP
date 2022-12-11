@@ -9,6 +9,7 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         php-version: ['8.1', '8.2']
+        dependencies: ['lowest', 'highest']
     name: 'PHPUnit'
     steps:
       - name: Checkout
@@ -25,6 +26,8 @@ jobs:
           ini-values: xdebug.max_nesting_level=2048
       - name: Composer
         uses: "ramsey/composer-install@v2"
+        with:
+          dependency-versions: ${{ matrix.dependencies }}
       - name: PHPUnit
         run: vendor/bin/phpunit --coverage-clover=coverage.clover
         env:
@@ -37,6 +40,7 @@ jobs:
     strategy:
       matrix:
         php-version: ['8.1', '8.2']
+        dependencies: ['lowest', 'highest']
     name: 'Psalm'
     steps:
       - name: Checkout
@@ -48,6 +52,8 @@ jobs:
           extensions: mbstring, intl
       - name: Composer
         uses: "ramsey/composer-install@v2"
+        with:
+          dependency-versions: ${{ matrix.dependencies }}
       - name: Psalm
         run: vendor/bin/psalm --shepherd
   cs:
