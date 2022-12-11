@@ -12,6 +12,10 @@ The goal of this implementation is to provide a PHP land implementation (for eas
 
 **Important**: If you are using RabbitMQ be aware that it doesn't implemented the specification completely, `Qos` and `Recover` methods are not implemented. And if you find yourself using [`Value`](src/Transport/Frame/Value.php) implementations note that `ShortString`, `SignedLongLongInteger` and `SignedShortInteger` generate server errors on some methods (like using them as message headers).
 
+[Documentation](docs)
+
+**Important**: you must use [`vimeo/psalm`](https://packagist.org/packages/vimeo/psalm) to make sure you use this library correctly.
+
 ## Installation
 
 ```sh
