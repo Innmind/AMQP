@@ -11,7 +11,7 @@ use Innmind\AMQP\{
 
 final class ValueTranslator implements ArgumentTranslator
 {
-    public function __invoke($value): Value
+    public function __invoke(mixed $value): Value
     {
         if (!$value instanceof Value) {
             throw new ValueNotTranslatable($value);

@@ -6,56 +6,100 @@ namespace Innmind\AMQP\Transport\Frame\Value;
 use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\Math\{
     Algebra\Integer,
-    Algebra\Number\Infinite,
+    Algebra,
     DefinitionSet\Set,
     DefinitionSet\Range,
 };
 use Innmind\Stream\Readable;
+use Innmind\Immutable\{
+    Str,
+    Maybe,
+};
 
 /**
- * @implements Value<Integer>
+ * @implements Value<int<0, max>>
+ * @psalm-immutable
  */
 final class UnsignedLongLongInteger implements Value
 {
-    private static ?Set $definitionSet = null;
+    /** @var int<0, max> */
+    private int $original;
 
-    private Integer $original;
-
-    public function __construct(Integer $value)
+    /**
+     * @param int<0, max> $value
+     */
+    private function __construct(int $value)
     {
         $this->original = $value;
     }
 
-    public static function of(Integer $value): self
+    /**
+     * @psalm-pure
+     * @internal
+     *
+     * @param int<0, max> $value
+     */
+    public static function internal(int $value): self
     {
-        self::definitionSet()->accept($value);
+        return new self($value);
+    }
+
+    /**
+     * @psalm-pure
+     *
+     * @param int<0, max> $value
+     */
+    public static function of(int $value): self
+    {
+        self::definitionSet()->accept(Integer::of($value));
 
         return new self($value);
     }
 
-    public static function unpack(Readable $stream): self
+    /**
+     * @return Maybe<self>
+     */
+    public static function unpack(Readable $stream): Maybe
     {
-        /** @var int $value */
-        [, $value] = \unpack('J', $stream->read(8)->toString());
+        return $stream
+            ->read(8)
+            ->map(static fn($chunk) => $chunk->toEncoding('ASCII'))
+            ->filter(static fn($chunk) => $chunk->length() === 8)
+            ->map(static function($chunk) {
+                /** @var int<0, max> $value */
+                [, $value] = \unpack('J', $chunk->toString());
 
-        return new self(new Integer($value));
+                return $value;
+            })
+            ->map(static fn($value) => new self($value));
     }
 
-    public function original(): Integer
+    /**
+     * @return int<0, max>
+     */
+    public function original(): int
     {
         return $this->original;
     }
 
-    public function pack(): string
+    public function symbol(): Symbol
     {
-        return \pack('J', $this->original->value());
+        return Symbol::unsignedLongLongInteger;
     }
 
+    public function pack(): Str
+    {
+        return Str::of(\pack('J', $this->original));
+    }
+
+    /**
+     * @psalm-pure
+     */
     public static function definitionSet(): Set
     {
-        return self::$definitionSet ?? self::$definitionSet = Range::inclusive(
-            new Integer(0),
-            Infinite::positive(),
+        return Range::inclusive(
+            Integer::of(0),
+            Algebra\Value::infinite,
         );
     }
 }

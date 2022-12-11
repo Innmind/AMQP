@@ -5,17 +5,38 @@ namespace Innmind\AMQP\Model\Basic;
 
 /**
  * Acknowledge
+ *
+ * @psalm-immutable
  */
 final class Ack
 {
+    /** @var int<0, max> */
     private int $deliveryTag;
     private bool $multiple = false;
 
-    public function __construct(int $deliveryTag)
+    /**
+     * @param int<0, max> $deliveryTag
+     */
+    private function __construct(int $deliveryTag)
     {
         $this->deliveryTag = $deliveryTag;
     }
 
+    /**
+     * @psalm-pure
+     *
+     * @param int<0, max> $deliveryTag
+     */
+    public static function of(int $deliveryTag): self
+    {
+        return new self($deliveryTag);
+    }
+
+    /**
+     * @psalm-pure
+     *
+     * @param int<0, max> $deliveryTag
+     */
     public static function multiple(int $deliveryTag): self
     {
         $self = new self($deliveryTag);
@@ -24,6 +45,9 @@ final class Ack
         return $self;
     }
 
+    /**
+     * @return int<0, max>
+     */
     public function deliveryTag(): int
     {
         return $this->deliveryTag;

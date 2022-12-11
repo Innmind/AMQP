@@ -8,11 +8,18 @@ use Innmind\AMQP\Exception\{
     NotWaitingPassiveDeclarationDoesNothing,
     PassiveQueueDeclarationMustHaveAName,
 };
-use Innmind\Immutable\Map;
+use Innmind\Immutable\{
+    Map,
+    Maybe,
+};
 
+/**
+ * @psalm-immutable
+ */
 final class Declaration
 {
-    private ?string $name = null;
+    /** @var Maybe<string> */
+    private Maybe $name;
     private bool $passive = false;
     private bool $durable = false;
     private bool $autoDelete = false;
@@ -23,12 +30,16 @@ final class Declaration
 
     private function __construct()
     {
+        /** @var Maybe<string> */
+        $this->name = Maybe::nothing();
         /** @var Map<string, mixed> */
-        $this->arguments = Map::of('string', 'mixed');
+        $this->arguments = Map::of();
     }
 
     /**
      * Check if the queue exists on the server
+     *
+     * @psalm-pure
      */
     public static function passive(string $name): self
     {
@@ -40,6 +51,8 @@ final class Declaration
 
     /**
      * The queue will survive after a server restart
+     *
+     * @psalm-pure
      */
     public static function durable(): self
     {
@@ -51,6 +64,8 @@ final class Declaration
 
     /**
      * The queue will disappear after a server restart
+     *
+     * @psalm-pure
      */
     public static function temporary(): self
     {
@@ -59,6 +74,8 @@ final class Declaration
 
     /**
      * The queue is deleted once all consumers have finished using it
+     *
+     * @psalm-pure
      */
     public static function autoDelete(): self
     {
@@ -126,7 +143,7 @@ final class Declaration
     public function withName(string $name): self
     {
         $self = clone $this;
-        $self->name = $name;
+        $self->name = Maybe::just($name);
 
         return $self;
     }
@@ -141,15 +158,13 @@ final class Declaration
         }
 
         $self = clone $this;
-        $self->name = null;
+        /** @var Maybe<string> */
+        $self->name = Maybe::nothing();
 
         return $self;
     }
 
-    /**
-     * @param mixed $value
-     */
-    public function withArgument(string $key, $value): self
+    public function withArgument(string $key, mixed $value): self
     {
         $self = clone $this;
         $self->arguments = ($self->arguments)($key, $value);
@@ -157,15 +172,11 @@ final class Declaration
         return $self;
     }
 
-    public function shouldAutoGenerateName(): bool
+    /**
+     * @return Maybe<string>
+     */
+    public function name(): Maybe
     {
-        return !\is_string($this->name);
-    }
-
-    /** @psalm-suppress InvalidNullableReturnType */
-    public function name(): string
-    {
-        /** @psalm-suppress NullableReturnStatement */
         return $this->name;
     }
 

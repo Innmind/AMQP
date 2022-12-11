@@ -10,11 +10,11 @@ class FlowOkTest extends TestCase
 {
     public function testInterface()
     {
-        $command = new FlowOk(true);
+        $command = FlowOk::of(true);
 
         $this->assertTrue($command->active());
 
-        $command = new FlowOk(false);
+        $command = FlowOk::of(false);
 
         $this->assertFalse($command->active());
     }

@@ -3,10 +3,7 @@ declare(strict_types = 1);
 
 namespace Tests\Innmind\AMQP\Transport\Frame;
 
-use Innmind\AMQP\{
-    Transport\Frame\Channel,
-    Exception\DomainException,
-};
+use Innmind\AMQP\Transport\Frame\Channel;
 use PHPUnit\Framework\TestCase;
 
 class ChannelTest extends TestCase
@@ -15,12 +12,5 @@ class ChannelTest extends TestCase
     {
         $this->assertSame(0, (new Channel(0))->toInt());
         $this->assertSame(42, (new Channel(42))->toInt());
-    }
-
-    public function testThrowWhenChannelIdTooLow()
-    {
-        $this->expectException(DomainException::class);
-
-        new Channel(-1);
     }
 }

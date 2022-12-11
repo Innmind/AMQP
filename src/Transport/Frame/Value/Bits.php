@@ -7,64 +7,81 @@ use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\Stream\Readable;
 use Innmind\Immutable\{
     Str,
-    Sequence as Seq,
+    Sequence,
+    Maybe,
 };
-use function Innmind\Immutable\unwrap;
 
 /**
- * @implements Value<Seq<bool>>
+ * @implements Value<Sequence<bool>>
+ * @psalm-immutable
  */
 final class Bits implements Value
 {
-    /** @var Seq<bool> */
-    private Seq $original;
+    /** @var Sequence<bool> */
+    private Sequence $original;
 
-    public function __construct(bool $first, bool ...$bits)
+    /**
+     * @param Sequence<bool> $original
+     */
+    private function __construct(Sequence $original)
     {
-        /** @var Seq<bool> */
-        $this->original = Seq::of('bool', $first, ...$bits);
-    }
-
-    public static function unpack(Readable $stream): self
-    {
-        /** @var Seq<bool> */
-        $bits = $stream
-            ->read(1)
-            ->toEncoding('ASCII')
-            ->chunk()
-            ->toSequenceOf(
-                'bool',
-                static function(Str $bits): \Generator {
-                    $bits = Str::of(\decbin(\ord($bits->toString())));
-                    $bitsAsStrings = unwrap($bits->chunk());
-
-                    foreach ($bitsAsStrings as $bit) {
-                        yield (bool) (int) $bit->toString();
-                    }
-                },
-            )
-            ->reverse();
-
-        return new self(...unwrap($bits));
+        $this->original = $original;
     }
 
     /**
-     * @return Seq<bool>
+     * @psalm-pure
+     * @no-named-arguments
      */
-    public function original(): Seq
+    public static function of(bool $first, bool ...$bits): self
+    {
+        return new self(Sequence::of($first, ...$bits));
+    }
+
+    /**
+     * @return Maybe<self>
+     */
+    public static function unpack(Readable $stream): Maybe
+    {
+        return $stream
+            ->read(1)
+            ->map(static fn($chunk) => $chunk->toEncoding('ASCII'))
+            ->filter(static fn($chunk) => $chunk->length() === 1)
+            ->map(
+                static fn($chunk) => $chunk
+                    ->map(static fn($chunk) => \decbin(\ord($chunk)))
+                    ->chunk()
+                    ->map(static fn($bit) => (bool) (int) $bit->toString())
+                    ->reverse(),
+            )
+            ->exclude(static fn($bits) => $bits->empty())
+            ->map(static fn($bits) => new self($bits));
+    }
+
+    /**
+     * @return Sequence<bool>
+     */
+    public function original(): Sequence
     {
         return $this->original;
     }
 
-    public function pack(): string
+    public function symbol(): Symbol
     {
-        $value = 0;
+        return Symbol::bits;
+    }
 
-        foreach (unwrap($this->original) as $i => $bit) {
-            $bit = (int) $bit;
-            $value |= $bit << $i;
-        }
+    public function pack(): Str
+    {
+        $value = $this
+            ->original
+            ->indices()
+            ->zip($this->original)
+            ->map(static fn($pair) => ((int) $pair[1]) << $pair[0])
+            ->reduce(
+                0,
+                static fn(int $value, int $bit) => $value | $bit,
+            );
 
-        return \chr($value);
+        return Str::of(\chr($value));
     }
 }

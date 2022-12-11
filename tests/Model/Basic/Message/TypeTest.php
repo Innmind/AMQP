@@ -10,6 +10,6 @@ class TypeTest extends TestCase
 {
     public function testInterface()
     {
-        $this->assertSame('foo', (new Type('foo'))->toString());
+        $this->assertSame('foo', Type::of('foo')->toString());
     }
 }

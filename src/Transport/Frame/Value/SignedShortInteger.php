@@ -10,51 +10,84 @@ use Innmind\Math\{
     DefinitionSet\Range,
 };
 use Innmind\Stream\Readable;
+use Innmind\Immutable\{
+    Str,
+    Maybe,
+};
 
 /**
- * @implements Value<Integer>
+ * @implements Value<int<-32768, 32767>>
+ * @psalm-immutable
  */
 final class SignedShortInteger implements Value
 {
-    private static ?Set $definitionSet = null;
+    /** @var int<-32768, 32767> */
+    private int $original;
 
-    private Integer $original;
-
-    public function __construct(Integer $value)
+    /**
+     * @param int<-32768, 32767> $value
+     */
+    private function __construct(int $value)
     {
         $this->original = $value;
     }
 
-    public static function of(Integer $value): self
+    /**
+     * @psalm-pure
+     *
+     * @param int<-32768, 32767> $value
+     */
+    public static function of(int $value): self
     {
-        self::definitionSet()->accept($value);
+        self::definitionSet()->accept(Integer::of($value));
 
         return new self($value);
     }
 
-    public static function unpack(Readable $stream): self
+    /**
+     * @return Maybe<self>
+     */
+    public static function unpack(Readable $stream): Maybe
     {
-        /** @var int $value */
-        [, $value] = \unpack('s', $stream->read(2)->toString());
+        return $stream
+            ->read(2)
+            ->map(static fn($chunk) => $chunk->toEncoding('ASCII'))
+            ->filter(static fn($chunk) => $chunk->length() === 2)
+            ->map(static function($chunk) {
+                /** @var int<-32768, 32767> $value */
+                [, $value] = \unpack('s', $chunk->toString());
 
-        return new self(new Integer($value));
+                return $value;
+            })
+            ->map(static fn($value) => new self($value));
     }
 
-    public function original(): Integer
+    /**
+     * @return int<-32768, 32767>
+     */
+    public function original(): int
     {
         return $this->original;
     }
 
-    public function pack(): string
+    public function symbol(): Symbol
     {
-        return \pack('s', $this->original->value());
+        return Symbol::signedShortInteger;
     }
 
+    public function pack(): Str
+    {
+        return Str::of(\pack('s', $this->original));
+    }
+
+    /**
+     * @psalm-pure
+     */
     public static function definitionSet(): Set
     {
-        return self::$definitionSet ?? self::$definitionSet = Range::inclusive(
-            new Integer(-32768),
-            new Integer(32767),
+        return Range::inclusive(
+            Integer::of(-32768),
+            Integer::of(32767),
         );
     }
 }

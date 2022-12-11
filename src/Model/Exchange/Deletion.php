@@ -3,15 +3,26 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Model\Exchange;
 
+/**
+ * @psalm-immutable
+ */
 final class Deletion
 {
     private string $name;
     private bool $ifUnused = false;
     private bool $wait = true;
 
-    public function __construct(string $name)
+    private function __construct(string $name)
     {
         $this->name = $name;
+    }
+
+    /**
+     * @psalm-pure
+     */
+    public static function of(string $name): self
+    {
+        return new self($name);
     }
 
     public function ifUnused(): self

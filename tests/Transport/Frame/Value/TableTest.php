@@ -9,9 +9,8 @@ use Innmind\AMQP\{
     Transport\Frame\Value\LongString,
     Transport\Frame\Value\Text,
     Transport\Frame\Value,
-    Exception\UnboundedTextCannotBeWrapped,
 };
-use Innmind\Math\Algebra\Integer;
+use Innmind\TimeContinuum\Earth\Clock;
 use Innmind\Stream\Readable\Stream;
 use Innmind\Immutable\{
     Map,
@@ -25,16 +24,8 @@ class TableTest extends TestCase
     {
         $this->assertInstanceOf(
             Value::class,
-            new Table(Map::of('string', Value::class))
+            Table::of(Map::of()),
         );
-    }
-
-    public function testThrowWhenInvalidMap()
-    {
-        $this->expectException(\TypeError::class);
-        $this->expectExceptionMessage('Argument 1 must be of type Map<string, Innmind\AMQP\Transport\Frame\Value>');
-
-        new Table(Map::of('string', 'mixed'));
     }
 
     /**
@@ -42,8 +33,8 @@ class TableTest extends TestCase
      */
     public function testStringCast($expected, $map)
     {
-        $value = new Table($map);
-        $this->assertSame($expected, $value->pack());
+        $value = Table::of($map);
+        $this->assertSame($expected, $value->pack()->toString());
         $this->assertSame($map, $value->original());
     }
 
@@ -52,7 +43,10 @@ class TableTest extends TestCase
      */
     public function testFromStream($string, $expected)
     {
-        $value = Table::unpack(Stream::ofContent($string));
+        $value = Table::unpack(new Clock, Stream::ofContent($string))->match(
+            static fn($value) => $value,
+            static fn() => null,
+        );
 
         $this->assertInstanceOf(Table::class, $value);
         $this->assertCount($expected->size(), $value->original());
@@ -60,31 +54,20 @@ class TableTest extends TestCase
         foreach ($expected as $i => $v) {
             $this->assertInstanceOf(
                 \get_class($v),
-                $value->original()->get($i)
+                $value->original()->get($i),
             );
             $this->assertSame(
-                $v->pack(),
-                $value->original()->get($i)->pack(),
+                $v->pack()->toString(),
+                $value->original()->get($i)->pack()->toString(),
             );
         }
 
-        $this->assertSame($string, $value->pack());
-    }
-
-    public function testThrowWhenUsingUnboundedText()
-    {
-        $this->expectException(UnboundedTextCannotBeWrapped::class);
-
-        new Table(
-            Map::of('string', Value::class)
-                ('foo', new Text(Str::of('')))
-        );
+        $this->assertSame($string, $value->pack()->toString());
     }
 
     public function cases(): array
     {
-        $map = Map::of('string', Value::class)
-            ('foo', new SignedOctet(new Integer(1)));
+        $map = Map::of(['foo', SignedOctet::of(1)]);
 
         return [
             [
@@ -93,7 +76,7 @@ class TableTest extends TestCase
             ],
             [
                 \pack('N', 28).\chr(3).'foob'.\chr(1).\chr(6).'foobarS'.\pack('N', 10).'foo🙏bar',
-                $map->put('foobar', new LongString(Str::of('foo🙏bar'))),
+                $map->put('foobar', LongString::literal('foo🙏bar')),
             ],
         ];
     }

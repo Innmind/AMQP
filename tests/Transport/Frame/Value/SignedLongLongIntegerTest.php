@@ -7,7 +7,6 @@ use Innmind\AMQP\Transport\Frame\{
     Value\SignedLongLongInteger,
     Value,
 };
-use Innmind\Math\Algebra\Integer;
 use Innmind\Stream\Readable\Stream;
 use PHPUnit\Framework\TestCase;
 
@@ -17,7 +16,7 @@ class SignedLongLongIntegerTest extends TestCase
     {
         $this->assertInstanceOf(
             Value::class,
-            new SignedLongLongInteger(new Integer(0))
+            SignedLongLongInteger::of(0),
         );
     }
 
@@ -26,8 +25,8 @@ class SignedLongLongIntegerTest extends TestCase
      */
     public function testStringCast($int, $expected)
     {
-        $value = new SignedLongLongInteger($int = new Integer($int));
-        $this->assertSame($expected, $value->pack());
+        $value = SignedLongLongInteger::of($int);
+        $this->assertSame($expected, $value->pack()->toString());
         $this->assertSame($int, $value->original());
     }
 
@@ -36,11 +35,14 @@ class SignedLongLongIntegerTest extends TestCase
      */
     public function testFromStream($expected, $string)
     {
-        $value = SignedLongLongInteger::unpack(Stream::ofContent($string));
+        $value = SignedLongLongInteger::unpack(Stream::ofContent($string))->match(
+            static fn($value) => $value,
+            static fn() => null,
+        );
 
         $this->assertInstanceOf(SignedLongLongInteger::class, $value);
-        $this->assertSame($expected, $value->original()->value());
-        $this->assertSame($string, $value->pack());
+        $this->assertSame($expected, $value->original());
+        $this->assertSame($string, $value->pack()->toString());
     }
 
     public function cases(): array

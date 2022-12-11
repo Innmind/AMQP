@@ -16,7 +16,7 @@ class ShortStringTest extends TestCase
 {
     public function testInterface()
     {
-        $this->assertInstanceOf(Value::class, new ShortString(Str::of('')));
+        $this->assertInstanceOf(Value::class, ShortString::literal(''));
     }
 
     /**
@@ -24,9 +24,9 @@ class ShortStringTest extends TestCase
      */
     public function testStringCast($string, $expected)
     {
-        $value = new ShortString($str = Str::of($string));
-        $this->assertSame($expected, $value->pack());
-        $this->assertSame($str, $value->original());
+        $value = ShortString::literal($string);
+        $this->assertSame($expected, $value->pack()->toString());
+        $this->assertSame($string, $value->original()->toString());
     }
 
     /**
@@ -34,11 +34,14 @@ class ShortStringTest extends TestCase
      */
     public function testFromStream($expected, $string)
     {
-        $value = ShortString::unpack(Stream::ofContent($string));
+        $value = ShortString::unpack(Stream::ofContent($string))->match(
+            static fn($value) => $value,
+            static fn() => null,
+        );
 
         $this->assertInstanceOf(ShortString::class, $value);
         $this->assertSame($expected, $value->original()->toString());
-        $this->assertSame($string, $value->pack());
+        $this->assertSame($string, $value->pack()->toString());
     }
 
     public function testThrowWhenTooLongString()

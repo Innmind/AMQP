@@ -4,50 +4,213 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Command;
 
 use Innmind\AMQP\{
-    Client,
-    Consumers,
-    Model\Basic,
-};
-use Innmind\CLI\{
     Command,
-    Command\Arguments,
-    Command\Options,
-    Environment,
+    Failure,
+    Client\State,
+    Consumer\Details,
+    Consumer\Continuation,
+    Consumer\Canceled,
+    Transport\Connection,
+    Transport\Connection\MessageReader,
+    Transport\Frame,
+    Transport\Frame\Channel,
+    Transport\Frame\Method,
+    Transport\Frame\Value,
+    Model\Basic\Get as Model,
+    Model\Basic\Message,
+    Model\Count,
+};
+use Innmind\Immutable\{
+    Maybe,
+    Either,
+    Sequence,
+    Predicate\Instance,
 };
 
 final class Get implements Command
 {
-    private Client $client;
-    private Consumers $consumers;
+    private Model $command;
+    /** @var callable(mixed, Message, Continuation, Details): Continuation */
+    private $consume;
+    /** @var positive-int */
+    private int $take;
 
-    public function __construct(Client $client, Consumers $consumers)
+    /**
+     * @param callable(mixed, Message, Continuation, Details): Continuation $consume
+     * @param positive-int $take
+     */
+    private function __construct(Model $command, callable $consume, int $take)
     {
-        $this->client = $client;
-        $this->consumers = $consumers;
+        $this->command = $command;
+        $this->consume = $consume;
+        $this->take = $take;
     }
 
-    public function __invoke(Environment $env, Arguments $arguments, Options $options): void
-    {
-        $queue = $arguments->get('queue');
-        $consume = $this->consumers->get($queue);
+    public function __invoke(
+        Connection $connection,
+        Channel $channel,
+        MessageReader $read,
+        mixed $state,
+    ): Either {
+        /**
+         * @psalm-suppress MixedArgumentTypeCoercion
+         * @var Either<Failure, State>
+         */
+        return Sequence::of(...\array_fill(0, $this->take, null))->reduce(
+            Either::right(State::of($connection, $state)),
+            fn(Either $state) => $state->flatMap(
+                fn(State $state) => $this->doGet(
+                    $state->connection(),
+                    $channel,
+                    $read,
+                    $state->userState(),
+                ),
+            ),
+        );
+    }
 
-        try {
-            $this
-                ->client
-                ->channel()
-                ->basic()
-                ->get(new Basic\Get($queue))($consume);
-        } finally {
-            $this->client->close();
+    public static function of(string $queue): self
+    {
+        return new self(
+            Model::of($queue),
+            static fn(mixed $state, Message $_, Continuation $continuation) => $continuation->ack($state),
+            1,
+        );
+    }
+
+    /**
+     * @param callable(mixed, Message, Continuation, Details): Continuation $consume
+     */
+    public function handle(callable $consume): self
+    {
+        return new self($this->command, $consume, $this->take);
+    }
+
+    /**
+     * @param positive-int $take
+     */
+    public function take(int $take): self
+    {
+        return new self($this->command, $this->consume, $take);
+    }
+
+    /**
+     * @return Either<Failure, State>
+     */
+    public function doGet(
+        Connection $connection,
+        Channel $channel,
+        MessageReader $read,
+        mixed $state,
+    ): Either {
+        /** @var Either<Failure, State> */
+        return $connection
+            ->send(fn($protocol) => $protocol->basic()->get(
+                $channel,
+                $this->command,
+            ))
+            ->wait(Method::basicGetOk, Method::basicGetEmpty)
+            ->then(
+                fn($connection, $frame) => $this->maybeConsume(
+                    $connection,
+                    $channel,
+                    $read,
+                    $frame,
+                    $state,
+                ),
+                static fn($connection) => State::of($connection, $state), // this case should not happen
+            )
+            ->leftMap(fn() => Failure::toGet($this->command));
+    }
+
+    /**
+     * @return Either<Failure, State>
+     */
+    private function maybeConsume(
+        Connection $connection,
+        Channel $channel,
+        MessageReader $read,
+        Frame $frame,
+        mixed $state,
+    ): Either {
+        if ($frame->is(Method::basicGetEmpty)) {
+            /** @var Either<Failure, State> */
+            return Either::right(State::of($connection, $state));
         }
+
+        $deliveryTag = $frame
+            ->values()
+            ->first()
+            ->keep(Instance::of(Value\UnsignedLongLongInteger::class))
+            ->map(static fn($value) => $value->original());
+        $redelivered = $frame
+            ->values()
+            ->get(1)
+            ->keep(Instance::of(Value\Bits::class))
+            ->flatMap(static fn($value) => $value->original()->first());
+        $exchange = $frame
+            ->values()
+            ->get(2)
+            ->keep(Instance::of(Value\ShortString::class))
+            ->map(static fn($value) => $value->original()->toString());
+        $routingKey = $frame
+            ->values()
+            ->get(3)
+            ->keep(Instance::of(Value\ShortString::class))
+            ->map(static fn($value) => $value->original()->toString());
+        $messageCount = $frame
+            ->values()
+            ->get(4)
+            ->keep(Instance::of(Value\UnsignedLongInteger::class))
+            ->map(static fn($value) => $value->original())
+            ->map(Count::of(...));
+
+        /** @var Either<Failure, State> */
+        return Maybe::all($deliveryTag, $redelivered, $exchange, $routingKey, $messageCount)
+            ->map(Details::ofGet(...))
+            ->either()
+            ->leftMap(fn() => Failure::toGet($this->command))
+            ->flatMap(
+                fn($details) => $read($connection)->flatMap(
+                    fn($received) => $this->consume(
+                        $received->connection(),
+                        $channel,
+                        $read,
+                        $state,
+                        $received->message(),
+                        $details,
+                    ),
+                ),
+            );
     }
 
-    public function toString(): string
-    {
-        return <<<USAGE
-innmind:amqp:get queue
-
-Will process a single message from the given queue
-USAGE;
+    /**
+     * @return Either<Failure, State>
+     */
+    private function consume(
+        Connection $connection,
+        Channel $channel,
+        MessageReader $read,
+        mixed $state,
+        Message $message,
+        Details $details,
+    ): Either {
+        return ($this->consume)(
+            $state,
+            $message,
+            Continuation::of($state),
+            $details,
+        )
+            ->respond(
+                $this->command->queue(),
+                $connection,
+                $channel,
+                $read,
+                $details->deliveryTag(),
+            )
+            ->map(static fn($state) => match ($state instanceof Canceled) {
+                true => $state->state(),
+                false => $state,
+            });
     }
 }

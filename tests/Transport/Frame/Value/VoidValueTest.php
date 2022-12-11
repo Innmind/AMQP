@@ -15,7 +15,10 @@ class VoidValueTest extends TestCase
     public function testInterface()
     {
         $this->assertInstanceOf(Value::class, new VoidValue);
-        $this->assertInstanceOf(VoidValue::class, VoidValue::unpack(Stream::ofContent('')));
-        $this->assertSame('', (new VoidValue)->pack());
+        $this->assertInstanceOf(VoidValue::class, VoidValue::unpack(Stream::ofContent(''))->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
+        $this->assertSame('', (new VoidValue)->pack()->toString());
     }
 }

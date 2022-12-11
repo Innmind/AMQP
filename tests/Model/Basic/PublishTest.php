@@ -7,14 +7,15 @@ use Innmind\AMQP\Model\Basic\{
     Publish,
     Message,
 };
+use Innmind\Immutable\Str;
 use PHPUnit\Framework\TestCase;
 
 class PublishTest extends TestCase
 {
     public function testInterface()
     {
-        $command = new Publish(
-            $message = $this->createMock(Message::class)
+        $command = Publish::a(
+            $message = Message::of(Str::of('')),
         );
 
         $this->assertSame($message, $command->message());
@@ -26,7 +27,7 @@ class PublishTest extends TestCase
 
     public function testA()
     {
-        $command = Publish::a($message = $this->createMock(Message::class));
+        $command = Publish::a($message = Message::of(Str::of('')));
 
         $this->assertInstanceOf(Publish::class, $command);
         $this->assertSame($message, $command->message());
@@ -34,7 +35,7 @@ class PublishTest extends TestCase
 
     public function testTo()
     {
-        $command = new Publish($this->createMock(Message::class));
+        $command = Publish::a(Message::of(Str::of('')));
         $command2 = $command->to('foo');
 
         $this->assertInstanceOf(Publish::class, $command2);
@@ -52,7 +53,7 @@ class PublishTest extends TestCase
 
     public function testWithRoutingKey()
     {
-        $command = new Publish($this->createMock(Message::class));
+        $command = Publish::a(Message::of(Str::of('')));
         $command2 = $command->withRoutingKey('bar');
 
         $this->assertInstanceOf(Publish::class, $command2);
@@ -63,7 +64,7 @@ class PublishTest extends TestCase
 
     public function testFlagAsMandatory()
     {
-        $command = new Publish($this->createMock(Message::class));
+        $command = Publish::a(Message::of(Str::of('')));
         $command2 = $command->flagAsMandatory();
 
         $this->assertInstanceOf(Publish::class, $command2);
@@ -81,7 +82,7 @@ class PublishTest extends TestCase
 
     public function testFlagAsImmediate()
     {
-        $command = new Publish($this->createMock(Message::class));
+        $command = Publish::a(Message::of(Str::of('')));
         $command2 = $command->flagAsImmediate();
 
         $this->assertInstanceOf(Publish::class, $command2);

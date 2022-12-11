@@ -9,14 +9,13 @@ use Innmind\AMQP\Transport\Frame\{
 };
 use Innmind\Stream\Readable\Stream;
 use Innmind\Immutable\Sequence;
-use function Innmind\Immutable\unwrap;
 use PHPUnit\Framework\TestCase;
 
 class BitsTest extends TestCase
 {
     public function testInterface()
     {
-        $this->assertInstanceOf(Value::class, new Bits(true));
+        $this->assertInstanceOf(Value::class, Bits::of(true));
     }
 
     /**
@@ -24,11 +23,10 @@ class BitsTest extends TestCase
      */
     public function testStringCast($bits, $expected)
     {
-        $value = new Bits(...$bits);
-        $this->assertSame($expected, $value->pack());
+        $value = Bits::of(...$bits);
+        $this->assertSame($expected, $value->pack()->toString());
         $this->assertInstanceOf(Sequence::class, $value->original());
-        $this->assertSame('bool', (string) $value->original()->type());
-        $this->assertSame($bits, unwrap($value->original()));
+        $this->assertSame($bits, $value->original()->toList());
     }
 
     /**
@@ -36,11 +34,14 @@ class BitsTest extends TestCase
      */
     public function testFromStream($expected, $string)
     {
-        $value = Bits::unpack(Stream::ofContent($string));
+        $value = Bits::unpack(Stream::ofContent($string))->match(
+            static fn($value) => $value,
+            static fn() => null,
+        );
 
         $this->assertInstanceOf(Bits::class, $value);
-        $this->assertSame($expected, unwrap($value->original()));
-        $this->assertSame($string, $value->pack());
+        $this->assertSame($expected, $value->original()->toList());
+        $this->assertSame($string, $value->pack()->toString());
     }
 
     public function cases(): array

@@ -3,73 +3,22 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport\Protocol;
 
-use Innmind\AMQP\Exception\DomainException;
+use Innmind\Immutable\Str;
 
-final class Version
+/**
+ * @psalm-immutable
+ * @internal
+ */
+enum Version
 {
-    private int $major;
-    private int $minor;
-    private int $fix;
+    case v091;
+    case v090;
 
-    public function __construct(int $major, int $minor, int $fix)
+    public function pack(): Str
     {
-        if (\min($major, $minor, $fix) < 0) {
-            throw new DomainException("$major.$minor.$fix");
-        }
-
-        $this->major = $major;
-        $this->minor = $minor;
-        $this->fix = $fix;
-    }
-
-    public function major(): int
-    {
-        return $this->major;
-    }
-
-    public function minor(): int
-    {
-        return $this->minor;
-    }
-
-    public function fix(): int
-    {
-        return $this->fix;
-    }
-
-    public function higherThan(self $version): bool
-    {
-        if ($this->major !== $version->major) {
-            return $this->major > $version->major;
-        }
-
-        if ($this->minor !== $version->minor) {
-            return $this->minor > $version->minor;
-        }
-
-        return $this->fix > $version->fix;
-    }
-
-    public function compatibleWith(self $version): bool
-    {
-        if ($this->major === 0 && $version->major === 0) {
-            return $this->minor === $version->minor;
-        }
-
-        if ($this->major !== $version->major) {
-            return false;
-        }
-
-        return $this->minor >= $version->minor;
-    }
-
-    public function toString(): string
-    {
-        return \sprintf(
-            "AMQP\x00%s%s%s",
-            \chr($this->major),
-            \chr($this->minor),
-            \chr($this->fix)
-        );
+        return Str::of((match ($this) {
+            self::v091 => "AMQP\x00\x00\x09\x01",
+            self::v090 => "AMQP\x00\x00\x09\x00",
+        }));
     }
 }

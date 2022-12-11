@@ -20,7 +20,7 @@ class UnsignedOctetTest extends TestCase
     {
         $this->assertInstanceOf(
             Value::class,
-            new UnsignedOctet(new Integer(0))
+            UnsignedOctet::of(0),
         );
     }
 
@@ -29,9 +29,9 @@ class UnsignedOctetTest extends TestCase
      */
     public function testStringCast($expected, $octet)
     {
-        $value = new UnsignedOctet($int = new Integer($octet));
-        $this->assertSame($expected, $value->pack());
-        $this->assertSame($int, $value->original());
+        $value = UnsignedOctet::of($octet);
+        $this->assertSame($expected, $value->pack()->toString());
+        $this->assertSame($octet, $value->original());
     }
 
     /**
@@ -39,11 +39,14 @@ class UnsignedOctetTest extends TestCase
      */
     public function testFromStream($string, $expected)
     {
-        $value = UnsignedOctet::unpack(Stream::ofContent($string));
+        $value = UnsignedOctet::unpack(Stream::ofContent($string))->match(
+            static fn($value) => $value,
+            static fn() => null,
+        );
 
         $this->assertInstanceOf(UnsignedOctet::class, $value);
-        $this->assertSame($expected, $value->original()->value());
-        $this->assertSame($string, $value->pack());
+        $this->assertSame($expected, $value->original());
+        $this->assertSame($string, $value->pack()->toString());
     }
 
     public function testThrowWhenStringTooHigh()
@@ -51,7 +54,7 @@ class UnsignedOctetTest extends TestCase
         $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('256 ∉ [0;255]');
 
-        UnsignedOctet::of(new Integer(256));
+        UnsignedOctet::of(256);
     }
 
     public function testThrowWhenStringTooLow()
@@ -59,7 +62,7 @@ class UnsignedOctetTest extends TestCase
         $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('-1 ∉ [0;255]');
 
-        UnsignedOctet::of(new Integer(-1));
+        UnsignedOctet::of(-1);
     }
 
     public function cases(): array

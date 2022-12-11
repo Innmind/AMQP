@@ -3,24 +3,20 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport\Frame\Value;
 
-use Innmind\AMQP\{
-    Transport\Frame\Value,
-    Exception\UnboundedTextCannotBeWrapped,
-};
-use Innmind\Math\Algebra\Integer;
+use Innmind\AMQP\Transport\Frame\Value;
+use Innmind\TimeContinuum\Clock;
 use Innmind\Stream\Readable;
 use Innmind\Immutable\{
     Str,
     Sequence as Seq,
     Map,
-};
-use function Innmind\Immutable\{
-    assertMap,
-    join,
+    Monoid\Concat,
+    Maybe,
 };
 
 /**
  * @implements Value<Map<string, Value>>
+ * @psalm-immutable
  */
 final class Table implements Value
 {
@@ -30,42 +26,41 @@ final class Table implements Value
     /**
      * @param Map<string, Value> $map
      */
-    public function __construct(Map $map)
+    private function __construct(Map $map)
     {
-        assertMap('string', Value::class, $map, 1);
-
-        $texts = $map->filter(static function(string $key, Value $value): bool {
-            return $value instanceof Text;
-        });
-
-        if (!$texts->empty()) {
-            throw new UnboundedTextCannotBeWrapped;
-        }
-
         $this->original = $map;
     }
 
-    public static function unpack(Readable $stream): self
+    /**
+     * @psalm-pure
+     *
+     * @param Map<string, Value> $map
+     */
+    public static function of(Map $map): self
     {
-        $length = UnsignedLongInteger::unpack($stream)->original();
-        $position = $stream->position()->toInt();
-        $boundary = $position + $length->value();
-
-        /** @var Map<string, Value> */
-        $map = Map::of('string', Value::class);
-
-        while ($position < $boundary) {
-            $key = ShortString::unpack($stream)->original();
-            $class = Symbols::class($stream->read(1)->toString());
-            /** @var Value */
-            $value = [$class, 'unpack']($stream);
-
-            $map = ($map)($key->toString(), $value);
-
-            $position = $stream->position()->toInt();
-        }
-
         return new self($map);
+    }
+
+    /**
+     * @return Maybe<self>
+     */
+    public static function unpack(Clock $clock, Readable $stream): Maybe
+    {
+        /** @var Map<string, Value> */
+        $values = Map::of();
+
+        return UnsignedLongInteger::unpack($stream)
+            ->map(static fn($length) => $length->original())
+            ->flatMap(static fn($length) => match ($length) {
+                0 => Maybe::just($values),
+                default => self::unpackNested(
+                    $clock,
+                    $length + $stream->position()->toInt(),
+                    $stream,
+                    $values,
+                ),
+            })
+            ->map(static fn($map) => new self($map));
     }
 
     /**
@@ -76,23 +71,65 @@ final class Table implements Value
         return $this->original;
     }
 
-    public function pack(): string
+    public function symbol(): Symbol
     {
-        /** @var Seq<string> */
-        $data = $this->original->toSequenceOf(
-            'string',
-            static function(string $key, Value $value): \Generator {
-                yield (new ShortString(Str::of($key)))->pack();
-                yield Symbols::symbol(\get_class($value));
-                yield $value->pack();
-            },
-        );
-        $data = join('', $data)->toEncoding('ASCII');
+        return Symbol::table;
+    }
 
-        $value = UnsignedLongInteger::of(
-            new Integer($data->length()),
-        )->pack();
+    public function pack(): Str
+    {
+        /** @psalm-suppress MixedArgumentTypeCoercion */
+        $data = $this
+            ->original
+            ->map(static fn($key, $value) => [$key, $value])
+            ->values()
+            ->flatMap(static fn($pair) => Seq::of(
+                ShortString::of(Str::of($pair[0]))->pack(),
+                $pair[1]->symbol()->pack(),
+                $pair[1]->pack(),
+            ))
+            ->fold(new Concat)
+            ->toEncoding('ASCII');
 
-        return $value .= $data->toString();
+        /** @psalm-suppress ArgumentTypeCoercion */
+        $value = UnsignedLongInteger::of($data->length())->pack();
+
+        return $value->append($data->toString());
+    }
+
+    /**
+     * @param Map<string, Value> $values
+     *
+     * @return Maybe<Map<string, Value>>
+     */
+    private static function unpackNested(
+        Clock $clock,
+        int $boundary,
+        Readable $stream,
+        Map $values,
+    ): Maybe {
+        return ShortString::unpack($stream)
+            ->map(static fn($key) => $key->original()->toString())
+            ->flatMap(
+                static fn($key) => $stream
+                    ->read(1)
+                    ->map(static fn($chunk) => $chunk->toEncoding('ASCII'))
+                    ->filter(static fn($chunk) => $chunk->length() === 1)
+                    ->flatMap(static fn($chunk) => Symbol::unpack(
+                        $clock,
+                        $chunk->toString(),
+                        $stream,
+                    ))
+                    ->map(static fn($value) => ($values)($key, $value)),
+            )
+            ->flatMap(static fn($values) => match ($stream->position()->toInt() < $boundary) {
+                true => self::unpackNested(
+                    $clock,
+                    $boundary,
+                    $stream,
+                    $values,
+                ),
+                false => Maybe::just($values),
+            });
     }
 }

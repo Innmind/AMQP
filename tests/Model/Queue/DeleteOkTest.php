@@ -13,8 +13,8 @@ class DeleteOkTest extends TestCase
 {
     public function testInterface()
     {
-        $model = new DeleteOk(
-            $message = new Count(1)
+        $model = DeleteOk::of(
+            $message = Count::of(1),
         );
 
         $this->assertSame($message, $model->message());

@@ -7,10 +7,7 @@ use Innmind\AMQP\{
     Transport\Frame\Value\UnsignedShortInteger,
     Transport\Frame\Value,
 };
-use Innmind\Math\{
-    Algebra\Integer,
-    Exception\OutOfDefinitionSet,
-};
+use Innmind\Math\Exception\OutOfDefinitionSet;
 use Innmind\Stream\Readable\Stream;
 use PHPUnit\Framework\TestCase;
 
@@ -20,7 +17,7 @@ class UnsignedShortIntegerTest extends TestCase
     {
         $this->assertInstanceOf(
             Value::class,
-            new UnsignedShortInteger(new Integer(0))
+            UnsignedShortInteger::of(0),
         );
     }
 
@@ -29,8 +26,8 @@ class UnsignedShortIntegerTest extends TestCase
      */
     public function testStringCast($int, $expected)
     {
-        $value = new UnsignedShortInteger($int = new Integer($int));
-        $this->assertSame($expected, $value->pack());
+        $value = UnsignedShortInteger::of($int);
+        $this->assertSame($expected, $value->pack()->toString());
         $this->assertSame($int, $value->original());
     }
 
@@ -39,12 +36,14 @@ class UnsignedShortIntegerTest extends TestCase
      */
     public function testFromStream($expected, $string)
     {
-        $value = UnsignedShortInteger::unpack(Stream::ofContent($string));
+        $value = UnsignedShortInteger::unpack(Stream::ofContent($string))->match(
+            static fn($value) => $value,
+            static fn() => null,
+        );
 
         $this->assertInstanceOf(UnsignedShortInteger::class, $value);
-        $this->assertInstanceOf(Integer::class, $value->original());
-        $this->assertSame($expected, $value->original()->value());
-        $this->assertSame($string, $value->pack());
+        $this->assertSame($expected, $value->original());
+        $this->assertSame($string, $value->pack()->toString());
     }
 
     public function testThrowWhenIntegerTooHigh()
@@ -52,7 +51,7 @@ class UnsignedShortIntegerTest extends TestCase
         $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('65536 ∉ [0;65535]');
 
-        UnsignedShortInteger::of(new Integer(65536));
+        UnsignedShortInteger::of(65536);
     }
 
     public function testThrowWhenIntegerTooLow()
@@ -60,7 +59,7 @@ class UnsignedShortIntegerTest extends TestCase
         $this->expectException(OutOfDefinitionSet::class);
         $this->expectExceptionMessage('-1 ∉ [0;65535]');
 
-        UnsignedShortInteger::of(new Integer(-1));
+        UnsignedShortInteger::of(-1);
     }
 
     public function cases(): array

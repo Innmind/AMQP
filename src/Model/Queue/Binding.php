@@ -5,6 +5,9 @@ namespace Innmind\AMQP\Model\Queue;
 
 use Innmind\Immutable\Map;
 
+/**
+ * @psalm-immutable
+ */
 final class Binding
 {
     private string $exchange;
@@ -14,13 +17,21 @@ final class Binding
     /** @var Map<string, mixed> */
     private Map $arguments;
 
-    public function __construct(string $exchange, string $queue, string $routingKey = '')
+    private function __construct(string $exchange, string $queue, string $routingKey = '')
     {
         $this->exchange = $exchange;
         $this->queue = $queue;
         $this->routingKey = $routingKey;
         /** @var Map<string, mixed> */
-        $this->arguments = Map::of('string', 'mixed');
+        $this->arguments = Map::of();
+    }
+
+    /**
+     * @psalm-pure
+     */
+    public static function of(string $exchange, string $queue, string $routingKey = ''): self
+    {
+        return new self($exchange, $queue, $routingKey);
     }
 
     /**
@@ -45,10 +56,7 @@ final class Binding
         return $self;
     }
 
-    /**
-     * @param mixed $value
-     */
-    public function withArgument(string $key, $value): self
+    public function withArgument(string $key, mixed $value): self
     {
         $self = clone $this;
         $self->arguments = ($self->arguments)($key, $value);

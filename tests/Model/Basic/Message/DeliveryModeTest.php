@@ -10,15 +10,11 @@ class DeliveryModeTest extends TestCase
 {
     public function testNonPersistent()
     {
-        $this->assertInstanceOf(DeliveryMode::class, DeliveryMode::nonPersistent());
-        $this->assertSame(DeliveryMode::nonPersistent(), DeliveryMode::nonPersistent());
-        $this->assertSame(1, DeliveryMode::nonPersistent()->toInt());
+        $this->assertSame(1, DeliveryMode::nonPersistent->toInt());
     }
 
     public function testPersistent()
     {
-        $this->assertInstanceOf(DeliveryMode::class, DeliveryMode::persistent());
-        $this->assertSame(DeliveryMode::persistent(), DeliveryMode::persistent());
-        $this->assertSame(2, DeliveryMode::persistent()->toInt());
+        $this->assertSame(2, DeliveryMode::persistent->toInt());
     }
 }

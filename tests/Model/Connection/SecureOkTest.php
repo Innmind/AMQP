@@ -14,7 +14,7 @@ class SecureOkTest extends TestCase
 {
     public function testInterface()
     {
-        $command = new SecureOk(
+        $command = SecureOk::of(
             $user = User::none(),
             $password = Password::none(),
         );

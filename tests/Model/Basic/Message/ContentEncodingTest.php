@@ -13,13 +13,13 @@ class ContentEncodingTest extends TestCase
 {
     public function testInterface()
     {
-        $this->assertSame('gzip', (new ContentEncoding('gzip'))->toString());
+        $this->assertSame('gzip', ContentEncoding::of('gzip')->toString());
     }
 
     public function testThrowWhenInvalidContentEncoding()
     {
         $this->expectException(DomainException::class);
 
-        new ContentEncoding('foo bar');
+        ContentEncoding::of('foo bar');
     }
 }

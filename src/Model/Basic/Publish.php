@@ -3,6 +3,9 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Model\Basic;
 
+/**
+ * @psalm-immutable
+ */
 final class Publish
 {
     private Message $message;
@@ -11,11 +14,14 @@ final class Publish
     private bool $mandatory = false;
     private bool $immediate = false;
 
-    public function __construct(Message $message)
+    private function __construct(Message $message)
     {
         $this->message = $message;
     }
 
+    /**
+     * @psalm-pure
+     */
     public static function a(Message $message): self
     {
         return new self($message);

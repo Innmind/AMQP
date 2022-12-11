@@ -13,10 +13,10 @@ class DeclareOkTest extends TestCase
 {
     public function testInterface()
     {
-        $model = new DeclareOk(
+        $model = DeclareOk::of(
             'foo',
-            $message = new Count(1),
-            $consumer = new Count(2)
+            $message = Count::of(1),
+            $consumer = Count::of(2),
         );
 
         $this->assertSame('foo', $model->name());

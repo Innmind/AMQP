@@ -3,14 +3,25 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Model\Basic;
 
+/**
+ * @psalm-immutable
+ */
 final class Cancel
 {
     private string $consumerTag;
     private bool $wait = true;
 
-    public function __construct(string $consumerTag)
+    private function __construct(string $consumerTag)
     {
         $this->consumerTag = $consumerTag;
+    }
+
+    /**
+     * @psalm-pure
+     */
+    public static function of(string $consumerTag): self
+    {
+        return new self($consumerTag);
     }
 
     public function dontWait(): self
