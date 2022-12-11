@@ -727,6 +727,31 @@ class ClientTest extends TestCase
         );
     }
 
+    public function testPublishRandomContent()
+    {
+        $this
+            ->forAll(Set\Unicode::lengthBetween(0, 1_000))
+            ->then(function($message) {
+                $result = $this
+                    ->client
+                    ->with(DeclareExchange::of('test-random', Type::direct))
+                    ->with(DeclareQueue::of('test-random'))
+                    ->with(Bind::of('test-random', 'test-random'))
+                    ->with(Purge::of('test-random'))
+                    ->with(Publish::one(Message::of(Str::of($message)))->to('test-random'))
+                    ->with(Get::of('test-random')->handle(
+                        static fn($_, $message, $continuation) => $continuation->ack($message->body()->toString()),
+                    ))
+                    ->run(null)
+                    ->match(
+                        static fn($state) => $state,
+                        static fn($failure) => $failure,
+                    );
+
+                $this->assertSame($message, $result);
+            });
+    }
+
     public function signals(): iterable
     {
         yield [Signal::interrupt];
