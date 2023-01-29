@@ -24,7 +24,7 @@
         "innmind/operating-system": "~3.1",
         "innmind/media-type": "~2.0",
         "innmind/filesystem": "~5.2|~6.0",
-        "innmind/stream": "~3.3"
+        "innmind/stream": "~4.0"
     },
     "autoload": {
         "psr-4": {

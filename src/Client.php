@@ -11,7 +11,10 @@ use Innmind\AMQP\{
     Model\Channel\Close as CloseChannel,
 };
 use Innmind\OperatingSystem\CurrentProcess;
-use Innmind\Stream\Streams;
+use Innmind\Stream\{
+    Capabilities,
+    Streams,
+};
 use Innmind\Immutable\{
     Either,
     Maybe,
@@ -24,7 +27,7 @@ final class Client
     private Maybe $command;
     /** @var callable(): Maybe<Connection> */
     private $load;
-    private Streams $streams;
+    private Capabilities $streams;
     /** @var Maybe<CurrentProcess> */
     private Maybe $signals;
 
@@ -36,7 +39,7 @@ final class Client
     private function __construct(
         Maybe $command,
         callable $load,
-        Streams $streams,
+        Capabilities $streams,
         Maybe $signals,
     ) {
         $this->command = $command;
@@ -48,14 +51,19 @@ final class Client
     /**
      * @param callable(): Maybe<Connection> $load
      */
-    public static function of(callable $load, Streams $streams = null): self
+    public static function of(callable $load, Capabilities $streams = null): self
     {
         /** @var Maybe<Command> */
         $command = Maybe::nothing();
         /** @var Maybe<CurrentProcess> */
         $signals = Maybe::nothing();
 
-        return new self($command, $load, $streams ?? Streams::of(), $signals);
+        return new self(
+            $command,
+            $load,
+            $streams ?? Streams::fromAmbientAuthority(),
+            $signals,
+        );
     }
 
     public function with(Command $command): self

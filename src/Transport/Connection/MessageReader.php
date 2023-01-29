@@ -24,7 +24,7 @@ use Innmind\AMQP\{
 use Innmind\TimeContinuum\Earth\ElapsedPeriod;
 use Innmind\Filesystem\File\Content;
 use Innmind\Stream\{
-    Streams,
+    Capabilities,
     Bidirectional,
 };
 use Innmind\Immutable\{
@@ -41,9 +41,9 @@ use Innmind\Immutable\{
  */
 final class MessageReader
 {
-    private Streams $streams;
+    private Capabilities $streams;
 
-    private function __construct(Streams $streams)
+    private function __construct(Capabilities $streams)
     {
         $this->streams = $streams;
     }
@@ -61,7 +61,7 @@ final class MessageReader
             ));
     }
 
-    public static function of(Streams $streams): self
+    public static function of(Capabilities $streams): self
     {
         return new self($streams);
     }
