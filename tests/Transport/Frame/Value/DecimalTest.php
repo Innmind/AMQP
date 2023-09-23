@@ -78,7 +78,7 @@ class DecimalTest extends TestCase
         Decimal::of(1, -1);
     }
 
-    public function cases(): array
+    public static function cases(): array
     {
         return [
             [100, 2, \chr(2).\pack('l', 100)],

@@ -62,7 +62,7 @@ class UnsignedShortIntegerTest extends TestCase
         UnsignedShortInteger::of(-1);
     }
 
-    public function cases(): array
+    public static function cases(): array
     {
         return [
             [0, \pack('n', 0)],

@@ -62,7 +62,7 @@ class SignedLongIntegerTest extends TestCase
         SignedLongInteger::of(-2147483649);
     }
 
-    public function cases(): array
+    public static function cases(): array
     {
         return [
             [0, \pack('l', 0)],

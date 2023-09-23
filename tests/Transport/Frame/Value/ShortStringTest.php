@@ -52,7 +52,7 @@ class ShortStringTest extends TestCase
         ShortString::of(Str::of(\str_repeat('a', 256)));
     }
 
-    public function cases(): array
+    public static function cases(): array
     {
         return [
             ['', \chr(0)],

@@ -65,7 +65,7 @@ class TableTest extends TestCase
         $this->assertSame($string, $value->pack()->toString());
     }
 
-    public function cases(): array
+    public static function cases(): array
     {
         $map = Map::of(['foo', SignedOctet::of(1)]);
 

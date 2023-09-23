@@ -172,15 +172,23 @@ class BasicTest extends TestCase
 
     public function testConsume()
     {
+        $firstArgument = UnsignedShortInteger::of(24);
+        $secondArgument = UnsignedShortInteger::of(42);
         $this
             ->translator
-            ->expects($this->exactly(2))
+            ->expects($matcher = $this->exactly(2))
             ->method('__invoke')
-            ->withConsecutive([24], [42])
-            ->will($this->onConsecutiveCalls(
-                $firstArgument = UnsignedShortInteger::of(24),
-                $secondArgument = UnsignedShortInteger::of(42),
-            ));
+            ->willReturnCallback(function($value) use ($matcher, $firstArgument, $secondArgument) {
+                match ($matcher->numberOfInvocations()) {
+                    1 => $this->assertSame(24, $value),
+                    2 => $this->assertSame(42, $value),
+                };
+
+                return match ($matcher->numberOfInvocations()) {
+                    1 => $firstArgument,
+                    2 => $secondArgument,
+                };
+            });
         $frame = $this->basic->consume(
             $channel = new Channel(1),
             Consume::of('queue')

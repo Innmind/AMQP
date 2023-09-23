@@ -65,7 +65,7 @@ class UnsignedOctetTest extends TestCase
         UnsignedOctet::of(-1);
     }
 
-    public function cases(): array
+    public static function cases(): array
     {
         return [
             [\chr(0), 0],
