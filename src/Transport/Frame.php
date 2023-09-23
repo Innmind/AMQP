@@ -209,7 +209,7 @@ final class Frame
     {
         $payload = $payload->toEncoding('ASCII');
 
-        /** @psalm-suppress ArgumentTypeCoercion */
+        /** @psalm-suppress InvalidArgument */
         return Sequence::of(
             UnsignedOctet::internal($this->type->toInt())->pack(),
             UnsignedShortInteger::internal($this->channel->toInt())->pack(),

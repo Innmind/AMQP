@@ -86,7 +86,7 @@ final class Sequence implements Value
             ))
             ->fold(new Concat)
             ->toEncoding('ASCII');
-        /** @psalm-suppress ArgumentTypeCoercion */
+        /** @psalm-suppress InvalidArgument */
         $value = UnsignedLongInteger::of($data->length())->pack();
 
         return $value->append($data->toString());

@@ -208,9 +208,9 @@ final class Get implements Command
                 $read,
                 $details->deliveryTag(),
             )
-            ->map(static fn($state) => match ($state instanceof Canceled) {
-                true => $state->state(),
-                false => $state,
+            ->map(static fn($state) => match (true) {
+                $state instanceof Canceled => $state->state(),
+                default => $state,
             });
     }
 }

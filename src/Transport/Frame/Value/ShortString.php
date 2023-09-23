@@ -38,7 +38,7 @@ final class ShortString implements Value
      */
     public static function of(Str $string): self
     {
-        /** @psalm-suppress ArgumentTypeCoercion */
+        /** @psalm-suppress InvalidArgument */
         $_ = UnsignedOctet::of($string->toEncoding('ASCII')->length());
 
         return new self($string);
@@ -73,7 +73,7 @@ final class ShortString implements Value
 
     public function pack(): Str
     {
-        /** @psalm-suppress ArgumentTypeCoercion */
+        /** @psalm-suppress InvalidArgument */
         return UnsignedOctet::of(
             $this->original->toEncoding('ASCII')->length(),
         )

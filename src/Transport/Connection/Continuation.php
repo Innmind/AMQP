@@ -48,9 +48,9 @@ final class Continuation
     {
         /** @psalm-suppress InvalidArgument Because the right side is always ReceivedFrame */
         return new self($this->connection->flatMap(
-            static fn($connection) => match ($connection instanceof Connection) {
-                true => $connection->wait(...$methods),
-                false => throw new LogicException("Can't call wait multiple times"),
+            static fn($connection) => match (true) {
+                $connection instanceof Connection => $connection->wait(...$methods),
+                default => throw new LogicException("Can't call wait multiple times"),
             },
         ));
     }
@@ -63,9 +63,9 @@ final class Continuation
 
         /** @psalm-suppress InvalidArgument Because the right side is always ReceivedFrame */
         return new self($this->connection->flatMap(
-            static fn($connection) => match ($connection instanceof Connection) {
-                true => $connection->wait($method),
-                false => throw new LogicException("Can't call wait multiple times"),
+            static fn($connection) => match (true) {
+                $connection instanceof Connection => $connection->wait($method),
+                default => throw new LogicException("Can't call wait multiple times"),
             },
         ));
     }
@@ -83,9 +83,9 @@ final class Continuation
         /** @psalm-suppress InvalidArgument Due to Either::right call */
         return $this
             ->connection
-            ->flatMap(static fn($received) => match ($received instanceof Connection) {
-                true => Either::right($withoutFrame($received)),
-                false => $withFrame($received->connection(), $received->frame()),
+            ->flatMap(static fn($received) => match (true) {
+                $received instanceof Connection => Either::right($withoutFrame($received)),
+                default => $withFrame($received->connection(), $received->frame()),
             });
     }
 
@@ -95,9 +95,9 @@ final class Continuation
     public function connection(): Either
     {
         return $this->connection->map(
-            static fn($received) => match ($received instanceof Connection) {
-                true => $received,
-                false => $received->connection(),
+            static fn($received) => match (true) {
+                $received instanceof Connection => $received,
+                default => $received->connection(),
             },
         );
     }

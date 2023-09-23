@@ -38,7 +38,7 @@ final class LongString implements Value
      */
     public static function of(Str $string): self
     {
-        /** @psalm-suppress ArgumentTypeCoercion */
+        /** @psalm-suppress InvalidArgument */
         $_ = UnsignedLongInteger::of($string->toEncoding('ASCII')->length());
 
         return new self($string);
@@ -73,7 +73,7 @@ final class LongString implements Value
 
     public function pack(): Str
     {
-        /** @psalm-suppress ArgumentTypeCoercion */
+        /** @psalm-suppress InvalidArgument */
         return UnsignedLongInteger::of(
             $this->original->toEncoding('ASCII')->length(),
         )
