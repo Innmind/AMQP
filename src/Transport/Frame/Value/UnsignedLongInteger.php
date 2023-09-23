@@ -62,7 +62,7 @@ final class UnsignedLongInteger implements Value
     {
         return $stream
             ->read(4)
-            ->map(static fn($chunk) => $chunk->toEncoding('ASCII'))
+            ->map(static fn($chunk) => $chunk->toEncoding(Str\Encoding::ascii))
             ->filter(static fn($chunk) => $chunk->length() === 4)
             ->map(static function($chunk) {
                 /** @var int<0, 4294967295> $value */

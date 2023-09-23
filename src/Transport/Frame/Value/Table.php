@@ -89,7 +89,7 @@ final class Table implements Value
                 $pair[1]->pack(),
             ))
             ->fold(new Concat)
-            ->toEncoding('ASCII');
+            ->toEncoding(Str\Encoding::ascii);
 
         /** @psalm-suppress InvalidArgument */
         $value = UnsignedLongInteger::of($data->length())->pack();
@@ -113,7 +113,7 @@ final class Table implements Value
             ->flatMap(
                 static fn($key) => $stream
                     ->read(1)
-                    ->map(static fn($chunk) => $chunk->toEncoding('ASCII'))
+                    ->map(static fn($chunk) => $chunk->toEncoding(Str\Encoding::ascii))
                     ->filter(static fn($chunk) => $chunk->length() === 1)
                     ->flatMap(static fn($chunk) => Symbol::unpack(
                         $clock,

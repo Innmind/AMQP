@@ -74,7 +74,7 @@ final class Message
     private function __construct(Sequence $chunks, int $length)
     {
         $this->chunks = $chunks->map(
-            static fn($chunk) => $chunk->toEncoding('ASCII'),
+            static fn($chunk) => $chunk->toEncoding(Str\Encoding::ascii),
         );
         $this->length = $length;
         /** @var Map<string, mixed> */
@@ -112,7 +112,7 @@ final class Message
     {
         return new self(
             Sequence::of($body),
-            $body->toEncoding('ASCII')->length(),
+            $body->toEncoding(Str\Encoding::ascii)->length(),
         );
     }
 
@@ -123,7 +123,7 @@ final class Message
     public static function file(Content $content): self
     {
         $chunks = (new Chunk)($content)->map(
-            static fn($chunk) => $chunk->toEncoding('ASCII'),
+            static fn($chunk) => $chunk->toEncoding(Str\Encoding::ascii),
         );
         /** @var int<0, max> */
         $size = $content->size()->match(
@@ -355,7 +355,7 @@ final class Message
         return $this
             ->chunks
             ->fold(new Concat)
-            ->toEncoding('ASCII');
+            ->toEncoding(Str\Encoding::ascii);
     }
 
     /**

@@ -161,7 +161,7 @@ final class Connection
         $response = Table::of($arguments);
         $response = $response
             ->pack()
-            ->toEncoding('ASCII')
+            ->toEncoding(Str\Encoding::ascii)
             ->substring(4); // skip the encoded table length integer
 
         return LongString::of($response);

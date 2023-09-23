@@ -85,7 +85,7 @@ final class Sequence implements Value
                 $value->pack(),
             ))
             ->fold(new Concat)
-            ->toEncoding('ASCII');
+            ->toEncoding(Str\Encoding::ascii);
         /** @psalm-suppress InvalidArgument */
         $value = UnsignedLongInteger::of($data->length())->pack();
 
@@ -105,7 +105,7 @@ final class Sequence implements Value
     ): Maybe {
         return $stream
             ->read(1)
-            ->map(static fn($chunk) => $chunk->toEncoding('ASCII'))
+            ->map(static fn($chunk) => $chunk->toEncoding(Str\Encoding::ascii))
             ->filter(static fn($chunk) => $chunk->length() === 1)
             ->flatMap(static fn($chunk) => Symbol::unpack($clock, $chunk->toString(), $stream))
             ->flatMap(static fn($value) => match ($stream->position()->toInt() < $boundary) {

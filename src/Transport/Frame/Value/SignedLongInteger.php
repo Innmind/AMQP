@@ -51,7 +51,7 @@ final class SignedLongInteger implements Value
     {
         return $stream
             ->read(4)
-            ->map(static fn($chunk) => $chunk->toEncoding('ASCII'))
+            ->map(static fn($chunk) => $chunk->toEncoding(Str\Encoding::ascii))
             ->filter(static fn($chunk) => $chunk->length() === 4)
             ->map(static function($chunk) {
                 /** @var int<-2147483648, 2147483647> $value */

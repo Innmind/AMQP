@@ -39,7 +39,7 @@ final class ShortString implements Value
     public static function of(Str $string): self
     {
         /** @psalm-suppress InvalidArgument */
-        $_ = UnsignedOctet::of($string->toEncoding('ASCII')->length());
+        $_ = UnsignedOctet::of($string->toEncoding(Str\Encoding::ascii)->length());
 
         return new self($string);
     }
@@ -55,7 +55,7 @@ final class ShortString implements Value
             ->flatMap(
                 static fn($length) => $stream
                     ->read($length)
-                    ->map(static fn($string) => $string->toEncoding('ASCII'))
+                    ->map(static fn($string) => $string->toEncoding(Str\Encoding::ascii))
                     ->filter(static fn($string) => $string->length() === $length),
             )
             ->map(static fn($string) => new self($string));
@@ -75,7 +75,7 @@ final class ShortString implements Value
     {
         /** @psalm-suppress InvalidArgument */
         return UnsignedOctet::of(
-            $this->original->toEncoding('ASCII')->length(),
+            $this->original->toEncoding(Str\Encoding::ascii)->length(),
         )
             ->pack()
             ->append($this->original->toString());

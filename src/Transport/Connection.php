@@ -280,7 +280,7 @@ final class Connection
         /** @var Either<Failure, self> */
         return Maybe::just($frame)
             ->filter(fn($frame) => $this->maxChannels->allows($frame->channel()->toInt()))
-            ->map(static fn($frame) => $frame->pack()->toEncoding('ASCII'))
+            ->map(static fn($frame) => $frame->pack()->toEncoding(Str\Encoding::ascii))
             ->filter(fn($frame) => $this->maxFrameSize->allows($frame->length()))
             ->flatMap(
                 fn($frame) => $this
