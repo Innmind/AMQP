@@ -306,7 +306,7 @@ final class MessageReader
         return $frame
             ->content()
             ->either()
-            ->map(static fn($chunk) => $chunk->toEncoding('ASCII'))
+            ->map(static fn($chunk) => $chunk->toEncoding(Str\Encoding::ascii))
             ->flatMap(
                 static fn($chunk) => $stream
                     ->write($chunk)

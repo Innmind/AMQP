@@ -101,10 +101,15 @@ class MaxChannelsTest extends TestCase
 
                 $above = $allowed + $extraNumber;
 
-                $this->expectException(FrameChannelExceedAllowedChannelNumber::class);
-                $this->expectExceptionMessage("Max channel id can be $allowed but got $above");
-
-                $max->verify($above);
+                try {
+                    $max->verify($above);
+                    $this->fail('it should throw');
+                } catch (FrameChannelExceedAllowedChannelNumber $e) {
+                    $this->assertSame(
+                        "Max channel id can be $allowed but got $above",
+                        $e->getMessage(),
+                    );
+                }
             });
     }
 }

@@ -59,7 +59,7 @@ class SignedOctetTest extends TestCase
         SignedOctet::of(-129);
     }
 
-    public function cases(): array
+    public static function cases(): array
     {
         return [
             [\pack('c', 0), 0],

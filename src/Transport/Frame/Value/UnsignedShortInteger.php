@@ -62,7 +62,7 @@ final class UnsignedShortInteger implements Value
     {
         return $stream
             ->read(2)
-            ->map(static fn($chunk) => $chunk->toEncoding('ASCII'))
+            ->map(static fn($chunk) => $chunk->toEncoding(Str\Encoding::ascii))
             ->filter(static fn($chunk) => $chunk->length() === 2)
             ->map(static function($chunk) {
                 /** @var int<0, 65535> $value */

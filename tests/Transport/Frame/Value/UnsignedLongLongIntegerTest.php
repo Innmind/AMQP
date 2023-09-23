@@ -57,7 +57,7 @@ class UnsignedLongLongIntegerTest extends TestCase
         $this->assertSame($string, $value->pack()->toString());
     }
 
-    public function cases(): array
+    public static function cases(): array
     {
         return [
             [0, \pack('J', 0)],

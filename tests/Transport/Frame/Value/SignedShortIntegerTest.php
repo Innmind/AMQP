@@ -62,7 +62,7 @@ class SignedShortIntegerTest extends TestCase
         SignedShortInteger::of(-32769);
     }
 
-    public function cases(): array
+    public static function cases(): array
     {
         return [
             [0, \pack('s', 0)],

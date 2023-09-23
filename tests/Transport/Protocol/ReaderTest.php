@@ -66,7 +66,7 @@ class ReaderTest extends TestCase
         }
     }
 
-    public function cases(): array
+    public static function cases(): array
     {
         return [
             [

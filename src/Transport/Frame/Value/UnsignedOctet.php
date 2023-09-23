@@ -64,7 +64,7 @@ final class UnsignedOctet implements Value
     {
         return $stream
             ->read(1)
-            ->map(static fn($chunk) => $chunk->toEncoding('ASCII'))
+            ->map(static fn($chunk) => $chunk->toEncoding(Str\Encoding::ascii))
             ->filter(static fn($chunk) => $chunk->length() === 1)
             ->map(static function($chunk) {
                 /** @var int<0, 255> $octet */

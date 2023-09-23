@@ -44,7 +44,7 @@ class BitsTest extends TestCase
         $this->assertSame($string, $value->pack()->toString());
     }
 
-    public function cases(): array
+    public static function cases(): array
     {
         return [
             [[false], "\x00"],
@@ -56,7 +56,7 @@ class BitsTest extends TestCase
         ];
     }
 
-    public function decode(): array
+    public static function decode(): array
     {
         return [
             [[false], "\x00"],

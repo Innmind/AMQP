@@ -38,8 +38,8 @@ final class LongString implements Value
      */
     public static function of(Str $string): self
     {
-        /** @psalm-suppress ArgumentTypeCoercion */
-        $_ = UnsignedLongInteger::of($string->toEncoding('ASCII')->length());
+        /** @psalm-suppress InvalidArgument */
+        $_ = UnsignedLongInteger::of($string->toEncoding(Str\Encoding::ascii)->length());
 
         return new self($string);
     }
@@ -55,7 +55,7 @@ final class LongString implements Value
             ->flatMap(
                 static fn($length) => $stream
                     ->read($length)
-                    ->map(static fn($string) => $string->toEncoding('ASCII'))
+                    ->map(static fn($string) => $string->toEncoding(Str\Encoding::ascii))
                     ->filter(static fn($string) => $string->length() === $length),
             )
             ->map(static fn($string) => new self($string));
@@ -73,9 +73,9 @@ final class LongString implements Value
 
     public function pack(): Str
     {
-        /** @psalm-suppress ArgumentTypeCoercion */
+        /** @psalm-suppress InvalidArgument */
         return UnsignedLongInteger::of(
-            $this->original->toEncoding('ASCII')->length(),
+            $this->original->toEncoding(Str\Encoding::ascii)->length(),
         )
             ->pack()
             ->append($this->original->toString());

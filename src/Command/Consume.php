@@ -127,9 +127,9 @@ final class Consume implements Command
 
         do {
             $consumed = $consumed
-                ->map(static fn($state) => match ($state instanceof Canceled) {
-                    true => $state->state(), // this SHOULD NEVER happen as we stop the loop below
-                    false => $state,
+                ->map(static fn($state) => match (true) {
+                    $state instanceof Canceled => $state->state(), // this SHOULD NEVER happen as we stop the loop below
+                    default => $state,
                 })
                 ->flatMap(fn($state) => $this->waitDeliver(
                     $state->connection(),
@@ -143,9 +143,9 @@ final class Consume implements Command
             static fn() => false,
         ));
 
-        return $consumed->map(static fn($state) => match ($state instanceof Canceled) {
-            true => $state->state(),
-            false => $state,
+        return $consumed->map(static fn($state) => match (true) {
+            $state instanceof Canceled => $state->state(),
+            default => $state,
         });
     }
 

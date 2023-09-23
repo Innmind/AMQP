@@ -174,7 +174,7 @@ final class Frame
             ->values
             ->map(static fn($value) => $value->pack())
             ->fold(new Concat)
-            ->toEncoding('ASCII');
+            ->toEncoding(Str\Encoding::ascii);
 
         return $this->doPack($payload);
     }
@@ -185,7 +185,7 @@ final class Frame
             ->values
             ->map(static fn($value) => $value->pack())
             ->fold(new Concat)
-            ->toEncoding('ASCII');
+            ->toEncoding(Str\Encoding::ascii);
 
         return $this->doPack($payload);
     }
@@ -207,9 +207,9 @@ final class Frame
 
     private function doPack(Str $payload): Str
     {
-        $payload = $payload->toEncoding('ASCII');
+        $payload = $payload->toEncoding(Str\Encoding::ascii);
 
-        /** @psalm-suppress ArgumentTypeCoercion */
+        /** @psalm-suppress InvalidArgument */
         return Sequence::of(
             UnsignedOctet::internal($this->type->toInt())->pack(),
             UnsignedShortInteger::internal($this->channel->toInt())->pack(),
@@ -218,6 +218,6 @@ final class Frame
             UnsignedOctet::internal(self::end())->pack(),
         )
             ->fold(new Concat)
-            ->toEncoding('ASCII');
+            ->toEncoding(Str\Encoding::ascii);
     }
 }

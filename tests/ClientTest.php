@@ -730,7 +730,7 @@ class ClientTest extends TestCase
     public function testPublishRandomContent()
     {
         $this
-            ->forAll(Set\Unicode::lengthBetween(0, 1_000))
+            ->forAll(Set\Strings::madeOf(Set\Unicode::any())->between(0, 1_000))
             ->then(function($message) {
                 $result = $this
                     ->client
@@ -752,7 +752,7 @@ class ClientTest extends TestCase
             });
     }
 
-    public function signals(): iterable
+    public static function signals(): iterable
     {
         yield [Signal::interrupt];
         yield [Signal::abort];
