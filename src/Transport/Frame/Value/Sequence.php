@@ -5,7 +5,8 @@ namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\TimeContinuum\Clock;
-use Innmind\Stream\Readable;
+use Innmind\IO\Readable\Stream;
+use Innmind\Socket\Client;
 use Innmind\Immutable\{
     Sequence as Seq,
     Monoid\Concat,
@@ -42,9 +43,11 @@ final class Sequence implements Value
     }
 
     /**
+     * @param Stream<Client> $stream
+     *
      * @return Maybe<self>
      */
-    public static function unpack(Clock $clock, Readable $stream): Maybe
+    public static function unpack(Clock $clock, Stream $stream): Maybe
     {
         /** @var Seq<Value> */
         $values = Seq::of();
@@ -55,7 +58,7 @@ final class Sequence implements Value
                 0 => Maybe::just($values),
                 default => self::unpackNested(
                     $clock,
-                    $length + $stream->position()->toInt(),
+                    $length + $stream->unwrap()->position()->toInt(),
                     $stream,
                     $values,
                 ),
@@ -93,6 +96,7 @@ final class Sequence implements Value
     }
 
     /**
+     * @param Stream<Client> $stream
      * @param Seq<Value> $values
      *
      * @return Maybe<Seq<Value>>
@@ -100,15 +104,16 @@ final class Sequence implements Value
     private static function unpackNested(
         Clock $clock,
         int $boundary,
-        Readable $stream,
+        Stream $stream,
         Seq $values,
     ): Maybe {
         return $stream
+            ->unwrap()
             ->read(1)
             ->map(static fn($chunk) => $chunk->toEncoding(Str\Encoding::ascii))
             ->filter(static fn($chunk) => $chunk->length() === 1)
             ->flatMap(static fn($chunk) => Symbol::unpack($clock, $chunk->toString(), $stream))
-            ->flatMap(static fn($value) => match ($stream->position()->toInt() < $boundary) {
+            ->flatMap(static fn($value) => match ($stream->unwrap()->position()->toInt() < $boundary) {
                 true => self::unpackNested(
                     $clock,
                     $boundary,

@@ -5,7 +5,8 @@ namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\TimeContinuum\Clock;
-use Innmind\Stream\Readable;
+use Innmind\IO\Readable\Stream;
+use Innmind\Socket\Client;
 use Innmind\Immutable\{
     Str,
     Maybe,
@@ -34,12 +35,14 @@ enum Symbol
     case table;
 
     /**
+     * @param Stream<Client> $stream
+     *
      * @return Maybe<Value>
      */
     public static function unpack(
         Clock $clock,
         string $symbol,
-        Readable $stream,
+        Stream $stream,
     ): Maybe {
         /** @var Maybe<Value> */
         return match ($symbol) {

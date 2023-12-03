@@ -4,7 +4,8 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
-use Innmind\Stream\Readable;
+use Innmind\IO\Readable\Stream;
+use Innmind\Socket\Client;
 use Innmind\Immutable\{
     Str,
     Sequence,
@@ -38,11 +39,14 @@ final class Bits implements Value
     }
 
     /**
+     * @param Stream<Client> $stream
+     *
      * @return Maybe<self>
      */
-    public static function unpack(Readable $stream): Maybe
+    public static function unpack(Stream $stream): Maybe
     {
         return $stream
+            ->unwrap()
             ->read(1)
             ->map(static fn($chunk) => $chunk->toEncoding(Str\Encoding::ascii))
             ->filter(static fn($chunk) => $chunk->length() === 1)

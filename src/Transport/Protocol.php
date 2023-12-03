@@ -26,7 +26,6 @@ use Innmind\AMQP\Transport\{
 use Innmind\TimeContinuum\Clock;
 use Innmind\IO\Readable\Stream;
 use Innmind\Socket\Client;
-use Innmind\Stream\Readable;
 use Innmind\Immutable\{
     Sequence,
     Maybe,
@@ -82,9 +81,9 @@ final class Protocol
      */
     public function readHeader(Stream $arguments): Maybe
     {
-        return UnsignedLongLongInteger::unpack($arguments->unwrap())->flatMap(
-            fn($bodySize) => UnsignedShortInteger::unpack($arguments->unwrap())->flatMap(
-                fn($flags) => $this->parseHeader($bodySize, $flags, $arguments->unwrap()),
+        return UnsignedLongLongInteger::unpack($arguments)->flatMap(
+            fn($bodySize) => UnsignedShortInteger::unpack($arguments)->flatMap(
+                fn($flags) => $this->parseHeader($bodySize, $flags, $arguments),
             ),
         );
     }
@@ -120,25 +119,28 @@ final class Protocol
     }
 
     /**
+     * @param Stream<Client> $arguments
+     *
      * @return Maybe<Sequence<Value>>
      */
     private function parseHeader(
         UnsignedLongLongInteger $bodySize,
         UnsignedShortInteger $flags,
-        Readable $arguments,
+        Stream $arguments,
     ): Maybe {
         $flagBits = $flags->original();
+        /** @psalm-suppress ArgumentTypeCoercion */
         $toChunk = Sequence::of(
             [15, ShortString::unpack(...)], // content type
             [14, ShortString::unpack(...)], // content encoding
-            [13, fn(Readable $stream) => Table::unpack($this->clock, $stream)], // headers
+            [13, fn(Stream $stream) => Table::unpack($this->clock, $stream)], // headers
             [12, UnsignedOctet::unpack(...)], // delivery mode
             [11, UnsignedOctet::unpack(...)], // priority
             [10, ShortString::unpack(...)], // correlation id
             [9, ShortString::unpack(...)], // reply to
             [8, ShortString::unpack(...)], // expiration
             [7, ShortString::unpack(...)], // id,
-            [6, fn(Readable $stream) => Timestamp::unpack($this->clock, $stream)], // timestamp
+            [6, fn(Stream $stream) => Timestamp::unpack($this->clock, $stream)], // timestamp
             [5, ShortString::unpack(...)], // type
             [4, ShortString::unpack(...)], // user id
             [3, ShortString::unpack(...)], // app id

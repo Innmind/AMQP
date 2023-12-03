@@ -4,7 +4,8 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
-use Innmind\Stream\Readable;
+use Innmind\IO\Readable\Stream;
+use Innmind\Socket\Client;
 use Innmind\Immutable\{
     Str,
     Maybe,
@@ -17,9 +18,11 @@ use Innmind\Immutable\{
 final class VoidValue implements Value
 {
     /**
+     * @param Stream<Client> $stream
+     *
      * @return Maybe<self>
      */
-    public static function unpack(Readable $stream): Maybe
+    public static function unpack(Stream $stream): Maybe
     {
         return Maybe::just(new self);
     }

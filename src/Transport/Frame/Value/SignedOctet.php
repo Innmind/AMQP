@@ -9,7 +9,8 @@ use Innmind\Math\{
     DefinitionSet\Set,
     DefinitionSet\Range,
 };
-use Innmind\Stream\Readable;
+use Innmind\IO\Readable\Stream;
+use Innmind\Socket\Client;
 use Innmind\Immutable\{
     Str,
     Maybe,
@@ -47,11 +48,14 @@ final class SignedOctet implements Value
     }
 
     /**
+     * @param Stream<Client> $stream
+     *
      * @return Maybe<self>
      */
-    public static function unpack(Readable $stream): Maybe
+    public static function unpack(Stream $stream): Maybe
     {
         return $stream
+            ->unwrap()
             ->read(1)
             ->map(static fn($chunk) => $chunk->toEncoding(Str\Encoding::ascii))
             ->filter(static fn($chunk) => $chunk->length() === 1)

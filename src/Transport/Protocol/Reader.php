@@ -19,7 +19,6 @@ use Innmind\AMQP\Transport\Frame\{
 use Innmind\TimeContinuum\Clock;
 use Innmind\IO\Readable\Stream;
 use Innmind\Socket\Client;
-use Innmind\Stream\Readable;
 use Innmind\Immutable\{
     Sequence,
     Maybe,
@@ -100,7 +99,7 @@ final class Reader
             Method::transactionSelect => throw new \LogicException('Server should never send this method'),
         };
 
-        return $chunk($arguments->unwrap());
+        return $chunk($arguments);
     }
 
     private function basicQosOk(): ChunkArguments
@@ -218,7 +217,7 @@ final class Reader
         return new ChunkArguments(
             UnsignedOctet::unpack(...), // major version
             UnsignedOctet::unpack(...), // minor version
-            fn(Readable $stream) => Table::unpack($this->clock, $stream), // server properties
+            fn(Stream $stream) => Table::unpack($this->clock, $stream), // server properties
             LongString::unpack(...), // mechanisms
             LongString::unpack(...), // locales
         );

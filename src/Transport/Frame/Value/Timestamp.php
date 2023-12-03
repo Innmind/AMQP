@@ -11,7 +11,8 @@ use Innmind\TimeContinuum\{
     Clock,
     PointInTime,
 };
-use Innmind\Stream\Readable;
+use Innmind\IO\Readable\Stream;
+use Innmind\Socket\Client;
 use Innmind\Immutable\{
     Str,
     Maybe,
@@ -39,9 +40,11 @@ final class Timestamp implements Value
     }
 
     /**
+     * @param Stream<Client> $stream
+     *
      * @return Maybe<self>
      */
-    public static function unpack(Clock $clock, Readable $stream): Maybe
+    public static function unpack(Clock $clock, Stream $stream): Maybe
     {
         return UnsignedLongLongInteger::unpack($stream)
             ->map(static fn($time) => $time->original())

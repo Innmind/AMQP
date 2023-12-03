@@ -4,7 +4,8 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Transport\Frame\Visitor;
 
 use Innmind\AMQP\Transport\Frame\Value;
-use Innmind\Stream\Readable;
+use Innmind\IO\Readable\Stream;
+use Innmind\Socket\Client;
 use Innmind\Immutable\{
     Sequence,
     Maybe,
@@ -15,13 +16,13 @@ use Innmind\Immutable\{
  */
 final class ChunkArguments
 {
-    /** @var Sequence<callable(Readable): Maybe<Value>> */
+    /** @var Sequence<callable(Stream<Client>): Maybe<Value>> */
     private Sequence $types;
 
     /**
      * @no-named-arguments
      *
-     * @param list<callable(Readable): Maybe<Value>> $types
+     * @param list<callable(Stream<Client>): Maybe<Value>> $types
      */
     public function __construct(callable ...$types)
     {
@@ -29,9 +30,11 @@ final class ChunkArguments
     }
 
     /**
+     * @param Stream<Client> $arguments
+     *
      * @return Maybe<Sequence<Value>>
      */
-    public function __invoke(Readable $arguments): Maybe
+    public function __invoke(Stream $arguments): Maybe
     {
         /** @var Sequence<Value> */
         $values = Sequence::of();
@@ -51,14 +54,15 @@ final class ChunkArguments
 
     /**
      * @param Maybe<Sequence<Value>> $maybe
-     * @param callable(Readable): Maybe<Value> $unpack
+     * @param callable(Stream<Client>): Maybe<Value> $unpack
+     * @param Stream<Client> $arguments
      *
      * @return Maybe<Sequence<Value>>
      */
     private function unpack(
         Maybe $maybe,
         callable $unpack,
-        Readable $arguments,
+        Stream $arguments,
     ): Maybe {
         return $maybe->flatMap(
             static fn($values) => $unpack($arguments)->map(

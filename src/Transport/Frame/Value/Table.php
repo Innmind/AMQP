@@ -5,7 +5,8 @@ namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\TimeContinuum\Clock;
-use Innmind\Stream\Readable;
+use Innmind\IO\Readable\Stream;
+use Innmind\Socket\Client;
 use Innmind\Immutable\{
     Str,
     Sequence as Seq,
@@ -42,9 +43,11 @@ final class Table implements Value
     }
 
     /**
+     * @param Stream<Client> $stream
+     *
      * @return Maybe<self>
      */
-    public static function unpack(Clock $clock, Readable $stream): Maybe
+    public static function unpack(Clock $clock, Stream $stream): Maybe
     {
         /** @var Map<string, Value> */
         $values = Map::of();
@@ -55,7 +58,7 @@ final class Table implements Value
                 0 => Maybe::just($values),
                 default => self::unpackNested(
                     $clock,
-                    $length + $stream->position()->toInt(),
+                    $length + $stream->unwrap()->position()->toInt(),
                     $stream,
                     $values,
                 ),
@@ -98,6 +101,7 @@ final class Table implements Value
     }
 
     /**
+     * @param Stream<Client> $stream
      * @param Map<string, Value> $values
      *
      * @return Maybe<Map<string, Value>>
@@ -105,13 +109,14 @@ final class Table implements Value
     private static function unpackNested(
         Clock $clock,
         int $boundary,
-        Readable $stream,
+        Stream $stream,
         Map $values,
     ): Maybe {
         return ShortString::unpack($stream)
             ->map(static fn($key) => $key->original()->toString())
             ->flatMap(
                 static fn($key) => $stream
+                    ->unwrap()
                     ->read(1)
                     ->map(static fn($chunk) => $chunk->toEncoding(Str\Encoding::ascii))
                     ->filter(static fn($chunk) => $chunk->length() === 1)
@@ -122,7 +127,7 @@ final class Table implements Value
                     ))
                     ->map(static fn($value) => ($values)($key, $value)),
             )
-            ->flatMap(static fn($values) => match ($stream->position()->toInt() < $boundary) {
+            ->flatMap(static fn($values) => match ($stream->unwrap()->position()->toInt() < $boundary) {
                 true => self::unpackNested(
                     $clock,
                     $boundary,
