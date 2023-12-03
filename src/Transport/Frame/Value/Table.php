@@ -5,17 +5,12 @@ namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\TimeContinuum\Clock;
-use Innmind\IO\Readable\{
-    Stream,
-    Frame,
-};
-use Innmind\Socket\Client;
+use Innmind\IO\Readable\Frame;
 use Innmind\Immutable\{
     Str,
     Sequence as Seq,
     Map,
     Monoid\Concat,
-    Maybe,
 };
 
 /**
@@ -46,22 +41,19 @@ final class Table implements Value
     }
 
     /**
-     * @param Stream<Client> $stream
-     *
-     * @return Maybe<Unpacked<self>>
+     * @return Frame<Unpacked<self>>
      */
-    public static function unpack(Clock $clock, Stream $stream): Maybe
+    public static function frame(Clock $clock): Frame
     {
         $self = new self(Map::of());
 
-        return UnsignedLongInteger::unpack($stream)->flatMap(
+        return UnsignedLongInteger::frame()->flatMap(
             static fn($length) => match ($length->unwrap()->original()) {
-                0 => Maybe::just(Unpacked::of($length->read(), $self)),
+                0 => Frame\NoOp::of(Unpacked::of($length->read(), $self)),
                 default => self::unpackNested(
                     $clock,
                     Unpacked::of($length->read(), $self),
                     $length->unwrap()->original(),
-                    $stream,
                 ),
             },
         );
@@ -103,25 +95,20 @@ final class Table implements Value
 
     /**
      * @param Unpacked<self> $unpacked
-     * @param Stream<Client> $stream
      *
-     * @return Maybe<Unpacked<self>>
+     * @return Frame<Unpacked<self>>
      */
     private static function unpackNested(
         Clock $clock,
         Unpacked $unpacked,
         int $length,
-        Stream $stream,
-    ): Maybe {
-        return ShortString::unpack($stream)
+    ): Frame {
+        return ShortString::frame()
             ->flatMap(
-                static fn($key) => $stream
-                    ->frames(Frame\Chunk::of(1))
-                    ->one()
-                    ->flatMap(static fn($chunk) => Symbol::unpack(
+                static fn($key) => Frame\Chunk::of(1)
+                    ->flatMap(static fn($chunk) => Symbol::frame(
                         $clock,
                         $chunk->toString(),
-                        $stream,
                     ))
                     ->map(static fn($value) => Unpacked::of(
                         $unpacked->read() + $key->read() + $value->read() + 1,
@@ -136,9 +123,8 @@ final class Table implements Value
                     $clock,
                     $value,
                     $length,
-                    $stream,
                 ),
-                false => Maybe::just($value),
+                false => Frame\NoOp::of($value),
             });
     }
 }

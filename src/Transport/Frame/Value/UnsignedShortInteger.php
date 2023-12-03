@@ -9,15 +9,8 @@ use Innmind\Math\{
     DefinitionSet\Set,
     DefinitionSet\Range,
 };
-use Innmind\IO\Readable\{
-    Stream,
-    Frame,
-};
-use Innmind\Socket\Client;
-use Innmind\Immutable\{
-    Str,
-    Maybe,
-};
+use Innmind\IO\Readable\Frame;
+use Innmind\Immutable\Str;
 
 /**
  * @implements Value<int<0, 65535>>
@@ -60,15 +53,11 @@ final class UnsignedShortInteger implements Value
     }
 
     /**
-     * @param Stream<Client> $stream
-     *
-     * @return Maybe<Unpacked<self>>
+     * @return Frame<Unpacked<self>>
      */
-    public static function unpack(Stream $stream): Maybe
+    public static function frame(): Frame
     {
-        return $stream
-            ->frames(Frame\Chunk::of(2))
-            ->one()
+        return Frame\Chunk::of(2)
             ->map(static function($chunk) {
                 /** @var int<0, 65535> $value */
                 [, $value] = \unpack('n', $chunk->toString());

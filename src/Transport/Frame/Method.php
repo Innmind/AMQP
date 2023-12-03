@@ -3,6 +3,7 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport\Frame;
 
+use Innmind\IO\Readable\Frame;
 use Innmind\Immutable\Maybe;
 
 /**
@@ -74,6 +75,19 @@ enum Method
         return self::maybe($class, $method)->match(
             static fn($self) => $self,
             static fn() => throw new \RuntimeException("$class,$method"),
+        );
+    }
+
+    /**
+     * @psalm-pure
+     *
+     * @return Frame<self>
+     */
+    public static function frame(int $class, int $method): Frame
+    {
+        return self::maybe($class, $method)->match(
+            static fn($self) => Frame\NoOp::of($self),
+            static fn() => Frame\NoOp::of(self::connectionStart)->filter(static fn() => false), // force fail
         );
     }
 

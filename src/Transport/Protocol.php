@@ -24,12 +24,8 @@ use Innmind\AMQP\Transport\{
     Frame\Value,
 };
 use Innmind\TimeContinuum\Clock;
-use Innmind\IO\Readable\Stream;
-use Innmind\Socket\Client;
-use Innmind\Immutable\{
-    Sequence,
-    Maybe,
-};
+use Innmind\IO\Readable\Frame;
+use Innmind\Immutable\Sequence;
 
 /**
  * @internal
@@ -65,28 +61,23 @@ final class Protocol
     }
 
     /**
-     * @param Stream<Client> $arguments
-     *
-     * @return Maybe<Sequence<Value>>
+     * @return Frame<Sequence<Value>>
      */
-    public function read(Method $method, Stream $arguments): Maybe
+    public function frame(Method $method): Frame
     {
-        return ($this->read)($method, $arguments);
+        return ($this->read)($method);
     }
 
     /**
-     * @param Stream<Client> $arguments
-     *
-     * @return Maybe<Sequence<Value>>
+     * @return Frame<Sequence<Value>>
      */
-    public function readHeader(Stream $arguments): Maybe
+    public function headerFrame(): Frame
     {
-        return UnsignedLongLongInteger::unpack($arguments)->flatMap(
-            fn($bodySize) => UnsignedShortInteger::unpack($arguments)->flatMap(
+        return UnsignedLongLongInteger::frame()->flatMap(
+            fn($bodySize) => UnsignedShortInteger::frame()->flatMap(
                 fn($flags) => $this->parseHeader(
                     $bodySize->unwrap(),
                     $flags->unwrap(),
-                    $arguments,
                 ),
             ),
         );
@@ -123,44 +114,43 @@ final class Protocol
     }
 
     /**
-     * @param Stream<Client> $arguments
-     *
-     * @return Maybe<Sequence<Value>>
+     * @return Frame<Sequence<Value>>
      */
     private function parseHeader(
         UnsignedLongLongInteger $bodySize,
         UnsignedShortInteger $flags,
-        Stream $arguments,
-    ): Maybe {
+    ): Frame {
         $flagBits = $flags->original();
-        /** @psalm-suppress ArgumentTypeCoercion */
         $toChunk = Sequence::of(
-            [15, ShortString::unpack(...)], // content type
-            [14, ShortString::unpack(...)], // content encoding
-            [13, fn(Stream $stream) => Table::unpack($this->clock, $stream)], // headers
-            [12, UnsignedOctet::unpack(...)], // delivery mode
-            [11, UnsignedOctet::unpack(...)], // priority
-            [10, ShortString::unpack(...)], // correlation id
-            [9, ShortString::unpack(...)], // reply to
-            [8, ShortString::unpack(...)], // expiration
-            [7, ShortString::unpack(...)], // id,
-            [6, fn(Stream $stream) => Timestamp::unpack($this->clock, $stream)], // timestamp
-            [5, ShortString::unpack(...)], // type
-            [4, ShortString::unpack(...)], // user id
-            [3, ShortString::unpack(...)], // app id
+            [15, ShortString::frame()], // content type
+            [14, ShortString::frame()], // content encoding
+            [13, Table::frame($this->clock)], // headers
+            [12, UnsignedOctet::frame()], // delivery mode
+            [11, UnsignedOctet::frame()], // priority
+            [10, ShortString::frame()], // correlation id
+            [9, ShortString::frame()], // reply to
+            [8, ShortString::frame()], // expiration
+            [7, ShortString::frame()], // id,
+            [6, Timestamp::frame($this->clock)], // timestamp
+            [5, ShortString::frame()], // type
+            [4, ShortString::frame()], // user id
+            [3, ShortString::frame()], // app id
         )
             ->map(static fn($pair) => [1 << $pair[0], $pair[1]])
             ->filter(static fn($pair) => (bool) ($flagBits & $pair[0]))
             ->map(static fn($pair) => $pair[1])
-            ->toList();
+            ->map(static fn($frame) => $frame->map(
+                static fn($value) => $value->unwrap(),
+            ));
 
-        /**
-         * @psalm-suppress InvalidArgument
-         * @psalm-suppress ArgumentTypeCoercion
-         * @var Maybe<Sequence<Value>>
-         */
-        return (new ChunkArguments(...$toChunk))($arguments)->map(
-            static fn($arguments) => Sequence::of($bodySize, $flags)->append($arguments),
+        /** @var Frame<Sequence<Value>> */
+        return $toChunk->match(
+            static fn($first, $rest) => Frame\Composite::of(
+                static fn(Value ...$values) => Sequence::of($bodySize, $flags, ...$values),
+                $first,
+                ...$rest->toList(),
+            ),
+            static fn() => Frame\NoOp::of(Sequence::of($bodySize, $flags)),
         );
     }
 }

@@ -7,7 +7,10 @@ use Innmind\AMQP\Transport\Frame\{
     Value,
     Value\Unpacked,
 };
-use Innmind\IO\Readable\Stream;
+use Innmind\IO\Readable\{
+    Stream,
+    Frame,
+};
 use Innmind\Socket\Client;
 use Innmind\Immutable\{
     Sequence,
@@ -19,17 +22,17 @@ use Innmind\Immutable\{
  */
 final class ChunkArguments
 {
-    /** @var Sequence<callable(Stream<Client>): Maybe<Unpacked>> */
-    private Sequence $types;
+    /** @var Sequence<Frame<Unpacked>> */
+    private Sequence $frames;
 
     /**
      * @no-named-arguments
      *
-     * @param list<callable(Stream<Client>): Maybe<Unpacked>> $types
+     * @param list<Frame<Unpacked>> $frames
      */
-    public function __construct(callable ...$types)
+    public function __construct(Frame ...$frames)
     {
-        $this->types = Sequence::of(...$types);
+        $this->frames = Sequence::of(...$frames);
     }
 
     /**
@@ -39,38 +42,21 @@ final class ChunkArguments
      */
     public function __invoke(Stream $arguments): Maybe
     {
-        /** @var Sequence<Value> */
-        $values = Sequence::of();
-
-        /** @psalm-suppress MixedArgumentTypeCoercion */
-        return $this
-            ->types
-            ->reduce(
-                Maybe::just($values),
-                fn(Maybe $maybe, $unpack) => $this->unpack(
-                    $maybe,
-                    $unpack,
-                    $arguments,
-                ),
-            );
-    }
-
-    /**
-     * @param Maybe<Sequence<Value>> $maybe
-     * @param callable(Stream<Client>): Maybe<Unpacked> $unpack
-     * @param Stream<Client> $arguments
-     *
-     * @return Maybe<Sequence<Value>>
-     */
-    private function unpack(
-        Maybe $maybe,
-        callable $unpack,
-        Stream $arguments,
-    ): Maybe {
-        return $maybe->flatMap(
-            static fn($values) => $unpack($arguments)->map(
-                static fn($value) => ($values)($value->unwrap()),
+        /**
+         * @psalm-suppress NamedArgumentNotAllowed
+         * @var Frame<Sequence<Value>>
+         */
+        $frame = $this->frames->match(
+            static fn($first, $rest) => Frame\Composite::of(
+                static fn(Value ...$values) => Sequence::of(...$values),
+                $first,
+                ...$rest->toList(),
             ),
+            static fn() => Frame\NoOp::of(Sequence::of()),
         );
+
+        return $arguments
+            ->frames($frame)
+            ->one();
     }
 }

@@ -6,7 +6,6 @@ namespace Innmind\AMQP\Transport\Protocol;
 use Innmind\AMQP\Transport\Frame\{
     Method,
     Value,
-    Visitor\ChunkArguments,
     Value\Bits,
     Value\LongString,
     Value\ShortString,
@@ -15,14 +14,11 @@ use Innmind\AMQP\Transport\Frame\{
     Value\UnsignedOctet,
     Value\UnsignedShortInteger,
     Value\Table,
+    Value\Unpacked,
 };
 use Innmind\TimeContinuum\Clock;
-use Innmind\IO\Readable\Stream;
-use Innmind\Socket\Client;
-use Innmind\Immutable\{
-    Sequence,
-    Maybe,
-};
+use Innmind\IO\Readable\Frame;
+use Innmind\Immutable\Sequence;
 
 /**
  * @internal
@@ -37,13 +33,11 @@ final class Reader
     }
 
     /**
-     * @param Stream<Client> $arguments
-     *
-     * @return Maybe<Sequence<Value>>
+     * @return Frame<Sequence<Value>>
      */
-    public function __invoke(Method $method, Stream $arguments): Maybe
+    public function __invoke(Method $method): Frame
     {
-        $chunk = match ($method) {
+        return match ($method) {
             Method::basicQosOk => $this->basicQosOk(),
             Method::basicConsumeOk => $this->basicConsumeOk(),
             Method::basicCancelOk => $this->basicCancelOk(),
@@ -98,231 +92,351 @@ final class Reader
             Method::transactionRollback,
             Method::transactionSelect => throw new \LogicException('Server should never send this method'),
         };
-
-        return $chunk($arguments);
     }
 
-    private function basicQosOk(): ChunkArguments
+    /**
+     * @return Frame<Sequence<Value>>
+     */
+    private function basicQosOk(): Frame
     {
-        return new ChunkArguments; // no arguments
+        /** @var Frame<Sequence<Value>> */
+        return Frame\NoOp::of(Sequence::of()); // no arguments
     }
 
-    private function basicConsumeOk(): ChunkArguments
+    /**
+     * @return Frame<Sequence<Value>>
+     */
+    private function basicConsumeOk(): Frame
     {
-        /** @psalm-suppress InvalidArgument Because it doesn't understand it accepts subtypes */
-        return new ChunkArguments(
-            ShortString::unpack(...), // consumer tag
+        /** @var Frame<Sequence<Value>> */
+        return ShortString::frame()
+            ->map(static fn($value) => $value->unwrap())
+            ->map(Sequence::of(...)); // consumer tag
+    }
+
+    /**
+     * @return Frame<Sequence<Value>>
+     */
+    private function basicCancelOk(): Frame
+    {
+        /** @var Frame<Sequence<Value>> */
+        return ShortString::frame()
+            ->map(static fn($value) => $value->unwrap())
+            ->map(Sequence::of(...)); // consumer tag
+    }
+
+    /**
+     * @return Frame<Sequence<Value>>
+     */
+    private function basicReturn(): Frame
+    {
+        /** @psalm-suppress NamedArgumentNotAllowed */
+        return Frame\Composite::of(
+            static fn(Unpacked ...$values) => Sequence::of(...$values)->map(
+                static fn($unpacked) => $unpacked->unwrap(),
+            ),
+            UnsignedShortInteger::frame(), // reply code
+            ShortString::frame(), // reply text
+            ShortString::frame(), // exchange
+            ShortString::frame(), // routing key
         );
     }
 
-    private function basicCancelOk(): ChunkArguments
+    /**
+     * @return Frame<Sequence<Value>>
+     */
+    private function basicDeliver(): Frame
     {
-        /** @psalm-suppress InvalidArgument Because it doesn't understand it accepts subtypes */
-        return new ChunkArguments(
-            ShortString::unpack(...), // consumer tag
+        /** @psalm-suppress NamedArgumentNotAllowed */
+        return Frame\Composite::of(
+            static fn(Unpacked ...$values) => Sequence::of(...$values)->map(
+                static fn($unpacked) => $unpacked->unwrap(),
+            ),
+            ShortString::frame(), // consumer tag
+            UnsignedLongLongInteger::frame(), // delivery tag
+            Bits::frame(), // redelivered
+            ShortString::frame(), // exchange
+            ShortString::frame(), // routing key
         );
     }
 
-    private function basicReturn(): ChunkArguments
+    /**
+     * @return Frame<Sequence<Value>>
+     */
+    private function basicGetOk(): Frame
     {
-        /** @psalm-suppress InvalidArgument Because it doesn't understand it accepts subtypes */
-        return new ChunkArguments(
-            UnsignedShortInteger::unpack(...), // reply code
-            ShortString::unpack(...), // reply text
-            ShortString::unpack(...), // exchange
-            ShortString::unpack(...), // routing key
+        /** @psalm-suppress NamedArgumentNotAllowed */
+        return Frame\Composite::of(
+            static fn(Unpacked ...$values) => Sequence::of(...$values)->map(
+                static fn($unpacked) => $unpacked->unwrap(),
+            ),
+            UnsignedLongLongInteger::frame(), // delivery tag
+            Bits::frame(), // redelivered
+            ShortString::frame(), // exchange
+            ShortString::frame(), // routing key
+            UnsignedLongInteger::frame(), // message count
         );
     }
 
-    private function basicDeliver(): ChunkArguments
+    /**
+     * @return Frame<Sequence<Value>>
+     */
+    private function basicGetEmpty(): Frame
     {
-        /** @psalm-suppress InvalidArgument Because it doesn't understand it accepts subtypes */
-        return new ChunkArguments(
-            ShortString::unpack(...), // consumer tag
-            UnsignedLongLongInteger::unpack(...), // delivery tag
-            Bits::unpack(...), // redelivered
-            ShortString::unpack(...), // exchange
-            ShortString::unpack(...), // routing key
+        /** @var Frame<Sequence<Value>> */
+        return ShortString::frame()
+            ->map(static fn($value) => $value->unwrap())
+            ->map(Sequence::of(...)); // reserved
+    }
+
+    /**
+     * @return Frame<Sequence<Value>>
+     */
+    private function basicRecoverOk(): Frame
+    {
+        /** @var Frame<Sequence<Value>> */
+        return Frame\NoOp::of(Sequence::of()); // no arguments
+    }
+
+    /**
+     * @return Frame<Sequence<Value>>
+     */
+    private function channelOpenOk(): Frame
+    {
+        /** @var Frame<Sequence<Value>> */
+        return LongString::frame()
+            ->map(static fn($value) => $value->unwrap())
+            ->map(Sequence::of(...)); // reserved
+    }
+
+    /**
+     * @return Frame<Sequence<Value>>
+     */
+    private function channelFlow(): Frame
+    {
+        /** @var Frame<Sequence<Value>> */
+        return Bits::frame()
+            ->map(static fn($value) => $value->unwrap())
+            ->map(Sequence::of(...)); // active
+    }
+
+    /**
+     * @return Frame<Sequence<Value>>
+     */
+    private function channelFlowOk(): Frame
+    {
+        /** @var Frame<Sequence<Value>> */
+        return Bits::frame()
+            ->map(static fn($value) => $value->unwrap())
+            ->map(Sequence::of(...)); // active
+    }
+
+    /**
+     * @return Frame<Sequence<Value>>
+     */
+    private function channelClose(): Frame
+    {
+        /** @psalm-suppress NamedArgumentNotAllowed */
+        return Frame\Composite::of(
+            static fn(Unpacked ...$values) => Sequence::of(...$values)->map(
+                static fn($unpacked) => $unpacked->unwrap(),
+            ),
+            UnsignedShortInteger::frame(), // reply code
+            ShortString::frame(), // reply text
+            UnsignedShortInteger::frame(), // failing class id
+            UnsignedShortInteger::frame(), // failing method id
         );
     }
 
-    private function basicGetOk(): ChunkArguments
+    /**
+     * @return Frame<Sequence<Value>>
+     */
+    private function channelCloseOk(): Frame
     {
-        /** @psalm-suppress InvalidArgument Because it doesn't understand it accepts subtypes */
-        return new ChunkArguments(
-            UnsignedLongLongInteger::unpack(...), // delivery tag
-            Bits::unpack(...), // redelivered
-            ShortString::unpack(...), // exchange
-            ShortString::unpack(...), // routing key
-            UnsignedLongInteger::unpack(...), // message count
+        /** @var Frame<Sequence<Value>> */
+        return Frame\NoOp::of(Sequence::of()); // no arguments
+    }
+
+    /**
+     * @return Frame<Sequence<Value>>
+     */
+    private function connectionStart(): Frame
+    {
+        /** @psalm-suppress NamedArgumentNotAllowed */
+        return Frame\Composite::of(
+            static fn(Unpacked ...$values) => Sequence::of(...$values)->map(
+                static fn($unpacked) => $unpacked->unwrap(),
+            ),
+            UnsignedOctet::frame(), // major version
+            UnsignedOctet::frame(), // minor version
+            Table::frame($this->clock), // server properties
+            LongString::frame(), // mechanisms
+            LongString::frame(), // locales
         );
     }
 
-    private function basicGetEmpty(): ChunkArguments
+    /**
+     * @return Frame<Sequence<Value>>
+     */
+    private function connectionSecure(): Frame
     {
-        /** @psalm-suppress InvalidArgument Because it doesn't understand it accepts subtypes */
-        return new ChunkArguments(
-            ShortString::unpack(...), // reserved
+        /** @var Frame<Sequence<Value>> */
+        return LongString::frame()
+            ->map(static fn($value) => $value->unwrap())
+            ->map(Sequence::of(...)); // challenge
+    }
+
+    /**
+     * @return Frame<Sequence<Value>>
+     */
+    private function connectionTune(): Frame
+    {
+        /** @psalm-suppress NamedArgumentNotAllowed */
+        return Frame\Composite::of(
+            static fn(Unpacked ...$values) => Sequence::of(...$values)->map(
+                static fn($unpacked) => $unpacked->unwrap(),
+            ),
+            UnsignedShortInteger::frame(), // max channels
+            UnsignedLongInteger::frame(), // max frame size
+            UnsignedShortInteger::frame(), // heartbeat delay
         );
     }
 
-    private function basicRecoverOk(): ChunkArguments
+    /**
+     * @return Frame<Sequence<Value>>
+     */
+    private function connectionOpenOk(): Frame
     {
-        return new ChunkArguments; // no arguments
+        /** @var Frame<Sequence<Value>> */
+        return ShortString::frame()
+            ->map(static fn($value) => $value->unwrap())
+            ->map(Sequence::of(...)); // known hosts
     }
 
-    private function channelOpenOk(): ChunkArguments
+    /**
+     * @return Frame<Sequence<Value>>
+     */
+    private function connectionClose(): Frame
     {
-        /** @psalm-suppress InvalidArgument Because it doesn't understand it accepts subtypes */
-        return new ChunkArguments(
-            LongString::unpack(...), // reserved
+        /** @psalm-suppress NamedArgumentNotAllowed */
+        return Frame\Composite::of(
+            static fn(Unpacked ...$values) => Sequence::of(...$values)->map(
+                static fn($unpacked) => $unpacked->unwrap(),
+            ),
+            UnsignedShortInteger::frame(), // reply code
+            ShortString::frame(), // reply text
+            UnsignedShortInteger::frame(), // failing class id
+            UnsignedShortInteger::frame(), // failing method id
         );
     }
 
-    private function channelFlow(): ChunkArguments
+    /**
+     * @return Frame<Sequence<Value>>
+     */
+    private function connectionCloseOk(): Frame
     {
-        /** @psalm-suppress InvalidArgument Because it doesn't understand it accepts subtypes */
-        return new ChunkArguments(
-            Bits::unpack(...), // active
+        /** @var Frame<Sequence<Value>> */
+        return Frame\NoOp::of(Sequence::of()); // no arguments
+    }
+
+    /**
+     * @return Frame<Sequence<Value>>
+     */
+    private function exchangeDeclareOk(): Frame
+    {
+        /** @var Frame<Sequence<Value>> */
+        return Frame\NoOp::of(Sequence::of()); // no arguments
+    }
+
+    /**
+     * @return Frame<Sequence<Value>>
+     */
+    private function exchangeDeleteOk(): Frame
+    {
+        /** @var Frame<Sequence<Value>> */
+        return Frame\NoOp::of(Sequence::of()); // no arguments
+    }
+
+    /**
+     * @return Frame<Sequence<Value>>
+     */
+    private function queueDeclareOk(): Frame
+    {
+        /** @psalm-suppress NamedArgumentNotAllowed */
+        return Frame\Composite::of(
+            static fn(Unpacked ...$values) => Sequence::of(...$values)->map(
+                static fn($unpacked) => $unpacked->unwrap(),
+            ),
+            ShortString::frame(), // queue
+            UnsignedLongInteger::frame(), // message count
+            UnsignedLongInteger::frame(), // consumer count
         );
     }
 
-    private function channelFlowOk(): ChunkArguments
+    /**
+     * @return Frame<Sequence<Value>>
+     */
+    private function queueBindOk(): Frame
     {
-        /** @psalm-suppress InvalidArgument Because it doesn't understand it accepts subtypes */
-        return new ChunkArguments(
-            Bits::unpack(...), // active
-        );
+        /** @var Frame<Sequence<Value>> */
+        return Frame\NoOp::of(Sequence::of()); // no arguments
     }
 
-    private function channelClose(): ChunkArguments
+    /**
+     * @return Frame<Sequence<Value>>
+     */
+    private function queueUnbindOk(): Frame
     {
-        /** @psalm-suppress InvalidArgument Because it doesn't understand it accepts subtypes */
-        return new ChunkArguments(
-            UnsignedShortInteger::unpack(...), // reply code
-            ShortString::unpack(...), // reply text
-            UnsignedShortInteger::unpack(...), // failing class id
-            UnsignedShortInteger::unpack(...), // failing method id
-        );
+        /** @var Frame<Sequence<Value>> */
+        return Frame\NoOp::of(Sequence::of()); // no arguments
     }
 
-    private function channelCloseOk(): ChunkArguments
+    /**
+     * @return Frame<Sequence<Value>>
+     */
+    private function queuePurgeOk(): Frame
     {
-        return new ChunkArguments; // no arguments
+        /** @var Frame<Sequence<Value>> */
+        return UnsignedLongInteger::frame()
+            ->map(static fn($value) => $value->unwrap())
+            ->map(Sequence::of(...)); // message count
     }
 
-    private function connectionStart(): ChunkArguments
+    /**
+     * @return Frame<Sequence<Value>>
+     */
+    private function queueDeleteOk(): Frame
     {
-        /** @psalm-suppress InvalidArgument Because it doesn't understand it accepts subtypes */
-        return new ChunkArguments(
-            UnsignedOctet::unpack(...), // major version
-            UnsignedOctet::unpack(...), // minor version
-            fn(Stream $stream) => Table::unpack($this->clock, $stream), // server properties
-            LongString::unpack(...), // mechanisms
-            LongString::unpack(...), // locales
-        );
+        /** @var Frame<Sequence<Value>> */
+        return UnsignedLongInteger::frame()
+            ->map(static fn($value) => $value->unwrap())
+            ->map(Sequence::of(...)); // message count
     }
 
-    private function connectionSecure(): ChunkArguments
+    /**
+     * @return Frame<Sequence<Value>>
+     */
+    private function transactionSelectOk(): Frame
     {
-        /** @psalm-suppress InvalidArgument Because it doesn't understand it accepts subtypes */
-        return new ChunkArguments(
-            LongString::unpack(...), // challenge
-        );
+        /** @var Frame<Sequence<Value>> */
+        return Frame\NoOp::of(Sequence::of()); // no arguments
     }
 
-    private function connectionTune(): ChunkArguments
+    /**
+     * @return Frame<Sequence<Value>>
+     */
+    private function transactionCommitOk(): Frame
     {
-        /** @psalm-suppress InvalidArgument Because it doesn't understand it accepts subtypes */
-        return new ChunkArguments(
-            UnsignedShortInteger::unpack(...), // max channels
-            UnsignedLongInteger::unpack(...), // max frame size
-            UnsignedShortInteger::unpack(...), // heartbeat delay
-        );
+        /** @var Frame<Sequence<Value>> */
+        return Frame\NoOp::of(Sequence::of()); // no arguments
     }
 
-    private function connectionOpenOk(): ChunkArguments
+    /**
+     * @return Frame<Sequence<Value>>
+     */
+    private function transactionRollbackOk(): Frame
     {
-        /** @psalm-suppress InvalidArgument Because it doesn't understand it accepts subtypes */
-        return new ChunkArguments(
-            ShortString::unpack(...), // known hosts
-        );
-    }
-
-    private function connectionClose(): ChunkArguments
-    {
-        /** @psalm-suppress InvalidArgument Because it doesn't understand it accepts subtypes */
-        return new ChunkArguments(
-            UnsignedShortInteger::unpack(...), // reply code
-            ShortString::unpack(...), // reply text
-            UnsignedShortInteger::unpack(...), // failing class id
-            UnsignedShortInteger::unpack(...), // failing method id
-        );
-    }
-
-    private function connectionCloseOk(): ChunkArguments
-    {
-        return new ChunkArguments; // no arguments
-    }
-
-    private function exchangeDeclareOk(): ChunkArguments
-    {
-        return new ChunkArguments; // no arguments
-    }
-
-    private function exchangeDeleteOk(): ChunkArguments
-    {
-        return new ChunkArguments; // no arguments
-    }
-
-    private function queueDeclareOk(): ChunkArguments
-    {
-        /** @psalm-suppress InvalidArgument Because it doesn't understand it accepts subtypes */
-        return new ChunkArguments(
-            ShortString::unpack(...), // queue
-            UnsignedLongInteger::unpack(...), // message count
-            UnsignedLongInteger::unpack(...), // consumer count
-        );
-    }
-
-    private function queueBindOk(): ChunkArguments
-    {
-        return new ChunkArguments; // no arguments
-    }
-
-    private function queueUnbindOk(): ChunkArguments
-    {
-        return new ChunkArguments; // no arguments
-    }
-
-    private function queuePurgeOk(): ChunkArguments
-    {
-        /** @psalm-suppress InvalidArgument Because it doesn't understand it accepts subtypes */
-        return new ChunkArguments(
-            UnsignedLongInteger::unpack(...), // message count
-        );
-    }
-
-    private function queueDeleteOk(): ChunkArguments
-    {
-        /** @psalm-suppress InvalidArgument Because it doesn't understand it accepts subtypes */
-        return new ChunkArguments(
-            UnsignedLongInteger::unpack(...), // message count
-        );
-    }
-
-    private function transactionSelectOk(): ChunkArguments
-    {
-        return new ChunkArguments; // no arguments
-    }
-
-    private function transactionCommitOk(): ChunkArguments
-    {
-        return new ChunkArguments; // no arguments
-    }
-
-    private function transactionRollbackOk(): ChunkArguments
-    {
-        return new ChunkArguments; // no arguments
+        /** @var Frame<Sequence<Value>> */
+        return Frame\NoOp::of(Sequence::of()); // no arguments
     }
 }

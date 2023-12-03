@@ -14,9 +14,15 @@ use Innmind\AMQP\Transport\{
     Frame\Value\UnsignedShortInteger,
     Frame\Value\UnsignedLongInteger,
 };
-use Innmind\IO\Readable\Stream;
+use Innmind\IO\Readable\{
+    Stream,
+    Frame as IOFrame,
+};
 use Innmind\Socket\Client;
-use Innmind\Immutable\Maybe;
+use Innmind\Immutable\{
+    Maybe,
+    Str,
+};
 
 /**
  * @internal
@@ -30,42 +36,39 @@ final class FrameReader
      */
     public function __invoke(Stream $stream, Protocol $protocol): Maybe
     {
-        return $this
-            ->readType($stream)
-            ->flatMap(
-                fn($type) => $this
-                    ->readChannel($stream)
-                    ->flatMap(fn($channel) => $this->readFrame(
-                        $type,
-                        $channel,
-                        $stream,
-                        $protocol,
-                    )),
-            );
+        $frame = $this->readType()->flatMap(
+            fn($type) => $this
+                ->readChannel()
+                ->flatMap(fn($channel) => $this->readFrame(
+                    $type,
+                    $channel,
+                    $protocol,
+                )),
+        );
+
+        return $stream
+            ->frames($frame)
+            ->one();
     }
 
     /**
-     * @param Stream<Client> $stream
-     *
-     * @return Maybe<Frame>
+     * @return IOFrame<Frame>
      */
     private function readFrame(
         Type $type,
         Channel $channel,
-        Stream $stream,
         Protocol $protocol,
-    ): Maybe {
-        /** @psalm-suppress InvalidArgument */
-        return UnsignedLongInteger::unpack($stream)
+    ): IOFrame {
+        return UnsignedLongInteger::frame()
             ->map(static fn($value) => $value->unwrap()->original())
             ->flatMap(fn($length) => match ($type) {
-                Type::method => $this->readMethod($stream, $protocol, $channel),
-                Type::header => $this->readHeader($stream, $protocol, $channel),
-                Type::body => $this->readBody($stream, $channel, $length),
-                Type::heartbeat => Maybe::just(Frame::heartbeat()),
+                Type::method => $this->readMethod($protocol, $channel),
+                Type::header => $this->readHeader($protocol, $channel),
+                Type::body => $this->readBody($channel, $length),
+                Type::heartbeat => IOFrame\NoOp::of(Frame::heartbeat()),
             })
             ->flatMap(
-                static fn($frame) => UnsignedOctet::unpack($stream)
+                static fn($frame) => UnsignedOctet::frame()
                     ->map(static fn($end) => $end->unwrap()->original())
                     ->filter(static fn($end) => $end === Frame::end())
                     ->map(static fn() => $frame),
@@ -73,49 +76,42 @@ final class FrameReader
     }
 
     /**
-     * @param Stream<Client> $stream
-     *
-     * @return Maybe<Type>
+     * @return IOFrame<Type>
      */
-    private function readType(Stream $stream): Maybe
+    private function readType(): IOFrame
     {
-        return UnsignedOctet::unpack($stream)
+        return UnsignedOctet::frame()
             ->map(static fn($octet) => $octet->unwrap()->original())
-            ->flatMap(Type::maybe(...));
+            ->flatMap(Type::frame(...));
     }
 
     /**
-     * @param Stream<Client> $stream
-     *
-     * @return Maybe<Channel>
+     * @return IOFrame<Channel>
      */
-    private function readChannel(Stream $stream): Maybe
+    private function readChannel(): IOFrame
     {
-        return UnsignedShortInteger::unpack($stream)
+        return UnsignedShortInteger::frame()
             ->map(static fn($value) => $value->unwrap()->original())
             ->map(static fn($value) => new Channel($value));
     }
 
     /**
-     * @param Stream<Client> $payload
-     *
-     * @return Maybe<Frame>
+     * @return IOFrame<Frame>
      */
     private function readMethod(
-        Stream $payload,
         Protocol $protocol,
         Channel $channel,
-    ): Maybe {
-        return UnsignedShortInteger::unpack($payload)
+    ): IOFrame {
+        return UnsignedShortInteger::frame()
             ->map(static fn($value) => $value->unwrap()->original())
             ->flatMap(
-                static fn($class) => UnsignedShortInteger::unpack($payload)
+                static fn($class) => UnsignedShortInteger::frame()
                     ->map(static fn($value) => $value->unwrap()->original())
-                    ->flatMap(static fn($method) => Method::maybe($class, $method)),
+                    ->flatMap(static fn($method) => Method::frame($class, $method)),
             )
             ->flatMap(
                 static fn($method) => $protocol
-                    ->read($method, $payload)
+                    ->frame($method)
                     ->map(static fn($values) => Frame::method(
                         $channel,
                         $method,
@@ -125,27 +121,22 @@ final class FrameReader
     }
 
     /**
-     * @param Stream<Client> $payload
-     *
-     * @return Maybe<Frame>
+     * @return IOFrame<Frame>
      */
     private function readHeader(
-        Stream $payload,
         Protocol $protocol,
         Channel $channel,
-    ): Maybe {
-        return UnsignedShortInteger::unpack($payload)
+    ): IOFrame {
+        return UnsignedShortInteger::frame()
             ->map(static fn($value) => $value->unwrap()->original())
-            ->flatMap(MethodClass::maybe(...))
+            ->flatMap(MethodClass::frame(...))
             ->flatMap(
-                static fn($class) => $payload
-                    ->unwrap()
-                    ->read(2) // walk over the weight definition
+                static fn($class) => IOFrame\Chunk::of(2) // walk over the weight definition
                     ->map(static fn() => $class),
             )
             ->flatMap(
                 static fn($class) => $protocol
-                    ->readHeader($payload)
+                    ->headerFrame()
                     ->map(static fn($arguments) => Frame::header(
                         $channel,
                         $class,
@@ -155,20 +146,18 @@ final class FrameReader
     }
 
     /**
-     * @param Stream<Client> $payload
      * @param int<0, 4294967295> $length
      *
-     * @return Maybe<Frame>
+     * @return IOFrame<Frame>
      */
     private function readBody(
-        Stream $payload,
         Channel $channel,
         int $length,
-    ): Maybe {
-        /** @psalm-suppress InvalidArgument */
-        return $payload
-            ->unwrap()
-            ->read($length)
+    ): IOFrame {
+        return (match ($length) {
+            0 => IOFrame\NoOp::of(Str::of('')),
+            default => IOFrame\Chunk::of($length),
+        })
             ->map(static fn($data) => Frame::body($channel, $data));
     }
 }

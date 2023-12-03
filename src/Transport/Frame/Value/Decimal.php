@@ -4,12 +4,8 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
-use Innmind\IO\Readable\Stream;
-use Innmind\Socket\Client;
-use Innmind\Immutable\{
-    Str,
-    Maybe,
-};
+use Innmind\IO\Readable\Frame;
+use Innmind\Immutable\Str;
 
 /**
  * @implements Value<int|float>
@@ -38,14 +34,12 @@ final class Decimal implements Value
     }
 
     /**
-     * @param Stream<Client> $stream
-     *
-     * @return Maybe<Unpacked<self>>
+     * @return Frame<Unpacked<self>>
      */
-    public static function unpack(Stream $stream): Maybe
+    public static function frame(): Frame
     {
-        return UnsignedOctet::unpack($stream)->flatMap(
-            static fn($scale) => SignedLongInteger::unpack($stream)->map(
+        return UnsignedOctet::frame()->flatMap(
+            static fn($scale) => SignedLongInteger::frame()->map(
                 static fn($value) => Unpacked::of(
                     $scale->read() + $value->read(),
                     new self($value->unwrap(), $scale->unwrap()),

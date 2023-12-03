@@ -9,15 +9,8 @@ use Innmind\Math\{
     DefinitionSet\Set,
     DefinitionSet\Range,
 };
-use Innmind\IO\Readable\{
-    Stream,
-    Frame,
-};
-use Innmind\Socket\Client;
-use Innmind\Immutable\{
-    Str,
-    Maybe,
-};
+use Innmind\IO\Readable\Frame;
+use Innmind\Immutable\Str;
 
 /**
  * Same as unsigned shortshort
@@ -62,15 +55,11 @@ final class UnsignedOctet implements Value
     }
 
     /**
-     * @param Stream<Client> $stream
-     *
-     * @return Maybe<Unpacked<self>>
+     * @return Frame<Unpacked<self>>
      */
-    public static function unpack(Stream $stream): Maybe
+    public static function frame(): Frame
     {
-        return $stream
-            ->frames(Frame\Chunk::of(1))
-            ->one()
+        return Frame\Chunk::of(1)
             ->map(static function($chunk) {
                 /** @var int<0, 255> $octet */
                 [, $octet] = \unpack('C', $chunk->toString());

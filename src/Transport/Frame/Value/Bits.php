@@ -4,15 +4,10 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
-use Innmind\IO\Readable\{
-    Stream,
-    Frame,
-};
-use Innmind\Socket\Client;
+use Innmind\IO\Readable\Frame;
 use Innmind\Immutable\{
     Str,
     Sequence,
-    Maybe,
 };
 
 /**
@@ -42,15 +37,11 @@ final class Bits implements Value
     }
 
     /**
-     * @param Stream<Client> $stream
-     *
-     * @return Maybe<Unpacked<self>>
+     * @return Frame<Unpacked<self>>
      */
-    public static function unpack(Stream $stream): Maybe
+    public static function frame(): Frame
     {
-        return $stream
-            ->frames(Frame\Chunk::of(1))
-            ->one()
+        return Frame\Chunk::of(1)
             ->map(
                 static fn($chunk) => $chunk
                     ->map(static fn($chunk) => \decbin(\ord($chunk)))
@@ -58,7 +49,7 @@ final class Bits implements Value
                     ->map(static fn($bit) => (bool) (int) $bit->toString())
                     ->reverse(),
             )
-            ->exclude(static fn($bits) => $bits->empty())
+            ->filter(static fn($bits) => !$bits->empty())
             ->map(static fn($bits) => new self($bits))
             ->map(static fn($value) => Unpacked::of(1, $value));
     }

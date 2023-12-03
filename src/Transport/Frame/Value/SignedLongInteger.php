@@ -9,15 +9,8 @@ use Innmind\Math\{
     DefinitionSet\Set,
     DefinitionSet\Range,
 };
-use Innmind\IO\Readable\{
-    Stream,
-    Frame,
-};
-use Innmind\Socket\Client;
-use Innmind\Immutable\{
-    Str,
-    Maybe,
-};
+use Innmind\IO\Readable\Frame;
+use Innmind\Immutable\Str;
 
 /**
  * @implements Value<int<-2147483648, 2147483647>>
@@ -49,15 +42,11 @@ final class SignedLongInteger implements Value
     }
 
     /**
-     * @param Stream<Client> $stream
-     *
-     * @return Maybe<Unpacked<self>>
+     * @return Frame<Unpacked<self>>
      */
-    public static function unpack(Stream $stream): Maybe
+    public static function frame(): Frame
     {
-        return $stream
-            ->frames(Frame\Chunk::of(4))
-            ->one()
+        return Frame\Chunk::of(4)
             ->map(static function($chunk) {
                 /** @var int<-2147483648, 2147483647> $value */
                 [, $value] = \unpack('l', $chunk->toString());

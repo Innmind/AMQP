@@ -4,15 +4,8 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
-use Innmind\IO\Readable\{
-    Stream,
-    Frame,
-};
-use Innmind\Socket\Client;
-use Innmind\Immutable\{
-    Str,
-    Maybe,
-};
+use Innmind\IO\Readable\Frame;
+use Innmind\Immutable\Str;
 
 /**
  * @implements Value<Str>
@@ -49,17 +42,15 @@ final class LongString implements Value
     }
 
     /**
-     * @param Stream<Client> $stream
-     *
-     * @return Maybe<Unpacked<self>>
+     * @return Frame<Unpacked<self>>
      */
-    public static function unpack(Stream $stream): Maybe
+    public static function frame(): Frame
     {
-        /** @psalm-suppress InvalidArgument */
-        return UnsignedLongInteger::unpack($stream)->flatMap(
-            static fn($length) => $stream
-                ->frames(Frame\Chunk::of($length->unwrap()->original()))
-                ->one()
+        return UnsignedLongInteger::frame()->flatMap(
+            static fn($length) => (match ($length->unwrap()->original()) {
+                0 => Frame\NoOp::of(Str::of('')),
+                default => Frame\Chunk::of($length->unwrap()->original()),
+            })
                 ->map(static fn($string) => new self($string))
                 ->map(static fn($value) => Unpacked::of(
                     $length->read() + $length->unwrap()->original(),
