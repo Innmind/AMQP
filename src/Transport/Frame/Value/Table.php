@@ -41,6 +41,8 @@ final class Table implements Value
     }
 
     /**
+     * @psalm-pure
+     *
      * @return Frame<Unpacked<self>>
      */
     public static function frame(Clock $clock): Frame
@@ -94,6 +96,8 @@ final class Table implements Value
     }
 
     /**
+     * @psalm-pure
+     *
      * @param Unpacked<self> $unpacked
      *
      * @return Frame<Unpacked<self>>

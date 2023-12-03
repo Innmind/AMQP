@@ -30,6 +30,8 @@ enum Symbol
     case table;
 
     /**
+     * @psalm-pure
+     *
      * @return Frame<Unpacked>
      */
     public static function frame(Clock $clock, string $symbol): Frame

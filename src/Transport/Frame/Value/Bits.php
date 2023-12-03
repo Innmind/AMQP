@@ -37,6 +37,8 @@ final class Bits implements Value
     }
 
     /**
+     * @psalm-pure
+     *
      * @return Frame<Unpacked<self>>
      */
     public static function frame(): Frame

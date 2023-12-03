@@ -34,7 +34,6 @@ final class Protocol
 {
     private Clock $clock;
     private Version $version;
-    private Reader $read;
     private Connection $connection;
     private Channel $channel;
     private Exchange $exchange;
@@ -46,7 +45,6 @@ final class Protocol
     {
         $this->clock = $clock;
         $this->version = Version::v091;
-        $this->read = new Reader($clock);
         $this->connection = new Connection;
         $this->channel = new Channel;
         $this->exchange = new Exchange($translator);
@@ -65,7 +63,7 @@ final class Protocol
      */
     public function frame(Method $method): Frame
     {
-        return ($this->read)($method);
+        return $method->incomingFrame($this->clock);
     }
 
     /**

@@ -34,6 +34,8 @@ final class Decimal implements Value
     }
 
     /**
+     * @psalm-pure
+     *
      * @return Frame<Unpacked<self>>
      */
     public static function frame(): Frame
