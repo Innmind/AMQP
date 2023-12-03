@@ -30,7 +30,7 @@ use Innmind\TimeContinuum\Earth\{
     ElapsedPeriod,
     Period\Millisecond,
 };
-use Innmind\Filesystem\File\Content;
+use Innmind\Filesystem\Name;
 use Innmind\Server\Control\Server\{
     Signal,
     Command,
@@ -444,6 +444,15 @@ class ClientTest extends TestCase
 
     public function testPublishContentOfAFile()
     {
+        $file = $this
+            ->os
+            ->filesystem()
+            ->mount(Path::of(__DIR__.'/'))
+            ->get(Name::of(\basename(__FILE__)))
+            ->match(
+                static fn($file) => $file->content(),
+                fn() => $this->fail(),
+            );
         $result = $this
             ->client
             ->with(DeclareExchange::of('foo', Type::direct))
@@ -451,7 +460,7 @@ class ClientTest extends TestCase
             ->with(Bind::of('foo', 'bar'))
             ->with(Purge::of('bar'))
             ->with(Qos::of(10))
-            ->with(Publish::one(Message::file(Content\AtPath::of(Path::of(__FILE__))))->to('foo'))
+            ->with(Publish::one(Message::file($file))->to('foo'))
             ->with(
                 Get::of('bar')->handle(function($state, $message, $continuation, $details) {
                     $this->assertNull($state);

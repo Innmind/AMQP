@@ -1,5 +1,14 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- Requires `innmind/immutable:~5.2`
+- Requires `innmind/operating-system:~4.1`
+- Requires `innmind/filesystem:~7.0`
+- Requires `innmind/io:~2.3`
+
 ## 4.3.0 - 2023-09-23
 
 ### Added

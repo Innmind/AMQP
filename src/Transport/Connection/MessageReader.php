@@ -21,8 +21,12 @@ use Innmind\AMQP\{
     Transport\Frame\Value,
     Failure,
 };
-use Innmind\TimeContinuum\Earth\ElapsedPeriod;
+use Innmind\TimeContinuum\{
+    Earth,
+    ElapsedPeriod,
+};
 use Innmind\Filesystem\File\Content;
+use Innmind\IO\IO;
 use Innmind\Stream\{
     Capabilities,
     Bidirectional,
@@ -182,7 +186,7 @@ final class MessageReader
                 static fn(Maybe $value, Message $message) => $value
                     ->keep(Instance::of(Value\ShortString::class))
                     ->map(static fn($value) => (int) $value->original()->toString())
-                    ->flatMap(ElapsedPeriod::maybe(...))
+                    ->flatMap(Earth\ElapsedPeriod::maybe(...))
                     ->map(static fn($expiration) => $message->withExpiration($expiration)),
             ],
             [
@@ -266,9 +270,14 @@ final class MessageReader
             );
         }
 
+        $io = IO::of(fn(?ElapsedPeriod $timeout) => match ($timeout) {
+            null => $this->streams->watch()->waitForever(),
+            default => $this->streams->watch()->timeoutAfter($timeout),
+        });
+
         return $read->map(static fn($in) => ReceivedMessage::of(
             $in[0],
-            Message::file(Content\OfStream::of($in[1])),
+            Message::file(Content::io($io->readable()->wrap($in[1]))),
         ));
     }
 

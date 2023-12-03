@@ -15,15 +15,8 @@ use Innmind\AMQP\{
 };
 use Innmind\Socket\Internet\Transport;
 use Innmind\Url\Url;
-use Innmind\TimeContinuum\Earth\{
-    ElapsedPeriod,
-    Clock,
-};
-use Innmind\OperatingSystem\{
-    Remote,
-    Sockets,
-};
-use Innmind\Server\Control\Server;
+use Innmind\TimeContinuum\Earth\ElapsedPeriod;
+use Innmind\OperatingSystem\Factory;
 use Innmind\Immutable\{
     Sequence,
     SideEffect,
@@ -34,14 +27,15 @@ class ConnectionTest extends TestCase
 {
     public function testInterface()
     {
+        $os = Factory::build();
         $connection = Connection::open(
             Transport::tcp(),
             Url::of('//guest:guest@localhost:5672/'),
-            $protocol = new Protocol(new Clock, $this->createMock(ArgumentTranslator::class)),
+            $protocol = new Protocol($os->clock(), $this->createMock(ArgumentTranslator::class)),
             new ElapsedPeriod(1000),
-            new Clock,
-            Remote\Generic::of($this->createMock(Server::class), new Clock),
-            Sockets\Unix::of(),
+            $os->clock(),
+            $os->remote(),
+            $os->sockets(),
         )->match(
             static fn($connection) => $connection,
             static fn() => null,
@@ -74,14 +68,15 @@ class ConnectionTest extends TestCase
 
     public function testClose()
     {
+        $os = Factory::build();
         $connection = Connection::open(
             Transport::tcp(),
             Url::of('//guest:guest@localhost:5672/'),
-            $protocol = new Protocol(new Clock, $this->createMock(ArgumentTranslator::class)),
+            $protocol = new Protocol($os->clock(), $this->createMock(ArgumentTranslator::class)),
             new ElapsedPeriod(1000),
-            new Clock,
-            Remote\Generic::of($this->createMock(Server::class), new Clock),
-            Sockets\Unix::of(),
+            $os->clock(),
+            $os->remote(),
+            $os->sockets(),
         )->match(
             static fn($connection) => $connection,
             static fn() => null,
@@ -95,14 +90,15 @@ class ConnectionTest extends TestCase
 
     public function testReturnFailureWhenReceivedFrameIsNotTheExpectedOne()
     {
+        $os = Factory::build();
         $connection = Connection::open(
             Transport::tcp(),
             Url::of('//guest:guest@localhost:5672/'),
-            new Protocol(new Clock, $this->createMock(ArgumentTranslator::class)),
+            new Protocol($os->clock(), $this->createMock(ArgumentTranslator::class)),
             new ElapsedPeriod(1000),
-            new Clock,
-            Remote\Generic::of($this->createMock(Server::class), new Clock),
-            Sockets\Unix::of(),
+            $os->clock(),
+            $os->remote(),
+            $os->sockets(),
         )->match(
             static fn($connection) => $connection,
             static fn() => null,
@@ -123,14 +119,15 @@ class ConnectionTest extends TestCase
 
     public function testReturnFailureWhenConnectionClosedByServer()
     {
+        $os = Factory::build();
         $connection = Connection::open(
             Transport::tcp(),
             Url::of('//guest:guest@localhost:5672/'),
-            $protocol = new Protocol(new Clock, $this->createMock(ArgumentTranslator::class)),
+            $protocol = new Protocol($os->clock(), $this->createMock(ArgumentTranslator::class)),
             new ElapsedPeriod(1000),
-            new Clock,
-            Remote\Generic::of($this->createMock(Server::class), new Clock),
-            Sockets\Unix::of(),
+            $os->clock(),
+            $os->remote(),
+            $os->sockets(),
         )->match(
             static fn($connection) => $connection,
             static fn() => null,
