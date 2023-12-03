@@ -42,14 +42,19 @@ final class Timestamp implements Value
     /**
      * @param Stream<Client> $stream
      *
-     * @return Maybe<self>
+     * @return Maybe<Unpacked<self>>
      */
     public static function unpack(Clock $clock, Stream $stream): Maybe
     {
-        return UnsignedLongLongInteger::unpack($stream)
-            ->map(static fn($time) => $time->original())
-            ->flatMap(static fn($time) => $clock->at((string) $time, new TimestampFormat))
-            ->map(static fn($point) => new self($point));
+        return UnsignedLongLongInteger::unpack($stream)->flatMap(
+            static fn($time) => $clock
+                ->at((string) $time->unwrap()->original(), new TimestampFormat)
+                ->map(static fn($point) => new self($point))
+                ->map(static fn($value) => Unpacked::of(
+                    $time->read(),
+                    $value,
+                )),
+        );
     }
 
     public function original(): PointInTime

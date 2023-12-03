@@ -51,7 +51,7 @@ final class SignedShortInteger implements Value
     /**
      * @param Stream<Client> $stream
      *
-     * @return Maybe<self>
+     * @return Maybe<Unpacked<self>>
      */
     public static function unpack(Stream $stream): Maybe
     {
@@ -64,7 +64,8 @@ final class SignedShortInteger implements Value
 
                 return $value;
             })
-            ->map(static fn($value) => new self($value));
+            ->map(static fn($value) => new self($value))
+            ->map(static fn($value) => Unpacked::of(2, $value));
     }
 
     /**

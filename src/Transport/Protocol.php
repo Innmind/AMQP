@@ -83,7 +83,11 @@ final class Protocol
     {
         return UnsignedLongLongInteger::unpack($arguments)->flatMap(
             fn($bodySize) => UnsignedShortInteger::unpack($arguments)->flatMap(
-                fn($flags) => $this->parseHeader($bodySize, $flags, $arguments),
+                fn($flags) => $this->parseHeader(
+                    $bodySize->unwrap(),
+                    $flags->unwrap(),
+                    $arguments,
+                ),
             ),
         );
     }

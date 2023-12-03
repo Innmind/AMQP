@@ -57,7 +57,7 @@ final class FrameReader
     ): Maybe {
         /** @psalm-suppress InvalidArgument */
         return UnsignedLongInteger::unpack($stream)
-            ->map(static fn($value) => $value->original())
+            ->map(static fn($value) => $value->unwrap()->original())
             ->flatMap(fn($length) => match ($type) {
                 Type::method => $this->readMethod($stream, $protocol, $channel),
                 Type::header => $this->readHeader($stream, $protocol, $channel),
@@ -66,7 +66,7 @@ final class FrameReader
             })
             ->flatMap(
                 static fn($frame) => UnsignedOctet::unpack($stream)
-                    ->map(static fn($end) => $end->original())
+                    ->map(static fn($end) => $end->unwrap()->original())
                     ->filter(static fn($end) => $end === Frame::end())
                     ->map(static fn() => $frame),
             );
@@ -80,7 +80,7 @@ final class FrameReader
     private function readType(Stream $stream): Maybe
     {
         return UnsignedOctet::unpack($stream)
-            ->map(static fn($octet) => $octet->original())
+            ->map(static fn($octet) => $octet->unwrap()->original())
             ->flatMap(Type::maybe(...));
     }
 
@@ -92,7 +92,7 @@ final class FrameReader
     private function readChannel(Stream $stream): Maybe
     {
         return UnsignedShortInteger::unpack($stream)
-            ->map(static fn($value) => $value->original())
+            ->map(static fn($value) => $value->unwrap()->original())
             ->map(static fn($value) => new Channel($value));
     }
 
@@ -107,10 +107,10 @@ final class FrameReader
         Channel $channel,
     ): Maybe {
         return UnsignedShortInteger::unpack($payload)
-            ->map(static fn($value) => $value->original())
+            ->map(static fn($value) => $value->unwrap()->original())
             ->flatMap(
                 static fn($class) => UnsignedShortInteger::unpack($payload)
-                    ->map(static fn($value) => $value->original())
+                    ->map(static fn($value) => $value->unwrap()->original())
                     ->flatMap(static fn($method) => Method::maybe($class, $method)),
             )
             ->flatMap(
@@ -135,7 +135,7 @@ final class FrameReader
         Channel $channel,
     ): Maybe {
         return UnsignedShortInteger::unpack($payload)
-            ->map(static fn($value) => $value->original())
+            ->map(static fn($value) => $value->unwrap()->original())
             ->flatMap(MethodClass::maybe(...))
             ->flatMap(
                 static fn($class) => $payload

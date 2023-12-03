@@ -38,7 +38,7 @@ final class SignedLongLongInteger implements Value
     /**
      * @param Stream<Client> $stream
      *
-     * @return Maybe<self>
+     * @return Maybe<Unpacked<self>>
      */
     public static function unpack(Stream $stream): Maybe
     {
@@ -51,7 +51,8 @@ final class SignedLongLongInteger implements Value
 
                 return $value;
             })
-            ->map(static fn($value) => new self($value));
+            ->map(static fn($value) => new self($value))
+            ->map(static fn($value) => Unpacked::of(8, $value));
     }
 
     public function original(): int

@@ -48,25 +48,23 @@ final class Sequence implements Value
     /**
      * @param Stream<Client> $stream
      *
-     * @return Maybe<self>
+     * @return Maybe<Unpacked<self>>
      */
     public static function unpack(Clock $clock, Stream $stream): Maybe
     {
-        /** @var Seq<Value> */
-        $values = Seq::of();
+        $self = new self(Seq::of());
 
-        return UnsignedLongInteger::unpack($stream)
-            ->map(static fn($length) => $length->original())
-            ->flatMap(static fn($length) => match ($length) {
-                0 => Maybe::just($values),
+        return UnsignedLongInteger::unpack($stream)->flatMap(
+            static fn($length) => match ($length->unwrap()->original()) {
+                0 => Maybe::just(Unpacked::of($length->read(), $self)),
                 default => self::unpackNested(
                     $clock,
-                    $length + $stream->unwrap()->position()->toInt(),
+                    Unpacked::of($length->read(), $self),
+                    $length->unwrap()->original(),
                     $stream,
-                    $values,
                 ),
-            })
-            ->map(static fn($values) => new self($values));
+            },
+        );
     }
 
     /**
@@ -99,29 +97,33 @@ final class Sequence implements Value
     }
 
     /**
+     * @param Unpacked<self> $unpacked
      * @param Stream<Client> $stream
-     * @param Seq<Value> $values
      *
-     * @return Maybe<Seq<Value>>
+     * @return Maybe<Unpacked<self>>
      */
     private static function unpackNested(
         Clock $clock,
-        int $boundary,
+        Unpacked $unpacked,
+        int $length,
         Stream $stream,
-        Seq $values,
     ): Maybe {
         return $stream
             ->frames(Frame\Chunk::of(1))
             ->one()
             ->flatMap(static fn($chunk) => Symbol::unpack($clock, $chunk->toString(), $stream))
-            ->flatMap(static fn($value) => match ($stream->unwrap()->position()->toInt() < $boundary) {
+            ->map(static fn($value) => Unpacked::of(
+                $unpacked->read() + $value->read() + 1,
+                new self(($unpacked->unwrap()->original)($value->unwrap())),
+            ))
+            ->flatMap(static fn($value) => match ($value->read() < $length) {
                 true => self::unpackNested(
                     $clock,
-                    $boundary,
+                    $value,
+                    $length,
                     $stream,
-                    ($values)($value),
                 ),
-                false => Maybe::just(($values)($value)),
+                false => Maybe::just($value),
             });
     }
 }

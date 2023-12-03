@@ -40,13 +40,16 @@ final class Decimal implements Value
     /**
      * @param Stream<Client> $stream
      *
-     * @return Maybe<self>
+     * @return Maybe<Unpacked<self>>
      */
     public static function unpack(Stream $stream): Maybe
     {
         return UnsignedOctet::unpack($stream)->flatMap(
             static fn($scale) => SignedLongInteger::unpack($stream)->map(
-                static fn($value) => new self($value, $scale),
+                static fn($value) => Unpacked::of(
+                    $scale->read() + $value->read(),
+                    new self($value->unwrap(), $scale->unwrap()),
+                ),
             ),
         );
     }

@@ -64,7 +64,7 @@ final class UnsignedOctet implements Value
     /**
      * @param Stream<Client> $stream
      *
-     * @return Maybe<self>
+     * @return Maybe<Unpacked<self>>
      */
     public static function unpack(Stream $stream): Maybe
     {
@@ -77,7 +77,8 @@ final class UnsignedOctet implements Value
 
                 return $octet;
             })
-            ->map(static fn($octet) => new self($octet));
+            ->map(static fn($octet) => new self($octet))
+            ->map(static fn($value) => Unpacked::of(1, $value));
     }
 
     /**

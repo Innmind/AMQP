@@ -51,19 +51,21 @@ final class LongString implements Value
     /**
      * @param Stream<Client> $stream
      *
-     * @return Maybe<self>
+     * @return Maybe<Unpacked<self>>
      */
     public static function unpack(Stream $stream): Maybe
     {
         /** @psalm-suppress InvalidArgument */
-        return UnsignedLongInteger::unpack($stream)
-            ->map(static fn($length) => $length->original())
-            ->flatMap(
-                static fn($length) => $stream
-                    ->frames(Frame\Chunk::of($length))
-                    ->one(),
-            )
-            ->map(static fn($string) => new self($string));
+        return UnsignedLongInteger::unpack($stream)->flatMap(
+            static fn($length) => $stream
+                ->frames(Frame\Chunk::of($length->unwrap()->original()))
+                ->one()
+                ->map(static fn($string) => new self($string))
+                ->map(static fn($value) => Unpacked::of(
+                    $length->read() + $length->unwrap()->original(),
+                    $value,
+                )),
+        );
     }
 
     public function original(): Str

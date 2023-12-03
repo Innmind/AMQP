@@ -3,7 +3,10 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport\Frame\Visitor;
 
-use Innmind\AMQP\Transport\Frame\Value;
+use Innmind\AMQP\Transport\Frame\{
+    Value,
+    Value\Unpacked,
+};
 use Innmind\IO\Readable\Stream;
 use Innmind\Socket\Client;
 use Innmind\Immutable\{
@@ -16,13 +19,13 @@ use Innmind\Immutable\{
  */
 final class ChunkArguments
 {
-    /** @var Sequence<callable(Stream<Client>): Maybe<Value>> */
+    /** @var Sequence<callable(Stream<Client>): Maybe<Unpacked>> */
     private Sequence $types;
 
     /**
      * @no-named-arguments
      *
-     * @param list<callable(Stream<Client>): Maybe<Value>> $types
+     * @param list<callable(Stream<Client>): Maybe<Unpacked>> $types
      */
     public function __construct(callable ...$types)
     {
@@ -54,7 +57,7 @@ final class ChunkArguments
 
     /**
      * @param Maybe<Sequence<Value>> $maybe
-     * @param callable(Stream<Client>): Maybe<Value> $unpack
+     * @param callable(Stream<Client>): Maybe<Unpacked> $unpack
      * @param Stream<Client> $arguments
      *
      * @return Maybe<Sequence<Value>>
@@ -66,7 +69,7 @@ final class ChunkArguments
     ): Maybe {
         return $maybe->flatMap(
             static fn($values) => $unpack($arguments)->map(
-                static fn($value) => ($values)($value),
+                static fn($value) => ($values)($value->unwrap()),
             ),
         );
     }

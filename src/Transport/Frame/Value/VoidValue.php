@@ -20,11 +20,11 @@ final class VoidValue implements Value
     /**
      * @param Stream<Client> $stream
      *
-     * @return Maybe<self>
+     * @return Maybe<Unpacked<self>>
      */
     public static function unpack(Stream $stream): Maybe
     {
-        return Maybe::just(new self);
+        return Maybe::just(Unpacked::of(0, new self));
     }
 
     public function original(): void

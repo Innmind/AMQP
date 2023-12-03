@@ -3,7 +3,6 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport\Frame\Value;
 
-use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\TimeContinuum\Clock;
 use Innmind\IO\Readable\Stream;
 use Innmind\Socket\Client;
@@ -37,14 +36,13 @@ enum Symbol
     /**
      * @param Stream<Client> $stream
      *
-     * @return Maybe<Value>
+     * @return Maybe<Unpacked>
      */
     public static function unpack(
         Clock $clock,
         string $symbol,
         Stream $stream,
     ): Maybe {
-        /** @var Maybe<Value> */
         return match ($symbol) {
             'b' => SignedOctet::unpack($stream),
             'B' => UnsignedOctet::unpack($stream),

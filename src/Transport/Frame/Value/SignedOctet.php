@@ -53,7 +53,7 @@ final class SignedOctet implements Value
     /**
      * @param Stream<Client> $stream
      *
-     * @return Maybe<self>
+     * @return Maybe<Unpacked<self>>
      */
     public static function unpack(Stream $stream): Maybe
     {
@@ -66,7 +66,8 @@ final class SignedOctet implements Value
 
                 return $value;
             })
-            ->map(static fn($value) => new self($value));
+            ->map(static fn($value) => new self($value))
+            ->map(static fn($value) => Unpacked::of(1, $value));
     }
 
     /**

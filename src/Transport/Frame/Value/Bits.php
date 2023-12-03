@@ -44,7 +44,7 @@ final class Bits implements Value
     /**
      * @param Stream<Client> $stream
      *
-     * @return Maybe<self>
+     * @return Maybe<Unpacked<self>>
      */
     public static function unpack(Stream $stream): Maybe
     {
@@ -59,7 +59,8 @@ final class Bits implements Value
                     ->reverse(),
             )
             ->exclude(static fn($bits) => $bits->empty())
-            ->map(static fn($bits) => new self($bits));
+            ->map(static fn($bits) => new self($bits))
+            ->map(static fn($value) => Unpacked::of(1, $value));
     }
 
     /**
