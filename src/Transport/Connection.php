@@ -129,7 +129,12 @@ final class Connection
                     ->write($protocol->version()->pack())
                     ->maybe(),
             )
-            ->map(static fn($socket) => $io->readable()->wrap($socket))
+            ->map(
+                static fn($socket) => $io
+                    ->readable()
+                    ->wrap($socket)
+                    ->toEncoding(Str\Encoding::ascii),
+            )
             ->map(static fn($socket) => new self(
                 $protocol,
                 $sockets,

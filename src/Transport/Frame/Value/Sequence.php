@@ -62,7 +62,7 @@ final class Sequence implements Value
                 default => self::unpackNested(
                     $clock,
                     $length + $stream->unwrap()->position()->toInt(),
-                    $stream->toEncoding(Str\Encoding::ascii),
+                    $stream,
                     $values,
                 ),
             })

@@ -60,7 +60,6 @@ final class ShortString implements Value
             ->map(static fn($length) => $length->original())
             ->flatMap(
                 static fn($length) => $stream
-                    ->toEncoding(Str\Encoding::ascii)
                     ->frames(Frame\Chunk::of($length))
                     ->one()
                     ->filter(static fn($string) => $string->length() === $length),

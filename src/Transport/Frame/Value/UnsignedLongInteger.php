@@ -67,7 +67,6 @@ final class UnsignedLongInteger implements Value
     public static function unpack(Stream $stream): Maybe
     {
         return $stream
-            ->toEncoding(Str\Encoding::ascii)
             ->frames(Frame\Chunk::of(4))
             ->one()
             ->filter(static fn($chunk) => $chunk->length() === 4)

@@ -58,7 +58,6 @@ final class SignedOctet implements Value
     public static function unpack(Stream $stream): Maybe
     {
         return $stream
-            ->toEncoding(Str\Encoding::ascii)
             ->frames(Frame\Chunk::of(1))
             ->one()
             ->filter(static fn($chunk) => $chunk->length() === 1)
