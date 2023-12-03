@@ -17,6 +17,8 @@ use Innmind\AMQP\Transport\Frame\{
     Value\Table,
 };
 use Innmind\TimeContinuum\Clock;
+use Innmind\IO\Readable\Stream;
+use Innmind\Socket\Client;
 use Innmind\Stream\Readable;
 use Innmind\Immutable\{
     Sequence,
@@ -36,9 +38,11 @@ final class Reader
     }
 
     /**
+     * @param Stream<Client> $arguments
+     *
      * @return Maybe<Sequence<Value>>
      */
-    public function __invoke(Method $method, Readable $arguments): Maybe
+    public function __invoke(Method $method, Stream $arguments): Maybe
     {
         $chunk = match ($method) {
             Method::basicQosOk => $this->basicQosOk(),
@@ -96,7 +100,7 @@ final class Reader
             Method::transactionSelect => throw new \LogicException('Server should never send this method'),
         };
 
-        return $chunk($arguments);
+        return $chunk($arguments->unwrap());
     }
 
     private function basicQosOk(): ChunkArguments

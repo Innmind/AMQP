@@ -32,6 +32,10 @@ use Innmind\Socket\{
     Internet\Transport,
     Client as Socket,
 };
+use Innmind\IO\{
+    IO,
+    Readable\Stream,
+};
 use Innmind\Stream\Watch;
 use Innmind\Url\Url;
 use Innmind\TimeContinuum\{
@@ -61,7 +65,8 @@ final class Connection
 {
     private Protocol $protocol;
     private Sockets $sockets;
-    private Socket $socket;
+    /** @var Stream<Socket> */
+    private Stream $socket;
     private Watch $watch;
     private FrameReader $read;
     private MaxChannels $maxChannels;
@@ -69,11 +74,14 @@ final class Connection
     private Heartbeat $heartbeat;
     private SignalListener $signals;
 
+    /**
+     * @param Stream<Socket> $socket
+     */
     private function __construct(
         Protocol $protocol,
         Sockets $sockets,
         Heartbeat $heartbeat,
-        Socket $socket,
+        Stream $socket,
         Watch $watch,
         MaxChannels $maxChannels,
         MaxFrameSize $maxFrameSize,
@@ -103,6 +111,9 @@ final class Connection
         Remote $remote,
         Sockets $sockets,
     ): Maybe {
+        // TODO opened sockets should automatically be wrapped
+        $io = IO::of($sockets->watch(...));
+
         /**
          * Due to the $socket->write() psalm lose the type
          * @psalm-suppress ArgumentTypeCoercion
@@ -118,12 +129,13 @@ final class Connection
                     ->write($protocol->version()->pack())
                     ->maybe(),
             )
+            ->map(static fn($socket) => $io->readable()->wrap($socket))
             ->map(static fn($socket) => new self(
                 $protocol,
                 $sockets,
                 Heartbeat::start($clock, $timeout),
                 $socket,
-                $sockets->watch($timeout)->forRead($socket),
+                $sockets->watch($timeout)->forRead($socket->unwrap()),
                 MaxChannels::unlimited(),
                 MaxFrameSize::unlimited(),
                 new FrameReader,
@@ -170,7 +182,7 @@ final class Connection
         do {
             $ready = $ready->flatMap($this->doWait(...));
         } while ($ready->match(
-            static fn($ready) => !$ready[1]->contains($ready[0]->socket),
+            static fn($ready) => !$ready[1]->contains($ready[0]->socket->unwrap()),
             static fn() => false,
         ));
 
@@ -209,7 +221,7 @@ final class Connection
             ->send(static fn($protocol) => $protocol->connection()->close(Close::demand()))
             ->wait(Method::connectionCloseOk)
             ->connection()
-            ->flatMap(static fn($connection) => $connection->socket->close())
+            ->flatMap(static fn($connection) => $connection->socket->unwrap()->close())
             ->maybe()
             ->map(static fn() => new SideEffect);
     }
@@ -231,7 +243,7 @@ final class Connection
             $this->sockets,
             $this->heartbeat->adjust($heartbeat),
             $this->socket,
-            $this->sockets->watch($heartbeat)->forRead($this->socket),
+            $this->sockets->watch($heartbeat)->forRead($this->socket->unwrap()),
             $maxChannels,
             $maxFrameSize,
             $this->read,
@@ -285,6 +297,7 @@ final class Connection
             ->flatMap(
                 fn($frame) => $this
                     ->socket
+                    ->unwrap()
                     ->write($frame)
                     ->maybe(),
             )
@@ -400,6 +413,6 @@ final class Connection
 
     private function closed(): bool
     {
-        return $this->socket->closed();
+        return $this->socket->unwrap()->closed();
     }
 }

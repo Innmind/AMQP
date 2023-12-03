@@ -24,6 +24,8 @@ use Innmind\AMQP\Transport\{
     Frame\Value,
 };
 use Innmind\TimeContinuum\Clock;
+use Innmind\IO\Readable\Stream;
+use Innmind\Socket\Client;
 use Innmind\Stream\Readable;
 use Innmind\Immutable\{
     Sequence,
@@ -64,21 +66,25 @@ final class Protocol
     }
 
     /**
+     * @param Stream<Client> $arguments
+     *
      * @return Maybe<Sequence<Value>>
      */
-    public function read(Method $method, Readable $arguments): Maybe
+    public function read(Method $method, Stream $arguments): Maybe
     {
         return ($this->read)($method, $arguments);
     }
 
     /**
+     * @param Stream<Client> $arguments
+     *
      * @return Maybe<Sequence<Value>>
      */
-    public function readHeader(Readable $arguments): Maybe
+    public function readHeader(Stream $arguments): Maybe
     {
-        return UnsignedLongLongInteger::unpack($arguments)->flatMap(
-            fn($bodySize) => UnsignedShortInteger::unpack($arguments)->flatMap(
-                fn($flags) => $this->parseHeader($bodySize, $flags, $arguments),
+        return UnsignedLongLongInteger::unpack($arguments->unwrap())->flatMap(
+            fn($bodySize) => UnsignedShortInteger::unpack($arguments->unwrap())->flatMap(
+                fn($flags) => $this->parseHeader($bodySize, $flags, $arguments->unwrap()),
             ),
         );
     }
