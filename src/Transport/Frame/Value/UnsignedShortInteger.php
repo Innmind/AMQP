@@ -69,7 +69,6 @@ final class UnsignedShortInteger implements Value
         return $stream
             ->frames(Frame\Chunk::of(2))
             ->one()
-            ->filter(static fn($chunk) => $chunk->length() === 2)
             ->map(static function($chunk) {
                 /** @var int<0, 65535> $value */
                 [, $value] = \unpack('n', $chunk->toString());

@@ -70,7 +70,6 @@ final class UnsignedLongLongInteger implements Value
         return $stream
             ->frames(Frame\Chunk::of(8))
             ->one()
-            ->filter(static fn($chunk) => $chunk->length() === 8)
             ->map(static function($chunk) {
                 /** @var int<0, max> $value */
                 [, $value] = \unpack('J', $chunk->toString());

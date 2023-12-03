@@ -51,7 +51,6 @@ final class Bits implements Value
         return $stream
             ->frames(Frame\Chunk::of(1))
             ->one()
-            ->filter(static fn($chunk) => $chunk->length() === 1)
             ->map(
                 static fn($chunk) => $chunk
                     ->map(static fn($chunk) => \decbin(\ord($chunk)))

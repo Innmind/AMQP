@@ -61,8 +61,7 @@ final class LongString implements Value
             ->flatMap(
                 static fn($length) => $stream
                     ->frames(Frame\Chunk::of($length))
-                    ->one()
-                    ->filter(static fn($string) => $string->length() === $length),
+                    ->one(),
             )
             ->map(static fn($string) => new self($string));
     }

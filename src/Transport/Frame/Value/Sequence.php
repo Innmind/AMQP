@@ -113,7 +113,6 @@ final class Sequence implements Value
         return $stream
             ->frames(Frame\Chunk::of(1))
             ->one()
-            ->filter(static fn($chunk) => $chunk->length() === 1)
             ->flatMap(static fn($chunk) => Symbol::unpack($clock, $chunk->toString(), $stream))
             ->flatMap(static fn($value) => match ($stream->unwrap()->position()->toInt() < $boundary) {
                 true => self::unpackNested(

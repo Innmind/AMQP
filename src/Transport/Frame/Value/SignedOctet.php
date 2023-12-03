@@ -60,7 +60,6 @@ final class SignedOctet implements Value
         return $stream
             ->frames(Frame\Chunk::of(1))
             ->one()
-            ->filter(static fn($chunk) => $chunk->length() === 1)
             ->map(static function($chunk) {
                 /** @var int<-128, 127> $value */
                 [, $value] = \unpack('c', $chunk->toString());

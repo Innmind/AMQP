@@ -71,7 +71,6 @@ final class UnsignedOctet implements Value
         return $stream
             ->frames(Frame\Chunk::of(1))
             ->one()
-            ->filter(static fn($chunk) => $chunk->length() === 1)
             ->map(static function($chunk) {
                 /** @var int<0, 255> $octet */
                 [, $octet] = \unpack('C', $chunk->toString());

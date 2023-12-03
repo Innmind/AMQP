@@ -69,7 +69,6 @@ final class UnsignedLongInteger implements Value
         return $stream
             ->frames(Frame\Chunk::of(4))
             ->one()
-            ->filter(static fn($chunk) => $chunk->length() === 4)
             ->map(static function($chunk) {
                 /** @var int<0, 4294967295> $value */
                 [, $value] = \unpack('N', $chunk->toString());

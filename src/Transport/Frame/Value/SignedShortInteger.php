@@ -58,7 +58,6 @@ final class SignedShortInteger implements Value
         return $stream
             ->frames(Frame\Chunk::of(2))
             ->one()
-            ->filter(static fn($chunk) => $chunk->length() === 2)
             ->map(static function($chunk) {
                 /** @var int<-32768, 32767> $value */
                 [, $value] = \unpack('s', $chunk->toString());

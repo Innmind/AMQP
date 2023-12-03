@@ -121,7 +121,6 @@ final class Table implements Value
                 static fn($key) => $stream
                     ->frames(Frame\Chunk::of(1))
                     ->one()
-                    ->filter(static fn($chunk) => $chunk->length() === 1)
                     ->flatMap(static fn($chunk) => Symbol::unpack(
                         $clock,
                         $chunk->toString(),

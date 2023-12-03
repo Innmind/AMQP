@@ -58,7 +58,6 @@ final class SignedLongInteger implements Value
         return $stream
             ->frames(Frame\Chunk::of(4))
             ->one()
-            ->filter(static fn($chunk) => $chunk->length() === 4)
             ->map(static function($chunk) {
                 /** @var int<-2147483648, 2147483647> $value */
                 [, $value] = \unpack('l', $chunk->toString());
