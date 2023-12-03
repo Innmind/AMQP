@@ -9,7 +9,10 @@ use Innmind\Math\{
     DefinitionSet\Set,
     DefinitionSet\Range,
 };
-use Innmind\IO\Readable\Stream;
+use Innmind\IO\Readable\{
+    Stream,
+    Frame,
+};
 use Innmind\Socket\Client;
 use Innmind\Immutable\{
     Str,
@@ -53,9 +56,9 @@ final class SignedShortInteger implements Value
     public static function unpack(Stream $stream): Maybe
     {
         return $stream
-            ->unwrap()
-            ->read(2)
-            ->map(static fn($chunk) => $chunk->toEncoding(Str\Encoding::ascii))
+            ->toEncoding(Str\Encoding::ascii)
+            ->frames(Frame\Chunk::of(2))
+            ->one()
             ->filter(static fn($chunk) => $chunk->length() === 2)
             ->map(static function($chunk) {
                 /** @var int<-32768, 32767> $value */

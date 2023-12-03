@@ -10,7 +10,10 @@ use Innmind\Math\{
     DefinitionSet\Set,
     DefinitionSet\Range,
 };
-use Innmind\IO\Readable\Stream;
+use Innmind\IO\Readable\{
+    Stream,
+    Frame,
+};
 use Innmind\Socket\Client;
 use Innmind\Immutable\{
     Str,
@@ -65,9 +68,9 @@ final class UnsignedLongLongInteger implements Value
     public static function unpack(Stream $stream): Maybe
     {
         return $stream
-            ->unwrap()
-            ->read(8)
-            ->map(static fn($chunk) => $chunk->toEncoding(Str\Encoding::ascii))
+            ->toEncoding(Str\Encoding::ascii)
+            ->frames(Frame\Chunk::of(8))
+            ->one()
             ->filter(static fn($chunk) => $chunk->length() === 8)
             ->map(static function($chunk) {
                 /** @var int<0, max> $value */

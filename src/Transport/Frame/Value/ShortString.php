@@ -4,7 +4,10 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
-use Innmind\IO\Readable\Stream;
+use Innmind\IO\Readable\{
+    Stream,
+    Frame,
+};
 use Innmind\Socket\Client;
 use Innmind\Immutable\{
     Str,
@@ -57,9 +60,9 @@ final class ShortString implements Value
             ->map(static fn($length) => $length->original())
             ->flatMap(
                 static fn($length) => $stream
-                    ->unwrap()
-                    ->read($length)
-                    ->map(static fn($string) => $string->toEncoding(Str\Encoding::ascii))
+                    ->toEncoding(Str\Encoding::ascii)
+                    ->frames(Frame\Chunk::of($length))
+                    ->one()
                     ->filter(static fn($string) => $string->length() === $length),
             )
             ->map(static fn($string) => new self($string));

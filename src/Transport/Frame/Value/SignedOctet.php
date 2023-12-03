@@ -9,7 +9,10 @@ use Innmind\Math\{
     DefinitionSet\Set,
     DefinitionSet\Range,
 };
-use Innmind\IO\Readable\Stream;
+use Innmind\IO\Readable\{
+    Stream,
+    Frame,
+};
 use Innmind\Socket\Client;
 use Innmind\Immutable\{
     Str,
@@ -55,9 +58,9 @@ final class SignedOctet implements Value
     public static function unpack(Stream $stream): Maybe
     {
         return $stream
-            ->unwrap()
-            ->read(1)
-            ->map(static fn($chunk) => $chunk->toEncoding(Str\Encoding::ascii))
+            ->toEncoding(Str\Encoding::ascii)
+            ->frames(Frame\Chunk::of(1))
+            ->one()
             ->filter(static fn($chunk) => $chunk->length() === 1)
             ->map(static function($chunk) {
                 /** @var int<-128, 127> $value */
