@@ -26,6 +26,8 @@ use Innmind\AMQP\{
     Model\Connection\MaxChannels,
     Model\Connection\MaxFrameSize,
     Failure,
+    Exception\FrameChannelExceedAllowedChannelNumber,
+    Exception\FrameExceedAllowedSize,
 };
 use Innmind\OperatingSystem\CurrentProcess\Signals;
 use Innmind\Socket\{
@@ -155,21 +157,34 @@ final class Connection
      * or that writting to the socket failed
      *
      * @param callable(Protocol, MaxFrameSize): Sequence<Frame> $frames
+     *
+     * @throws FrameChannelExceedAllowedChannelNumber
+     * @throws FrameExceedAllowedSize
      */
     public function send(callable $frames): Continuation
     {
-        /**
-         * @psalm-suppress MixedArgumentTypeCoercion
-         * @var Either<Failure, self>
-         */
-        $connection = $frames($this->protocol, $this->maxFrameSize)->reduce(
-            $this->signals->safe($this),
-            static fn(Either $connection, $frame) => $connection->flatMap(
-                static fn(self $connection) => $connection->sendFrame($frame),
-            ),
-        );
+        // TODO handle signals
+        $data = $frames($this->protocol, $this->maxFrameSize)
+            ->map(function($frame) {
+                $this->maxChannels->verify($frame->channel()->toInt());
 
-        return Continuation::of($connection);
+                return $frame;
+            })
+            ->map(static fn($frame) => $frame->pack())
+            ->map(function($frame) {
+                $this->maxFrameSize->verify($frame->length());
+
+                return $frame;
+            });
+
+        return Continuation::of(
+            $this
+                ->socket
+                ->send($data)
+                ->either()
+                ->map(fn() => $this)
+                ->leftMap(static fn() => Failure::toSendFrame()),
+        );
     }
 
     /**
@@ -268,28 +283,6 @@ final class Connection
             $this->frame,
             $this->signals->install($signals, $channel),
         );
-    }
-
-    /**
-     * @return Either<Failure, self>
-     */
-    private function sendFrame(Frame $frame): Either
-    {
-        /** @var Either<Failure, self> */
-        return Maybe::just($frame)
-            ->filter(fn($frame) => $this->maxChannels->allows($frame->channel()->toInt()))
-            ->map(static fn($frame) => $frame->pack()->toEncoding(Str\Encoding::ascii))
-            ->filter(fn($frame) => $this->maxFrameSize->allows($frame->length()))
-            ->flatMap(
-                fn($frame) => $this
-                    ->socket
-                    ->unwrap()
-                    ->write($frame)
-                    ->maybe(),
-            )
-            ->map(fn() => $this)
-            ->either()
-            ->leftMap(static fn() => Failure::toSendFrame());
     }
 
     /**
