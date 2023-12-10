@@ -43,9 +43,9 @@ final class Heartbeat
     }
 
     /**
-     * @return Either<Failure, Connection>
+     * @return Sequence<Frame>
      */
-    public function ping(Connection $connection): Either
+    public function frames(): Sequence
     {
         if (
             $this
@@ -54,13 +54,12 @@ final class Heartbeat
                 ->elapsedSince($this->lastReceivedData)
                 ->longerThan($this->threshold)
         ) {
-            return $connection
-                ->send(static fn() => Sequence::of(Frame::heartbeat()))
-                ->connection();
+            $this->lastReceivedData = $this->clock->now();
+
+            return Sequence::of(Frame::heartbeat());
         }
 
-        /** @var Either<Failure, Connection> */
-        return Either::right($connection);
+        return Sequence::of();
     }
 
     public function active(): self

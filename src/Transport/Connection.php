@@ -34,10 +34,9 @@ use Innmind\Socket\{
 };
 use Innmind\IO\{
     IO,
-    Readable\Stream,
+    Sockets\Client,
     Readable\Frame as IOFrame,
 };
-use Innmind\Stream\Watch;
 use Innmind\Url\Url;
 use Innmind\TimeContinuum\{
     ElapsedPeriod,
@@ -65,10 +64,8 @@ use Innmind\Immutable\{
 final class Connection
 {
     private Protocol $protocol;
-    private Sockets $sockets;
-    /** @var Stream<Socket> */
-    private Stream $socket;
-    private Watch $watch;
+    /** @var Client<Socket> */
+    private Client $socket;
     /** @var IOFrame<Frame> */
     private IOFrame $frame;
     private MaxChannels $maxChannels;
@@ -77,24 +74,20 @@ final class Connection
     private SignalListener $signals;
 
     /**
-     * @param Stream<Socket> $socket
+     * @param Client<Socket> $socket
      * @param IOFrame<Frame> $frame
      */
     private function __construct(
         Protocol $protocol,
-        Sockets $sockets,
         Heartbeat $heartbeat,
-        Stream $socket,
-        Watch $watch,
+        Client $socket,
         MaxChannels $maxChannels,
         MaxFrameSize $maxFrameSize,
         IOFrame $frame,
         SignalListener $signals,
     ) {
         $this->protocol = $protocol;
-        $this->sockets = $sockets;
         $this->socket = $socket;
-        $this->watch = $watch;
         $this->frame = $frame;
         $this->maxChannels = $maxChannels;
         $this->maxFrameSize = $maxFrameSize;
@@ -134,16 +127,16 @@ final class Connection
             )
             ->map(
                 static fn($socket) => $io
-                    ->readable()
+                    ->sockets()
+                    ->clients()
                     ->wrap($socket)
+                    ->timeoutAfter($timeout)
                     ->toEncoding(Str\Encoding::ascii),
             )
             ->map(static fn($socket) => new self(
                 $protocol,
-                $sockets,
                 Heartbeat::start($clock, $timeout),
                 $socket,
-                $sockets->watch($timeout)->forRead($socket->unwrap()),
                 MaxChannels::unlimited(),
                 MaxFrameSize::unlimited(),
                 (new FrameReader)($protocol),
@@ -184,29 +177,20 @@ final class Connection
      */
     public function wait(Frame\Method ...$names): Either
     {
-        /** @var Either<Failure, array{Connection, Set<Socket>}> */
-        $ready = Either::right([$this, Set::of()]);
-
-        do {
-            $ready = $ready->flatMap($this->doWait(...));
-        } while ($ready->match(
-            static fn($ready) => !$ready[1]->contains($ready[0]->socket->unwrap()),
-            static fn() => false,
-        ));
-
-        return $ready
-            ->maybe()
-            ->map(static fn($ready) => $ready[0])
-            ->flatMap(
-                static fn($connection) => $connection
-                    ->socket
-                    ->frames($connection->frame)
-                    ->one()
-                    ->map(static fn($frame) => ReceivedFrame::of(
-                        $connection->asActive(),
-                        $frame,
-                    )),
+        return $this
+            ->socket
+            ->heartbeatWith(
+                fn() => $this
+                    ->heartbeat
+                    ->frames()
+                    ->map(static fn($frame) => $frame->pack()),
             )
+            ->frames($this->frame)
+            ->one()
+            ->map(fn($frame) => ReceivedFrame::of(
+                $this->asActive(),
+                $frame,
+            ))
             ->either()
             ->leftMap(static fn() => Failure::toReadFrame())
             ->flatMap(static fn($received) => match ($received->frame()->type()) {
@@ -248,10 +232,8 @@ final class Connection
     ): self {
         return new self(
             $this->protocol,
-            $this->sockets,
             $this->heartbeat->adjust($heartbeat),
-            $this->socket,
-            $this->sockets->watch($heartbeat)->forRead($this->socket->unwrap()),
+            $this->socket->timeoutAfter($heartbeat),
             $maxChannels,
             $maxFrameSize,
             $this->frame,
@@ -266,10 +248,8 @@ final class Connection
     {
         return new self(
             $this->protocol,
-            $this->sockets,
             $this->heartbeat->active(),
             $this->socket,
-            $this->watch,
             $this->maxChannels,
             $this->maxFrameSize,
             $this->frame,
@@ -281,10 +261,8 @@ final class Connection
     {
         return new self(
             $this->protocol,
-            $this->sockets,
             $this->heartbeat,
             $this->socket,
-            $this->watch,
             $this->maxChannels,
             $this->maxFrameSize,
             $this->frame,
@@ -312,34 +290,6 @@ final class Connection
             ->map(fn() => $this)
             ->either()
             ->leftMap(static fn() => Failure::toSendFrame());
-    }
-
-    /**
-     * @param array{Connection, Set<Socket>} $in
-     *
-     * @return Either<Failure, array{Connection, Set<Socket>}>
-     */
-    private function doWait(array $in): Either
-    {
-        [$connection] = $in;
-
-        if ($connection->closed()) {
-            /** @var Either<Failure, array{Connection, Set<Socket>}> */
-            return Either::left(Failure::toReadFrame());
-        }
-
-        /** @var Either<Failure, array{Connection, Set<Socket>}> */
-        return $connection
-            ->signals
-            ->safe($connection)
-            ->flatMap(static fn($connection) => $connection->heartbeat->ping($connection))
-            ->map(static fn($connection) => [
-                $connection,
-                ($connection->watch)()->match(
-                    static fn($ready) => $ready->toRead(),
-                    static fn() => Set::of(),
-                ),
-            ]);
     }
 
     /**
