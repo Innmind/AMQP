@@ -14,15 +14,8 @@ use Innmind\AMQP\Transport\{
     Frame\Value\UnsignedShortInteger,
     Frame\Value\UnsignedLongInteger,
 };
-use Innmind\IO\Readable\{
-    Stream,
-    Frame as IOFrame,
-};
-use Innmind\Socket\Client;
-use Innmind\Immutable\{
-    Maybe,
-    Str,
-};
+use Innmind\IO\Readable\Frame as IOFrame;
+use Innmind\Immutable\Str;
 
 /**
  * @internal
@@ -30,13 +23,11 @@ use Innmind\Immutable\{
 final class FrameReader
 {
     /**
-     * @param Stream<Client> $stream
-     *
-     * @return Maybe<Frame>
+     * @return IOFrame<Frame>
      */
-    public function __invoke(Stream $stream, Protocol $protocol): Maybe
+    public function __invoke(Protocol $protocol): IOFrame
     {
-        $frame = $this->readType()->flatMap(
+        return $this->readType()->flatMap(
             fn($type) => $this
                 ->readChannel()
                 ->flatMap(fn($channel) => $this->readFrame(
@@ -45,10 +36,6 @@ final class FrameReader
                     $protocol,
                 )),
         );
-
-        return $stream
-            ->frames($frame)
-            ->one();
     }
 
     /**

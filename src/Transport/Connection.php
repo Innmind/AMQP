@@ -195,10 +195,10 @@ final class Connection
             ->maybe()
             ->map(static fn($ready) => $ready[0])
             ->flatMap(
-                static fn($connection) => ($connection->read)(
-                    $connection->socket,
-                    $connection->protocol,
-                )
+                static fn($connection) => $connection
+                    ->socket
+                    ->frames(($connection->read)($connection->protocol))
+                    ->one()
                     ->map(static fn($frame) => ReceivedFrame::of(
                         $connection->asActive(),
                         $frame,
