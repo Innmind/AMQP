@@ -150,6 +150,37 @@ final class Connection
     }
 
     /**
+     * @param callable(Protocol, MaxFrameSize): Sequence<Frame> $frames
+     *
+     * @return Either<Failure, SideEffect>
+     */
+    public function respondTo(Method $method, callable $frames): Either
+    {
+        return $this
+            ->wait($method)
+            ->flatMap(
+                fn() => $this
+                    ->send($frames)
+                    ->connection(),
+            )
+            ->map(static fn() => new SideEffect);
+    }
+
+    /**
+     * @param callable(Protocol, MaxFrameSize): Sequence<Frame> $frames
+     *
+     * @return Either<Failure, SideEffect>
+     */
+    public function request(callable $frames, Method $method): Either
+    {
+        return $this
+            ->send($frames)
+            ->connection()
+            ->flatMap(fn() => $this->wait($method))
+            ->map(static fn() => new SideEffect);
+    }
+
+    /**
      * When it contains the same connection instance it means that you can still
      * use the connection, otherwise you should stop using it
      *

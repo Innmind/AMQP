@@ -29,11 +29,13 @@ final class OpenVHost
     public function __invoke(Connection $connection): Maybe
     {
         return $connection
-            ->send(fn($protocol) => $protocol->connection()->open(
-                Open::of($this->vhost),
-            ))
-            ->wait(Method::connectionOpenOk)
-            ->connection()
-            ->maybe();
+            ->request(
+                fn($protocol) => $protocol->connection()->open(
+                    Open::of($this->vhost),
+                ),
+                Method::connectionOpenOk,
+            )
+            ->maybe()
+            ->map(static fn() => $connection);
     }
 }
