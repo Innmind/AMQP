@@ -59,6 +59,8 @@ final class Protocol
     }
 
     /**
+     * @psalm-mutation-free
+     *
      * @return Frame<Sequence<Value>>
      */
     public function frame(Method $method): Frame
@@ -67,6 +69,8 @@ final class Protocol
     }
 
     /**
+     * @psalm-mutation-free
+     *
      * @return Frame<Sequence<Value>>
      */
     public function headerFrame(): Frame
@@ -112,6 +116,8 @@ final class Protocol
     }
 
     /**
+     * @psalm-mutation-free
+     *
      * @return Frame<Sequence<Value>>
      */
     private function parseHeader(
