@@ -62,20 +62,13 @@ final class Heartbeat
         return Sequence::of();
     }
 
-    public function active(): self
+    public function active(): void
     {
-        return new self(
-            $this->clock,
-            $this->threshold,
-            $this->clock->now(),
-        );
+        $this->lastReceivedData = $this->clock->now();
     }
 
-    public function adjust(ElapsedPeriod $threshold): self
+    public function adjust(ElapsedPeriod $threshold): void
     {
-        $self = clone $this;
-        $self->threshold = $threshold;
-
-        return $self;
+        $this->threshold = $threshold;
     }
 }

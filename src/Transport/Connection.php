@@ -276,15 +276,10 @@ final class Connection
         MaxFrameSize $maxFrameSize,
         ElapsedPeriod $heartbeat,
     ): self {
-        return new self(
-            $this->protocol,
-            $this->heartbeat->adjust($heartbeat),
-            $this->socket->timeoutAfter($heartbeat),
-            $maxChannels,
-            $maxFrameSize,
-            $this->frame,
-            $this->signals,
-        );
+        $this->heartbeat->adjust($heartbeat);
+        $this->socket = $this->socket->timeoutAfter($heartbeat);
+
+        return $this;
     }
 
     /**
@@ -292,28 +287,16 @@ final class Connection
      */
     public function asActive(): self
     {
-        return new self(
-            $this->protocol,
-            $this->heartbeat->active(),
-            $this->socket,
-            $this->maxChannels,
-            $this->maxFrameSize,
-            $this->frame,
-            $this->signals,
-        );
+        $this->heartbeat->active();
+
+        return $this;
     }
 
     public function listenSignals(Signals $signals, Channel $channel): self
     {
-        return new self(
-            $this->protocol,
-            $this->heartbeat,
-            $this->socket,
-            $this->maxChannels,
-            $this->maxFrameSize,
-            $this->frame,
-            $this->signals->install($signals, $channel),
-        );
+        $this->signals->install($signals, $channel);
+
+        return $this;
     }
 
     /**

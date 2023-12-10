@@ -49,7 +49,7 @@ final class SignalListener
         return new self;
     }
 
-    public function install(Signals $signals, Channel $channel): self
+    public function install(Signals $signals, Channel $channel): void
     {
         if (!$this->installed) {
             $softClose = function(Signal $signal): void {
@@ -67,8 +67,6 @@ final class SignalListener
         }
 
         $this->channels = ($this->channels)($channel);
-
-        return $this;
     }
 
     /**
