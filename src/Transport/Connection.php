@@ -35,6 +35,7 @@ use Innmind\Socket\{
 use Innmind\IO\{
     IO,
     Readable\Stream,
+    Readable\Frame as IOFrame,
 };
 use Innmind\Stream\Watch;
 use Innmind\Url\Url;
@@ -68,7 +69,8 @@ final class Connection
     /** @var Stream<Socket> */
     private Stream $socket;
     private Watch $watch;
-    private FrameReader $read;
+    /** @var IOFrame<Frame> */
+    private IOFrame $frame;
     private MaxChannels $maxChannels;
     private MaxFrameSize $maxFrameSize;
     private Heartbeat $heartbeat;
@@ -76,6 +78,7 @@ final class Connection
 
     /**
      * @param Stream<Socket> $socket
+     * @param IOFrame<Frame> $frame
      */
     private function __construct(
         Protocol $protocol,
@@ -85,14 +88,14 @@ final class Connection
         Watch $watch,
         MaxChannels $maxChannels,
         MaxFrameSize $maxFrameSize,
-        FrameReader $read,
+        IOFrame $frame,
         SignalListener $signals,
     ) {
         $this->protocol = $protocol;
         $this->sockets = $sockets;
         $this->socket = $socket;
         $this->watch = $watch;
-        $this->read = $read;
+        $this->frame = $frame;
         $this->maxChannels = $maxChannels;
         $this->maxFrameSize = $maxFrameSize;
         $this->heartbeat = $heartbeat;
@@ -143,7 +146,7 @@ final class Connection
                 $sockets->watch($timeout)->forRead($socket->unwrap()),
                 MaxChannels::unlimited(),
                 MaxFrameSize::unlimited(),
-                new FrameReader,
+                (new FrameReader)($protocol),
                 SignalListener::uninstalled(),
             ))
             ->flatMap(new Start($server->authority()))
@@ -197,7 +200,7 @@ final class Connection
             ->flatMap(
                 static fn($connection) => $connection
                     ->socket
-                    ->frames(($connection->read)($connection->protocol))
+                    ->frames($connection->frame)
                     ->one()
                     ->map(static fn($frame) => ReceivedFrame::of(
                         $connection->asActive(),
@@ -251,7 +254,7 @@ final class Connection
             $this->sockets->watch($heartbeat)->forRead($this->socket->unwrap()),
             $maxChannels,
             $maxFrameSize,
-            $this->read,
+            $this->frame,
             $this->signals,
         );
     }
@@ -269,7 +272,7 @@ final class Connection
             $this->watch,
             $this->maxChannels,
             $this->maxFrameSize,
-            $this->read,
+            $this->frame,
             $this->signals,
         );
     }
@@ -284,7 +287,7 @@ final class Connection
             $this->watch,
             $this->maxChannels,
             $this->maxFrameSize,
-            $this->read,
+            $this->frame,
             $this->signals->install($signals, $channel),
         );
     }
