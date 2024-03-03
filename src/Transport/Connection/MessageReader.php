@@ -16,7 +16,6 @@ use Innmind\AMQP\{
     Model\Basic\Message\UserId,
     Model\Basic\Message\AppId,
     Transport\Connection,
-    Transport\ReceivedMessage,
     Transport\Frame,
     Transport\Frame\Value,
     Failure,
@@ -52,14 +51,14 @@ final class MessageReader
     }
 
     /**
-     * @return Either<Failure, ReceivedMessage>
+     * @return Either<Failure, Message>
      */
     public function __invoke(Connection $connection): Either
     {
         return $connection
             ->wait()
             ->flatMap(fn($received) => $this->decode(
-                $received->connection(),
+                $connection,
                 $received->frame(),
             ));
     }
@@ -70,13 +69,12 @@ final class MessageReader
     }
 
     /**
-     * @return Either<Failure, ReceivedMessage>
+     * @return Either<Failure, Message>
      */
     private function decode(
         Connection $connection,
         Frame $header,
     ): Either {
-        /** @var Either<Failure, ReceivedMessage> */
         return $header
             ->values()
             ->first()
@@ -86,7 +84,7 @@ final class MessageReader
             ->leftMap(static fn() => Failure::toReadMessage())
             ->flatMap(fn($bodySize) => $this->readMessage($connection, $bodySize))
             ->flatMap(
-                fn($received) => $header
+                fn($message) => $header
                     ->values()
                     ->get(1)
                     ->keep(Instance::of(Value\UnsignedShortInteger::class))
@@ -94,15 +92,11 @@ final class MessageReader
                     ->either()
                     ->leftMap(static fn() => Failure::toReadMessage())
                     ->flatMap(fn($flagBits) => $this->addProperties(
-                        $received->message(),
+                        $message,
                         $flagBits,
                         $header
                             ->values()
                             ->drop(2), // for bodySize and flagBits
-                    ))
-                    ->map(static fn($message) => ReceivedMessage::of(
-                        $received->connection(),
-                        $message,
                     )),
             );
     }
@@ -251,7 +245,7 @@ final class MessageReader
     }
 
     /**
-     * @return Either<Failure, ReceivedMessage>
+     * @return Either<Failure, Message>
      */
     private function readMessage(
         Connection $connection,
@@ -274,10 +268,11 @@ final class MessageReader
             default => $this->streams->watch()->timeoutAfter($timeout),
         });
 
-        return $read->map(static fn($in) => ReceivedMessage::of(
-            $in[0],
-            Message::file(Content::io($io->readable()->wrap($in[1]))),
-        ));
+        return $read->map(
+            static fn($in) => Message::file(Content::io(
+                $io->readable()->wrap($in[1]),
+            )),
+        );
     }
 
     /**
@@ -294,10 +289,10 @@ final class MessageReader
             ->flatMap(
                 fn($received) => $this
                     ->accumulateChunk($received->frame(), $stream, $read)
-                    ->map(static function($in) use ($received) {
+                    ->map(static function($in) use ($connection) {
                         [$stream, $read] = $in;
 
-                        return [$received->connection(), $stream, $read];
+                        return [$connection, $stream, $read];
                     }),
             );
     }

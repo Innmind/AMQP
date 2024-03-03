@@ -117,8 +117,8 @@ final class Continuation
             // read all the frames for the prefetched message then wait for next
             // frame
             $received = $received->flatMap(
-                static fn($received) => $read($received->connection())->flatMap(
-                    static fn($received) => $received->connection()->wait(),
+                static fn() => $read($connection)->flatMap(
+                    static fn() => $connection->wait(),
                 ),
             );
             $walkOverPrefetchedMessages = $received->match(
@@ -136,19 +136,14 @@ final class Continuation
         // messages handling
         /** @var Either<Failure, Canceled> */
         return $received
-            ->flatMap(
-                static fn($received) => $received
-                    ->connection()
-                    ->request(
-                        static fn($protocol) => $protocol->basic()->recover(
-                            $channel,
-                            Recover::requeue(),
-                        ),
-                        Method::basicRecoverOk,
-                    )
-                    ->map(static fn() => $received->connection()),
-            )
-            ->map(fn($connection) => Canceled::of(Client\State::of($connection, $this->state)))
+            ->flatMap(static fn() => $connection->request(
+                static fn($protocol) => $protocol->basic()->recover(
+                    $channel,
+                    Recover::requeue(),
+                ),
+                Method::basicRecoverOk,
+            ))
+            ->map(fn() => Canceled::of(Client\State::of($connection, $this->state)))
             ->leftMap(static fn() => Failure::toRecover($queue));
     }
 

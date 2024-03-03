@@ -170,15 +170,15 @@ final class Consume implements Command
         return $connection
             ->wait(Method::basicDeliver)
             ->flatMap(
-                fn($receivedFrame) => $read($receivedFrame->connection())->flatMap(
-                    fn($receivedMessage) => $this->maybeConsume(
-                        $receivedMessage->connection(),
+                fn($received) => $read($connection)->flatMap(
+                    fn($message) => $this->maybeConsume(
+                        $connection,
                         $channel,
                         $read,
                         $state,
                         $consumerTag,
-                        $receivedFrame->frame(),
-                        $receivedMessage->message(),
+                        $received->frame(),
+                        $message,
                     ),
                 ),
             )

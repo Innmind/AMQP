@@ -190,15 +190,16 @@ final class Connection
             )
             ->frames($this->frame)
             ->one()
-            ->map(fn($frame) => ReceivedFrame::of(
-                $this->asActive(),
-                $frame,
-            ))
+            ->map(function($frame) {
+                $this->flagActive();
+
+                return ReceivedFrame::of($frame);
+            })
             ->either()
             ->leftMap(static fn() => Failure::toReadFrame())
-            ->flatMap(static fn($received) => match ($received->frame()->type()) {
-                Type::heartbeat => $received->connection()->wait(...$names),
-                default => $received->connection()->ensureValidFrame($received, ...$names),
+            ->flatMap(fn($received) => match ($received->frame()->type()) {
+                Type::heartbeat => $this->wait(...$names),
+                default => $this->ensureValidFrame($received, ...$names),
             });
     }
 
@@ -245,11 +246,9 @@ final class Connection
     /**
      * @internal
      */
-    public function asActive(): self
+    public function flagActive(): void
     {
         $this->heartbeat->active();
-
-        return $this;
     }
 
     public function listenSignals(Signals $signals, Channel $channel): self
@@ -322,8 +321,7 @@ final class Connection
 
         if ($received->frame()->is(Method::connectionClose)) {
             /** @var Either<Failure, ReceivedFrame> */
-            return $received
-                ->connection()
+            return $this
                 ->send(static fn($protocol) => $protocol->connection()->closeOk())
                 ->leftMap(static fn() => Failure::toCloseConnection())
                 ->flatMap(static function() use ($received) {
