@@ -116,18 +116,17 @@ final class SignalListener
      */
     private function closeChannel(Either $connection, Channel $channel): Either
     {
-        return $connection
-            ->map(static fn($connection) => $connection->send(
-                static fn($protocol) => $protocol->channel()->close(
-                    $channel,
-                    Close::demand(),
-                ),
-            ))
-            ->map(static fn($continuation) => $continuation->wait(Method::channelCloseOk))
-            ->flatMap(
-                static fn($continuation) => $continuation
-                    ->connection()
-                    ->leftMap(static fn() => Failure::toCloseChannel()),
-            );
+        return $connection->flatMap(
+            static fn($connection) => $connection
+                ->request(
+                    static fn($protocol) => $protocol->channel()->close(
+                        $channel,
+                        Close::demand(),
+                    ),
+                    Method::channelCloseOk,
+                )
+                ->map(static fn() => $connection)
+                ->leftMap(static fn() => Failure::toCloseChannel()),
+        );
     }
 }

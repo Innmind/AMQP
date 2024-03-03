@@ -134,14 +134,13 @@ final class Client
         return ($this->load)()
             ->either()
             ->leftMap(static fn() => Failure::toOpenConnection())
-            ->map(static fn($connection) => $connection->send(
-                static fn($protocol) => $protocol->channel()->open($channel),
-            ))
-            ->map(static fn($continuation) => $continuation->wait(Method::channelOpenOk))
             ->flatMap(
-                fn($continuation) => $continuation
-                    ->connection()
-                    ->map(fn($connection) => $this->signals->match(
+                static fn($connection) => $connection
+                    ->request(
+                        static fn($protocol) => $protocol->channel()->open($channel),
+                        Method::channelOpenOk,
+                    )
+                    ->map(fn() => $this->signals->match(
                         static fn($process) => $connection->listenSignals(
                             $process->signals(),
                             $channel,

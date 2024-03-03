@@ -9,7 +9,6 @@ use Innmind\AMQP\{
     Transport\Connection\OpenVHost,
     Transport\Connection\Heartbeat,
     Transport\Connection\FrameReader,
-    Transport\Connection\Continuation,
     Transport\Connection\SignalListener,
     Transport\Frame\Channel,
     Transport\Frame\Type,
@@ -149,11 +148,8 @@ final class Connection
         return $this
             ->wait($method)
             ->flatMap(
-                fn() => $this
-                    ->send($frames)
-                    ->connection(),
-            )
-            ->map(static fn() => new SideEffect);
+                fn() => $this->send($frames),
+            );
     }
 
     /**
@@ -165,7 +161,6 @@ final class Connection
     {
         return $this
             ->send($frames)
-            ->connection()
             ->flatMap(fn() => $this->wait($method, ...$methods))
             ->map(static fn($received) => $received->frame());
     }
@@ -177,10 +172,7 @@ final class Connection
      */
     public function tell(callable $frames): Either
     {
-        return $this
-            ->send($frames)
-            ->connection()
-            ->map(static fn() => new SideEffect);
+        return $this->send($frames);
     }
 
     /**
@@ -194,8 +186,10 @@ final class Connection
      *
      * @throws FrameChannelExceedAllowedChannelNumber
      * @throws FrameExceedAllowedSize
+     *
+     * @return Either<Failure, SideEffect>
      */
-    public function send(callable $frames): Continuation
+    public function send(callable $frames): Either
     {
         // TODO handle signals
         $data = $frames($this->protocol, $this->maxFrameSize)
@@ -211,14 +205,12 @@ final class Connection
                 return $frame;
             });
 
-        return Continuation::of(
-            $this
-                ->socket
-                ->send($data)
-                ->either()
-                ->map(fn() => $this)
-                ->leftMap(static fn() => Failure::toSendFrame()),
-        );
+        return $this
+            ->socket
+            ->send($data)
+            ->either()
+            ->map(static fn() => new SideEffect)
+            ->leftMap(static fn() => Failure::toSendFrame());
     }
 
     /**
@@ -259,10 +251,11 @@ final class Connection
         }
 
         return $this
-            ->send(static fn($protocol) => $protocol->connection()->close(Close::demand()))
-            ->wait(Method::connectionCloseOk)
-            ->connection()
-            ->flatMap(static fn($connection) => $connection->socket->unwrap()->close())
+            ->request(
+                static fn($protocol) => $protocol->connection()->close(Close::demand()),
+                Method::connectionCloseOk,
+            )
+            ->flatMap(fn() => $this->socket->unwrap()->close())
             ->maybe()
             ->map(static fn() => new SideEffect);
     }
@@ -331,8 +324,7 @@ final class Connection
             /** @var Either<Failure, ReceivedFrame> */
             return $received
                 ->connection()
-                ->send(static fn($protocol) => $protocol->connection()->closeOk())
-                ->connection()
+                ->tell(static fn($protocol) => $protocol->connection()->closeOk())
                 ->leftMap(static fn() => Failure::toCloseConnection())
                 ->flatMap(static function() use ($received) {
                     $message = $received

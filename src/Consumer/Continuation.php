@@ -139,12 +139,14 @@ final class Continuation
             ->flatMap(
                 static fn($received) => $received
                     ->connection()
-                    ->send(static fn($protocol) => $protocol->basic()->recover(
-                        $channel,
-                        Recover::requeue(),
-                    ))
-                    ->wait(Method::basicRecoverOk)
-                    ->connection(),
+                    ->request(
+                        static fn($protocol) => $protocol->basic()->recover(
+                            $channel,
+                            Recover::requeue(),
+                        ),
+                        Method::basicRecoverOk,
+                    )
+                    ->map(static fn() => $received->connection()),
             )
             ->map(fn($connection) => Canceled::of(Client\State::of($connection, $this->state)))
             ->leftMap(static fn() => Failure::toRecover($queue));
@@ -163,11 +165,11 @@ final class Continuation
     ): Either {
         /** @var Either<Failure, Connection> */
         return $connection
-            ->send(static fn($protocol) => $protocol->basic()->ack(
+            ->tell(static fn($protocol) => $protocol->basic()->ack(
                 $channel,
                 Ack::of($deliveryTag),
             ))
-            ->connection()
+            ->map(static fn() => $connection)
             ->leftMap(static fn() => Failure::toAck($queue));
     }
 
@@ -184,11 +186,11 @@ final class Continuation
     ): Either {
         /** @var Either<Failure, Connection> */
         return $connection
-            ->send(static fn($protocol) => $protocol->basic()->reject(
+            ->tell(static fn($protocol) => $protocol->basic()->reject(
                 $channel,
                 Reject::of($deliveryTag),
             ))
-            ->connection()
+            ->map(static fn() => $connection)
             ->leftMap(static fn() => Failure::toReject($queue));
     }
 
@@ -205,11 +207,11 @@ final class Continuation
     ): Either {
         /** @var Either<Failure, Connection> */
         return $connection
-            ->send(static fn($protocol) => $protocol->basic()->reject(
+            ->tell(static fn($protocol) => $protocol->basic()->reject(
                 $channel,
                 Reject::requeue($deliveryTag),
             ))
-            ->connection()
+            ->map(static fn() => $connection)
             ->leftMap(static fn() => Failure::toReject($queue));
     }
 
@@ -229,11 +231,11 @@ final class Continuation
 
         /** @var Either<Failure, Connection> */
         return $connection
-            ->send(static fn($protocol) => $protocol->basic()->cancel(
+            ->tell(static fn($protocol) => $protocol->basic()->cancel(
                 $channel,
                 Cancel::of($consumerTag),
             ))
-            ->connection()
+            ->map(static fn() => $connection)
             ->leftMap(static fn() => Failure::toCancel($queue));
     }
 }
