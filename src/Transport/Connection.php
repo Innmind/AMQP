@@ -148,7 +148,7 @@ final class Connection
         return $this
             ->wait($method)
             ->flatMap(
-                fn() => $this->send($frames),
+                fn() => $this->sendFrames($frames),
             );
     }
 
@@ -160,7 +160,7 @@ final class Connection
     public function request(callable $frames, Method $method, Method ...$methods): Either
     {
         return $this
-            ->send($frames)
+            ->sendFrames($frames)
             ->flatMap(fn() => $this->wait($method, ...$methods))
             ->map(static fn($received) => $received->frame());
     }
@@ -172,7 +172,7 @@ final class Connection
      */
     public function tell(callable $frames): Either
     {
-        return $this->send($frames);
+        return $this->sendFrames($frames);
     }
 
     /**
@@ -273,7 +273,7 @@ final class Connection
      *
      * @return Either<Failure, SideEffect>
      */
-    private function send(callable $frames): Either
+    private function sendFrames(callable $frames): Either
     {
         // TODO handle signals
         $data = $frames($this->protocol, $this->maxFrameSize)
