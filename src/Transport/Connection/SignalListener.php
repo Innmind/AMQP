@@ -15,7 +15,6 @@ use Innmind\Signals\Signal;
 use Innmind\Immutable\{
     Either,
     Maybe,
-    SideEffect,
 };
 
 /**
@@ -65,9 +64,11 @@ final class SignalListener
     }
 
     /**
-     * @param callable(): Either<Failure, SideEffect> $continue
+     * @template T
      *
-     * @return Either<Failure, SideEffect>
+     * @param callable(): Either<Failure, T> $continue
+     *
+     * @return Either<Failure, T>
      */
     public function match(callable $continue, Connection $connection): Either
     {

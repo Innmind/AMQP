@@ -180,27 +180,30 @@ final class Connection
      */
     public function wait(Method ...$names): Either
     {
-        return $this
-            ->socket
-            ->heartbeatWith(
-                fn() => $this
-                    ->heartbeat
-                    ->frames()
-                    ->map(static fn($frame) => $frame->pack()),
-            )
-            ->frames($this->frame)
-            ->one()
-            ->map(function($frame) {
-                $this->flagActive();
+        return $this->signals->match(
+            fn() => $this
+                ->socket
+                ->heartbeatWith(
+                    fn() => $this
+                        ->heartbeat
+                        ->frames()
+                        ->map(static fn($frame) => $frame->pack()),
+                )
+                ->frames($this->frame)
+                ->one()
+                ->map(function($frame) {
+                    $this->flagActive();
 
-                return ReceivedFrame::of($frame);
-            })
-            ->either()
-            ->leftMap(static fn() => Failure::toReadFrame())
-            ->flatMap(fn($received) => match ($received->frame()->type()) {
-                Type::heartbeat => $this->wait(...$names),
-                default => $this->ensureValidFrame($received, ...$names),
-            });
+                    return ReceivedFrame::of($frame);
+                })
+                ->either()
+                ->leftMap(static fn() => Failure::toReadFrame())
+                ->flatMap(fn($received) => match ($received->frame()->type()) {
+                    Type::heartbeat => $this->wait(...$names),
+                    default => $this->ensureValidFrame($received, ...$names),
+                }),
+            $this,
+        );
     }
 
     /**
