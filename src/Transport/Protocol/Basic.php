@@ -122,8 +122,8 @@ final class Basic
     ): Sequence {
         // we use a lazy sequence to allow streaming frames for messages having
         // a lazy sequence of chunks for a body
-        $frames = Sequence::lazy(function() use ($channel, $command) {
-            yield Frame::method(
+        $frames = Sequence::lazyStartingWith(
+            Frame::method(
                 $channel,
                 Method::basicPublish,
                 UnsignedShortInteger::internal(0), // ticket (reserved)
@@ -133,14 +133,14 @@ final class Basic
                     $command->mandatory(),
                     $command->immediate(),
                 ),
-            );
-            yield Frame::header(
+            ),
+            Frame::header(
                 $channel,
                 MethodClass::basic,
                 UnsignedLongLongInteger::of($command->message()->length()),
                 ...$this->serializeProperties($command->message()),
-            );
-        });
+            ),
+        );
 
         return $frames->append(
             $maxFrameSize
