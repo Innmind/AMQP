@@ -20,16 +20,8 @@ use Innmind\AMQP\{
     Transport\Frame\Value,
     Failure,
 };
-use Innmind\TimeContinuum\{
-    Earth,
-    ElapsedPeriod,
-};
-use Innmind\Filesystem\File\Content;
-use Innmind\IO\IO;
-use Innmind\Stream\{
-    Capabilities,
-    Bidirectional,
-};
+use Innmind\OperatingSystem\Filesystem;
+use Innmind\TimeContinuum\Earth\ElapsedPeriod;
 use Innmind\Immutable\{
     Str,
     Predicate\Instance,
@@ -43,11 +35,11 @@ use Innmind\Immutable\{
  */
 final class MessageReader
 {
-    private Capabilities $streams;
+    private Filesystem $filesystem;
 
-    private function __construct(Capabilities $streams)
+    private function __construct(Filesystem $filesystem)
     {
-        $this->streams = $streams;
+        $this->filesystem = $filesystem;
     }
 
     /**
@@ -63,9 +55,9 @@ final class MessageReader
             ));
     }
 
-    public static function of(Capabilities $streams): self
+    public static function of(Filesystem $filesystem): self
     {
-        return new self($streams);
+        return new self($filesystem);
     }
 
     /**
@@ -179,7 +171,7 @@ final class MessageReader
                 static fn(Maybe $value, Message $message) => $value
                     ->keep(Instance::of(Value\ShortString::class))
                     ->map(static fn($value) => (int) $value->original()->toString())
-                    ->flatMap(Earth\ElapsedPeriod::maybe(...))
+                    ->flatMap(ElapsedPeriod::maybe(...))
                     ->map(static fn($expiration) => $message->withExpiration($expiration)),
             ],
             [
@@ -251,73 +243,35 @@ final class MessageReader
         Connection $connection,
         int $bodySize,
     ): Either {
-        $walk = $bodySize !== 0;
-        $stream = $this->streams->temporary()->new();
-        $read = Either::right([$connection, $stream, 0]);
+        $chunks = Sequence::lazy(static function() use ($connection, $bodySize) {
+            $continue = $bodySize !== 0;
+            $read = 0;
 
-        while ($walk) {
-            $read = $read->flatMap($this->readChunk(...));
-            $walk = $read->match(
-                static fn($read) => $read[2] !== $bodySize,
-                static fn() => false, // because no content was found in the last frame or failed to write the chunk to the temp stream
-            );
-        }
+            while ($continue) {
+                $chunk = $connection
+                    ->wait()
+                    ->maybe()
+                    ->flatMap(static fn($received) => $received->frame()->content())
+                    ->map(static fn($chunk) => $chunk->toEncoding(Str\Encoding::ascii));
+                $read += $chunk->match(
+                    static fn($chunk) => $chunk->length(),
+                    static fn() => 0,
+                );
+                $continue = $chunk->match(
+                    static fn() => $read !== $bodySize,
+                    static fn() => false,
+                );
 
-        $io = IO::of(fn(?ElapsedPeriod $timeout) => match ($timeout) {
-            null => $this->streams->watch()->waitForever(),
-            default => $this->streams->watch()->timeoutAfter($timeout),
+                yield $chunk;
+            }
         });
 
-        return $read->map(
-            static fn($in) => Message::file(Content::io(
-                $io->readable()->wrap($in[1]),
-            )),
-        );
-    }
-
-    /**
-     * @param array{Connection, Bidirectional, int} $in
-     *
-     * @return Either<Failure, array{Connection, Bidirectional, int}>
-     */
-    private function readChunk(array $in): Either
-    {
-        [$connection, $stream, $read] = $in;
-
-        return $connection
-            ->wait()
-            ->flatMap(
-                fn($received) => $this
-                    ->accumulateChunk($received->frame(), $stream, $read)
-                    ->map(static function($in) use ($connection) {
-                        [$stream, $read] = $in;
-
-                        return [$connection, $stream, $read];
-                    }),
-            );
-    }
-
-    /**
-     * @return Either<Failure, array{Bidirectional, int}>
-     */
-    private function accumulateChunk(
-        Frame $frame,
-        Bidirectional $stream,
-        int $read,
-    ): Either {
-        /** @var Either<Failure, array{Bidirectional, int}> */
-        return $frame
-            ->content()
+        return $this
+            ->filesystem
+            ->temporary($chunks)
+            ->memoize() // to prevent using a deferred Maybe that would result in out of order reading the socket
             ->either()
-            ->map(static fn($chunk) => $chunk->toEncoding(Str\Encoding::ascii))
-            ->flatMap(
-                static fn($chunk) => $stream
-                    ->write($chunk)
-                    ->map(static fn($stream) => [
-                        $stream,
-                        $read + $chunk->length(),
-                    ]),
-            )
+            ->map(Message::file(...))
             ->leftMap(static fn() => Failure::toReadMessage());
     }
 }

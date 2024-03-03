@@ -40,6 +40,7 @@ final class Factory
                 $this->os->remote(),
                 $this->os->sockets(),
             ),
+            $this->os->filesystem(),
         );
     }
 }
