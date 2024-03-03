@@ -243,17 +243,14 @@ final class Connection
         return $this;
     }
 
-    /**
-     * @internal
-     */
-    public function flagActive(): void
-    {
-        $this->heartbeat->active();
-    }
-
     public function listenSignals(Signals $signals, Channel $channel): void
     {
         $this->signals->install($signals, $channel);
+    }
+
+    private function flagActive(): void
+    {
+        $this->heartbeat->active();
     }
 
     /**
