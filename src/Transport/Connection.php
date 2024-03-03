@@ -159,14 +159,27 @@ final class Connection
     /**
      * @param callable(Protocol, MaxFrameSize): Sequence<Frame> $frames
      *
-     * @return Either<Failure, SideEffect>
+     * @return Either<Failure, Frame>
      */
-    public function request(callable $frames, Method $method): Either
+    public function request(callable $frames, Method $method, Method ...$methods): Either
     {
         return $this
             ->send($frames)
             ->connection()
-            ->flatMap(fn() => $this->wait($method))
+            ->flatMap(fn() => $this->wait($method, ...$methods))
+            ->map(static fn($received) => $received->frame());
+    }
+
+    /**
+     * @param callable(Protocol, MaxFrameSize): Sequence<Frame> $frames
+     *
+     * @return Either<Failure, SideEffect>
+     */
+    public function tell(callable $frames): Either
+    {
+        return $this
+            ->send($frames)
+            ->connection()
             ->map(static fn() => new SideEffect);
     }
 
