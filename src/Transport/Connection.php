@@ -282,7 +282,6 @@ final class Connection
      */
     private function sendFrames(callable $frames): Either
     {
-        // TODO handle signals
         $data = $frames($this->protocol, $this->maxFrameSize)
             ->map(function($frame) {
                 $this->maxChannels->verify($frame->channel()->toInt());
