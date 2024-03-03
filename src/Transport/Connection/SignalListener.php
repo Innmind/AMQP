@@ -19,7 +19,7 @@ use Innmind\Immutable\{
 };
 
 /**
- * This class cannot have an immutable like behaviour as the signal is sents
+ * This class cannot have an immutable like behaviour as the signal is sent
  * asynchronously so we need to change a state
  */
 final class SignalListener
