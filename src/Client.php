@@ -135,7 +135,7 @@ final class Client
             ->either()
             ->leftMap(static fn() => Failure::toOpenConnection())
             ->flatMap(
-                static fn($connection) => $connection
+                fn($connection) => $connection
                     ->request(
                         static fn($protocol) => $protocol->channel()->open($channel),
                         Method::channelOpenOk,
