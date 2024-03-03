@@ -28,6 +28,10 @@ final class SignalListener
     private Maybe $notified;
     /** @var Maybe<Channel> */
     private Maybe $channel;
+    /** @var Maybe<Signals> */
+    private Maybe $signals;
+    /** @var \Closure(Signal): void */
+    private \Closure $softClose;
     private bool $closing = false;
 
     private function __construct()
@@ -36,6 +40,11 @@ final class SignalListener
         $this->notified = Maybe::nothing();
         /** @var Maybe<Channel> */
         $this->channel = Maybe::nothing();
+        /** @var Maybe<Signals> */
+        $this->signals = Maybe::nothing();
+        $this->softClose = function(Signal $signal): void {
+            $this->notified = Maybe::just($signal);
+        };
     }
 
     public static function uninstalled(): self
@@ -46,21 +55,27 @@ final class SignalListener
     public function install(Signals $signals, Channel $channel): void
     {
         if (!$this->installed) {
-            $softClose = function(Signal $signal): void {
-                $this->notified = Maybe::just($signal);
-            };
             $signals->listen(Signal::hangup, static function() {
                 // do nothing so it can run in background
             });
-            $signals->listen(Signal::interrupt, $softClose);
-            $signals->listen(Signal::abort, $softClose);
-            $signals->listen(Signal::terminate, $softClose);
-            $signals->listen(Signal::terminalStop, $softClose);
-            $signals->listen(Signal::alarm, $softClose);
+            $signals->listen(Signal::interrupt, $this->softClose);
+            $signals->listen(Signal::abort, $this->softClose);
+            $signals->listen(Signal::terminate, $this->softClose);
+            $signals->listen(Signal::terminalStop, $this->softClose);
+            $signals->listen(Signal::alarm, $this->softClose);
+            $this->signals = Maybe::just($signals);
             $this->installed = true;
         }
 
         $this->channel = Maybe::just($channel);
+    }
+
+    public function uninstall(): void
+    {
+        $_ = $this->signals->match(
+            fn($signals) => $signals->remove($this->softClose),
+            static fn() => null,
+        );
     }
 
     /**

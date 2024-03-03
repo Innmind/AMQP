@@ -211,6 +211,8 @@ final class Connection
      */
     public function close(): Maybe
     {
+        $this->signals->uninstall();
+
         if ($this->closed()) {
             /** @var Maybe<SideEffect> */
             return Maybe::nothing();
