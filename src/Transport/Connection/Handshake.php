@@ -41,7 +41,7 @@ final class Handshake
     {
         return $connection
             ->wait(Method::connectionSecure, Method::connectionTune)
-            ->flatMap(fn($received) => match ($received->frame()->is(Method::connectionSecure)) {
+            ->flatMap(fn($received) => match ($received->is(Method::connectionSecure)) {
                 true => $this->secure($connection),
                 false => $this->maybeTune($connection, $received->frame()),
             })

@@ -319,7 +319,7 @@ final class Connection
             return Either::right($received);
         }
 
-        if ($received->frame()->is(Method::connectionClose)) {
+        if ($received->is(Method::connectionClose)) {
             /** @var Either<Failure, ReceivedFrame> */
             return $this
                 ->send(static fn($protocol) => $protocol->connection()->closeOk())

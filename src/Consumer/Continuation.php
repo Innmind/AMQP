@@ -109,7 +109,7 @@ final class Continuation
     ): Either {
         $received = $connection->wait();
         $walkOverPrefetchedMessages = $received->match(
-            static fn($received) => $received->frame()->is(Method::basicDeliver),
+            static fn($received) => $received->is(Method::basicDeliver),
             static fn() => false,
         );
 
@@ -122,7 +122,7 @@ final class Continuation
                 ),
             );
             $walkOverPrefetchedMessages = $received->match(
-                static fn($received) => $received->frame()->is(Method::basicDeliver),
+                static fn($received) => $received->is(Method::basicDeliver),
                 static fn() => false,
             );
         }

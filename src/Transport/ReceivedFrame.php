@@ -25,6 +25,11 @@ final class ReceivedFrame
         return $this->frame;
     }
 
+    public function is(Frame\Method $method): bool
+    {
+        return $this->frame->is($method);
+    }
+
     public function oneOf(Frame\Method ...$methods): bool
     {
         foreach ($methods as $method) {
