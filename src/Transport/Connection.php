@@ -191,11 +191,8 @@ final class Connection
                 )
                 ->frames($this->frame)
                 ->one()
-                ->map(function($frame) {
-                    $this->flagActive();
-
-                    return ReceivedFrame::of($frame);
-                })
+                ->map(ReceivedFrame::of(...))
+                ->map($this->flagActive(...))
                 ->either()
                 ->leftMap(static fn() => Failure::toReadFrame())
                 ->flatMap(fn($received) => match ($received->frame()->type()) {
@@ -251,9 +248,11 @@ final class Connection
         $this->signals->install($signals, $channel);
     }
 
-    private function flagActive(): void
+    private function flagActive(ReceivedFrame $received): ReceivedFrame
     {
         $this->heartbeat->active();
+
+        return $received;
     }
 
     /**
