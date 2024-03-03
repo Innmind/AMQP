@@ -112,7 +112,7 @@ final class Client
 
                     return $command($connection, $channel, $read, $state)->flatMap(
                         fn($clientState) => $this
-                            ->close($clientState->connection(), $channel)
+                            ->close($connection, $channel)
                             ->map(static fn(): mixed => $clientState->userState()),
                     );
                 }),

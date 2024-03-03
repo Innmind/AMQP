@@ -57,10 +57,10 @@ final class Get implements Command
          * @var Either<Failure, State>
          */
         return Sequence::of(...\array_fill(0, $this->take, null))->reduce(
-            Either::right(State::of($connection, $state)),
+            Either::right(State::of($state)),
             fn(Either $state) => $state->flatMap(
                 fn(State $state) => $this->doGet(
-                    $state->connection(),
+                    $connection,
                     $channel,
                     $read,
                     $state->userState(),
@@ -137,7 +137,7 @@ final class Get implements Command
     ): Either {
         if ($frame->is(Method::basicGetEmpty)) {
             /** @var Either<Failure, State> */
-            return Either::right(State::of($connection, $state));
+            return Either::right(State::of($state));
         }
 
         $deliveryTag = $frame

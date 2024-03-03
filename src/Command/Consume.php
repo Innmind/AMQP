@@ -65,7 +65,7 @@ final class Consume implements Command
                 )),
             false => $connection
                 ->send($frames)
-                ->map(static fn() => State::of($connection, $state)),
+                ->map(static fn() => State::of($state)),
         };
 
         return $sideEffect->leftMap(
@@ -126,7 +126,7 @@ final class Consume implements Command
         string $consumerTag,
     ): Either {
         /** @var Either<Failure, State|Canceled> */
-        $consumed = Either::right(State::of($connection, $state));
+        $consumed = Either::right(State::of($state));
         // here the best approach would be to use recursion to avoid unwrapping
         // the monads but it would end up with a too deep call stack for inifite
         // consumers as each new message would mean a new function call in the
@@ -139,7 +139,7 @@ final class Consume implements Command
                     default => $state,
                 })
                 ->flatMap(fn($state) => $this->waitDeliver(
-                    $state->connection(),
+                    $connection,
                     $channel,
                     $state->userState(),
                     $consumerTag,

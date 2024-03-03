@@ -33,7 +33,7 @@ final class Pipe implements Command
     ): Either {
         return ($this->first)($connection, $channel, $read, $state)->flatMap(
             fn($state) => ($this->second)(
-                $state->connection(),
+                $connection,
                 $channel,
                 $read,
                 $state->userState(),

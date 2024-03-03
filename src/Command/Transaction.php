@@ -43,7 +43,11 @@ final class Transaction implements Command
                 $read,
                 $state,
             ))
-            ->flatMap(fn($state) => $this->finish($state, $channel));
+            ->flatMap(fn($state) => $this->finish(
+                $connection,
+                $channel,
+                $state,
+            ));
     }
 
     /**
@@ -83,21 +87,26 @@ final class Transaction implements Command
     /**
      * @return Either<Failure, State>
      */
-    private function finish(State $state, Channel $channel): Either
-    {
+    private function finish(
+        Connection $connection,
+        Channel $channel,
+        State $state,
+    ): Either {
         return match (($this->predicate)($state->userState())) {
-            true => $this->commit($state, $channel),
-            false => $this->rollback($state, $channel),
+            true => $this->commit($connection, $channel, $state),
+            false => $this->rollback($connection, $channel, $state),
         };
     }
 
     /**
      * @return Either<Failure, State>
      */
-    private function commit(State $state, Channel $channel): Either
-    {
-        return $state
-            ->connection()
+    private function commit(
+        Connection $connection,
+        Channel $channel,
+        State $state,
+    ): Either {
+        return $connection
             ->request(
                 static fn($protocol) => $protocol->transaction()->commit($channel),
                 Method::transactionCommitOk,
@@ -109,10 +118,12 @@ final class Transaction implements Command
     /**
      * @return Either<Failure, State>
      */
-    private function rollback(State $state, Channel $channel): Either
-    {
-        return $state
-            ->connection()
+    private function rollback(
+        Connection $connection,
+        Channel $channel,
+        State $state,
+    ): Either {
+        return $connection
             ->request(
                 static fn($protocol) => $protocol->transaction()->rollback($channel),
                 Method::transactionRollbackOk,

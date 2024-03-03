@@ -76,7 +76,7 @@ final class DeclareQueue implements Command
         };
 
         return $sideEffect
-            ->map(static fn() => State::of($connection, $state))
+            ->map(static fn() => State::of($state))
             ->leftMap(fn() => Failure::toDeclareQueue($this->command));
     }
 

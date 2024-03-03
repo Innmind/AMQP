@@ -49,7 +49,7 @@ final class Publish implements Command
                     fn(Connection $connection) => $this->publish($connection, $channel, $command),
                 ),
             )
-            ->map(static fn($connection) => State::of($connection, $state));
+            ->map(static fn($connection) => State::of($state));
     }
 
     public static function one(Message $message): self

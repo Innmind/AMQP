@@ -45,7 +45,7 @@ final class Bind implements Command
         };
 
         return $sideEffect
-            ->map(static fn() => State::of($connection, $state))
+            ->map(static fn() => State::of($state))
             ->leftMap(fn() => Failure::toBind($this->command));
     }
 
