@@ -50,20 +50,20 @@ final class Get implements Command
         Connection $connection,
         Channel $channel,
         MessageReader $read,
-        mixed $state,
+        State $state,
     ): Either {
         /**
          * @psalm-suppress MixedArgumentTypeCoercion
          * @var Either<Failure, State>
          */
         return Sequence::of(...\array_fill(0, $this->take, null))->reduce(
-            Either::right(State::of($state)),
+            Either::right($state),
             fn(Either $state) => $state->flatMap(
                 fn(State $state) => $this->doGet(
                     $connection,
                     $channel,
                     $read,
-                    $state->userState(),
+                    $state,
                 ),
             ),
         );
@@ -101,7 +101,7 @@ final class Get implements Command
         Connection $connection,
         Channel $channel,
         MessageReader $read,
-        mixed $state,
+        State $state,
     ): Either {
         /** @var Either<Failure, State> */
         return $connection
@@ -133,11 +133,11 @@ final class Get implements Command
         Channel $channel,
         MessageReader $read,
         Frame $frame,
-        mixed $state,
+        State $state,
     ): Either {
         if ($frame->is(Method::basicGetEmpty)) {
             /** @var Either<Failure, State> */
-            return Either::right(State::of($state));
+            return Either::right($state);
         }
 
         $deliveryTag = $frame
@@ -193,14 +193,14 @@ final class Get implements Command
         Connection $connection,
         Channel $channel,
         MessageReader $read,
-        mixed $state,
+        State $state,
         Message $message,
         Details $details,
     ): Either {
         return ($this->consume)(
-            $state,
+            $state->userState(),
             $message,
-            Continuation::of($state),
+            Continuation::of($state->userState()),
             $details,
         )
             ->respond(

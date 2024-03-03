@@ -33,7 +33,7 @@ final class Transaction implements Command
         Connection $connection,
         Channel $channel,
         MessageReader $read,
-        mixed $state,
+        State $state,
     ): Either {
         return $this
             ->select($connection, $channel)

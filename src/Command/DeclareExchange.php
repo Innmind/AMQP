@@ -33,7 +33,7 @@ final class DeclareExchange implements Command
         Connection $connection,
         Channel $channel,
         MessageReader $read,
-        mixed $state,
+        State $state,
     ): Either {
         $frames = fn(Protocol $protocol): Sequence => $protocol->exchange()->declare(
             $channel,
@@ -46,7 +46,7 @@ final class DeclareExchange implements Command
         };
 
         return $sideEffect
-            ->map(static fn() => State::of($state))
+            ->map(static fn() => $state)
             ->leftMap(fn() => Failure::toDeclareExchange($this->command));
     }
 

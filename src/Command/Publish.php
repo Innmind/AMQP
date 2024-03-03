@@ -36,12 +36,9 @@ final class Publish implements Command
         Connection $connection,
         Channel $channel,
         MessageReader $read,
-        mixed $state,
+        State $state,
     ): Either {
-        /**
-         * @psalm-suppress MixedArgumentTypeCoercion
-         * @var Either<Failure, State>
-         */
+        /** @var Either<Failure, State> */
         return $this
             ->commands
             ->reduce(
@@ -50,7 +47,7 @@ final class Publish implements Command
                     fn() => $this->publish($connection, $channel, $command),
                 ),
             )
-            ->map(static fn() => State::of($state));
+            ->map(static fn() => $state);
     }
 
     public static function one(Message $message): self

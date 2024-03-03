@@ -37,7 +37,7 @@ final class DeclareQueue implements Command
         Connection $connection,
         Channel $channel,
         MessageReader $read,
-        mixed $state,
+        State $state,
     ): Either {
         $frames = fn(Protocol $protocol): Sequence => $protocol->queue()->declare(
             $channel,
@@ -76,7 +76,7 @@ final class DeclareQueue implements Command
         };
 
         return $sideEffect
-            ->map(static fn() => State::of($state))
+            ->map(static fn() => $state)
             ->leftMap(fn() => Failure::toDeclareQueue($this->command));
     }
 

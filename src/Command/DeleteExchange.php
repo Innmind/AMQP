@@ -32,7 +32,7 @@ final class DeleteExchange implements Command
         Connection $connection,
         Channel $channel,
         MessageReader $read,
-        mixed $state,
+        State $state,
     ): Either {
         $frames = fn(Protocol $protocol): Sequence => $protocol->exchange()->delete(
             $channel,
@@ -45,7 +45,7 @@ final class DeleteExchange implements Command
         };
 
         return $sideEffect
-            ->map(static fn() => State::of($state))
+            ->map(static fn() => $state)
             ->leftMap(fn() => Failure::toDeleteExchange($this->command));
     }
 

@@ -8,6 +8,7 @@ use Innmind\AMQP\{
     Transport\Connection,
     Transport\Connection\MessageReader,
     Transport\Frame\Channel,
+    Client\State,
 };
 use Innmind\Immutable\Either;
 
@@ -29,14 +30,14 @@ final class Pipe implements Command
         Connection $connection,
         Channel $channel,
         MessageReader $read,
-        mixed $state,
+        State $state,
     ): Either {
         return ($this->first)($connection, $channel, $read, $state)->flatMap(
             fn($state) => ($this->second)(
                 $connection,
                 $channel,
                 $read,
-                $state->userState(),
+                $state,
             ),
         );
     }

@@ -28,9 +28,8 @@ final class Unbind implements Command
         Connection $connection,
         Channel $channel,
         MessageReader $read,
-        mixed $state,
+        State $state,
     ): Either {
-        /** @var Either<Failure, State> */
         return $connection
             ->request(
                 fn($protocol) => $protocol->queue()->unbind(
@@ -39,7 +38,7 @@ final class Unbind implements Command
                 ),
                 Method::queueUnbindOk,
             )
-            ->map(static fn() => State::of($state))
+            ->map(static fn() => $state)
             ->leftMap(fn() => Failure::toUnbind($this->command));
     }
 

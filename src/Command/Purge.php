@@ -36,7 +36,7 @@ final class Purge implements Command
         Connection $connection,
         Channel $channel,
         MessageReader $read,
-        mixed $state,
+        State $state,
     ): Either {
         $frames = fn(Protocol $protocol): Sequence => $protocol->queue()->purge(
             $channel,
@@ -62,7 +62,7 @@ final class Purge implements Command
         };
 
         return $sideEffect
-            ->map(static fn() => State::of($state))
+            ->map(static fn() => $state)
             ->leftMap(fn() => Failure::toPurge($this->command));
     }
 
