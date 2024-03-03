@@ -251,11 +251,9 @@ final class Connection
         $this->heartbeat->active();
     }
 
-    public function listenSignals(Signals $signals, Channel $channel): self
+    public function listenSignals(Signals $signals, Channel $channel): void
     {
         $this->signals->install($signals, $channel);
-
-        return $this;
     }
 
     /**

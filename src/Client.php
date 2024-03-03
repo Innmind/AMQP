@@ -145,9 +145,9 @@ final class Client
                             $process->signals(),
                             $channel,
                         ),
-                        static fn() => $connection,
+                        static fn() => null,
                     ))
-                    ->map(static fn($connection) => [$connection, $channel])
+                    ->map(static fn() => [$connection, $channel])
                     ->leftMap(static fn() => Failure::toOpenChannel()),
             );
     }
