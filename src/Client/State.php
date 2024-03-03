@@ -8,20 +8,20 @@ namespace Innmind\AMQP\Client;
  */
 final class State
 {
-    private mixed $userState;
+    private mixed $value;
 
-    private function __construct(mixed $userState)
+    private function __construct(mixed $value)
     {
-        $this->userState = $userState;
+        $this->value = $value;
     }
 
-    public static function of(mixed $userState): self
+    public static function of(mixed $value): self
     {
-        return new self($userState);
+        return new self($value);
     }
 
-    public function userState(): mixed
+    public function unwrap(): mixed
     {
-        return $this->userState;
+        return $this->value;
     }
 }

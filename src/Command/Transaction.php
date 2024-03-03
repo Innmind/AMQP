@@ -92,7 +92,7 @@ final class Transaction implements Command
         Channel $channel,
         State $state,
     ): Either {
-        return match (($this->predicate)($state->userState())) {
+        return match (($this->predicate)($state->unwrap())) {
             true => $this->commit($connection, $channel, $state),
             false => $this->rollback($connection, $channel, $state),
         };

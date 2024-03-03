@@ -111,9 +111,9 @@ final class Client
                     $read = MessageReader::of($this->streams);
 
                     return $command($connection, $channel, $read, Client\State::of($state))->flatMap(
-                        fn($clientState) => $this
+                        fn($state) => $this
                             ->close($connection, $channel)
-                            ->map(static fn(): mixed => $clientState->userState()),
+                            ->map(static fn(): mixed => $state->unwrap()),
                     );
                 }),
             static fn() => Either::right($state),

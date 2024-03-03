@@ -198,9 +198,9 @@ final class Get implements Command
         Details $details,
     ): Either {
         return ($this->consume)(
-            $state->userState(),
+            $state->unwrap(),
             $message,
-            Continuation::of($state->userState()),
+            Continuation::of($state->unwrap()),
             $details,
         )
             ->respond(

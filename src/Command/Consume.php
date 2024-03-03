@@ -255,9 +255,9 @@ final class Consume implements Command
         string $consumerTag,
     ): Either {
         return ($this->consume)(
-            $state->userState(),
+            $state->unwrap(),
             $message,
-            Continuation::of($state->userState()),
+            Continuation::of($state->unwrap()),
             $details,
         )
             ->respond(
