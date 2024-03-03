@@ -13,9 +13,9 @@ use Innmind\AMQP\{
 use Innmind\OperatingSystem\CurrentProcess\Signals;
 use Innmind\Signals\Signal;
 use Innmind\Immutable\{
-    Set,
     Either,
     Maybe,
+    SideEffect,
 };
 
 /**
@@ -27,21 +27,16 @@ final class SignalListener
     private bool $installed = false;
     /** @var Maybe<Signal> */
     private Maybe $notified;
-    /**
-     * Even though our Client only support one channel per connection we use a
-     * Set here in case womeone figures out how to work with multiple channels
-     * on a single connection
-     * @var Set<Channel>
-     */
-    private Set $channels;
+    /** @var Maybe<Channel> */
+    private Maybe $channel;
     private bool $closing = false;
 
     private function __construct()
     {
         /** @var Maybe<Signal> */
         $this->notified = Maybe::nothing();
-        /** @var Set<Channel> */
-        $this->channels = Set::of();
+        /** @var Maybe<Channel> */
+        $this->channel = Maybe::nothing();
     }
 
     public static function uninstalled(): self
@@ -66,67 +61,43 @@ final class SignalListener
             $this->installed = true;
         }
 
-        $this->channels = ($this->channels)($channel);
+        $this->channel = Maybe::just($channel);
     }
 
     /**
-     * @return Either<Failure, Connection>
-     */
-    public function safe(Connection $connection): Either
-    {
-        return $this->notified->match(
-            fn($signal) => $this->close($connection, $signal),
-            static fn() => Either::right($connection),
-        );
-    }
-
-    /**
-     * @return Either<Failure, Connection>
-     */
-    private function close(Connection $connection, Signal $signal): Either
-    {
-        if ($this->closing) {
-            return Either::right($connection);
-        }
-
-        $this->closing = true;
-
-        $closed = $this
-            ->channels
-            ->reduce(
-                Either::right($connection),
-                $this->closeChannel(...),
-            )
-            ->flatMap(
-                static fn($connection) => $connection
-                    ->close()
-                    ->either()
-                    ->leftMap(static fn() => Failure::toCloseConnection())
-                    ->flatMap(static fn() => Either::left(Failure::closedBySignal($signal))),
-            );
-        $this->closing = false; // technically this method should never be called twice
-
-        return $closed;
-    }
-
-    /**
-     * @param Either<Failure, Connection> $connection
+     * @param callable(): Either<Failure, SideEffect> $continue
      *
-     * @return Either<Failure, Connection>
+     * @return Either<Failure, SideEffect>
      */
-    private function closeChannel(Either $connection, Channel $channel): Either
+    public function match(callable $continue, Connection $connection): Either
     {
-        return $connection->flatMap(
-            static fn($connection) => $connection
-                ->request(
-                    static fn($protocol) => $protocol->channel()->close(
-                        $channel,
-                        Close::demand(),
-                    ),
-                    Method::channelCloseOk,
-                )
-                ->map(static fn() => $connection)
-                ->leftMap(static fn() => Failure::toCloseChannel()),
-        );
+        return Maybe::all($this->notified, $this->channel)
+            ->map(static fn(Signal $signal, Channel $channel) => [$signal, $channel])
+            ->filter(fn() => !$this->closing)
+            ->either()
+            ->match(
+                function($in) use ($connection) {
+                    $this->closing = true;
+                    [$signal, $channel] = $in;
+
+                    return $connection
+                        ->request(
+                            static fn($protocol) => $protocol->channel()->close(
+                                $channel,
+                                Close::demand(),
+                            ),
+                            Method::channelCloseOk,
+                        )
+                        ->leftMap(static fn() => Failure::toCloseChannel())
+                        ->flatMap(
+                            static fn() => $connection
+                                ->close()
+                                ->either()
+                                ->leftMap(static fn() => Failure::toCloseConnection()),
+                        )
+                        ->flatMap(static fn() => Either::left(Failure::closedBySignal($signal)));
+                },
+                static fn() => $continue(),
+            );
     }
 }

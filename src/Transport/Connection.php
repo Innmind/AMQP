@@ -288,12 +288,15 @@ final class Connection
                 return $frame;
             });
 
-        return $this
-            ->socket
-            ->send($data)
-            ->either()
-            ->map(static fn() => new SideEffect)
-            ->leftMap(static fn() => Failure::toSendFrame());
+        return $this->signals->match(
+            fn() => $this
+                ->socket
+                ->send($data)
+                ->either()
+                ->map(static fn() => new SideEffect)
+                ->leftMap(static fn() => Failure::toSendFrame()),
+            $this,
+        );
     }
 
     /**
