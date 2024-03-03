@@ -176,44 +176,6 @@ final class Connection
     }
 
     /**
-     * When it contains the same connection instance it means that you can still
-     * use the connection, otherwise you should stop using it
-     *
-     * Possible failures are exceeding the max channel number, the max frame size
-     * or that writting to the socket failed
-     *
-     * @param callable(Protocol, MaxFrameSize): Sequence<Frame> $frames
-     *
-     * @throws FrameChannelExceedAllowedChannelNumber
-     * @throws FrameExceedAllowedSize
-     *
-     * @return Either<Failure, SideEffect>
-     */
-    public function send(callable $frames): Either
-    {
-        // TODO handle signals
-        $data = $frames($this->protocol, $this->maxFrameSize)
-            ->map(function($frame) {
-                $this->maxChannels->verify($frame->channel()->toInt());
-
-                return $frame;
-            })
-            ->map(static fn($frame) => $frame->pack())
-            ->map(function($frame) {
-                $this->maxFrameSize->verify($frame->length());
-
-                return $frame;
-            });
-
-        return $this
-            ->socket
-            ->send($data)
-            ->either()
-            ->map(static fn() => new SideEffect)
-            ->leftMap(static fn() => Failure::toSendFrame());
-    }
-
-    /**
      * @return Either<Failure, ReceivedFrame>
      */
     public function wait(Method ...$names): Either
@@ -295,6 +257,44 @@ final class Connection
         $this->signals->install($signals, $channel);
 
         return $this;
+    }
+
+    /**
+     * When it contains the same connection instance it means that you can still
+     * use the connection, otherwise you should stop using it
+     *
+     * Possible failures are exceeding the max channel number, the max frame size
+     * or that writting to the socket failed
+     *
+     * @param callable(Protocol, MaxFrameSize): Sequence<Frame> $frames
+     *
+     * @throws FrameChannelExceedAllowedChannelNumber
+     * @throws FrameExceedAllowedSize
+     *
+     * @return Either<Failure, SideEffect>
+     */
+    private function send(callable $frames): Either
+    {
+        // TODO handle signals
+        $data = $frames($this->protocol, $this->maxFrameSize)
+            ->map(function($frame) {
+                $this->maxChannels->verify($frame->channel()->toInt());
+
+                return $frame;
+            })
+            ->map(static fn($frame) => $frame->pack())
+            ->map(function($frame) {
+                $this->maxFrameSize->verify($frame->length());
+
+                return $frame;
+            });
+
+        return $this
+            ->socket
+            ->send($data)
+            ->either()
+            ->map(static fn() => new SideEffect)
+            ->leftMap(static fn() => Failure::toSendFrame());
     }
 
     /**
