@@ -160,15 +160,16 @@ final class Client
     {
         /** @var Either<Failure, SideEffect> */
         return $connection
-            ->send(static fn($protocol) => $protocol->channel()->close(
-                $channel,
-                CloseChannel::demand(),
-            ))
-            ->wait(Method::channelCloseOk)
-            ->connection()
+            ->request(
+                static fn($protocol) => $protocol->channel()->close(
+                    $channel,
+                    CloseChannel::demand(),
+                ),
+                Method::channelCloseOk,
+            )
             ->leftMap(static fn() => Failure::toCloseChannel())
             ->flatMap(
-                static fn($connection) => $connection
+                static fn() => $connection
                     ->close()
                     ->either()
                     ->leftMap(static fn() => Failure::toCloseConnection()),

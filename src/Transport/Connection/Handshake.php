@@ -54,17 +54,16 @@ final class Handshake
     private function secure(Connection $connection): Either
     {
         return $connection
-            ->send(fn($protocol) => $protocol->connection()->secureOk(
-                SecureOk::of(
-                    $this->authority->userInformation()->user(),
-                    $this->authority->userInformation()->password(),
+            ->request(
+                fn($protocol) => $protocol->connection()->secureOk(
+                    SecureOk::of(
+                        $this->authority->userInformation()->user(),
+                        $this->authority->userInformation()->password(),
+                    ),
                 ),
-            ))
-            ->wait(Method::connectionTune)
-            ->then(
-                $this->maybeTune(...),
-                static fn($connection) => $connection,
-            );
+                Method::connectionTune,
+            )
+            ->flatMap(fn($frame) => $this->maybeTune($connection, $frame));
     }
 
     /**
@@ -113,14 +112,14 @@ final class Handshake
     ): Maybe {
         return $connection
             ->tune($maxChannels, $maxFrameSize, $heartbeat)
-            ->send(static fn($protocol) => $protocol->connection()->tuneOk(
+            ->tell(static fn($protocol) => $protocol->connection()->tuneOk(
                 TuneOk::of(
                     $maxChannels,
                     $maxFrameSize,
                     $heartbeat,
                 ),
             ))
-            ->connection()
+            ->map(static fn() => $connection)
             ->maybe();
     }
 }
