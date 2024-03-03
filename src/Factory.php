@@ -38,7 +38,6 @@ final class Factory
                 $timeout,
                 $this->os->clock(),
                 $this->os->remote(),
-                $this->os->sockets(),
             ),
             $this->os->filesystem(),
         );

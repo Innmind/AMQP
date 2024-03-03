@@ -28,7 +28,6 @@ use Innmind\Socket\{
     Client as Socket,
 };
 use Innmind\IO\{
-    IO,
     Sockets\Client,
     Readable\Frame as IOFrame,
 };
@@ -37,10 +36,7 @@ use Innmind\TimeContinuum\{
     ElapsedPeriod,
     Clock,
 };
-use Innmind\OperatingSystem\{
-    Remote,
-    Sockets,
-};
+use Innmind\OperatingSystem\Remote;
 use Innmind\Immutable\{
     Str,
     Maybe,
@@ -97,33 +93,21 @@ final class Connection
         ElapsedPeriod $timeout,
         Clock $clock,
         Remote $remote,
-        Sockets $sockets,
     ): Maybe {
-        // TODO opened sockets should automatically be wrapped
-        $io = IO::of($sockets->watch(...));
-
-        /**
-         * Due to the $socket->write() psalm lose the type
-         * @psalm-suppress ArgumentTypeCoercion
-         * @psalm-suppress InvalidArgument
-         */
         return $remote
             ->socket(
                 $transport,
                 $server->authority()->withoutUserInformation(),
             )
-            ->flatMap(
-                static fn($socket) => $socket
-                    ->write($protocol->version()->pack())
-                    ->maybe(),
-            )
             ->map(
-                static fn($socket) => $io
-                    ->sockets()
-                    ->clients()
-                    ->wrap($socket)
+                static fn($socket) => $socket
                     ->timeoutAfter($timeout)
                     ->toEncoding(Str\Encoding::ascii),
+            )
+            ->flatMap(
+                static fn($socket) => $socket
+                    ->send(Sequence::of($protocol->version()->pack()))
+                    ->map(static fn() => $socket),
             )
             ->map(static fn($socket) => new self(
                 $protocol,
