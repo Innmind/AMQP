@@ -16,6 +16,7 @@ use Innmind\AMQP\{
 use Innmind\Immutable\{
     Either,
     Sequence,
+    SideEffect,
 };
 
 final class Publish implements Command
@@ -44,12 +45,12 @@ final class Publish implements Command
         return $this
             ->commands
             ->reduce(
-                Either::right($connection),
-                fn(Either $connection, $command) => $connection->flatMap(
-                    fn(Connection $connection) => $this->publish($connection, $channel, $command),
+                Either::right(new SideEffect),
+                fn(Either $state, $command) => $state->flatMap(
+                    fn() => $this->publish($connection, $channel, $command),
                 ),
             )
-            ->map(static fn($connection) => State::of($state));
+            ->map(static fn() => State::of($state));
     }
 
     public static function one(Message $message): self
@@ -80,21 +81,19 @@ final class Publish implements Command
     }
 
     /**
-     * @return Either<Failure, Connection>
+     * @return Either<Failure, SideEffect>
      */
     private function publish(
         Connection $connection,
         Channel $channel,
         Model $command,
     ): Either {
-        /** @var Either<Failure, Connection> */
         return $connection
             ->send(static fn($protocol, $maxFrameSize) => $protocol->basic()->publish(
                 $channel,
                 $command,
                 $maxFrameSize,
             ))
-            ->map(static fn() => $connection)
             ->leftMap(static fn() => Failure::toPublish($command));
     }
 }
