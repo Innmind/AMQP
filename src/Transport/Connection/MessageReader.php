@@ -243,6 +243,9 @@ final class MessageReader
         Connection $connection,
         int $bodySize,
     ): Either {
+        // TODO based on the body size keep the message in memory to avoid a
+        // round trip to the filesystem
+
         $chunks = Sequence::lazy(static function() use ($connection, $bodySize) {
             $continue = $bodySize !== 0;
             $read = 0;
