@@ -279,6 +279,8 @@ final class Connection
         MaxFrameSize $maxFrameSize,
         ElapsedPeriod $heartbeat,
     ): self {
+        $this->maxChannels = $maxChannels;
+        $this->maxFrameSize = $maxFrameSize;
         $this->heartbeat->adjust($heartbeat);
         $this->socket = $this->socket->timeoutAfter($heartbeat);
 
