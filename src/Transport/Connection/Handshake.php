@@ -110,8 +110,9 @@ final class Handshake
         MaxFrameSize $maxFrameSize,
         ElapsedPeriod $heartbeat,
     ): Maybe {
+        $connection->tune($maxChannels, $maxFrameSize, $heartbeat);
+
         return $connection
-            ->tune($maxChannels, $maxFrameSize, $heartbeat)
             ->send(static fn($protocol) => $protocol->connection()->tuneOk(
                 TuneOk::of(
                     $maxChannels,

@@ -239,13 +239,11 @@ final class Connection
         MaxChannels $maxChannels,
         MaxFrameSize $maxFrameSize,
         ElapsedPeriod $heartbeat,
-    ): self {
+    ): void {
         $this->maxChannels = $maxChannels;
         $this->maxFrameSize = $maxFrameSize;
         $this->heartbeat->adjust($heartbeat);
         $this->socket = $this->socket->timeoutAfter($heartbeat);
-
-        return $this;
     }
 
     public function listenSignals(Signals $signals, Channel $channel): void
