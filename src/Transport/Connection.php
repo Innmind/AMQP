@@ -17,6 +17,7 @@ use Innmind\AMQP\{
     Model\Connection\Close,
     Model\Connection\MaxChannels,
     Model\Connection\MaxFrameSize,
+    Model\Connection\TuneOk,
     Failure,
     Exception\FrameChannelExceedAllowedChannelNumber,
     Exception\FrameExceedAllowedSize,
@@ -226,21 +227,31 @@ final class Connection
     }
 
     /**
-     * This only modify the internal values for the connection, it doesn't
-     * notify the server we applied the changes on our end. The notification is
-     * done in Handshake
-     *
-     * @internal
+     * @return Maybe<self>
      */
     public function tune(
         MaxChannels $maxChannels,
         MaxFrameSize $maxFrameSize,
         ElapsedPeriod $heartbeat,
-    ): void {
-        $this->maxChannels = $maxChannels;
-        $this->maxFrameSize = $maxFrameSize;
-        $this->heartbeat->adjust($heartbeat);
-        $this->socket = $this->socket->timeoutAfter($heartbeat);
+    ): Maybe {
+        return $this
+            ->send(static fn($protocol) => $protocol->connection()->tuneOk(
+                TuneOk::of(
+                    $maxChannels,
+                    $maxFrameSize,
+                    $heartbeat,
+                ),
+            ))
+            ->maybe()
+            ->map(fn() => new self(
+                $this->protocol,
+                $this->heartbeat->adjust($heartbeat),
+                $this->socket->timeoutAfter($heartbeat),
+                $maxChannels,
+                $maxFrameSize,
+                $this->frame,
+                $this->signals,
+            ));
     }
 
     public function listenSignals(Signals $signals, Channel $channel): void

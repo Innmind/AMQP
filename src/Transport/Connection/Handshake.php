@@ -9,7 +9,6 @@ use Innmind\AMQP\{
     Transport\Frame\Method,
     Transport\Frame\Value,
     Model\Connection\SecureOk,
-    Model\Connection\TuneOk,
     Model\Connection\MaxChannels,
     Model\Connection\MaxFrameSize,
     Failure,
@@ -91,36 +90,8 @@ final class Handshake
             ->map(ElapsedPeriod::of(...));
 
         return Maybe::all($maxChannels, $maxFrameSize, $heartbeat)
-            ->flatMap(fn(MaxChannels $maxChannels, MaxFrameSize $maxFrameSize, ElapsedPeriod $heartbeat) => $this->tune(
-                $connection,
-                $maxChannels,
-                $maxFrameSize,
-                $heartbeat,
-            ))
+            ->flatMap($connection->tune(...))
             ->either()
             ->leftMap(static fn() => Failure::toOpenConnection());
-    }
-
-    /**
-     * @return Maybe<Connection>
-     */
-    private function tune(
-        Connection $connection,
-        MaxChannels $maxChannels,
-        MaxFrameSize $maxFrameSize,
-        ElapsedPeriod $heartbeat,
-    ): Maybe {
-        $connection->tune($maxChannels, $maxFrameSize, $heartbeat);
-
-        return $connection
-            ->send(static fn($protocol) => $protocol->connection()->tuneOk(
-                TuneOk::of(
-                    $maxChannels,
-                    $maxFrameSize,
-                    $heartbeat,
-                ),
-            ))
-            ->map(static fn() => $connection)
-            ->maybe();
     }
 }
