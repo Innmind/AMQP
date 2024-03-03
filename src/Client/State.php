@@ -3,9 +3,6 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Client;
 
-/**
- * @internal
- */
 final class State
 {
     private mixed $value;
