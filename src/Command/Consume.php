@@ -257,7 +257,7 @@ final class Consume implements Command
         return ($this->consume)(
             $state->unwrap(),
             $message,
-            Continuation::of($state->unwrap()),
+            Continuation::of($state),
             $details,
         )
             ->respond(

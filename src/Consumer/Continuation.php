@@ -23,16 +23,16 @@ use Innmind\Immutable\{
 
 final class Continuation
 {
-    private mixed $state;
+    private Client\State $state;
     private State $response;
 
-    private function __construct(mixed $state, State $response)
+    private function __construct(Client\State $state, State $response)
     {
         $this->state = $state;
         $this->response = $response;
     }
 
-    public static function of(mixed $state): self
+    public static function of(Client\State $state): self
     {
         // by default we auto ack the message
         return new self($state, State::ack);
@@ -40,17 +40,17 @@ final class Continuation
 
     public function ack(mixed $state): self
     {
-        return new self($state, State::ack);
+        return new self(Client\State::of($state), State::ack);
     }
 
     public function reject(mixed $state): self
     {
-        return new self($state, State::reject);
+        return new self(Client\State::of($state), State::reject);
     }
 
     public function requeue(mixed $state): self
     {
-        return new self($state, State::requeue);
+        return new self(Client\State::of($state), State::requeue);
     }
 
     /**
@@ -60,7 +60,7 @@ final class Continuation
      */
     public function cancel(mixed $state): self
     {
-        return new self($state, State::cancel);
+        return new self(Client\State::of($state), State::cancel);
     }
 
     /**
@@ -91,13 +91,13 @@ final class Continuation
                 ->flatMap(fn() => $this->recover($queue, $connection, $channel, $read)),
             State::ack => $this
                 ->doAck($queue, $connection, $channel, $deliveryTag)
-                ->map(fn() => Client\State::of($this->state)),
+                ->map(fn() => $this->state),
             State::reject => $this
                 ->doReject($queue, $connection, $channel, $deliveryTag)
-                ->map(fn() => Client\State::of($this->state)),
+                ->map(fn() => $this->state),
             State::requeue => $this
                 ->doRequeue($queue, $connection, $channel, $deliveryTag)
-                ->map(fn() => Client\State::of($this->state)),
+                ->map(fn() => $this->state),
         };
     }
 
@@ -146,7 +146,7 @@ final class Continuation
                 ),
                 Method::basicRecoverOk,
             ))
-            ->map(fn() => Canceled::of(Client\State::of($this->state)))
+            ->map(fn() => Canceled::of($this->state))
             ->leftMap(static fn() => Failure::toRecover($queue));
     }
 
