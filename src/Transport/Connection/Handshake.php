@@ -112,7 +112,7 @@ final class Handshake
     ): Maybe {
         return $connection
             ->tune($maxChannels, $maxFrameSize, $heartbeat)
-            ->tell(static fn($protocol) => $protocol->connection()->tuneOk(
+            ->send(static fn($protocol) => $protocol->connection()->tuneOk(
                 TuneOk::of(
                     $maxChannels,
                     $maxFrameSize,

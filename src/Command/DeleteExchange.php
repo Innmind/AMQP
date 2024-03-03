@@ -41,7 +41,7 @@ final class DeleteExchange implements Command
 
         $sideEffect = match ($this->command->shouldWait()) {
             true => $connection->request($frames, Method::exchangeDeleteOk),
-            false => $connection->tell($frames),
+            false => $connection->send($frames),
         };
 
         return $sideEffect

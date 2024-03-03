@@ -42,7 +42,7 @@ final class DeclareExchange implements Command
 
         $sideEffect = match ($this->command->shouldWait()) {
             true => $connection->request($frames, Method::exchangeDeclareOk),
-            false => $connection->tell($frames),
+            false => $connection->send($frames),
         };
 
         return $sideEffect

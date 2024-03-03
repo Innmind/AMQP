@@ -72,7 +72,7 @@ final class DeclareQueue implements Command
                         ->map(DeclareOk::of(...))
                         ->either();
                 }),
-            false => $connection->tell($frames),
+            false => $connection->send($frames),
         };
 
         return $sideEffect

@@ -58,7 +58,7 @@ final class DeleteQueue implements Command
                         ->map(DeleteOk::of(...))
                         ->either(),
                 ),
-            false => $connection->tell($frames),
+            false => $connection->send($frames),
         };
 
         return $sideEffect

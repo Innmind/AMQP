@@ -165,7 +165,7 @@ final class Continuation
     ): Either {
         /** @var Either<Failure, Connection> */
         return $connection
-            ->tell(static fn($protocol) => $protocol->basic()->ack(
+            ->send(static fn($protocol) => $protocol->basic()->ack(
                 $channel,
                 Ack::of($deliveryTag),
             ))
@@ -186,7 +186,7 @@ final class Continuation
     ): Either {
         /** @var Either<Failure, Connection> */
         return $connection
-            ->tell(static fn($protocol) => $protocol->basic()->reject(
+            ->send(static fn($protocol) => $protocol->basic()->reject(
                 $channel,
                 Reject::of($deliveryTag),
             ))
@@ -207,7 +207,7 @@ final class Continuation
     ): Either {
         /** @var Either<Failure, Connection> */
         return $connection
-            ->tell(static fn($protocol) => $protocol->basic()->reject(
+            ->send(static fn($protocol) => $protocol->basic()->reject(
                 $channel,
                 Reject::requeue($deliveryTag),
             ))
@@ -231,7 +231,7 @@ final class Continuation
 
         /** @var Either<Failure, Connection> */
         return $connection
-            ->tell(static fn($protocol) => $protocol->basic()->cancel(
+            ->send(static fn($protocol) => $protocol->basic()->cancel(
                 $channel,
                 Cancel::of($consumerTag),
             ))

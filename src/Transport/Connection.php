@@ -170,7 +170,7 @@ final class Connection
      *
      * @return Either<Failure, SideEffect>
      */
-    public function tell(callable $frames): Either
+    public function send(callable $frames): Either
     {
         return $this->sendFrames($frames);
     }
@@ -324,7 +324,7 @@ final class Connection
             /** @var Either<Failure, ReceivedFrame> */
             return $received
                 ->connection()
-                ->tell(static fn($protocol) => $protocol->connection()->closeOk())
+                ->send(static fn($protocol) => $protocol->connection()->closeOk())
                 ->leftMap(static fn() => Failure::toCloseConnection())
                 ->flatMap(static function() use ($received) {
                     $message = $received

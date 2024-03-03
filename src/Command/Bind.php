@@ -41,7 +41,7 @@ final class Bind implements Command
 
         $sideEffect = match ($this->command->shouldWait()) {
             true => $connection->request($frames, Method::queueBindOk),
-            false => $connection->tell($frames),
+            false => $connection->send($frames),
         };
 
         return $sideEffect

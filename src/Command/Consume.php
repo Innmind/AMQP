@@ -64,7 +64,7 @@ final class Consume implements Command
                     $state,
                 )),
             false => $connection
-                ->tell($frames)
+                ->send($frames)
                 ->map(static fn() => State::of($connection, $state)),
         };
 

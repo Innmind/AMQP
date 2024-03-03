@@ -58,7 +58,7 @@ final class Purge implements Command
                         ->map(PurgeOk::of(...))
                         ->either(),
                 ),
-            false => $connection->tell($frames),
+            false => $connection->send($frames),
         };
 
         return $sideEffect
