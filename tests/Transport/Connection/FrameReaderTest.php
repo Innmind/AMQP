@@ -9,11 +9,9 @@ use Innmind\AMQP\{
     Transport\Frame\Type,
     Transport\Frame\Channel,
     Transport\Frame\Method,
-    Transport\Frame\Value,
     Transport\Frame\Value\UnsignedOctet,
     Transport\Frame\Value\Table,
     Transport\Frame\Value\LongString,
-    Transport\Frame\Value\Text,
     Transport\Frame\Value\ShortString,
     Transport\Frame\Value\UnsignedLongLongInteger,
     Transport\Frame\Value\UnsignedShortInteger,
@@ -35,10 +33,7 @@ use Innmind\AMQP\{
     Model\Connection\MaxFrameSize,
     TimeContinuum\Format\Timestamp as TimestampFormat,
 };
-use Innmind\Stream\{
-    Readable\Stream,
-    Readable,
-};
+use Innmind\Stream\Readable\Stream;
 use Innmind\TimeContinuum\Earth\{
     ElapsedPeriod,
     PointInTime\Now,

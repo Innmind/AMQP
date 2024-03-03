@@ -3,10 +3,7 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Failure;
 
-use Innmind\AMQP\{
-    Failure,
-    Transport\Frame\Method,
-};
+use Innmind\AMQP\Failure;
 use Innmind\Signals\Signal;
 
 /**

@@ -9,19 +9,12 @@ use Innmind\AMQP\{
     Transport\Connection\OpenVHost,
     Transport\Connection\Heartbeat,
     Transport\Connection\FrameReader,
-    Transport\Connection\State,
     Transport\Connection\Continuation,
     Transport\Connection\SignalListener,
-    Transport\Frame,
-    Transport\Protocol,
     Transport\Frame\Channel,
     Transport\Frame\Type,
     Transport\Frame\Method,
     Transport\Frame\Value,
-    Model\Connection\StartOk,
-    Model\Connection\SecureOk,
-    Model\Connection\TuneOk,
-    Model\Connection\Open,
     Model\Connection\Close,
     Model\Connection\MaxChannels,
     Model\Connection\MaxFrameSize,
@@ -43,8 +36,6 @@ use Innmind\Url\Url;
 use Innmind\TimeContinuum\{
     ElapsedPeriod,
     Clock,
-    PointInTime,
-    Earth,
 };
 use Innmind\OperatingSystem\{
     Remote,
@@ -52,7 +43,6 @@ use Innmind\OperatingSystem\{
 };
 use Innmind\Immutable\{
     Str,
-    Set,
     Maybe,
     Either,
     Sequence,
@@ -221,7 +211,7 @@ final class Connection
     /**
      * @return Either<Failure, ReceivedFrame>
      */
-    public function wait(Frame\Method ...$names): Either
+    public function wait(Method ...$names): Either
     {
         return $this
             ->socket

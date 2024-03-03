@@ -11,10 +11,7 @@ use Innmind\AMQP\{
     Failure,
     Exception\LogicException,
 };
-use Innmind\Immutable\{
-    Maybe,
-    Either,
-};
+use Innmind\Immutable\Either;
 
 /**
  * @internal

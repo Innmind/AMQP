@@ -7,10 +7,6 @@ use Innmind\OperatingSystem\OperatingSystem;
 use Innmind\Socket\Internet\Transport as Socket;
 use Innmind\Url\Url;
 use Innmind\TimeContinuum\ElapsedPeriod;
-use Innmind\Immutable\{
-    Sequence,
-    Maybe,
-};
 
 final class Factory
 {

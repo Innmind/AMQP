@@ -3,10 +3,7 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP;
 
-use Innmind\AMQP\{
-    Model,
-    Transport\Frame\Method,
-};
+use Innmind\AMQP\Transport\Frame\Method;
 use Innmind\Signals\Signal;
 use Innmind\Immutable\Maybe;
 

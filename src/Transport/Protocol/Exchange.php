@@ -8,9 +8,7 @@ use Innmind\AMQP\{
     Model\Exchange\Deletion,
     Transport\Frame,
     Transport\Frame\Channel as FrameChannel,
-    Transport\Frame\Type,
     Transport\Frame\Method,
-    Transport\Frame\Value,
     Transport\Frame\Value\UnsignedShortInteger,
     Transport\Frame\Value\ShortString,
     Transport\Frame\Value\Bits,
@@ -18,7 +16,6 @@ use Innmind\AMQP\{
 };
 use Innmind\Immutable\{
     Str,
-    Map,
     Sequence,
 };
 

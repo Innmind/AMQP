@@ -10,7 +10,6 @@ use Innmind\AMQP\{
     Transport\Frame\Channel,
     Transport\Frame\Method,
     Transport\Frame\Type,
-    Transport\Frame\Value,
     Transport\Frame\Value\UnsignedShortInteger,
     Transport\Frame\Value\ShortString,
     Transport\Frame\Value\Bits,

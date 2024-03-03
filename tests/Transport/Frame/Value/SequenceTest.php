@@ -6,15 +6,11 @@ namespace Tests\Innmind\AMQP\Transport\Frame\Value;
 use Innmind\AMQP\{
     Transport\Frame\Value\Sequence,
     Transport\Frame\Value\LongString,
-    Transport\Frame\Value\Text,
     Transport\Frame\Value,
 };
 use Innmind\TimeContinuum\Earth\Clock;
 use Innmind\Stream\Readable\Stream;
-use Innmind\Immutable\{
-    Sequence as Seq,
-    Str,
-};
+use Innmind\Immutable\Sequence as Seq;
 use PHPUnit\Framework\TestCase;
 
 class SequenceTest extends TestCase

@@ -10,7 +10,6 @@ use Innmind\AMQP\{
     Transport\Frame,
     Transport\Frame\Channel,
     Transport\Frame\Method,
-    Model\Connection\MaxFrameSize,
     Failure,
 };
 use Innmind\Socket\Internet\Transport;

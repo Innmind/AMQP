@@ -8,7 +8,6 @@ use Innmind\AMQP\{
     Transport\Connection\MessageReader,
     Transport\Frame\Channel,
     Transport\Frame\Method,
-    Transport\Frame\Type,
     Model\Basic\Ack,
     Model\Basic\Reject,
     Model\Basic\Cancel,
@@ -17,10 +16,7 @@ use Innmind\AMQP\{
     Client,
     Exception\BasicGetNotCancellable,
 };
-use Innmind\Immutable\{
-    Either,
-    Sequence,
-};
+use Innmind\Immutable\Either;
 
 final class Continuation
 {

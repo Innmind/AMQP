@@ -5,7 +5,6 @@ namespace Innmind\AMQP\Command;
 
 use Innmind\AMQP\{
     Command,
-    Client\State,
     Transport\Connection,
     Transport\Connection\MessageReader,
     Transport\Frame\Channel,

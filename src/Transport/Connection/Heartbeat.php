@@ -4,19 +4,14 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Transport\Connection;
 
 use Innmind\AMQP\{
-    Transport\Connection,
     Transport\Frame,
-    Failure,
 };
 use Innmind\TimeContinuum\{
     Clock,
     PointInTime,
     ElapsedPeriod,
 };
-use Innmind\Immutable\{
-    Sequence,
-    Either,
-};
+use Innmind\Immutable\Sequence;
 
 /**
  * @internal

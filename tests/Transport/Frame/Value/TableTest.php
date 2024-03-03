@@ -7,15 +7,11 @@ use Innmind\AMQP\{
     Transport\Frame\Value\Table,
     Transport\Frame\Value\SignedOctet,
     Transport\Frame\Value\LongString,
-    Transport\Frame\Value\Text,
     Transport\Frame\Value,
 };
 use Innmind\TimeContinuum\Earth\Clock;
 use Innmind\Stream\Readable\Stream;
-use Innmind\Immutable\{
-    Map,
-    Str,
-};
+use Innmind\Immutable\Map;
 use PHPUnit\Framework\TestCase;
 
 class TableTest extends TestCase

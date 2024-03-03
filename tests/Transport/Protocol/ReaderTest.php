@@ -5,7 +5,6 @@ namespace Tests\Innmind\AMQP\Transport\Protocol;
 
 use Innmind\AMQP\Transport\{
     Frame\Method,
-    Frame\Value,
     Frame\Value\ShortString,
     Frame\Value\UnsignedShortInteger,
     Frame\Value\UnsignedLongLongInteger,

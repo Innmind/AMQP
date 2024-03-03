@@ -32,7 +32,6 @@ use Innmind\Stream\{
     Bidirectional,
 };
 use Innmind\Immutable\{
-    Map,
     Str,
     Predicate\Instance,
     Sequence,

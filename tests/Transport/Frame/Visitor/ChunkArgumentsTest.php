@@ -5,15 +5,11 @@ namespace Tests\Innmind\AMQP\Transport\Frame\Visitor;
 
 use Innmind\AMQP\Transport\Frame\{
     Visitor\ChunkArguments,
-    Value,
     Value\Bits,
     Value\LongString,
 };
 use Innmind\Stream\Readable\Stream;
-use Innmind\Immutable\{
-    Sequence,
-    Str,
-};
+use Innmind\Immutable\Sequence;
 use PHPUnit\Framework\TestCase;
 
 class ChunkArgumentsTest extends TestCase

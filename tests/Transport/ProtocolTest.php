@@ -15,7 +15,6 @@ use Innmind\AMQP\{
     Transport\Protocol\ArgumentTranslator,
     Transport\Protocol\ArgumentTranslator\ValueTranslator,
     Transport\Frame\Channel as FrameChannel,
-    Transport\Frame\Value,
     Transport\Frame\Value\ShortString,
     Model\Basic\Publish,
     Model\Basic\Message,

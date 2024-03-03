@@ -15,7 +15,6 @@ use Innmind\AMQP\{
     Model\Basic\Message,
     Model\Connection\MaxFrameSize,
     Transport\Frame,
-    Transport\Frame\Type,
     Transport\Frame\Channel as FrameChannel,
     Transport\Frame\Method,
     Transport\Frame\MethodClass,
