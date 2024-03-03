@@ -9,6 +9,7 @@ use Innmind\AMQP\{
     Client\State,
     Transport\Connection,
     Transport\Connection\MessageReader,
+    Transport\Protocol,
     Transport\Frame,
     Transport\Frame\Channel,
     Transport\Frame\Value,
@@ -22,6 +23,7 @@ use Innmind\AMQP\{
 use Innmind\Immutable\{
     Maybe,
     Either,
+    Sequence,
     Predicate\Instance,
 };
 
@@ -46,24 +48,29 @@ final class Consume implements Command
         MessageReader $read,
         mixed $state,
     ): Either {
-        /** @var Either<Failure, State> */
-        return $connection
-            ->send(fn($protocol) => $protocol->basic()->consume(
-                $channel,
-                $this->command,
-            ))
-            ->maybeWait($this->command->shouldWait(), Method::basicConsumeOk)
-            ->then(
-                fn($connection, $frame) => $this->maybeStart(
+        $frames = fn(Protocol $protocol): Sequence => $protocol->basic()->consume(
+            $channel,
+            $this->command,
+        );
+
+        $sideEffect = match ($this->command->shouldWait()) {
+            true => $connection
+                ->request($frames, Method::basicConsumeOk)
+                ->flatMap(fn($frame) => $this->maybeStart(
                     $connection,
                     $channel,
                     $read,
                     $frame,
                     $state,
-                ),
-                static fn($connection) => State::of($connection, $state), // this case should not happen
-            )
-            ->leftMap(fn() => Failure::toConsume($this->command));
+                )),
+            false => $connection
+                ->tell($frames)
+                ->map(static fn() => State::of($connection, $state)),
+        };
+
+        return $sideEffect->leftMap(
+            fn() => Failure::toConsume($this->command),
+        );
     }
 
     public static function of(string $queue): self

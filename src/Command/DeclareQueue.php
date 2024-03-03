@@ -11,6 +11,7 @@ use Innmind\AMQP\{
     Model\Count,
     Transport\Connection,
     Transport\Connection\MessageReader,
+    Transport\Protocol,
     Transport\Frame\Channel,
     Transport\Frame\Method,
     Transport\Frame\Value,
@@ -19,6 +20,7 @@ use Innmind\AMQP\{
 use Innmind\Immutable\{
     Maybe,
     Either,
+    Sequence,
     Predicate\Instance,
 };
 
@@ -37,15 +39,15 @@ final class DeclareQueue implements Command
         MessageReader $read,
         mixed $state,
     ): Either {
-        /** @var Either<Failure, State> */
-        return $connection
-            ->send(fn($protocol) => $protocol->queue()->declare(
-                $channel,
-                $this->command,
-            ))
-            ->maybeWait($this->command->shouldWait(), Method::queueDeclareOk)
-            ->then(
-                function($connection, $frame) use ($state) {
+        $frames = fn(Protocol $protocol): Sequence => $protocol->queue()->declare(
+            $channel,
+            $this->command,
+        );
+
+        $sideEffect = match ($this->command->shouldWait()) {
+            true => $connection
+                ->request($frames, Method::queueDeclareOk)
+                ->flatMap(static function($frame) {
                     $name = $frame
                         ->values()
                         ->first()
@@ -68,12 +70,14 @@ final class DeclareQueue implements Command
                     // maybe in the future we could expose this info to the user
                     return Maybe::all($name, $message, $consumer)
                         ->map(DeclareOk::of(...))
-                        ->map(static fn() => State::of($connection, $state))
-                        ->either()
-                        ->leftMap(fn() => Failure::toDeclareQueue($this->command));
-                },
-                static fn($connection) => State::of($connection, $state),
-            );
+                        ->either();
+                }),
+            false => $connection->tell($frames),
+        };
+
+        return $sideEffect
+            ->map(static fn() => State::of($connection, $state))
+            ->leftMap(fn() => Failure::toDeclareQueue($this->command));
     }
 
     public static function of(string $name): self

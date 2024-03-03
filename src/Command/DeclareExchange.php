@@ -10,11 +10,15 @@ use Innmind\AMQP\{
     Model\Exchange\Type,
     Transport\Connection,
     Transport\Connection\MessageReader,
+    Transport\Protocol,
     Transport\Frame\Channel,
     Transport\Frame\Method,
     Failure,
 };
-use Innmind\Immutable\Either;
+use Innmind\Immutable\{
+    Either,
+    Sequence,
+};
 
 final class DeclareExchange implements Command
 {
@@ -31,15 +35,18 @@ final class DeclareExchange implements Command
         MessageReader $read,
         mixed $state,
     ): Either {
-        /** @var Either<Failure, State> */
-        return $connection
-            ->send(fn($protocol) => $protocol->exchange()->declare(
-                $channel,
-                $this->command,
-            ))
-            ->maybeWait($this->command->shouldWait(), Method::exchangeDeclareOk)
-            ->connection()
-            ->map(static fn($connection) => State::of($connection, $state))
+        $frames = fn(Protocol $protocol): Sequence => $protocol->exchange()->declare(
+            $channel,
+            $this->command,
+        );
+
+        $sideEffect = match ($this->command->shouldWait()) {
+            true => $connection->request($frames, Method::exchangeDeclareOk),
+            false => $connection->tell($frames),
+        };
+
+        return $sideEffect
+            ->map(static fn() => State::of($connection, $state))
             ->leftMap(fn() => Failure::toDeclareExchange($this->command));
     }
 

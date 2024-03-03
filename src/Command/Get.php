@@ -105,20 +105,22 @@ final class Get implements Command
     ): Either {
         /** @var Either<Failure, State> */
         return $connection
-            ->send(fn($protocol) => $protocol->basic()->get(
-                $channel,
-                $this->command,
-            ))
-            ->wait(Method::basicGetOk, Method::basicGetEmpty)
-            ->then(
-                fn($connection, $frame) => $this->maybeConsume(
+            ->request(
+                fn($protocol) => $protocol->basic()->get(
+                    $channel,
+                    $this->command,
+                ),
+                Method::basicGetOk,
+                Method::basicGetEmpty,
+            )
+            ->flatMap(
+                fn($frame) => $this->maybeConsume(
                     $connection,
                     $channel,
                     $read,
                     $frame,
                     $state,
                 ),
-                static fn($connection) => State::of($connection, $state), // this case should not happen
             )
             ->leftMap(fn() => Failure::toGet($this->command));
     }

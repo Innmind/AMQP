@@ -32,13 +32,14 @@ final class Unbind implements Command
     ): Either {
         /** @var Either<Failure, State> */
         return $connection
-            ->send(fn($protocol) => $protocol->queue()->unbind(
-                $channel,
-                $this->command,
-            ))
-            ->wait(Method::queueUnbindOk)
-            ->connection()
-            ->map(static fn($connection) => State::of($connection, $state))
+            ->request(
+                fn($protocol) => $protocol->queue()->unbind(
+                    $channel,
+                    $this->command,
+                ),
+                Method::queueUnbindOk,
+            )
+            ->map(static fn() => State::of($connection, $state))
             ->leftMap(fn() => Failure::toUnbind($this->command));
     }
 

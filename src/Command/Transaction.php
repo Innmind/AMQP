@@ -71,11 +71,12 @@ final class Transaction implements Command
         Connection $connection,
         Channel $channel,
     ): Either {
-        /** @var Either<Failure, Connection> */
         return $connection
-            ->send(static fn($protocol) => $protocol->transaction()->select($channel))
-            ->wait(Method::transactionSelectOk)
-            ->connection()
+            ->request(
+                static fn($protocol) => $protocol->transaction()->select($channel),
+                Method::transactionSelectOk,
+            )
+            ->map(static fn() => $connection)
             ->leftMap(static fn() => Failure::toSelect());
     }
 
@@ -95,13 +96,13 @@ final class Transaction implements Command
      */
     private function commit(State $state, Channel $channel): Either
     {
-        /** @var Either<Failure, State> */
         return $state
             ->connection()
-            ->send(static fn($protocol) => $protocol->transaction()->commit($channel))
-            ->wait(Method::transactionCommitOk)
-            ->connection()
-            ->map(static fn($connection) => State::of($connection, $state->userState()))
+            ->request(
+                static fn($protocol) => $protocol->transaction()->commit($channel),
+                Method::transactionCommitOk,
+            )
+            ->map(static fn() => $state)
             ->leftMap(static fn() => Failure::toCommit());
     }
 
@@ -110,13 +111,13 @@ final class Transaction implements Command
      */
     private function rollback(State $state, Channel $channel): Either
     {
-        /** @var Either<Failure, State> */
         return $state
             ->connection()
-            ->send(static fn($protocol) => $protocol->transaction()->rollback($channel))
-            ->wait(Method::transactionRollbackOk)
-            ->connection()
-            ->map(static fn($connection) => State::of($connection, $state->userState()))
+            ->request(
+                static fn($protocol) => $protocol->transaction()->rollback($channel),
+                Method::transactionRollbackOk,
+            )
+            ->map(static fn() => $state)
             ->leftMap(static fn() => Failure::toRollback());
     }
 }
