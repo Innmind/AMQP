@@ -8,8 +8,15 @@ use Innmind\AMQP\Transport\Frame\{
     Value\Bits,
     Value\LongString,
 };
-use Innmind\Stream\Readable\Stream;
-use Innmind\Immutable\Sequence;
+use Innmind\IO\IO;
+use Innmind\Stream\{
+    Readable\Stream,
+    Watch\Select,
+};
+use Innmind\Immutable\{
+    Sequence,
+    Str,
+};
 use PHPUnit\Framework\TestCase;
 
 class ChunkArgumentsTest extends TestCase
@@ -17,13 +24,17 @@ class ChunkArgumentsTest extends TestCase
     public function testInvokation()
     {
         $visit = new ChunkArguments(
-            Bits::unpack(...),
-            LongString::unpack(...),
+            Bits::frame(),
+            LongString::frame(),
         );
 
         $arguments = Bits::of(true)->pack()->toString().LongString::literal('foo')->pack()->toString();
+        $io = IO::of(Select::waitForever(...))
+            ->readable()
+            ->wrap(Stream::ofContent($arguments))
+            ->toEncoding(Str\Encoding::ascii);
 
-        $stream = $visit(Stream::ofContent($arguments))->match(
+        $stream = $visit($io)->match(
             static fn($arguments) => $arguments,
             static fn() => null,
         );

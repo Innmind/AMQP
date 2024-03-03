@@ -35,7 +35,11 @@ use Innmind\TimeContinuum\Earth\{
     PointInTime\Now,
     Clock,
 };
-use Innmind\Stream\Readable\Stream;
+use Innmind\IO\IO;
+use Innmind\Stream\{
+    Readable\Stream,
+    Watch\Select,
+};
 use Innmind\Immutable\{
     Str,
     Map,
@@ -93,20 +97,26 @@ class ProtocolTest extends TestCase
                 static fn() => null,
             );
 
-        $values = $protocol->readHeader(
-            Stream::ofContent(
-                Str::of('')
-                    ->join(
+        $values = IO::of(Select::waitForever(...))
+            ->readable()
+            ->wrap(
+                Stream::ofContent(
+                    \implode(
+                        '',
                         $header
                             ->values()
-                            ->map(static fn($v) => $v->pack()->toString()),
-                    )
-                    ->toString(),
-            ),
-        )->match(
-            static fn($values) => $values,
-            static fn() => null,
-        );
+                            ->map(static fn($v) => $v->pack()->toString())
+                            ->toList(),
+                    ),
+                ),
+            )
+            ->toEncoding(Str\Encoding::ascii)
+            ->frames($protocol->headerFrame())
+            ->one()
+            ->match(
+                static fn($values) => $values,
+                static fn() => null,
+            );
 
         $this->assertInstanceOf(Sequence::class, $values);
         $this->assertCount(15, $values); // body size + flag bits + 13 properties

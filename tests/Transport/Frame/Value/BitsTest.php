@@ -7,8 +7,15 @@ use Innmind\AMQP\Transport\Frame\{
     Value\Bits,
     Value,
 };
-use Innmind\Stream\Readable\Stream;
-use Innmind\Immutable\Sequence;
+use Innmind\IO\IO;
+use Innmind\Stream\{
+    Readable\Stream,
+    Watch\Select,
+};
+use Innmind\Immutable\{
+    Sequence,
+    Str,
+};
 use PHPUnit\Framework\TestCase;
 
 class BitsTest extends TestCase
@@ -34,10 +41,16 @@ class BitsTest extends TestCase
      */
     public function testFromStream($expected, $string)
     {
-        $value = Bits::unpack(Stream::ofContent($string))->match(
-            static fn($value) => $value,
-            static fn() => null,
-        );
+        $value = IO::of(Select::waitForever(...))
+            ->readable()
+            ->wrap(Stream::ofContent($string))
+            ->toEncoding(Str\Encoding::ascii)
+            ->frames(Bits::frame())
+            ->one()
+            ->match(
+                static fn($value) => $value->unwrap(),
+                static fn() => null,
+            );
 
         $this->assertInstanceOf(Bits::class, $value);
         $this->assertSame($expected, $value->original()->toList());

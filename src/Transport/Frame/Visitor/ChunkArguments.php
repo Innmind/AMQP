@@ -48,7 +48,9 @@ final class ChunkArguments
          */
         $frame = $this->frames->match(
             static fn($first, $rest) => Frame\Composite::of(
-                static fn(Value ...$values) => Sequence::of(...$values),
+                static fn(Unpacked ...$values) => Sequence::of(...$values)->map(
+                    static fn($unpacked) => $unpacked->unwrap(),
+                ),
                 $first,
                 ...$rest->toList(),
             ),

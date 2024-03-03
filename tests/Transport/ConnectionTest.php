@@ -40,15 +40,14 @@ class ConnectionTest extends TestCase
             static fn() => null,
         );
 
-        $this->assertSame(
-            $connection,
+        $this->assertInstanceOf(
+            SideEffect::class,
             $connection
                 ->send(
                     static fn($protocol) => $protocol->channel()->open(new Channel(1)),
                 )
-                ->connection()
                 ->match(
-                    static fn($connection) => $connection,
+                    static fn($sideEffect) => $sideEffect,
                     static fn() => null,
                 ),
         );
@@ -106,9 +105,10 @@ class ConnectionTest extends TestCase
         $this->assertSame(
             Failure\Kind::unexpectedFrame,
             $connection
-                ->send(static fn($protocol) => $protocol->channel()->open(new Channel(2)))
-                ->wait(Method::connectionOpen)
-                ->connection()
+                ->request(
+                    static fn($protocol) => $protocol->channel()->open(new Channel(2)),
+                    Method::connectionOpen,
+                )
                 ->match(
                     static fn() => null,
                     static fn($failure) => $failure->kind(),
@@ -132,14 +132,13 @@ class ConnectionTest extends TestCase
             static fn() => null,
         );
 
-        $connection = $connection->send(static fn() => Sequence::of(Frame::method(
+        $_ = $connection->send(static fn() => Sequence::of(Frame::method(
             new Channel(0),
             Method::of(20, 10),
             //missing arguments
         )))
-            ->connection()
             ->match(
-                static fn($connection) => $connection,
+                static fn() => null,
                 static fn() => null,
             );
         $this->assertSame(

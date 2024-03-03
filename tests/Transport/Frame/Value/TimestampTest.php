@@ -13,7 +13,12 @@ use Innmind\TimeContinuum\{
     Earth\Clock,
     PointInTime as PointInTimeInterface,
 };
-use Innmind\Stream\Readable\Stream;
+use Innmind\IO\IO;
+use Innmind\Stream\{
+    Readable\Stream,
+    Watch\Select,
+};
+use Innmind\Immutable\Str;
 use PHPUnit\Framework\TestCase;
 
 class TimestampTest extends TestCase
@@ -35,10 +40,16 @@ class TimestampTest extends TestCase
 
     public function testFromStream()
     {
-        $value = Timestamp::unpack(new Clock, Stream::ofContent(\pack('J', $time = \time())))->match(
-            static fn($value) => $value,
-            static fn() => null,
-        );
+        $value = IO::of(Select::waitForever(...))
+            ->readable()
+            ->wrap(Stream::ofContent(\pack('J', $time = \time())))
+            ->toEncoding(Str\Encoding::ascii)
+            ->frames(Timestamp::frame(new Clock))
+            ->one()
+            ->match(
+                static fn($value) => $value->unwrap(),
+                static fn() => null,
+            );
 
         $this->assertInstanceOf(Timestamp::class, $value);
         $this->assertInstanceOf(PointInTimeInterface::class, $value->original());
