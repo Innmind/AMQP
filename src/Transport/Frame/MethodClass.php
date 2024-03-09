@@ -37,14 +37,6 @@ enum MethodClass
         };
     }
 
-    public function toString(): string
-    {
-        return match ($this) {
-            self::transaction => 'tx',
-            default => $this->name,
-        };
-    }
-
     /**
      * @return 10|20|30|40|50|60|90
      */
