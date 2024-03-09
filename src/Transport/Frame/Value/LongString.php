@@ -5,7 +5,11 @@ namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\IO\Readable\Frame;
-use Innmind\Immutable\Str;
+use Innmind\Immutable\{
+    Str,
+    Maybe,
+    Either,
+};
 
 /**
  * @implements Value<Str>
@@ -39,6 +43,26 @@ final class LongString implements Value
         $_ = UnsignedLongInteger::of($string->toEncoding(Str\Encoding::ascii)->length());
 
         return new self($string);
+    }
+
+    /**
+     * @psalm-pure
+     *
+     * @return Either<mixed, Value>
+     */
+    public static function wrap(mixed $value): Either
+    {
+        return Maybe::of($value)
+            ->filter(\is_string(...))
+            ->map(Str::of(...))
+            ->map(static fn($str) => $str->toEncoding(Str\Encoding::ascii))
+            ->flatMap(
+                static fn($str) => UnsignedLongInteger::wrap($str->length())
+                    ->maybe()
+                    ->map(static fn() => new self($str)),
+            )
+            ->either()
+            ->leftMap(static fn(): mixed => $value);
     }
 
     /**

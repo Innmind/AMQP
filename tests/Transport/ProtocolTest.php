@@ -13,7 +13,6 @@ use Innmind\AMQP\{
     Transport\Protocol\Transaction,
     Transport\Protocol\Version,
     Transport\Protocol\ArgumentTranslator,
-    Transport\Protocol\ArgumentTranslator\ValueTranslator,
     Transport\Frame\Channel as FrameChannel,
     Transport\Frame\Value\ShortString,
     Model\Basic\Publish,
@@ -51,7 +50,7 @@ class ProtocolTest extends TestCase
 {
     public function testInterface()
     {
-        $protocol = new Protocol(new Clock, $this->createMock(ArgumentTranslator::class));
+        $protocol = new Protocol(new Clock, new ArgumentTranslator);
 
         $this->assertInstanceOf(Version::class, $protocol->version());
         $this->assertSame("AMQP\x00\x00\x09\x01", $protocol->version()->pack()->toString());
@@ -65,7 +64,7 @@ class ProtocolTest extends TestCase
 
     public function testReadHeader()
     {
-        $protocol = new Protocol(new Clock, new ValueTranslator);
+        $protocol = new Protocol(new Clock, new ArgumentTranslator);
 
         $header = $protocol
             ->basic()

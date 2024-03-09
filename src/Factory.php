@@ -33,7 +33,7 @@ final class Factory
                 $server,
                 new Transport\Protocol(
                     $this->os->clock(),
-                    new Transport\Protocol\ArgumentTranslator\ValueTranslator,
+                    new Transport\Protocol\ArgumentTranslator,
                 ),
                 $timeout,
                 $this->os->clock(),

@@ -17,7 +17,7 @@ use Innmind\AMQP\{
     Transport\Frame\Value\UnsignedShortInteger,
     Transport\Frame\Value\Timestamp,
     Transport\Protocol,
-    Transport\Protocol\ArgumentTranslator\ValueTranslator,
+    Transport\Protocol\ArgumentTranslator,
     Model\Basic\Publish,
     Model\Basic\Message,
     Model\Basic\Message\AppId,
@@ -55,7 +55,7 @@ class FrameReaderTest extends TestCase
 
     public function setUp(): void
     {
-        $this->protocol = new Protocol(new Clock, new ValueTranslator);
+        $this->protocol = new Protocol(new Clock, new ArgumentTranslator);
     }
 
     public function testReadCommand()

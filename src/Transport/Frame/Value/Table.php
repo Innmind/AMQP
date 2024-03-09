@@ -3,14 +3,20 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport\Frame\Value;
 
-use Innmind\AMQP\Transport\Frame\Value;
+use Innmind\AMQP\Transport\{
+    Frame\Value,
+    Protocol\ArgumentTranslator,
+};
 use Innmind\TimeContinuum\Clock;
 use Innmind\IO\Readable\Frame;
 use Innmind\Immutable\{
     Str,
     Sequence as Seq,
+    Maybe,
+    Either,
     Map,
     Monoid\Concat,
+    Predicate\Instance,
 };
 
 /**
@@ -38,6 +44,33 @@ final class Table implements Value
     public static function of(Map $map): self
     {
         return new self($map);
+    }
+
+    /**
+     * @psalm-pure
+     *
+     * @return Either<mixed, Value>
+     */
+    public static function wrap(ArgumentTranslator $translate, mixed $value): Either
+    {
+        /** @psalm-suppress MixedArgumentTypeCoercion */
+        return Maybe::of($value)
+            ->keep(Instance::of(Map::class))
+            ->flatMap(
+                static fn($map) => $map->reduce(
+                    Maybe::just(Map::of()),
+                    static fn(Maybe $translated, $key, $value) => $translated->flatMap(
+                        static fn(Map $map) => ShortString::wrap($key)
+                            ->maybe()
+                            ->map(
+                                static fn() => ($map)($key, $translate($value)),
+                            ),
+                    ),
+                ),
+            )
+            ->either()
+            ->map(static fn($map) => new self($map))
+            ->leftMap(static fn(): mixed => $value);
     }
 
     /**

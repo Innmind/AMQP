@@ -3,13 +3,19 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport\Frame\Value;
 
-use Innmind\AMQP\Transport\Frame\Value;
+use Innmind\AMQP\Transport\{
+    Frame\Value,
+    Protocol\ArgumentTranslator,
+};
 use Innmind\TimeContinuum\Clock;
 use Innmind\IO\Readable\Frame;
 use Innmind\Immutable\{
     Sequence as Seq,
     Monoid\Concat,
     Str,
+    Maybe,
+    Either,
+    Predicate\Instance,
 };
 
 /**
@@ -38,6 +44,21 @@ final class Sequence implements Value
     public static function of(Value ...$values): self
     {
         return new self(Seq::of(...$values));
+    }
+
+    /**
+     * @psalm-pure
+     *
+     * @return Either<mixed, Value>
+     */
+    public static function wrap(ArgumentTranslator $translate, mixed $value): Either
+    {
+        return Maybe::of($value)
+            ->keep(Instance::of(Seq::class))
+            ->map(static fn($values) => $values->map($translate))
+            ->either()
+            ->map(static fn($values) => new self($values))
+            ->leftMap(static fn(): mixed => $value);
     }
 
     /**

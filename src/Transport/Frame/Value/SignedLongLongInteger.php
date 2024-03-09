@@ -5,7 +5,11 @@ namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\IO\Readable\Frame;
-use Innmind\Immutable\Str;
+use Innmind\Immutable\{
+    Str,
+    Maybe,
+    Either,
+};
 
 /**
  * @implements Value<int>
@@ -26,6 +30,21 @@ final class SignedLongLongInteger implements Value
     public static function of(int $value): self
     {
         return new self($value);
+    }
+
+    /**
+     * @psalm-pure
+     *
+     * @return Either<mixed, Value>
+     */
+    public static function wrap(mixed $value): Either
+    {
+        /** @psalm-suppress MixedArgument */
+        return Maybe::of($value)
+            ->filter(\is_int(...))
+            ->either()
+            ->map(static fn($int) => new self($int))
+            ->leftMap(static fn(): mixed => $value);
     }
 
     /**

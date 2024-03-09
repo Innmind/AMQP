@@ -8,6 +8,7 @@ use Innmind\IO\Readable\Frame;
 use Innmind\Immutable\{
     Str,
     Sequence,
+    Either,
 };
 
 /**
@@ -34,6 +35,19 @@ final class Bits implements Value
     public static function of(bool $first, bool ...$bits): self
     {
         return new self(Sequence::of($first, ...$bits));
+    }
+
+    /**
+     * @psalm-pure
+     *
+     * @return Either<mixed, Value>
+     */
+    public static function wrap(mixed $value): Either
+    {
+        return match (true) {
+            \is_bool($value) => Either::right(self::of($value)),
+            default => Either::left($value),
+        };
     }
 
     /**

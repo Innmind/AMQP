@@ -11,7 +11,11 @@ use Innmind\Math\{
     DefinitionSet\Range,
 };
 use Innmind\IO\Readable\Frame;
-use Innmind\Immutable\Str;
+use Innmind\Immutable\{
+    Str,
+    Maybe,
+    Either,
+};
 
 /**
  * @implements Value<int<0, max>>
@@ -51,6 +55,23 @@ final class UnsignedLongLongInteger implements Value
         self::definitionSet()->accept(Integer::of($value));
 
         return new self($value);
+    }
+
+    /**
+     * @psalm-pure
+     *
+     * @return Either<mixed, Value>
+     */
+    public static function wrap(mixed $value): Either
+    {
+        /** @psalm-suppress ArgumentTypeCoercion */
+        return Maybe::of($value)
+            ->filter(\is_int(...))
+            ->map(Integer::of(...))
+            ->filter(self::definitionSet()->contains(...))
+            ->either()
+            ->map(static fn($int) => new self($int->value()))
+            ->leftMap(static fn(): mixed => $value);
     }
 
     /**

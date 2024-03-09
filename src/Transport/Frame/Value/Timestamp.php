@@ -12,7 +12,12 @@ use Innmind\TimeContinuum\{
     PointInTime,
 };
 use Innmind\IO\Readable\Frame;
-use Innmind\Immutable\Str;
+use Innmind\Immutable\{
+    Str,
+    Maybe,
+    Either,
+    Predicate\Instance,
+};
 
 /**
  * @implements Value<PointInTime>
@@ -33,6 +38,20 @@ final class Timestamp implements Value
     public static function of(PointInTime $point): self
     {
         return new self($point);
+    }
+
+    /**
+     * @psalm-pure
+     *
+     * @return Either<mixed, Value>
+     */
+    public static function wrap(mixed $value): Either
+    {
+        return Maybe::of($value)
+            ->keep(Instance::of(PointInTime::class))
+            ->either()
+            ->map(static fn($point) => new self($point))
+            ->leftMap(static fn(): mixed => $value);
     }
 
     /**
