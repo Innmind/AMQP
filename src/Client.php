@@ -80,11 +80,6 @@ final class Client
 
     public function listenSignals(CurrentProcess $currentProcess): self
     {
-        // We ask for the current process instead of the signals wrapper directly
-        // because the user may fork the process between the time this method is
-        // called and the time the listeners are installed (when run is called).
-        // This would result on the listeners being installed for the parent
-        // process instead of the child.
         return new self(
             $this->command,
             $this->load,
