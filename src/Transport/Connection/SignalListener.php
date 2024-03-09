@@ -24,8 +24,9 @@ use Innmind\Immutable\{
 final class SignalListener
 {
     private bool $installed = false;
+    private bool $notified = false;
     /** @var Maybe<Signal> */
-    private Maybe $notified;
+    private Maybe $received;
     /** @var Maybe<Channel> */
     private Maybe $channel;
     /** @var Maybe<Signals> */
@@ -37,13 +38,20 @@ final class SignalListener
     private function __construct()
     {
         /** @var Maybe<Signal> */
-        $this->notified = Maybe::nothing();
+        $this->received = Maybe::nothing();
         /** @var Maybe<Channel> */
         $this->channel = Maybe::nothing();
         /** @var Maybe<Signals> */
         $this->signals = Maybe::nothing();
         $this->softClose = function(Signal $signal): void {
-            $this->notified = Maybe::just($signal);
+            // Do not re-attempt to close when already closing if the user sends
+            // multiple signals.
+            if ($this->closing) {
+                return;
+            }
+
+            $this->notified = true;
+            $this->received = Maybe::just($signal);
         };
     }
 
@@ -78,6 +86,17 @@ final class SignalListener
         );
     }
 
+    public function notified(): bool
+    {
+        // Return false when closing to avoid abort watching the socket during
+        // the handshake to properly close the connection.
+        if ($this->closing) {
+            return false;
+        }
+
+        return $this->notified;
+    }
+
     /**
      * @template T
      *
@@ -85,9 +104,9 @@ final class SignalListener
      *
      * @return Either<Failure, T>
      */
-    public function match(callable $continue, Connection $connection): Either
+    public function close(Connection $connection, callable $continue): Either
     {
-        return Maybe::all($this->notified, $this->channel)
+        return Maybe::all($this->received, $this->channel)
             ->map(static fn(Signal $signal, Channel $channel) => [$signal, $channel])
             ->filter(fn() => !$this->closing)
             ->either()

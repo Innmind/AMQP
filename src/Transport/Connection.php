@@ -165,27 +165,30 @@ final class Connection
      */
     public function wait(Method ...$names): Either
     {
-        return $this->signals->match(
-            fn() => $this
-                ->socket
-                ->heartbeatWith(
-                    fn() => $this
-                        ->heartbeat
-                        ->frames()
-                        ->map(static fn($frame) => $frame->pack()),
-                )
-                ->frames($this->frame)
-                ->one()
-                ->map(ReceivedFrame::of(...))
-                ->map($this->flagActive(...))
-                ->either()
-                ->leftMap(static fn() => Failure::toReadFrame())
-                ->flatMap(fn($received) => match ($received->frame()->type()) {
+        return $this
+            ->socket
+            ->heartbeatWith(
+                fn() => $this
+                    ->heartbeat
+                    ->frames()
+                    ->map(static fn($frame) => $frame->pack()),
+            )
+            ->abortWhen($this->signals->notified(...))
+            ->frames($this->frame)
+            ->one()
+            ->map(ReceivedFrame::of(...))
+            ->map($this->flagActive(...))
+            ->either()
+            ->eitherWay(
+                fn($received) => match ($received->frame()->type()) {
                     Type::heartbeat => $this->wait(...$names),
                     default => $this->ensureValidFrame($received, ...$names),
-                }),
-            $this,
-        );
+                },
+                fn() => $this->signals->close(
+                    $this,
+                    static fn() => Either::left(Failure::toReadFrame()),
+                ),
+            );
     }
 
     /**
@@ -279,15 +282,18 @@ final class Connection
                 return $frame;
             });
 
-        return $this->signals->match(
-            fn() => $this
-                ->socket
-                ->send($data)
-                ->either()
-                ->map(static fn() => new SideEffect)
-                ->leftMap(static fn() => Failure::toSendFrame()),
-            $this,
-        );
+        return $this
+            ->socket
+            ->abortWhen($this->signals->notified(...))
+            ->send($data)
+            ->either()
+            ->eitherWay(
+                static fn() => Either::right(new SideEffect),
+                fn() => $this->signals->close(
+                    $this,
+                    static fn() => Either::left(Failure::toSendFrame()),
+                ),
+            );
     }
 
     /**
