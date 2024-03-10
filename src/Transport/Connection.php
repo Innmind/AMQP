@@ -94,6 +94,7 @@ final class Connection
         Clock $clock,
         Remote $remote,
     ): Maybe {
+        /** @psalm-suppress InvalidArgument */
         return $remote
             ->socket(
                 $transport,
