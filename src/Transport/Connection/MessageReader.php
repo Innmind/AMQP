@@ -22,6 +22,8 @@ use Innmind\AMQP\{
 };
 use Innmind\OperatingSystem\Filesystem;
 use Innmind\TimeContinuum\Earth\ElapsedPeriod;
+use Innmind\Filesystem\File\Content;
+use Innmind\Stream\Stream\Size\Unit;
 use Innmind\Immutable\{
     Str,
     Predicate\Instance,
@@ -243,9 +245,6 @@ final class MessageReader
         Connection $connection,
         int $bodySize,
     ): Either {
-        // TODO based on the body size keep the message in memory to avoid a
-        // round trip to the filesystem
-
         $chunks = Sequence::lazy(static function() use ($connection, $bodySize) {
             $continue = $bodySize !== 0;
             $read = 0;
@@ -269,10 +268,23 @@ final class MessageReader
             }
         });
 
-        return $this
-            ->filesystem
-            ->temporary($chunks)
-            ->memoize() // to prevent using a deferred Maybe that would result in out of order reading the socket
+        /** @psalm-suppress MixedArgumentTypeCoercion Because of the reduce it doesn't understand the type of the Sequence */
+        $content = match (true) {
+            $bodySize <= Unit::megabytes->times(2) => $chunks
+                ->reduce(
+                    Maybe::just(Sequence::of()),
+                    static fn(Maybe $content, $chunk) => Maybe::all($content, $chunk)->map(
+                        static fn(Sequence $chunks, Str $chunk) => ($chunks)($chunk),
+                    ),
+                )
+                ->map(Content::ofChunks(...)),
+            default => $this
+                ->filesystem
+                ->temporary($chunks)
+                ->memoize(), // to prevent using a deferred Maybe that would result in out of order reading the socket
+        };
+
+        return $content
             ->either()
             ->map(Message::file(...))
             ->leftMap(static fn() => Failure::toReadMessage());
