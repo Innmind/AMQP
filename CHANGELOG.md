@@ -5,7 +5,7 @@
 ### Changed
 
 - Requires `innmind/immutable:~5.2`
-- Requires `innmind/operating-system:~4.1`
+- Requires `innmind/operating-system:~5.0`
 - Requires `innmind/filesystem:~7.0`
 - Requires `innmind/io:~2.3`
 

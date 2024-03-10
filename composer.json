@@ -21,7 +21,7 @@
         "innmind/math": "~6.0",
         "innmind/url": "~4.1",
         "ramsey/uuid": "~4.0",
-        "innmind/operating-system": "dev-next",
+        "innmind/operating-system": "~5.0",
         "innmind/media-type": "~2.0",
         "innmind/filesystem": "~7.0",
         "innmind/stream": "~4.0",
