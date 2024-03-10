@@ -9,7 +9,6 @@ use Innmind\AMQP\{
     Transport\Frame\Method,
     Transport\Frame\Value,
     Model\Connection\SecureOk,
-    Model\Connection\TuneOk,
     Model\Connection\MaxChannels,
     Model\Connection\MaxFrameSize,
     Failure,
@@ -41,9 +40,9 @@ final class Handshake
     {
         return $connection
             ->wait(Method::connectionSecure, Method::connectionTune)
-            ->flatMap(fn($received) => match ($received->frame()->is(Method::connectionSecure)) {
-                true => $this->secure($received->connection()),
-                false => $this->maybeTune($received->connection(), $received->frame()),
+            ->flatMap(fn($received) => match ($received->is(Method::connectionSecure)) {
+                true => $this->secure($connection),
+                false => $this->maybeTune($connection, $received->frame()),
             })
             ->maybe();
     }
@@ -54,17 +53,16 @@ final class Handshake
     private function secure(Connection $connection): Either
     {
         return $connection
-            ->send(fn($protocol) => $protocol->connection()->secureOk(
-                SecureOk::of(
-                    $this->authority->userInformation()->user(),
-                    $this->authority->userInformation()->password(),
+            ->request(
+                fn($protocol) => $protocol->connection()->secureOk(
+                    SecureOk::of(
+                        $this->authority->userInformation()->user(),
+                        $this->authority->userInformation()->password(),
+                    ),
                 ),
-            ))
-            ->wait(Method::connectionTune)
-            ->then(
-                $this->maybeTune(...),
-                static fn($connection) => $connection,
-            );
+                Method::connectionTune,
+            )
+            ->flatMap(fn($frame) => $this->maybeTune($connection, $frame));
     }
 
     /**
@@ -92,35 +90,8 @@ final class Handshake
             ->map(ElapsedPeriod::of(...));
 
         return Maybe::all($maxChannels, $maxFrameSize, $heartbeat)
-            ->flatMap(fn(MaxChannels $maxChannels, MaxFrameSize $maxFrameSize, ElapsedPeriod $heartbeat) => $this->tune(
-                $connection,
-                $maxChannels,
-                $maxFrameSize,
-                $heartbeat,
-            ))
+            ->flatMap($connection->tune(...))
             ->either()
             ->leftMap(static fn() => Failure::toOpenConnection());
-    }
-
-    /**
-     * @return Maybe<Connection>
-     */
-    private function tune(
-        Connection $connection,
-        MaxChannels $maxChannels,
-        MaxFrameSize $maxFrameSize,
-        ElapsedPeriod $heartbeat,
-    ): Maybe {
-        return $connection
-            ->tune($maxChannels, $maxFrameSize, $heartbeat)
-            ->send(static fn($protocol) => $protocol->connection()->tuneOk(
-                TuneOk::of(
-                    $maxChannels,
-                    $maxFrameSize,
-                    $heartbeat,
-                ),
-            ))
-            ->connection()
-            ->maybe();
     }
 }

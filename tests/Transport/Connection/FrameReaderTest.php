@@ -9,17 +9,15 @@ use Innmind\AMQP\{
     Transport\Frame\Type,
     Transport\Frame\Channel,
     Transport\Frame\Method,
-    Transport\Frame\Value,
     Transport\Frame\Value\UnsignedOctet,
     Transport\Frame\Value\Table,
     Transport\Frame\Value\LongString,
-    Transport\Frame\Value\Text,
     Transport\Frame\Value\ShortString,
     Transport\Frame\Value\UnsignedLongLongInteger,
     Transport\Frame\Value\UnsignedShortInteger,
     Transport\Frame\Value\Timestamp,
     Transport\Protocol,
-    Transport\Protocol\ArgumentTranslator\ValueTranslator,
+    Transport\Protocol\ArgumentTranslator,
     Model\Basic\Publish,
     Model\Basic\Message,
     Model\Basic\Message\AppId,
@@ -35,9 +33,10 @@ use Innmind\AMQP\{
     Model\Connection\MaxFrameSize,
     TimeContinuum\Format\Timestamp as TimestampFormat,
 };
+use Innmind\IO\IO;
 use Innmind\Stream\{
     Readable\Stream,
-    Readable,
+    Watch\Select,
 };
 use Innmind\TimeContinuum\Earth\{
     ElapsedPeriod,
@@ -56,13 +55,11 @@ class FrameReaderTest extends TestCase
 
     public function setUp(): void
     {
-        $this->protocol = new Protocol(new Clock, new ValueTranslator);
+        $this->protocol = new Protocol(new Clock, new ArgumentTranslator);
     }
 
     public function testReadCommand()
     {
-        $read = new FrameReader;
-
         $file = \tmpfile();
         \fwrite(
             $file,
@@ -77,20 +74,23 @@ class FrameReaderTest extends TestCase
             )->pack()->toString(),
         );
         \fseek($file, 0);
-        $stream = Stream::of($file);
 
-        $frame = $read($stream, $this->protocol)->match(
-            static fn($frame) => $frame,
-            static fn() => null,
-        );
+        $frame = IO::of(Select::waitForever(...))
+            ->readable()
+            ->wrap(Stream::of($file))
+            ->toEncoding(Str\Encoding::ascii)
+            ->frames((new FrameReader)($this->protocol))
+            ->one()
+            ->match(
+                static fn($frame) => $frame,
+                static fn() => null,
+            );
 
         $this->assertInstanceOf(Frame::class, $frame);
     }
 
     public function testReturnNothingWhenFrameEndMarkerInvalid()
     {
-        $read = new FrameReader;
-
         $file = \tmpfile();
         $frame = Frame::method(
             new Channel(0),
@@ -105,18 +105,23 @@ class FrameReaderTest extends TestCase
         $frame .= (UnsignedOctet::of(0xCD))->pack()->toString();
         \fwrite($file, $frame);
         \fseek($file, 0);
-        $stream = Stream::of($file);
 
-        $this->assertNull($read($stream, $this->protocol)->match(
-            static fn($frame) => $frame,
-            static fn() => null,
-        ));
+        $frame = IO::of(Select::waitForever(...))
+            ->readable()
+            ->wrap(Stream::of($file))
+            ->toEncoding(Str\Encoding::ascii)
+            ->frames((new FrameReader)($this->protocol))
+            ->one()
+            ->match(
+                static fn($frame) => $frame,
+                static fn() => null,
+            );
+
+        $this->assertNull($frame);
     }
 
     public function testReturnNothingWhenPayloadTooShort()
     {
-        $read = new FrameReader;
-
         $file = \tmpfile();
         $frame = Frame::method(
             new Channel(0),
@@ -125,12 +130,19 @@ class FrameReaderTest extends TestCase
         $frame = \mb_substr($frame, 0, -2, 'ASCII');
         \fwrite($file, $frame);
         \fseek($file, 0);
-        $stream = Stream::of($file);
 
-        $this->assertNull($read($stream, $this->protocol)->match(
-            static fn($frame) => $frame,
-            static fn() => null,
-        ));
+        $frame = IO::of(Select::waitForever(...))
+            ->readable()
+            ->wrap(Stream::of($file))
+            ->toEncoding(Str\Encoding::ascii)
+            ->frames((new FrameReader)($this->protocol))
+            ->one()
+            ->match(
+                static fn($frame) => $frame,
+                static fn() => null,
+            );
+
+        $this->assertNull($frame);
     }
 
     public function testReturnNothingWhenNoFrameDeteted()
@@ -138,12 +150,19 @@ class FrameReaderTest extends TestCase
         $file = \tmpfile();
         \fwrite($file, $content = "AMQP\x00\x00\x09\x01");
         \fseek($file, 0);
-        $stream = Stream::of($file);
 
-        $this->assertNull((new FrameReader)($stream, $this->protocol)->match(
-            static fn($frame) => $frame,
-            static fn() => null,
-        ));
+        $frame = IO::of(Select::waitForever(...))
+            ->readable()
+            ->wrap(Stream::of($file))
+            ->toEncoding(Str\Encoding::ascii)
+            ->frames((new FrameReader)($this->protocol))
+            ->one()
+            ->match(
+                static fn($frame) => $frame,
+                static fn() => null,
+            );
+
+        $this->assertNull($frame);
     }
 
     public function testReadHeader()
@@ -182,10 +201,16 @@ class FrameReaderTest extends TestCase
         \fwrite($file, $header->pack()->toString());
         \fseek($file, 0);
 
-        $frame = (new FrameReader)(Stream::of($file), $this->protocol)->match(
-            static fn($frame) => $frame,
-            static fn() => null,
-        );
+        $frame = IO::of(Select::waitForever(...))
+            ->readable()
+            ->wrap(Stream::of($file))
+            ->toEncoding(Str\Encoding::ascii)
+            ->frames((new FrameReader)($this->protocol))
+            ->one()
+            ->match(
+                static fn($frame) => $frame,
+                static fn() => null,
+            );
 
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame(Type::header, $frame->type());
@@ -435,10 +460,16 @@ class FrameReaderTest extends TestCase
         )->pack()->toString());
         \fseek($file, 0);
 
-        $frame = (new FrameReader)(Stream::of($file), $this->protocol)->match(
-            static fn($frame) => $frame,
-            static fn() => null,
-        );
+        $frame = IO::of(Select::waitForever(...))
+            ->readable()
+            ->wrap(Stream::of($file))
+            ->toEncoding(Str\Encoding::ascii)
+            ->frames((new FrameReader)($this->protocol))
+            ->one()
+            ->match(
+                static fn($frame) => $frame,
+                static fn() => null,
+            );
 
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame(Type::body, $frame->type());
@@ -456,10 +487,16 @@ class FrameReaderTest extends TestCase
         \fwrite($file, Frame::heartbeat()->pack()->toString());
         \fseek($file, 0);
 
-        $frame = (new FrameReader)(Stream::of($file), $this->protocol)->match(
-            static fn($frame) => $frame,
-            static fn() => null,
-        );
+        $frame = IO::of(Select::waitForever(...))
+            ->readable()
+            ->wrap(Stream::of($file))
+            ->toEncoding(Str\Encoding::ascii)
+            ->frames((new FrameReader)($this->protocol))
+            ->one()
+            ->match(
+                static fn($frame) => $frame,
+                static fn() => null,
+            );
 
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame(Type::heartbeat, $frame->type());

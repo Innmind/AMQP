@@ -8,28 +8,26 @@ namespace Innmind\AMQP\Transport;
  */
 final class ReceivedFrame
 {
-    private Connection $connection;
     private Frame $frame;
 
-    private function __construct(Connection $connection, Frame $frame)
+    private function __construct(Frame $frame)
     {
-        $this->connection = $connection;
         $this->frame = $frame;
     }
 
-    public static function of(Connection $connection, Frame $frame): self
+    public static function of(Frame $frame): self
     {
-        return new self($connection, $frame);
-    }
-
-    public function connection(): Connection
-    {
-        return $this->connection;
+        return new self($frame);
     }
 
     public function frame(): Frame
     {
         return $this->frame;
+    }
+
+    public function is(Frame\Method $method): bool
+    {
+        return $this->frame->is($method);
     }
 
     public function oneOf(Frame\Method ...$methods): bool

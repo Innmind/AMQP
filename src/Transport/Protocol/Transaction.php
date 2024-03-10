@@ -4,12 +4,8 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Transport\Protocol;
 
 use Innmind\AMQP\{
-    Model\Transaction\Select,
-    Model\Transaction\Commit,
-    Model\Transaction\Rollback,
     Transport\Frame,
     Transport\Frame\Channel as FrameChannel,
-    Transport\Frame\Type,
     Transport\Frame\Method,
 };
 use Innmind\Immutable\Sequence;

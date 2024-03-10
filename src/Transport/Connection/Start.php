@@ -33,16 +33,17 @@ final class Start
         // we should restart the opening sequence with this version of the
         // protocol but since this package only support 0.9.1 we can simply
         // stop opening the connection
-        $connection->wait(Method::connectionStart);
-
         return $connection
-            ->send(fn($protocol) => $protocol->connection()->startOk(
-                StartOk::of(
-                    $this->authority->userInformation()->user(),
-                    $this->authority->userInformation()->password(),
+            ->respondTo(
+                Method::connectionStart,
+                fn($protocol) => $protocol->connection()->startOk(
+                    StartOk::of(
+                        $this->authority->userInformation()->user(),
+                        $this->authority->userInformation()->password(),
+                    ),
                 ),
-            ))
-            ->connection()
-            ->maybe();
+            )
+            ->maybe()
+            ->map(static fn() => $connection);
     }
 }

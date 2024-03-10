@@ -50,20 +50,20 @@ final class Get implements Command
         Connection $connection,
         Channel $channel,
         MessageReader $read,
-        mixed $state,
+        State $state,
     ): Either {
         /**
          * @psalm-suppress MixedArgumentTypeCoercion
          * @var Either<Failure, State>
          */
         return Sequence::of(...\array_fill(0, $this->take, null))->reduce(
-            Either::right(State::of($connection, $state)),
+            Either::right($state),
             fn(Either $state) => $state->flatMap(
                 fn(State $state) => $this->doGet(
-                    $state->connection(),
+                    $connection,
                     $channel,
                     $read,
-                    $state->userState(),
+                    $state,
                 ),
             ),
         );
@@ -101,24 +101,26 @@ final class Get implements Command
         Connection $connection,
         Channel $channel,
         MessageReader $read,
-        mixed $state,
+        State $state,
     ): Either {
         /** @var Either<Failure, State> */
         return $connection
-            ->send(fn($protocol) => $protocol->basic()->get(
-                $channel,
-                $this->command,
-            ))
-            ->wait(Method::basicGetOk, Method::basicGetEmpty)
-            ->then(
-                fn($connection, $frame) => $this->maybeConsume(
+            ->request(
+                fn($protocol) => $protocol->basic()->get(
+                    $channel,
+                    $this->command,
+                ),
+                Method::basicGetOk,
+                Method::basicGetEmpty,
+            )
+            ->flatMap(
+                fn($frame) => $this->maybeConsume(
                     $connection,
                     $channel,
                     $read,
                     $frame,
                     $state,
                 ),
-                static fn($connection) => State::of($connection, $state), // this case should not happen
             )
             ->leftMap(fn() => Failure::toGet($this->command));
     }
@@ -131,11 +133,11 @@ final class Get implements Command
         Channel $channel,
         MessageReader $read,
         Frame $frame,
-        mixed $state,
+        State $state,
     ): Either {
         if ($frame->is(Method::basicGetEmpty)) {
             /** @var Either<Failure, State> */
-            return Either::right(State::of($connection, $state));
+            return Either::right($state);
         }
 
         $deliveryTag = $frame
@@ -172,12 +174,12 @@ final class Get implements Command
             ->leftMap(fn() => Failure::toGet($this->command))
             ->flatMap(
                 fn($details) => $read($connection)->flatMap(
-                    fn($received) => $this->consume(
-                        $received->connection(),
+                    fn($message) => $this->consume(
+                        $connection,
                         $channel,
                         $read,
                         $state,
-                        $received->message(),
+                        $message,
                         $details,
                     ),
                 ),
@@ -191,12 +193,12 @@ final class Get implements Command
         Connection $connection,
         Channel $channel,
         MessageReader $read,
-        mixed $state,
+        State $state,
         Message $message,
         Details $details,
     ): Either {
         return ($this->consume)(
-            $state,
+            $state->unwrap(),
             $message,
             Continuation::of($state),
             $details,

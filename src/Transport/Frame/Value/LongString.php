@@ -4,10 +4,11 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
-use Innmind\Stream\Readable;
+use Innmind\IO\Readable\Frame;
 use Innmind\Immutable\{
     Str,
     Maybe,
+    Either,
 };
 
 /**
@@ -45,20 +46,43 @@ final class LongString implements Value
     }
 
     /**
-     * @return Maybe<self>
+     * @psalm-pure
+     *
+     * @return Either<mixed, Value>
      */
-    public static function unpack(Readable $stream): Maybe
+    public static function wrap(mixed $value): Either
     {
-        /** @psalm-suppress InvalidArgument */
-        return UnsignedLongInteger::unpack($stream)
-            ->map(static fn($length) => $length->original())
+        return Maybe::of($value)
+            ->filter(\is_string(...))
+            ->map(Str::of(...))
+            ->map(static fn($str) => $str->toEncoding(Str\Encoding::ascii))
             ->flatMap(
-                static fn($length) => $stream
-                    ->read($length)
-                    ->map(static fn($string) => $string->toEncoding(Str\Encoding::ascii))
-                    ->filter(static fn($string) => $string->length() === $length),
+                static fn($str) => UnsignedLongInteger::wrap($str->length())
+                    ->maybe()
+                    ->map(static fn() => new self($str)),
             )
-            ->map(static fn($string) => new self($string));
+            ->either()
+            ->leftMap(static fn(): mixed => $value);
+    }
+
+    /**
+     * @psalm-pure
+     *
+     * @return Frame<Unpacked<self>>
+     */
+    public static function frame(): Frame
+    {
+        return UnsignedLongInteger::frame()->flatMap(
+            static fn($length) => (match ($length->unwrap()->original()) {
+                0 => Frame\NoOp::of(Str::of('')),
+                default => Frame\Chunk::of($length->unwrap()->original()),
+            })
+                ->map(static fn($string) => new self($string))
+                ->map(static fn($value) => Unpacked::of(
+                    $length->read() + $length->unwrap()->original(),
+                    $value,
+                )),
+        );
     }
 
     public function original(): Str

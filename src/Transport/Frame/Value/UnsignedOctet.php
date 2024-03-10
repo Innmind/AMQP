@@ -9,10 +9,11 @@ use Innmind\Math\{
     DefinitionSet\Set,
     DefinitionSet\Range,
 };
-use Innmind\Stream\Readable;
+use Innmind\IO\Readable\Frame;
 use Innmind\Immutable\{
     Str,
     Maybe,
+    Either,
 };
 
 /**
@@ -58,21 +59,38 @@ final class UnsignedOctet implements Value
     }
 
     /**
-     * @return Maybe<self>
+     * @psalm-pure
+     *
+     * @return Either<mixed, Value>
      */
-    public static function unpack(Readable $stream): Maybe
+    public static function wrap(mixed $value): Either
     {
-        return $stream
-            ->read(1)
-            ->map(static fn($chunk) => $chunk->toEncoding(Str\Encoding::ascii))
-            ->filter(static fn($chunk) => $chunk->length() === 1)
+        /** @psalm-suppress ArgumentTypeCoercion */
+        return Maybe::of($value)
+            ->filter(\is_int(...))
+            ->map(Integer::of(...))
+            ->filter(self::definitionSet()->contains(...))
+            ->either()
+            ->map(static fn($int) => new self($int->value()))
+            ->leftMap(static fn(): mixed => $value);
+    }
+
+    /**
+     * @psalm-pure
+     *
+     * @return Frame<Unpacked<self>>
+     */
+    public static function frame(): Frame
+    {
+        return Frame\Chunk::of(1)
             ->map(static function($chunk) {
                 /** @var int<0, 255> $octet */
                 [, $octet] = \unpack('C', $chunk->toString());
 
                 return $octet;
             })
-            ->map(static fn($octet) => new self($octet));
+            ->map(static fn($octet) => new self($octet))
+            ->map(static fn($value) => Unpacked::of(1, $value));
     }
 
     /**

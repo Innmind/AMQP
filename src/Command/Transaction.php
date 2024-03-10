@@ -33,7 +33,7 @@ final class Transaction implements Command
         Connection $connection,
         Channel $channel,
         MessageReader $read,
-        mixed $state,
+        State $state,
     ): Either {
         return $this
             ->select($connection, $channel)
@@ -43,7 +43,11 @@ final class Transaction implements Command
                 $read,
                 $state,
             ))
-            ->flatMap(fn($state) => $this->finish($state, $channel));
+            ->flatMap(fn($state) => $this->finish(
+                $connection,
+                $channel,
+                $state,
+            ));
     }
 
     /**
@@ -71,52 +75,60 @@ final class Transaction implements Command
         Connection $connection,
         Channel $channel,
     ): Either {
-        /** @var Either<Failure, Connection> */
         return $connection
-            ->send(static fn($protocol) => $protocol->transaction()->select($channel))
-            ->wait(Method::transactionSelectOk)
-            ->connection()
+            ->request(
+                static fn($protocol) => $protocol->transaction()->select($channel),
+                Method::transactionSelectOk,
+            )
+            ->map(static fn() => $connection)
             ->leftMap(static fn() => Failure::toSelect());
     }
 
     /**
      * @return Either<Failure, State>
      */
-    private function finish(State $state, Channel $channel): Either
-    {
-        return match (($this->predicate)($state->userState())) {
-            true => $this->commit($state, $channel),
-            false => $this->rollback($state, $channel),
+    private function finish(
+        Connection $connection,
+        Channel $channel,
+        State $state,
+    ): Either {
+        return match (($this->predicate)($state->unwrap())) {
+            true => $this->commit($connection, $channel, $state),
+            false => $this->rollback($connection, $channel, $state),
         };
     }
 
     /**
      * @return Either<Failure, State>
      */
-    private function commit(State $state, Channel $channel): Either
-    {
-        /** @var Either<Failure, State> */
-        return $state
-            ->connection()
-            ->send(static fn($protocol) => $protocol->transaction()->commit($channel))
-            ->wait(Method::transactionCommitOk)
-            ->connection()
-            ->map(static fn($connection) => State::of($connection, $state->userState()))
+    private function commit(
+        Connection $connection,
+        Channel $channel,
+        State $state,
+    ): Either {
+        return $connection
+            ->request(
+                static fn($protocol) => $protocol->transaction()->commit($channel),
+                Method::transactionCommitOk,
+            )
+            ->map(static fn() => $state)
             ->leftMap(static fn() => Failure::toCommit());
     }
 
     /**
      * @return Either<Failure, State>
      */
-    private function rollback(State $state, Channel $channel): Either
-    {
-        /** @var Either<Failure, State> */
-        return $state
-            ->connection()
-            ->send(static fn($protocol) => $protocol->transaction()->rollback($channel))
-            ->wait(Method::transactionRollbackOk)
-            ->connection()
-            ->map(static fn($connection) => State::of($connection, $state->userState()))
+    private function rollback(
+        Connection $connection,
+        Channel $channel,
+        State $state,
+    ): Either {
+        return $connection
+            ->request(
+                static fn($protocol) => $protocol->transaction()->rollback($channel),
+                Method::transactionRollbackOk,
+            )
+            ->map(static fn() => $state)
             ->leftMap(static fn() => Failure::toRollback());
     }
 }

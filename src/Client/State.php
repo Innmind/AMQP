@@ -3,34 +3,22 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Client;
 
-use Innmind\AMQP\Transport\Connection;
-
-/**
- * @internal
- */
 final class State
 {
-    private Connection $connection;
-    private mixed $userState;
+    private mixed $value;
 
-    private function __construct(Connection $connection, mixed $userState)
+    private function __construct(mixed $value)
     {
-        $this->connection = $connection;
-        $this->userState = $userState;
+        $this->value = $value;
     }
 
-    public static function of(Connection $connection, mixed $userState): self
+    public static function of(mixed $value): self
     {
-        return new self($connection, $userState);
+        return new self($value);
     }
 
-    public function connection(): Connection
+    public function unwrap(): mixed
     {
-        return $this->connection;
-    }
-
-    public function userState(): mixed
-    {
-        return $this->userState;
+        return $this->value;
     }
 }

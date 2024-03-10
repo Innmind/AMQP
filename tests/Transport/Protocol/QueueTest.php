@@ -10,7 +10,6 @@ use Innmind\AMQP\{
     Transport\Frame\Channel,
     Transport\Frame\Method,
     Transport\Frame\Type,
-    Transport\Frame\Value,
     Transport\Frame\Value\UnsignedShortInteger,
     Transport\Frame\Value\ShortString,
     Transport\Frame\Value\Bits,
@@ -26,34 +25,14 @@ use PHPUnit\Framework\TestCase;
 class QueueTest extends TestCase
 {
     private $queue;
-    private $translator;
 
     public function setUp(): void
     {
-        $this->queue = new Queue(
-            $this->translator = $this->createMock(ArgumentTranslator::class),
-        );
+        $this->queue = new Queue(new ArgumentTranslator);
     }
 
     public function testDeclare()
     {
-        $firstArgument = UnsignedShortInteger::of(24);
-        $secondArgument = UnsignedShortInteger::of(42);
-        $this
-            ->translator
-            ->expects($matcher = $this->exactly(2))
-            ->method('__invoke')
-            ->willReturnCallback(function($value) use ($matcher, $firstArgument, $secondArgument) {
-                match ($matcher->numberOfInvocations()) {
-                    1 => $this->assertSame(24, $value),
-                    2 => $this->assertSame(42, $value),
-                };
-
-                return match ($matcher->numberOfInvocations()) {
-                    1 => $firstArgument,
-                    2 => $secondArgument,
-                };
-            });
         $frame = $this->queue->declare(
             $channel = new Channel(1),
             Declaration::passive('foo')
@@ -107,16 +86,16 @@ class QueueTest extends TestCase
             static fn($value) => $value->original(),
             static fn() => null,
         ));
-        $this->assertSame($firstArgument, $frame->values()->get(3)->match(
+        $this->assertSame(24, $frame->values()->get(3)->match(
             static fn($value) => $value->original()->get('foo')->match(
-                static fn($argument) => $argument,
+                static fn($argument) => $argument->original(),
                 static fn() => null,
             ),
             static fn() => null,
         ));
-        $this->assertSame($secondArgument, $frame->values()->get(3)->match(
+        $this->assertSame(42, $frame->values()->get(3)->match(
             static fn($value) => $value->original()->get('bar')->match(
-                static fn($argument) => $argument,
+                static fn($argument) => $argument->original(),
                 static fn() => null,
             ),
             static fn() => null,
@@ -333,23 +312,6 @@ class QueueTest extends TestCase
 
     public function testBind()
     {
-        $firstArgument = UnsignedShortInteger::of(24);
-        $secondArgument = UnsignedShortInteger::of(42);
-        $this
-            ->translator
-            ->expects($matcher = $this->exactly(2))
-            ->method('__invoke')
-            ->willReturnCallback(function($value) use ($matcher, $firstArgument, $secondArgument) {
-                match ($matcher->numberOfInvocations()) {
-                    1 => $this->assertSame(24, $value),
-                    2 => $this->assertSame(42, $value),
-                };
-
-                return match ($matcher->numberOfInvocations()) {
-                    1 => $firstArgument,
-                    2 => $secondArgument,
-                };
-            });
         $frame = $this->queue->bind(
             $channel = new Channel(1),
             Binding::of('ex', 'q', 'rk')
@@ -419,16 +381,16 @@ class QueueTest extends TestCase
             static fn($value) => $value->original(),
             static fn() => null,
         ));
-        $this->assertSame($firstArgument, $frame->values()->get(5)->match(
+        $this->assertSame(24, $frame->values()->get(5)->match(
             static fn($value) => $value->original()->get('foo')->match(
-                static fn($argument) => $argument,
+                static fn($argument) => $argument->original(),
                 static fn() => null,
             ),
             static fn() => null,
         ));
-        $this->assertSame($secondArgument, $frame->values()->get(5)->match(
+        $this->assertSame(42, $frame->values()->get(5)->match(
             static fn($value) => $value->original()->get('bar')->match(
-                static fn($argument) => $argument,
+                static fn($argument) => $argument->original(),
                 static fn() => null,
             ),
             static fn() => null,
@@ -453,23 +415,6 @@ class QueueTest extends TestCase
 
     public function testUnbind()
     {
-        $firstArgument = UnsignedShortInteger::of(24);
-        $secondArgument = UnsignedShortInteger::of(42);
-        $this
-            ->translator
-            ->expects($matcher = $this->exactly(2))
-            ->method('__invoke')
-            ->willReturnCallback(function($value) use ($matcher, $firstArgument, $secondArgument) {
-                match ($matcher->numberOfInvocations()) {
-                    1 => $this->assertSame(24, $value),
-                    2 => $this->assertSame(42, $value),
-                };
-
-                return match ($matcher->numberOfInvocations()) {
-                    1 => $firstArgument,
-                    2 => $secondArgument,
-                };
-            });
         $frame = $this->queue->unbind(
             $channel = new Channel(1),
             Unbinding::of('ex', 'q', 'rk')
@@ -528,16 +473,16 @@ class QueueTest extends TestCase
             static fn($value) => $value->original(),
             static fn() => null,
         ));
-        $this->assertSame($firstArgument, $frame->values()->get(4)->match(
+        $this->assertSame(24, $frame->values()->get(4)->match(
             static fn($value) => $value->original()->get('foo')->match(
-                static fn($argument) => $argument,
+                static fn($argument) => $argument->original(),
                 static fn() => null,
             ),
             static fn() => null,
         ));
-        $this->assertSame($secondArgument, $frame->values()->get(4)->match(
+        $this->assertSame(42, $frame->values()->get(4)->match(
             static fn($value) => $value->original()->get('bar')->match(
-                static fn($argument) => $argument,
+                static fn($argument) => $argument->original(),
                 static fn() => null,
             ),
             static fn() => null,

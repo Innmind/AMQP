@@ -12,7 +12,6 @@ use Innmind\AMQP\Transport\Frame\{
     Value\UnsignedOctet,
     Value\UnsignedShortInteger,
     Value\UnsignedLongInteger,
-    Value\Text,
 };
 use Innmind\Immutable\{
     Sequence,

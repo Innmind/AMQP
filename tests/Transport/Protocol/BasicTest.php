@@ -6,7 +6,6 @@ namespace Tests\Innmind\AMQP\Transport\Protocol;
 use Innmind\AMQP\{
     Transport\Protocol\Basic,
     Transport\Protocol\ArgumentTranslator,
-    Transport\Protocol\ArgumentTranslator\ValueTranslator,
     Transport\Frame,
     Transport\Frame\Channel,
     Transport\Frame\Method,
@@ -54,13 +53,10 @@ use PHPUnit\Framework\TestCase;
 class BasicTest extends TestCase
 {
     private $basic;
-    private $translator;
 
     public function setUp(): void
     {
-        $this->basic = new Basic(
-            $this->translator = $this->createMock(ArgumentTranslator::class),
-        );
+        $this->basic = new Basic(new ArgumentTranslator);
     }
 
     public function testAck()
@@ -172,23 +168,6 @@ class BasicTest extends TestCase
 
     public function testConsume()
     {
-        $firstArgument = UnsignedShortInteger::of(24);
-        $secondArgument = UnsignedShortInteger::of(42);
-        $this
-            ->translator
-            ->expects($matcher = $this->exactly(2))
-            ->method('__invoke')
-            ->willReturnCallback(function($value) use ($matcher, $firstArgument, $secondArgument) {
-                match ($matcher->numberOfInvocations()) {
-                    1 => $this->assertSame(24, $value),
-                    2 => $this->assertSame(42, $value),
-                };
-
-                return match ($matcher->numberOfInvocations()) {
-                    1 => $firstArgument,
-                    2 => $secondArgument,
-                };
-            });
         $frame = $this->basic->consume(
             $channel = new Channel(1),
             Consume::of('queue')
@@ -250,16 +229,16 @@ class BasicTest extends TestCase
             static fn($value) => $value->original(),
             static fn() => null,
         ));
-        $this->assertSame($firstArgument, $frame->values()->get(4)->match(
+        $this->assertSame(24, $frame->values()->get(4)->match(
             static fn($value) => $value->original()->get('foo')->match(
-                static fn($argument) => $argument,
+                static fn($argument) => $argument->original(),
                 static fn() => null,
             ),
             static fn() => null,
         ));
-        $this->assertSame($secondArgument, $frame->values()->get(4)->match(
+        $this->assertSame(42, $frame->values()->get(4)->match(
             static fn($value) => $value->original()->get('bar')->match(
-                static fn($argument) => $argument,
+                static fn($argument) => $argument->original(),
                 static fn() => null,
             ),
             static fn() => null,
@@ -562,7 +541,7 @@ class BasicTest extends TestCase
 
     public function testPublishWithProperties()
     {
-        $basic = new Basic(new ValueTranslator);
+        $basic = new Basic(new ArgumentTranslator);
 
         $frames = $basic->publish(
             $channel = new Channel(1),

@@ -19,10 +19,7 @@ use Innmind\TimeContinuum\{
     PointInTime,
     ElapsedPeriod,
 };
-use Innmind\Filesystem\{
-    File\Content,
-    Chunk,
-};
+use Innmind\Filesystem\File\Content;
 use Innmind\Immutable\{
     Map,
     Str,
@@ -122,7 +119,7 @@ final class Message
      */
     public static function file(Content $content): self
     {
-        $chunks = (new Chunk)($content)->map(
+        $chunks = $content->chunks()->map(
             static fn($chunk) => $chunk->toEncoding(Str\Encoding::ascii),
         );
         /** @var int<0, max> */

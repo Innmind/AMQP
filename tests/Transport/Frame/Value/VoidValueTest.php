@@ -7,7 +7,6 @@ use Innmind\AMQP\Transport\Frame\{
     Value\VoidValue,
     Value,
 };
-use Innmind\Stream\Readable\Stream;
 use PHPUnit\Framework\TestCase;
 
 class VoidValueTest extends TestCase
@@ -15,10 +14,6 @@ class VoidValueTest extends TestCase
     public function testInterface()
     {
         $this->assertInstanceOf(Value::class, new VoidValue);
-        $this->assertInstanceOf(VoidValue::class, VoidValue::unpack(Stream::ofContent(''))->match(
-            static fn($value) => $value,
-            static fn() => null,
-        ));
         $this->assertSame('', (new VoidValue)->pack()->toString());
     }
 }

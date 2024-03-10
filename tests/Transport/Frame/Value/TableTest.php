@@ -7,11 +7,14 @@ use Innmind\AMQP\{
     Transport\Frame\Value\Table,
     Transport\Frame\Value\SignedOctet,
     Transport\Frame\Value\LongString,
-    Transport\Frame\Value\Text,
     Transport\Frame\Value,
 };
 use Innmind\TimeContinuum\Earth\Clock;
-use Innmind\Stream\Readable\Stream;
+use Innmind\IO\IO;
+use Innmind\Stream\{
+    Readable\Stream,
+    Watch\Select,
+};
 use Innmind\Immutable\{
     Map,
     Str,
@@ -43,10 +46,16 @@ class TableTest extends TestCase
      */
     public function testFromStream($string, $expected)
     {
-        $value = Table::unpack(new Clock, Stream::ofContent($string))->match(
-            static fn($value) => $value,
-            static fn() => null,
-        );
+        $value = IO::of(Select::waitForever(...))
+            ->readable()
+            ->wrap(Stream::ofContent($string))
+            ->toEncoding(Str\Encoding::ascii)
+            ->frames(Table::frame(new Clock))
+            ->one()
+            ->match(
+                static fn($value) => $value->unwrap(),
+                static fn() => null,
+            );
 
         $this->assertInstanceOf(Table::class, $value);
         $this->assertCount($expected->size(), $value->original());

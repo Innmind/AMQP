@@ -3,13 +3,9 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport\Frame\Value;
 
-use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\TimeContinuum\Clock;
-use Innmind\Stream\Readable;
-use Innmind\Immutable\{
-    Str,
-    Maybe,
-};
+use Innmind\IO\Readable\Frame;
+use Innmind\Immutable\Str;
 
 /**
  * @psalm-immutable
@@ -34,31 +30,30 @@ enum Symbol
     case table;
 
     /**
-     * @return Maybe<Value>
+     * @psalm-pure
+     *
+     * @return Frame<Unpacked>
      */
-    public static function unpack(
-        Clock $clock,
-        string $symbol,
-        Readable $stream,
-    ): Maybe {
-        /** @var Maybe<Value> */
+    public static function frame(Clock $clock, string $symbol): Frame
+    {
+        /** @var Frame<Unpacked> */
         return match ($symbol) {
-            'b' => SignedOctet::unpack($stream),
-            'B' => UnsignedOctet::unpack($stream),
-            'U' => SignedShortInteger::unpack($stream),
-            'u' => UnsignedShortInteger::unpack($stream),
-            'I' => SignedLongInteger::unpack($stream),
-            'i' => UnsignedLongInteger::unpack($stream),
-            'L' => SignedLongLongInteger::unpack($stream),
-            'l' => UnsignedLongLongInteger::unpack($stream),
-            'D' => Decimal::unpack($stream),
-            'T' => Timestamp::unpack($clock, $stream),
-            'V' => VoidValue::unpack($stream),
-            't' => Bits::unpack($stream),
-            's' => ShortString::unpack($stream),
-            'S' => LongString::unpack($stream),
-            'A' => Sequence::unpack($clock, $stream),
-            'F' => Table::unpack($clock, $stream),
+            'b' => SignedOctet::frame(),
+            'B' => UnsignedOctet::frame(),
+            'U' => SignedShortInteger::frame(),
+            'u' => UnsignedShortInteger::frame(),
+            'I' => SignedLongInteger::frame(),
+            'i' => UnsignedLongInteger::frame(),
+            'L' => SignedLongLongInteger::frame(),
+            'l' => UnsignedLongLongInteger::frame(),
+            'D' => Decimal::frame(),
+            'T' => Timestamp::frame($clock),
+            'V' => VoidValue::frame(),
+            't' => Bits::frame(),
+            's' => ShortString::frame(),
+            'S' => LongString::frame(),
+            'A' => Sequence::frame($clock),
+            'F' => Table::frame($clock),
         };
     }
 

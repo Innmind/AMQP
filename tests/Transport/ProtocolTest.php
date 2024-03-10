@@ -13,9 +13,7 @@ use Innmind\AMQP\{
     Transport\Protocol\Transaction,
     Transport\Protocol\Version,
     Transport\Protocol\ArgumentTranslator,
-    Transport\Protocol\ArgumentTranslator\ValueTranslator,
     Transport\Frame\Channel as FrameChannel,
-    Transport\Frame\Value,
     Transport\Frame\Value\ShortString,
     Model\Basic\Publish,
     Model\Basic\Message,
@@ -36,7 +34,11 @@ use Innmind\TimeContinuum\Earth\{
     PointInTime\Now,
     Clock,
 };
-use Innmind\Stream\Readable\Stream;
+use Innmind\IO\IO;
+use Innmind\Stream\{
+    Readable\Stream,
+    Watch\Select,
+};
 use Innmind\Immutable\{
     Str,
     Map,
@@ -48,7 +50,7 @@ class ProtocolTest extends TestCase
 {
     public function testInterface()
     {
-        $protocol = new Protocol(new Clock, $this->createMock(ArgumentTranslator::class));
+        $protocol = new Protocol(new Clock, new ArgumentTranslator);
 
         $this->assertInstanceOf(Version::class, $protocol->version());
         $this->assertSame("AMQP\x00\x00\x09\x01", $protocol->version()->pack()->toString());
@@ -62,7 +64,7 @@ class ProtocolTest extends TestCase
 
     public function testReadHeader()
     {
-        $protocol = new Protocol(new Clock, new ValueTranslator);
+        $protocol = new Protocol(new Clock, new ArgumentTranslator);
 
         $header = $protocol
             ->basic()
@@ -94,20 +96,26 @@ class ProtocolTest extends TestCase
                 static fn() => null,
             );
 
-        $values = $protocol->readHeader(
-            Stream::ofContent(
-                Str::of('')
-                    ->join(
+        $values = IO::of(Select::waitForever(...))
+            ->readable()
+            ->wrap(
+                Stream::ofContent(
+                    \implode(
+                        '',
                         $header
                             ->values()
-                            ->map(static fn($v) => $v->pack()->toString()),
-                    )
-                    ->toString(),
-            ),
-        )->match(
-            static fn($values) => $values,
-            static fn() => null,
-        );
+                            ->map(static fn($v) => $v->pack()->toString())
+                            ->toList(),
+                    ),
+                ),
+            )
+            ->toEncoding(Str\Encoding::ascii)
+            ->frames($protocol->headerFrame())
+            ->one()
+            ->match(
+                static fn($values) => $values,
+                static fn() => null,
+            );
 
         $this->assertInstanceOf(Sequence::class, $values);
         $this->assertCount(15, $values); // body size + flag bits + 13 properties

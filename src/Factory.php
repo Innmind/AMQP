@@ -7,10 +7,6 @@ use Innmind\OperatingSystem\OperatingSystem;
 use Innmind\Socket\Internet\Transport as Socket;
 use Innmind\Url\Url;
 use Innmind\TimeContinuum\ElapsedPeriod;
-use Innmind\Immutable\{
-    Sequence,
-    Maybe,
-};
 
 final class Factory
 {
@@ -37,13 +33,13 @@ final class Factory
                 $server,
                 new Transport\Protocol(
                     $this->os->clock(),
-                    new Transport\Protocol\ArgumentTranslator\ValueTranslator,
+                    new Transport\Protocol\ArgumentTranslator,
                 ),
                 $timeout,
                 $this->os->clock(),
                 $this->os->remote(),
-                $this->os->sockets(),
             ),
+            $this->os->filesystem(),
         );
     }
 }

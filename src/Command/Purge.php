@@ -9,6 +9,7 @@ use Innmind\AMQP\{
     Client\State,
     Transport\Connection,
     Transport\Connection\MessageReader,
+    Transport\Protocol,
     Transport\Frame\Channel,
     Transport\Frame\Method,
     Transport\Frame\Value,
@@ -18,6 +19,7 @@ use Innmind\AMQP\{
 };
 use Innmind\Immutable\{
     Either,
+    Sequence,
     Predicate\Instance,
 };
 
@@ -34,30 +36,34 @@ final class Purge implements Command
         Connection $connection,
         Channel $channel,
         MessageReader $read,
-        mixed $state,
+        State $state,
     ): Either {
-        /** @var Either<Failure, State> */
-        return $connection
-            ->send(fn($protocol) => $protocol->queue()->purge(
-                $channel,
-                $this->command,
-            ))
-            ->maybeWait($this->command->shouldWait(), Method::queuePurgeOk)
-            ->then(
-                // this is here just to make sure the response is valid maybe in
-                // the future we could expose this info to the user
-                fn($connection, $frame) => $frame
-                    ->values()
-                    ->first()
-                    ->keep(Instance::of(Value\UnsignedLongInteger::class))
-                    ->map(static fn($value) => $value->original())
-                    ->map(Count::of(...))
-                    ->map(PurgeOk::of(...))
-                    ->map(static fn() => State::of($connection, $state))
-                    ->either()
-                    ->leftMap(fn() => Failure::toPurge($this->command)),
-                static fn($connection) => State::of($connection, $state),
-            );
+        $frames = fn(Protocol $protocol): Sequence => $protocol->queue()->purge(
+            $channel,
+            $this->command,
+        );
+
+        $sideEffect = match ($this->command->shouldWait()) {
+            true => $connection
+                ->request($frames, Method::queuePurgeOk)
+                ->flatMap(
+                    // this is here just to make sure the response is valid
+                    // maybe in the future we could expose this info to the user
+                    static fn($frame) => $frame
+                        ->values()
+                        ->first()
+                        ->keep(Instance::of(Value\UnsignedLongInteger::class))
+                        ->map(static fn($value) => $value->original())
+                        ->map(Count::of(...))
+                        ->map(PurgeOk::of(...))
+                        ->either(),
+                ),
+            false => $connection->send($frames),
+        };
+
+        return $sideEffect
+            ->map(static fn() => $state)
+            ->leftMap(fn() => Failure::toPurge($this->command));
     }
 
     public static function of(string $queue): self

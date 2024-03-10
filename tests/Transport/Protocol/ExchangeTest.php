@@ -22,34 +22,14 @@ use PHPUnit\Framework\TestCase;
 class ExchangeTest extends TestCase
 {
     private $exchange;
-    private $translator;
 
     public function setUp(): void
     {
-        $this->exchange = new Exchange(
-            $this->translator = $this->createMock(ArgumentTranslator::class),
-        );
+        $this->exchange = new Exchange(new ArgumentTranslator);
     }
 
     public function testDeclare()
     {
-        $firstArgument = UnsignedShortInteger::of(24);
-        $secondArgument = UnsignedShortInteger::of(42);
-        $this
-            ->translator
-            ->expects($matcher = $this->exactly(2))
-            ->method('__invoke')
-            ->willReturnCallback(function($value) use ($matcher, $firstArgument, $secondArgument) {
-                match ($matcher->numberOfInvocations()) {
-                    1 => $this->assertSame(24, $value),
-                    2 => $this->assertSame(42, $value),
-                };
-
-                return match ($matcher->numberOfInvocations()) {
-                    1 => $firstArgument,
-                    2 => $secondArgument,
-                };
-            });
         $frame = $this->exchange->declare(
             $channel = new Channel(1),
             Declaration::passive('foo', Type::direct)
@@ -111,16 +91,16 @@ class ExchangeTest extends TestCase
             static fn($value) => $value->original(),
             static fn() => null,
         ));
-        $this->assertSame($firstArgument, $frame->values()->get(4)->match(
+        $this->assertSame(24, $frame->values()->get(4)->match(
             static fn($value) => $value->original()->get('foo')->match(
-                static fn($argument) => $argument,
+                static fn($argument) => $argument->original(),
                 static fn() => null,
             ),
             static fn() => null,
         ));
-        $this->assertSame($secondArgument, $frame->values()->get(4)->match(
+        $this->assertSame(42, $frame->values()->get(4)->match(
             static fn($value) => $value->original()->get('bar')->match(
-                static fn($argument) => $argument,
+                static fn($argument) => $argument->original(),
                 static fn() => null,
             ),
             static fn() => null,

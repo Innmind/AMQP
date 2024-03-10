@@ -16,15 +16,16 @@
     },
     "require": {
         "php": "~8.2",
-        "innmind/immutable": "~4.15|~5.0",
+        "innmind/immutable": "~5.2",
         "innmind/time-continuum": "~3.1",
         "innmind/math": "~6.0",
         "innmind/url": "~4.1",
         "ramsey/uuid": "~4.0",
-        "innmind/operating-system": "~3.1",
+        "innmind/operating-system": "~5.0",
         "innmind/media-type": "~2.0",
-        "innmind/filesystem": "~5.2|~6.0",
-        "innmind/stream": "~4.0"
+        "innmind/filesystem": "~7.0",
+        "innmind/stream": "~4.0",
+        "innmind/io": "~2.6"
     },
     "autoload": {
         "psr-4": {

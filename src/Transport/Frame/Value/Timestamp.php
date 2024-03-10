@@ -11,10 +11,12 @@ use Innmind\TimeContinuum\{
     Clock,
     PointInTime,
 };
-use Innmind\Stream\Readable;
+use Innmind\IO\Readable\Frame;
 use Innmind\Immutable\{
     Str,
     Maybe,
+    Either,
+    Predicate\Instance,
 };
 
 /**
@@ -39,14 +41,42 @@ final class Timestamp implements Value
     }
 
     /**
-     * @return Maybe<self>
+     * @psalm-pure
+     *
+     * @return Either<mixed, Value>
      */
-    public static function unpack(Clock $clock, Readable $stream): Maybe
+    public static function wrap(mixed $value): Either
     {
-        return UnsignedLongLongInteger::unpack($stream)
-            ->map(static fn($time) => $time->original())
-            ->flatMap(static fn($time) => $clock->at((string) $time, new TimestampFormat))
-            ->map(static fn($point) => new self($point));
+        return Maybe::of($value)
+            ->keep(Instance::of(PointInTime::class))
+            ->either()
+            ->map(static fn($point) => new self($point))
+            ->leftMap(static fn(): mixed => $value);
+    }
+
+    /**
+     * @psalm-pure
+     *
+     * @return Frame<Unpacked<self>>
+     */
+    public static function frame(Clock $clock): Frame
+    {
+        return UnsignedLongLongInteger::frame()->flatMap(
+            static fn($time) => $clock
+                ->at((string) $time->unwrap()->original(), new TimestampFormat)
+                ->map(static fn($point) => new self($point))
+                ->map(static fn($value) => Unpacked::of(
+                    $time->read(),
+                    $value,
+                ))
+                ->match(
+                    static fn($unpacked) => Frame\NoOp::of($unpacked),
+                    static fn() => Frame\NoOp::of(Unpacked::of(
+                        0,
+                        new self($clock->now()),
+                    ))->filter(static fn() => false), // to force failing since the read time is invalid
+                ),
+        );
     }
 
     public function original(): PointInTime

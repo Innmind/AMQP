@@ -9,44 +9,36 @@ use Innmind\AMQP\{
     Transport\Connection\OpenVHost,
     Transport\Connection\Heartbeat,
     Transport\Connection\FrameReader,
-    Transport\Connection\State,
-    Transport\Connection\Continuation,
     Transport\Connection\SignalListener,
-    Transport\Frame,
-    Transport\Protocol,
     Transport\Frame\Channel,
     Transport\Frame\Type,
     Transport\Frame\Method,
     Transport\Frame\Value,
-    Model\Connection\StartOk,
-    Model\Connection\SecureOk,
-    Model\Connection\TuneOk,
-    Model\Connection\Open,
     Model\Connection\Close,
     Model\Connection\MaxChannels,
     Model\Connection\MaxFrameSize,
+    Model\Connection\TuneOk,
     Failure,
+    Exception\FrameChannelExceedAllowedChannelNumber,
+    Exception\FrameExceedAllowedSize,
 };
 use Innmind\OperatingSystem\CurrentProcess\Signals;
 use Innmind\Socket\{
     Internet\Transport,
     Client as Socket,
 };
-use Innmind\Stream\Watch;
+use Innmind\IO\{
+    Sockets\Client,
+    Readable\Frame as IOFrame,
+};
 use Innmind\Url\Url;
 use Innmind\TimeContinuum\{
     ElapsedPeriod,
     Clock,
-    PointInTime,
-    Earth,
 };
-use Innmind\OperatingSystem\{
-    Remote,
-    Sockets,
-};
+use Innmind\OperatingSystem\Remote;
 use Innmind\Immutable\{
     Str,
-    Set,
     Maybe,
     Either,
     Sequence,
@@ -60,31 +52,31 @@ use Innmind\Immutable\{
 final class Connection
 {
     private Protocol $protocol;
-    private Sockets $sockets;
-    private Socket $socket;
-    private Watch $watch;
-    private FrameReader $read;
+    /** @var Client<Socket> */
+    private Client $socket;
+    /** @var IOFrame<Frame> */
+    private IOFrame $frame;
     private MaxChannels $maxChannels;
     private MaxFrameSize $maxFrameSize;
     private Heartbeat $heartbeat;
     private SignalListener $signals;
 
+    /**
+     * @param Client<Socket> $socket
+     * @param IOFrame<Frame> $frame
+     */
     private function __construct(
         Protocol $protocol,
-        Sockets $sockets,
         Heartbeat $heartbeat,
-        Socket $socket,
-        Watch $watch,
+        Client $socket,
         MaxChannels $maxChannels,
         MaxFrameSize $maxFrameSize,
-        FrameReader $read,
+        IOFrame $frame,
         SignalListener $signals,
     ) {
         $this->protocol = $protocol;
-        $this->sockets = $sockets;
         $this->socket = $socket;
-        $this->watch = $watch;
-        $this->read = $read;
+        $this->frame = $frame;
         $this->maxChannels = $maxChannels;
         $this->maxFrameSize = $maxFrameSize;
         $this->heartbeat = $heartbeat;
@@ -101,37 +93,165 @@ final class Connection
         ElapsedPeriod $timeout,
         Clock $clock,
         Remote $remote,
-        Sockets $sockets,
     ): Maybe {
-        /**
-         * Due to the $socket->write() psalm lose the type
-         * @psalm-suppress ArgumentTypeCoercion
-         * @psalm-suppress InvalidArgument
-         */
+        /** @psalm-suppress InvalidArgument */
         return $remote
             ->socket(
                 $transport,
                 $server->authority()->withoutUserInformation(),
             )
+            ->map(
+                static fn($socket) => $socket
+                    ->timeoutAfter($timeout)
+                    ->toEncoding(Str\Encoding::ascii),
+            )
             ->flatMap(
                 static fn($socket) => $socket
-                    ->write($protocol->version()->pack())
-                    ->maybe(),
+                    ->send(Sequence::of($protocol->version()->pack()))
+                    ->map(static fn() => $socket),
             )
             ->map(static fn($socket) => new self(
                 $protocol,
-                $sockets,
                 Heartbeat::start($clock, $timeout),
                 $socket,
-                $sockets->watch($timeout)->forRead($socket),
                 MaxChannels::unlimited(),
                 MaxFrameSize::unlimited(),
-                new FrameReader,
+                (new FrameReader)($protocol),
                 SignalListener::uninstalled(),
             ))
             ->flatMap(new Start($server->authority()))
             ->flatMap(new Handshake($server->authority()))
             ->flatMap(new OpenVHost($server->path()));
+    }
+
+    /**
+     * @param callable(Protocol, MaxFrameSize): Sequence<Frame> $frames
+     *
+     * @return Either<Failure, SideEffect>
+     */
+    public function respondTo(Method $method, callable $frames): Either
+    {
+        return $this
+            ->wait($method)
+            ->flatMap(
+                fn() => $this->sendFrames($frames),
+            );
+    }
+
+    /**
+     * @param callable(Protocol, MaxFrameSize): Sequence<Frame> $frames
+     *
+     * @return Either<Failure, Frame>
+     */
+    public function request(callable $frames, Method $method, Method ...$methods): Either
+    {
+        return $this
+            ->sendFrames($frames)
+            ->flatMap(fn() => $this->wait($method, ...$methods))
+            ->map(static fn($received) => $received->frame());
+    }
+
+    /**
+     * @param callable(Protocol, MaxFrameSize): Sequence<Frame> $frames
+     *
+     * @return Either<Failure, SideEffect>
+     */
+    public function send(callable $frames): Either
+    {
+        return $this->sendFrames($frames);
+    }
+
+    /**
+     * @return Either<Failure, ReceivedFrame>
+     */
+    public function wait(Method ...$names): Either
+    {
+        return $this
+            ->socket
+            ->heartbeatWith(
+                fn() => $this
+                    ->heartbeat
+                    ->frames()
+                    ->map(static fn($frame) => $frame->pack()),
+            )
+            ->abortWhen($this->signals->notified(...))
+            ->frames($this->frame)
+            ->one()
+            ->map(ReceivedFrame::of(...))
+            ->map($this->flagActive(...))
+            ->either()
+            ->eitherWay(
+                fn($received) => match ($received->frame()->type()) {
+                    Type::heartbeat => $this->wait(...$names),
+                    default => $this->ensureValidFrame($received, ...$names),
+                },
+                fn() => $this->signals->close(
+                    $this,
+                    static fn() => Either::left(Failure::toReadFrame()),
+                ),
+            );
+    }
+
+    /**
+     * @return Maybe<SideEffect>
+     */
+    public function close(): Maybe
+    {
+        $this->signals->uninstall();
+
+        if ($this->closed()) {
+            /** @var Maybe<SideEffect> */
+            return Maybe::nothing();
+        }
+
+        return $this
+            ->request(
+                static fn($protocol) => $protocol->connection()->close(Close::demand()),
+                Method::connectionCloseOk,
+            )
+            ->flatMap(fn() => $this->socket->unwrap()->close())
+            ->maybe()
+            ->map(static fn() => new SideEffect);
+    }
+
+    /**
+     * @return Maybe<self>
+     */
+    public function tune(
+        MaxChannels $maxChannels,
+        MaxFrameSize $maxFrameSize,
+        ElapsedPeriod $heartbeat,
+    ): Maybe {
+        return $this
+            ->send(static fn($protocol) => $protocol->connection()->tuneOk(
+                TuneOk::of(
+                    $maxChannels,
+                    $maxFrameSize,
+                    $heartbeat,
+                ),
+            ))
+            ->maybe()
+            ->map(fn() => new self(
+                $this->protocol,
+                $this->heartbeat->adjust($heartbeat),
+                $this->socket->timeoutAfter($heartbeat),
+                $maxChannels,
+                $maxFrameSize,
+                $this->frame,
+                $this->signals,
+            ));
+    }
+
+    public function listenSignals(Signals $signals, Channel $channel): void
+    {
+        $this->signals->install($signals, $channel);
+    }
+
+    private function flagActive(ReceivedFrame $received): ReceivedFrame
+    {
+        $this->heartbeat->active();
+
+        return $received;
     }
 
     /**
@@ -142,183 +262,39 @@ final class Connection
      * or that writting to the socket failed
      *
      * @param callable(Protocol, MaxFrameSize): Sequence<Frame> $frames
+     *
+     * @throws FrameChannelExceedAllowedChannelNumber
+     * @throws FrameExceedAllowedSize
+     *
+     * @return Either<Failure, SideEffect>
      */
-    public function send(callable $frames): Continuation
+    private function sendFrames(callable $frames): Either
     {
-        /**
-         * @psalm-suppress MixedArgumentTypeCoercion
-         * @var Either<Failure, self>
-         */
-        $connection = $frames($this->protocol, $this->maxFrameSize)->reduce(
-            $this->signals->safe($this),
-            static fn(Either $connection, $frame) => $connection->flatMap(
-                static fn(self $connection) => $connection->sendFrame($frame),
-            ),
-        );
+        $data = $frames($this->protocol, $this->maxFrameSize)
+            ->map(function($frame) {
+                $this->maxChannels->verify($frame->channel()->toInt());
 
-        return Continuation::of($connection);
-    }
+                return $frame;
+            })
+            ->map(static fn($frame) => $frame->pack())
+            ->map(function($frame) {
+                $this->maxFrameSize->verify($frame->length());
 
-    /**
-     * @return Either<Failure, ReceivedFrame>
-     */
-    public function wait(Frame\Method ...$names): Either
-    {
-        /** @var Either<Failure, array{Connection, Set<Socket>}> */
-        $ready = Either::right([$this, Set::of()]);
-
-        do {
-            $ready = $ready->flatMap($this->doWait(...));
-        } while ($ready->match(
-            static fn($ready) => !$ready[1]->contains($ready[0]->socket),
-            static fn() => false,
-        ));
-
-        return $ready
-            ->maybe()
-            ->map(static fn($ready) => $ready[0])
-            ->flatMap(
-                static fn($connection) => ($connection->read)(
-                    $connection->socket,
-                    $connection->protocol,
-                )
-                    ->map(static fn($frame) => ReceivedFrame::of(
-                        $connection->asActive(),
-                        $frame,
-                    )),
-            )
-            ->either()
-            ->leftMap(static fn() => Failure::toReadFrame())
-            ->flatMap(static fn($received) => match ($received->frame()->type()) {
-                Type::heartbeat => $received->connection()->wait(...$names),
-                default => $received->connection()->ensureValidFrame($received, ...$names),
+                return $frame;
             });
-    }
-
-    /**
-     * @return Maybe<SideEffect>
-     */
-    public function close(): Maybe
-    {
-        if ($this->closed()) {
-            /** @var Maybe<SideEffect> */
-            return Maybe::nothing();
-        }
 
         return $this
-            ->send(static fn($protocol) => $protocol->connection()->close(Close::demand()))
-            ->wait(Method::connectionCloseOk)
-            ->connection()
-            ->flatMap(static fn($connection) => $connection->socket->close())
-            ->maybe()
-            ->map(static fn() => new SideEffect);
-    }
-
-    /**
-     * This only modify the internal values for the connection, it doesn't
-     * notify the server we applied the changes on our end. The notification is
-     * done in Handshake
-     *
-     * @internal
-     */
-    public function tune(
-        MaxChannels $maxChannels,
-        MaxFrameSize $maxFrameSize,
-        ElapsedPeriod $heartbeat,
-    ): self {
-        return new self(
-            $this->protocol,
-            $this->sockets,
-            $this->heartbeat->adjust($heartbeat),
-            $this->socket,
-            $this->sockets->watch($heartbeat)->forRead($this->socket),
-            $maxChannels,
-            $maxFrameSize,
-            $this->read,
-            $this->signals,
-        );
-    }
-
-    /**
-     * @internal
-     */
-    public function asActive(): self
-    {
-        return new self(
-            $this->protocol,
-            $this->sockets,
-            $this->heartbeat->active(),
-            $this->socket,
-            $this->watch,
-            $this->maxChannels,
-            $this->maxFrameSize,
-            $this->read,
-            $this->signals,
-        );
-    }
-
-    public function listenSignals(Signals $signals, Channel $channel): self
-    {
-        return new self(
-            $this->protocol,
-            $this->sockets,
-            $this->heartbeat,
-            $this->socket,
-            $this->watch,
-            $this->maxChannels,
-            $this->maxFrameSize,
-            $this->read,
-            $this->signals->install($signals, $channel),
-        );
-    }
-
-    /**
-     * @return Either<Failure, self>
-     */
-    private function sendFrame(Frame $frame): Either
-    {
-        /** @var Either<Failure, self> */
-        return Maybe::just($frame)
-            ->filter(fn($frame) => $this->maxChannels->allows($frame->channel()->toInt()))
-            ->map(static fn($frame) => $frame->pack()->toEncoding(Str\Encoding::ascii))
-            ->filter(fn($frame) => $this->maxFrameSize->allows($frame->length()))
-            ->flatMap(
-                fn($frame) => $this
-                    ->socket
-                    ->write($frame)
-                    ->maybe(),
-            )
-            ->map(fn() => $this)
+            ->socket
+            ->abortWhen($this->signals->notified(...))
+            ->send($data)
             ->either()
-            ->leftMap(static fn() => Failure::toSendFrame());
-    }
-
-    /**
-     * @param array{Connection, Set<Socket>} $in
-     *
-     * @return Either<Failure, array{Connection, Set<Socket>}>
-     */
-    private function doWait(array $in): Either
-    {
-        [$connection] = $in;
-
-        if ($connection->closed()) {
-            /** @var Either<Failure, array{Connection, Set<Socket>}> */
-            return Either::left(Failure::toReadFrame());
-        }
-
-        /** @var Either<Failure, array{Connection, Set<Socket>}> */
-        return $connection
-            ->signals
-            ->safe($connection)
-            ->flatMap(static fn($connection) => $connection->heartbeat->ping($connection))
-            ->map(static fn($connection) => [
-                $connection,
-                ($connection->watch)()->match(
-                    static fn($ready) => $ready->toRead(),
-                    static fn() => Set::of(),
+            ->eitherWay(
+                static fn() => Either::right(new SideEffect),
+                fn() => $this->signals->close(
+                    $this,
+                    static fn() => Either::left(Failure::toSendFrame()),
                 ),
-            ]);
+            );
     }
 
     /**
@@ -344,12 +320,10 @@ final class Connection
             return Either::right($received);
         }
 
-        if ($received->frame()->is(Method::connectionClose)) {
+        if ($received->is(Method::connectionClose)) {
             /** @var Either<Failure, ReceivedFrame> */
-            return $received
-                ->connection()
+            return $this
                 ->send(static fn($protocol) => $protocol->connection()->closeOk())
-                ->connection()
                 ->leftMap(static fn() => Failure::toCloseConnection())
                 ->flatMap(static function() use ($received) {
                     $message = $received
@@ -400,6 +374,6 @@ final class Connection
 
     private function closed(): bool
     {
-        return $this->socket->closed();
+        return $this->socket->unwrap()->closed();
     }
 }

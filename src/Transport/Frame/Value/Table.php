@@ -3,15 +3,20 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport\Frame\Value;
 
-use Innmind\AMQP\Transport\Frame\Value;
+use Innmind\AMQP\Transport\{
+    Frame\Value,
+    Protocol\ArgumentTranslator,
+};
 use Innmind\TimeContinuum\Clock;
-use Innmind\Stream\Readable;
+use Innmind\IO\Readable\Frame;
 use Innmind\Immutable\{
     Str,
     Sequence as Seq,
+    Maybe,
+    Either,
     Map,
     Monoid\Concat,
-    Maybe,
+    Predicate\Instance,
 };
 
 /**
@@ -42,25 +47,51 @@ final class Table implements Value
     }
 
     /**
-     * @return Maybe<self>
+     * @psalm-pure
+     *
+     * @return Either<mixed, Value>
      */
-    public static function unpack(Clock $clock, Readable $stream): Maybe
+    public static function wrap(ArgumentTranslator $translate, mixed $value): Either
     {
-        /** @var Map<string, Value> */
-        $values = Map::of();
+        /** @psalm-suppress MixedArgumentTypeCoercion */
+        return Maybe::of($value)
+            ->keep(Instance::of(Map::class))
+            ->flatMap(
+                static fn($map) => $map->reduce(
+                    Maybe::just(Map::of()),
+                    static fn(Maybe $translated, $key, $value) => $translated->flatMap(
+                        static fn(Map $map) => ShortString::wrap($key)
+                            ->maybe()
+                            ->map(
+                                static fn() => ($map)($key, $translate($value)),
+                            ),
+                    ),
+                ),
+            )
+            ->either()
+            ->map(static fn($map) => new self($map))
+            ->leftMap(static fn(): mixed => $value);
+    }
 
-        return UnsignedLongInteger::unpack($stream)
-            ->map(static fn($length) => $length->original())
-            ->flatMap(static fn($length) => match ($length) {
-                0 => Maybe::just($values),
+    /**
+     * @psalm-pure
+     *
+     * @return Frame<Unpacked<self>>
+     */
+    public static function frame(Clock $clock): Frame
+    {
+        $self = new self(Map::of());
+
+        return UnsignedLongInteger::frame()->flatMap(
+            static fn($length) => match ($length->unwrap()->original()) {
+                0 => Frame\NoOp::of(Unpacked::of($length->read(), $self)),
                 default => self::unpackNested(
                     $clock,
-                    $length + $stream->position()->toInt(),
-                    $stream,
-                    $values,
+                    Unpacked::of($length->read(), $self),
+                    $length->unwrap()->original(),
                 ),
-            })
-            ->map(static fn($map) => new self($map));
+            },
+        );
     }
 
     /**
@@ -98,38 +129,39 @@ final class Table implements Value
     }
 
     /**
-     * @param Map<string, Value> $values
+     * @psalm-pure
      *
-     * @return Maybe<Map<string, Value>>
+     * @param Unpacked<self> $unpacked
+     *
+     * @return Frame<Unpacked<self>>
      */
     private static function unpackNested(
         Clock $clock,
-        int $boundary,
-        Readable $stream,
-        Map $values,
-    ): Maybe {
-        return ShortString::unpack($stream)
-            ->map(static fn($key) => $key->original()->toString())
+        Unpacked $unpacked,
+        int $length,
+    ): Frame {
+        return ShortString::frame()
             ->flatMap(
-                static fn($key) => $stream
-                    ->read(1)
-                    ->map(static fn($chunk) => $chunk->toEncoding(Str\Encoding::ascii))
-                    ->filter(static fn($chunk) => $chunk->length() === 1)
-                    ->flatMap(static fn($chunk) => Symbol::unpack(
+                static fn($key) => Frame\Chunk::of(1)
+                    ->flatMap(static fn($chunk) => Symbol::frame(
                         $clock,
                         $chunk->toString(),
-                        $stream,
                     ))
-                    ->map(static fn($value) => ($values)($key, $value)),
+                    ->map(static fn($value) => Unpacked::of(
+                        $unpacked->read() + $key->read() + $value->read() + 1,
+                        new self(($unpacked->unwrap()->original)(
+                            $key->unwrap()->original()->toString(),
+                            $value->unwrap(),
+                        )),
+                    )),
             )
-            ->flatMap(static fn($values) => match ($stream->position()->toInt() < $boundary) {
+            ->flatMap(static fn($value) => match ($value->read() < $length) {
                 true => self::unpackNested(
                     $clock,
-                    $boundary,
-                    $stream,
-                    $values,
+                    $value,
+                    $length,
                 ),
-                false => Maybe::just($values),
+                false => Frame\NoOp::of($value),
             });
     }
 }
