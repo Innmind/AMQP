@@ -9,6 +9,7 @@ use Innmind\AMQP\{
     Client\State,
     Transport\Connection,
     Transport\Connection\MessageReader,
+    Transport\Protocol,
     Transport\Frame,
     Transport\Frame\Channel,
     Transport\Frame\Value,
@@ -22,6 +23,7 @@ use Innmind\AMQP\{
 use Innmind\Immutable\{
     Maybe,
     Either,
+    Sequence,
     Predicate\Instance,
 };
 
@@ -44,26 +46,31 @@ final class Consume implements Command
         Connection $connection,
         Channel $channel,
         MessageReader $read,
-        mixed $state,
+        State $state,
     ): Either {
-        /** @var Either<Failure, State> */
-        return $connection
-            ->send(fn($protocol) => $protocol->basic()->consume(
-                $channel,
-                $this->command,
-            ))
-            ->maybeWait($this->command->shouldWait(), Method::basicConsumeOk)
-            ->then(
-                fn($connection, $frame) => $this->maybeStart(
+        $frames = fn(Protocol $protocol): Sequence => $protocol->basic()->consume(
+            $channel,
+            $this->command,
+        );
+
+        $sideEffect = match ($this->command->shouldWait()) {
+            true => $connection
+                ->request($frames, Method::basicConsumeOk)
+                ->flatMap(fn($frame) => $this->maybeStart(
                     $connection,
                     $channel,
                     $read,
                     $frame,
                     $state,
-                ),
-                static fn($connection) => State::of($connection, $state), // this case should not happen
-            )
-            ->leftMap(fn() => Failure::toConsume($this->command));
+                )),
+            false => $connection
+                ->send($frames)
+                ->map(static fn() => $state),
+        };
+
+        return $sideEffect->leftMap(
+            fn() => Failure::toConsume($this->command),
+        );
     }
 
     public static function of(string $queue): self
@@ -90,7 +97,7 @@ final class Consume implements Command
         Channel $channel,
         MessageReader $read,
         Frame $frame,
-        mixed $state,
+        State $state,
     ): Either {
         return $frame
             ->values()
@@ -115,11 +122,11 @@ final class Consume implements Command
         Connection $connection,
         Channel $channel,
         MessageReader $read,
-        mixed $state,
+        State $state,
         string $consumerTag,
     ): Either {
         /** @var Either<Failure, State|Canceled> */
-        $consumed = Either::right(State::of($connection, $state));
+        $consumed = Either::right($state);
         // here the best approach would be to use recursion to avoid unwrapping
         // the monads but it would end up with a too deep call stack for inifite
         // consumers as each new message would mean a new function call in the
@@ -132,9 +139,9 @@ final class Consume implements Command
                     default => $state,
                 })
                 ->flatMap(fn($state) => $this->waitDeliver(
-                    $state->connection(),
+                    $connection,
                     $channel,
-                    $state->userState(),
+                    $state,
                     $consumerTag,
                     $read,
                 ));
@@ -155,7 +162,7 @@ final class Consume implements Command
     private function waitDeliver(
         Connection $connection,
         Channel $channel,
-        mixed $state,
+        State $state,
         string $consumerTag,
         MessageReader $read,
     ): Either {
@@ -163,15 +170,15 @@ final class Consume implements Command
         return $connection
             ->wait(Method::basicDeliver)
             ->flatMap(
-                fn($receivedFrame) => $read($receivedFrame->connection())->flatMap(
-                    fn($receivedMessage) => $this->maybeConsume(
-                        $receivedMessage->connection(),
+                fn($received) => $read($connection)->flatMap(
+                    fn($message) => $this->maybeConsume(
+                        $connection,
                         $channel,
                         $read,
                         $state,
                         $consumerTag,
-                        $receivedFrame->frame(),
-                        $receivedMessage->message(),
+                        $received->frame(),
+                        $message,
                     ),
                 ),
             )
@@ -185,7 +192,7 @@ final class Consume implements Command
         Connection $connection,
         Channel $channel,
         MessageReader $read,
-        mixed $state,
+        State $state,
         string $consumerTag,
         Frame $frame,
         Message $message,
@@ -242,13 +249,13 @@ final class Consume implements Command
         Connection $connection,
         Channel $channel,
         MessageReader $read,
-        mixed $state,
+        State $state,
         Details $details,
         Message $message,
         string $consumerTag,
     ): Either {
         return ($this->consume)(
-            $state,
+            $state->unwrap(),
             $message,
             Continuation::of($state),
             $details,

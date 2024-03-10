@@ -43,7 +43,7 @@ $client = Factory::of($os)->make(/* details */);
 $os
     ->filesystem()
     ->mount(Path::of('/path/to/some/directory/'))
-    ->get(new Name('leads.csv'))
+    ->get(Name::of('leads.csv'))
     ->map(
         static fn($file) => $file
             ->content()

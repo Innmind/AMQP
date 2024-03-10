@@ -3,7 +3,7 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport\Frame;
 
-use Innmind\Immutable\Maybe;
+use Innmind\IO\Readable\Frame;
 
 /**
  * @psalm-immutable
@@ -19,17 +19,16 @@ enum Type
     /**
      * @psalm-pure
      *
-     * @return Maybe<self>
+     * @return Frame<self>
      */
-    public static function maybe(int $value): Maybe
+    public static function frame(int $value): Frame
     {
-        /** @var Maybe<self> */
         return match ($value) {
-            1 => Maybe::just(self::method),
-            2 => Maybe::just(self::header),
-            3 => Maybe::just(self::body),
-            8 => Maybe::just(self::heartbeat),
-            default => Maybe::nothing(),
+            1 => Frame\NoOp::of(self::method),
+            2 => Frame\NoOp::of(self::header),
+            3 => Frame\NoOp::of(self::body),
+            8 => Frame\NoOp::of(self::heartbeat),
+            default => Frame\NoOp::of(self::heartbeat)->filter(static fn() => false), // force fail
         };
     }
 

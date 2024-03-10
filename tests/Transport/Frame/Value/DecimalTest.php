@@ -8,7 +8,12 @@ use Innmind\AMQP\{
     Transport\Frame\Value,
 };
 use Innmind\Math\Exception\OutOfDefinitionSet;
-use Innmind\Stream\Readable\Stream;
+use Innmind\IO\IO;
+use Innmind\Stream\{
+    Readable\Stream,
+    Watch\Select,
+};
+use Innmind\Immutable\Str;
 use PHPUnit\Framework\TestCase;
 
 class DecimalTest extends TestCase
@@ -36,10 +41,16 @@ class DecimalTest extends TestCase
      */
     public function testFromStream($number, $scale, $string)
     {
-        $value = Decimal::unpack(Stream::ofContent($string))->match(
-            static fn($value) => $value,
-            static fn() => null,
-        );
+        $value = IO::of(Select::waitForever(...))
+            ->readable()
+            ->wrap(Stream::ofContent($string))
+            ->toEncoding(Str\Encoding::ascii)
+            ->frames(Decimal::frame())
+            ->one()
+            ->match(
+                static fn($value) => $value->unwrap(),
+                static fn() => null,
+            );
 
         $this->assertInstanceOf(Decimal::class, $value);
         $this->assertSame(($number / (10**$scale)), $value->original());

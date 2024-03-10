@@ -19,6 +19,6 @@ interface Command
         Connection $connection,
         Channel $channel,
         MessageReader $read,
-        mixed $state,
+        Client\State $state,
     ): Either;
 }

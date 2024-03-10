@@ -7,11 +7,13 @@ use Innmind\AMQP\{
     Transport\Frame\Value\UnsignedOctet,
     Transport\Frame\Value,
 };
-use Innmind\Math\{
-    Algebra\Integer,
-    Exception\OutOfDefinitionSet,
+use Innmind\Math\Exception\OutOfDefinitionSet;
+use Innmind\IO\IO;
+use Innmind\Stream\{
+    Readable\Stream,
+    Watch\Select,
 };
-use Innmind\Stream\Readable\Stream;
+use Innmind\Immutable\Str;
 use PHPUnit\Framework\TestCase;
 
 class UnsignedOctetTest extends TestCase
@@ -39,10 +41,16 @@ class UnsignedOctetTest extends TestCase
      */
     public function testFromStream($string, $expected)
     {
-        $value = UnsignedOctet::unpack(Stream::ofContent($string))->match(
-            static fn($value) => $value,
-            static fn() => null,
-        );
+        $value = IO::of(Select::waitForever(...))
+            ->readable()
+            ->wrap(Stream::ofContent($string))
+            ->toEncoding(Str\Encoding::ascii)
+            ->frames(UnsignedOctet::frame())
+            ->one()
+            ->match(
+                static fn($value) => $value->unwrap(),
+                static fn() => null,
+            );
 
         $this->assertInstanceOf(UnsignedOctet::class, $value);
         $this->assertSame($expected, $value->original());

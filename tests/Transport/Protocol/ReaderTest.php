@@ -4,9 +4,7 @@ declare(strict_types = 1);
 namespace Tests\Innmind\AMQP\Transport\Protocol;
 
 use Innmind\AMQP\Transport\{
-    Protocol\Reader,
     Frame\Method,
-    Frame\Value,
     Frame\Value\ShortString,
     Frame\Value\UnsignedShortInteger,
     Frame\Value\UnsignedLongLongInteger,
@@ -17,6 +15,7 @@ use Innmind\AMQP\Transport\{
     Frame\Value\LongString
 };
 use Innmind\TimeContinuum\Earth\Clock;
+use Innmind\IO\IO;
 use Innmind\Stream\Readable\Stream;
 use Innmind\Immutable\{
     Str,
@@ -32,21 +31,21 @@ class ReaderTest extends TestCase
      */
     public function testInvokation($method, $arguments)
     {
-        $read = new Reader(new Clock);
-
         $args = '';
 
         foreach ($arguments as $arg) {
             $args .= $arg->pack()->toString();
         }
 
-        $stream = $read(
-            $method,
-            Stream::ofContent($args),
-        )->match(
-            static fn($values) => $values,
-            static fn() => null,
-        );
+        $stream = IO::of(static fn() => null)
+            ->readable()
+            ->wrap(Stream::ofContent($args))
+            ->frames($method->incomingFrame(new Clock))
+            ->one()
+            ->match(
+                static fn($values) => $values,
+                static fn() => null,
+            );
 
         $this->assertInstanceOf(Sequence::class, $stream);
         $this->assertCount(\count($arguments), $stream);

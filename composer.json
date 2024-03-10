@@ -21,11 +21,11 @@
         "innmind/math": "~6.0",
         "innmind/url": "~4.1",
         "ramsey/uuid": "~4.0",
-        "innmind/operating-system": "~4.1",
+        "innmind/operating-system": "~5.0",
         "innmind/media-type": "~2.0",
         "innmind/filesystem": "~7.0",
         "innmind/stream": "~4.0",
-        "innmind/io": "~2.3"
+        "innmind/io": "~2.6"
     },
     "autoload": {
         "psr-4": {

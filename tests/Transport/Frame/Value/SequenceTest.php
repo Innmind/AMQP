@@ -6,11 +6,14 @@ namespace Tests\Innmind\AMQP\Transport\Frame\Value;
 use Innmind\AMQP\{
     Transport\Frame\Value\Sequence,
     Transport\Frame\Value\LongString,
-    Transport\Frame\Value\Text,
     Transport\Frame\Value,
 };
 use Innmind\TimeContinuum\Earth\Clock;
-use Innmind\Stream\Readable\Stream;
+use Innmind\IO\IO;
+use Innmind\Stream\{
+    Readable\Stream,
+    Watch\Select,
+};
 use Innmind\Immutable\{
     Sequence as Seq,
     Str,
@@ -40,10 +43,16 @@ class SequenceTest extends TestCase
      */
     public function testFromStream($string, $expected)
     {
-        $value = Sequence::unpack(new Clock, Stream::ofContent($string))->match(
-            static fn($value) => $value,
-            static fn() => null,
-        );
+        $value = IO::of(Select::waitForever(...))
+            ->readable()
+            ->wrap(Stream::ofContent($string))
+            ->toEncoding(Str\Encoding::ascii)
+            ->frames(Sequence::frame(new Clock))
+            ->one()
+            ->match(
+                static fn($value) => $value->unwrap(),
+                static fn() => null,
+            );
 
         $this->assertInstanceOf(Sequence::class, $value);
         $this->assertCount(\count($expected), $value->original());

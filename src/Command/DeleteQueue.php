@@ -11,14 +11,15 @@ use Innmind\AMQP\{
     Model\Count,
     Transport\Connection,
     Transport\Connection\MessageReader,
+    Transport\Protocol,
     Transport\Frame\Channel,
     Transport\Frame\Method,
     Transport\Frame\Value,
     Failure,
 };
 use Innmind\Immutable\{
-    Maybe,
     Either,
+    Sequence,
     Predicate\Instance,
 };
 
@@ -35,30 +36,34 @@ final class DeleteQueue implements Command
         Connection $connection,
         Channel $channel,
         MessageReader $read,
-        mixed $state,
+        State $state,
     ): Either {
-        /** @var Either<Failure, State> */
-        return $connection
-            ->send(fn($protocol) => $protocol->queue()->delete(
-                $channel,
-                $this->command,
-            ))
-            ->maybeWait($this->command->shouldWait(), Method::queueDeleteOk)
-            ->then(
-                // this is here just to make sure the response is valid maybe in
-                // the future we could expose this info to the user
-                fn($connection, $frame) => $frame
-                    ->values()
-                    ->first()
-                    ->keep(Instance::of(Value\UnsignedLongInteger::class))
-                    ->map(static fn($value) => $value->original())
-                    ->map(Count::of(...))
-                    ->map(DeleteOk::of(...))
-                    ->map(static fn() => State::of($connection, $state))
-                    ->either()
-                    ->leftMap(fn() => Failure::toDeleteQueue($this->command)),
-                static fn($connection) => State::of($connection, $state),
-            );
+        $frames = fn(Protocol $protocol): Sequence => $protocol->queue()->delete(
+            $channel,
+            $this->command,
+        );
+
+        $sideEffect = match ($this->command->shouldWait()) {
+            true => $connection
+                ->request($frames, Method::queueDeleteOk)
+                ->flatMap(
+                    // this is here just to make sure the response is valid
+                    // maybe in the future we could expose this info to the user
+                    static fn($frame) => $frame
+                        ->values()
+                        ->first()
+                        ->keep(Instance::of(Value\UnsignedLongInteger::class))
+                        ->map(static fn($value) => $value->original())
+                        ->map(Count::of(...))
+                        ->map(DeleteOk::of(...))
+                        ->either(),
+                ),
+            false => $connection->send($frames),
+        };
+
+        return $sideEffect
+            ->map(static fn() => $state)
+            ->leftMap(fn() => Failure::toDeleteQueue($this->command));
     }
 
     public static function of(string $name): self

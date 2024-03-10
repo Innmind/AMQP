@@ -9,10 +9,11 @@ use Innmind\Math\{
     DefinitionSet\Set,
     DefinitionSet\Range,
 };
-use Innmind\Stream\Readable;
+use Innmind\IO\Readable\Frame;
 use Innmind\Immutable\{
     Str,
     Maybe,
+    Either,
 };
 
 /**
@@ -45,21 +46,38 @@ final class SignedLongInteger implements Value
     }
 
     /**
-     * @return Maybe<self>
+     * @psalm-pure
+     *
+     * @return Either<mixed, Value>
      */
-    public static function unpack(Readable $stream): Maybe
+    public static function wrap(mixed $value): Either
     {
-        return $stream
-            ->read(4)
-            ->map(static fn($chunk) => $chunk->toEncoding(Str\Encoding::ascii))
-            ->filter(static fn($chunk) => $chunk->length() === 4)
+        /** @psalm-suppress ArgumentTypeCoercion */
+        return Maybe::of($value)
+            ->filter(\is_int(...))
+            ->map(Integer::of(...))
+            ->filter(self::definitionSet()->contains(...))
+            ->either()
+            ->map(static fn($int) => new self($int->value()))
+            ->leftMap(static fn(): mixed => $value);
+    }
+
+    /**
+     * @psalm-pure
+     *
+     * @return Frame<Unpacked<self>>
+     */
+    public static function frame(): Frame
+    {
+        return Frame\Chunk::of(4)
             ->map(static function($chunk) {
                 /** @var int<-2147483648, 2147483647> $value */
                 [, $value] = \unpack('l', $chunk->toString());
 
                 return $value;
             })
-            ->map(static fn($value) => new self($value));
+            ->map(static fn($value) => new self($value))
+            ->map(static fn($value) => Unpacked::of(4, $value));
     }
 
     /**

@@ -5,9 +5,11 @@
 ### Changed
 
 - Requires `innmind/immutable:~5.2`
-- Requires `innmind/operating-system:~4.1`
+- Requires `innmind/operating-system:~5.0`
 - Requires `innmind/filesystem:~7.0`
-- Requires `innmind/io:~2.3`
+- Requires `innmind/io:~2.6`
+- Carried state inside a `Innmind\AMQP\Command` is now wrapped inside a `Innmind\AMQP\Client\State`
+- `Innmind\AMQP\Client::of()` now requires an instance of `Innmind\OperatingSystem\Filesystem` as a second argument
 
 ## 4.3.0 - 2023-09-23
 

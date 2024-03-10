@@ -8,7 +8,6 @@ use Innmind\AMQP\{
     Transport\Connection\MessageReader,
     Transport\Frame\Channel,
     Transport\Frame\Method,
-    Transport\Frame\Type,
     Model\Basic\Ack,
     Model\Basic\Reject,
     Model\Basic\Cancel,
@@ -19,21 +18,21 @@ use Innmind\AMQP\{
 };
 use Innmind\Immutable\{
     Either,
-    Sequence,
+    SideEffect,
 };
 
 final class Continuation
 {
-    private mixed $state;
+    private Client\State $state;
     private State $response;
 
-    private function __construct(mixed $state, State $response)
+    private function __construct(Client\State $state, State $response)
     {
         $this->state = $state;
         $this->response = $response;
     }
 
-    public static function of(mixed $state): self
+    public static function of(Client\State $state): self
     {
         // by default we auto ack the message
         return new self($state, State::ack);
@@ -41,17 +40,17 @@ final class Continuation
 
     public function ack(mixed $state): self
     {
-        return new self($state, State::ack);
+        return new self(Client\State::of($state), State::ack);
     }
 
     public function reject(mixed $state): self
     {
-        return new self($state, State::reject);
+        return new self(Client\State::of($state), State::reject);
     }
 
     public function requeue(mixed $state): self
     {
-        return new self($state, State::requeue);
+        return new self(Client\State::of($state), State::requeue);
     }
 
     /**
@@ -61,7 +60,7 @@ final class Continuation
      */
     public function cancel(mixed $state): self
     {
-        return new self($state, State::cancel);
+        return new self(Client\State::of($state), State::cancel);
     }
 
     /**
@@ -83,22 +82,22 @@ final class Continuation
         return match ($this->response) {
             State::cancel => $this
                 ->doAck($queue, $connection, $channel, $deliveryTag)
-                ->flatMap(fn($connection) => $this->doCancel(
+                ->flatMap(fn() => $this->doCancel(
                     $queue,
                     $connection,
                     $channel,
                     $consumerTag,
                 ))
-                ->flatMap(fn($connection) => $this->recover($queue, $connection, $channel, $read)),
+                ->flatMap(fn() => $this->recover($queue, $connection, $channel, $read)),
             State::ack => $this
                 ->doAck($queue, $connection, $channel, $deliveryTag)
-                ->map(fn($connection) => Client\State::of($connection, $this->state)),
+                ->map(fn() => $this->state),
             State::reject => $this
                 ->doReject($queue, $connection, $channel, $deliveryTag)
-                ->map(fn($connection) => Client\State::of($connection, $this->state)),
+                ->map(fn() => $this->state),
             State::requeue => $this
                 ->doRequeue($queue, $connection, $channel, $deliveryTag)
-                ->map(fn($connection) => Client\State::of($connection, $this->state)),
+                ->map(fn() => $this->state),
         };
     }
 
@@ -113,7 +112,7 @@ final class Continuation
     ): Either {
         $received = $connection->wait();
         $walkOverPrefetchedMessages = $received->match(
-            static fn($received) => $received->frame()->is(Method::basicDeliver),
+            static fn($received) => $received->is(Method::basicDeliver),
             static fn() => false,
         );
 
@@ -121,12 +120,12 @@ final class Continuation
             // read all the frames for the prefetched message then wait for next
             // frame
             $received = $received->flatMap(
-                static fn($received) => $read($received->connection())->flatMap(
-                    static fn($received) => $received->connection()->wait(),
+                static fn() => $read($connection)->flatMap(
+                    static fn() => $connection->wait(),
                 ),
             );
             $walkOverPrefetchedMessages = $received->match(
-                static fn($received) => $received->frame()->is(Method::basicDeliver),
+                static fn($received) => $received->is(Method::basicDeliver),
                 static fn() => false,
             );
         }
@@ -140,24 +139,21 @@ final class Continuation
         // messages handling
         /** @var Either<Failure, Canceled> */
         return $received
-            ->flatMap(
-                static fn($received) => $received
-                    ->connection()
-                    ->send(static fn($protocol) => $protocol->basic()->recover(
-                        $channel,
-                        Recover::requeue(),
-                    ))
-                    ->wait(Method::basicRecoverOk)
-                    ->connection(),
-            )
-            ->map(fn($connection) => Canceled::of(Client\State::of($connection, $this->state)))
+            ->flatMap(static fn() => $connection->request(
+                static fn($protocol) => $protocol->basic()->recover(
+                    $channel,
+                    Recover::requeue(),
+                ),
+                Method::basicRecoverOk,
+            ))
+            ->map(fn() => Canceled::of($this->state))
             ->leftMap(static fn() => Failure::toRecover($queue));
     }
 
     /**
      * @param int<0, max> $deliveryTag
      *
-     * @return Either<Failure, Connection>
+     * @return Either<Failure, SideEffect>
      */
     private function doAck(
         string $queue,
@@ -165,20 +161,18 @@ final class Continuation
         Channel $channel,
         int $deliveryTag,
     ): Either {
-        /** @var Either<Failure, Connection> */
         return $connection
             ->send(static fn($protocol) => $protocol->basic()->ack(
                 $channel,
                 Ack::of($deliveryTag),
             ))
-            ->connection()
             ->leftMap(static fn() => Failure::toAck($queue));
     }
 
     /**
      * @param int<0, max> $deliveryTag
      *
-     * @return Either<Failure, Connection>
+     * @return Either<Failure, SideEffect>
      */
     private function doReject(
         string $queue,
@@ -186,20 +180,18 @@ final class Continuation
         Channel $channel,
         int $deliveryTag,
     ): Either {
-        /** @var Either<Failure, Connection> */
         return $connection
             ->send(static fn($protocol) => $protocol->basic()->reject(
                 $channel,
                 Reject::of($deliveryTag),
             ))
-            ->connection()
             ->leftMap(static fn() => Failure::toReject($queue));
     }
 
     /**
      * @param int<0, max> $deliveryTag
      *
-     * @return Either<Failure, Connection>
+     * @return Either<Failure, SideEffect>
      */
     private function doRequeue(
         string $queue,
@@ -207,18 +199,16 @@ final class Continuation
         Channel $channel,
         int $deliveryTag,
     ): Either {
-        /** @var Either<Failure, Connection> */
         return $connection
             ->send(static fn($protocol) => $protocol->basic()->reject(
                 $channel,
                 Reject::requeue($deliveryTag),
             ))
-            ->connection()
             ->leftMap(static fn() => Failure::toReject($queue));
     }
 
     /**
-     * @return Either<Failure, Connection>
+     * @return Either<Failure, SideEffect>
      */
     private function doCancel(
         string $queue,
@@ -231,13 +221,11 @@ final class Continuation
             throw new BasicGetNotCancellable;
         }
 
-        /** @var Either<Failure, Connection> */
         return $connection
             ->send(static fn($protocol) => $protocol->basic()->cancel(
                 $channel,
                 Cancel::of($consumerTag),
             ))
-            ->connection()
             ->leftMap(static fn() => Failure::toCancel($queue));
     }
 }

@@ -3,14 +3,19 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport\Frame\Value;
 
-use Innmind\AMQP\Transport\Frame\Value;
+use Innmind\AMQP\Transport\{
+    Frame\Value,
+    Protocol\ArgumentTranslator,
+};
 use Innmind\TimeContinuum\Clock;
-use Innmind\Stream\Readable;
+use Innmind\IO\Readable\Frame;
 use Innmind\Immutable\{
     Sequence as Seq,
     Monoid\Concat,
     Str,
     Maybe,
+    Either,
+    Predicate\Instance,
 };
 
 /**
@@ -42,25 +47,39 @@ final class Sequence implements Value
     }
 
     /**
-     * @return Maybe<self>
+     * @psalm-pure
+     *
+     * @return Either<mixed, Value>
      */
-    public static function unpack(Clock $clock, Readable $stream): Maybe
+    public static function wrap(ArgumentTranslator $translate, mixed $value): Either
     {
-        /** @var Seq<Value> */
-        $values = Seq::of();
+        return Maybe::of($value)
+            ->keep(Instance::of(Seq::class))
+            ->map(static fn($values) => $values->map($translate))
+            ->either()
+            ->map(static fn($values) => new self($values))
+            ->leftMap(static fn(): mixed => $value);
+    }
 
-        return UnsignedLongInteger::unpack($stream)
-            ->map(static fn($length) => $length->original())
-            ->flatMap(static fn($length) => match ($length) {
-                0 => Maybe::just($values),
+    /**
+     * @psalm-pure
+     *
+     * @return Frame<Unpacked<self>>
+     */
+    public static function frame(Clock $clock): Frame
+    {
+        $self = new self(Seq::of());
+
+        return UnsignedLongInteger::frame()->flatMap(
+            static fn($length) => match ($length->unwrap()->original()) {
+                0 => Frame\NoOp::of(Unpacked::of($length->read(), $self)),
                 default => self::unpackNested(
                     $clock,
-                    $length + $stream->position()->toInt(),
-                    $stream,
-                    $values,
+                    Unpacked::of($length->read(), $self),
+                    $length->unwrap()->original(),
                 ),
-            })
-            ->map(static fn($values) => new self($values));
+            },
+        );
     }
 
     /**
@@ -93,29 +112,28 @@ final class Sequence implements Value
     }
 
     /**
-     * @param Seq<Value> $values
+     * @param Unpacked<self> $unpacked
      *
-     * @return Maybe<Seq<Value>>
+     * @return Frame<Unpacked<self>>
      */
     private static function unpackNested(
         Clock $clock,
-        int $boundary,
-        Readable $stream,
-        Seq $values,
-    ): Maybe {
-        return $stream
-            ->read(1)
-            ->map(static fn($chunk) => $chunk->toEncoding(Str\Encoding::ascii))
-            ->filter(static fn($chunk) => $chunk->length() === 1)
-            ->flatMap(static fn($chunk) => Symbol::unpack($clock, $chunk->toString(), $stream))
-            ->flatMap(static fn($value) => match ($stream->position()->toInt() < $boundary) {
+        Unpacked $unpacked,
+        int $length,
+    ): Frame {
+        return Frame\Chunk::of(1)
+            ->flatMap(static fn($chunk) => Symbol::frame($clock, $chunk->toString()))
+            ->map(static fn($value) => Unpacked::of(
+                $unpacked->read() + $value->read() + 1,
+                new self(($unpacked->unwrap()->original)($value->unwrap())),
+            ))
+            ->flatMap(static fn($value) => match ($value->read() < $length) {
                 true => self::unpackNested(
                     $clock,
-                    $boundary,
-                    $stream,
-                    ($values)($value),
+                    $value,
+                    $length,
                 ),
-                false => Maybe::just(($values)($value)),
+                false => Frame\NoOp::of($value),
             });
     }
 }

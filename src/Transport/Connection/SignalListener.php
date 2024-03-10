@@ -13,35 +13,46 @@ use Innmind\AMQP\{
 use Innmind\OperatingSystem\CurrentProcess\Signals;
 use Innmind\Signals\Signal;
 use Innmind\Immutable\{
-    Set,
     Either,
     Maybe,
 };
 
 /**
- * This class cannot have an immutable like behaviour as the signal is sents
+ * This class cannot have an immutable like behaviour as the signal is sent
  * asynchronously so we need to change a state
  */
 final class SignalListener
 {
     private bool $installed = false;
+    private bool $notified = false;
     /** @var Maybe<Signal> */
-    private Maybe $notified;
-    /**
-     * Even though our Client only support one channel per connection we use a
-     * Set here in case womeone figures out how to work with multiple channels
-     * on a single connection
-     * @var Set<Channel>
-     */
-    private Set $channels;
+    private Maybe $received;
+    /** @var Maybe<Channel> */
+    private Maybe $channel;
+    /** @var Maybe<Signals> */
+    private Maybe $signals;
+    /** @var \Closure(Signal): void */
+    private \Closure $softClose;
     private bool $closing = false;
 
     private function __construct()
     {
         /** @var Maybe<Signal> */
-        $this->notified = Maybe::nothing();
-        /** @var Set<Channel> */
-        $this->channels = Set::of();
+        $this->received = Maybe::nothing();
+        /** @var Maybe<Channel> */
+        $this->channel = Maybe::nothing();
+        /** @var Maybe<Signals> */
+        $this->signals = Maybe::nothing();
+        $this->softClose = function(Signal $signal): void {
+            // Do not re-attempt to close when already closing if the user sends
+            // multiple signals.
+            if ($this->closing) {
+                return;
+            }
+
+            $this->notified = true;
+            $this->received = Maybe::just($signal);
+        };
     }
 
     public static function uninstalled(): self
@@ -49,87 +60,79 @@ final class SignalListener
         return new self;
     }
 
-    public function install(Signals $signals, Channel $channel): self
+    public function install(Signals $signals, Channel $channel): void
     {
         if (!$this->installed) {
-            $softClose = function(Signal $signal): void {
-                $this->notified = Maybe::just($signal);
-            };
             $signals->listen(Signal::hangup, static function() {
                 // do nothing so it can run in background
             });
-            $signals->listen(Signal::interrupt, $softClose);
-            $signals->listen(Signal::abort, $softClose);
-            $signals->listen(Signal::terminate, $softClose);
-            $signals->listen(Signal::terminalStop, $softClose);
-            $signals->listen(Signal::alarm, $softClose);
+            $signals->listen(Signal::interrupt, $this->softClose);
+            $signals->listen(Signal::abort, $this->softClose);
+            $signals->listen(Signal::terminate, $this->softClose);
+            $signals->listen(Signal::terminalStop, $this->softClose);
+            $signals->listen(Signal::alarm, $this->softClose);
+            $this->signals = Maybe::just($signals);
             $this->installed = true;
         }
 
-        $this->channels = ($this->channels)($channel);
-
-        return $this;
+        $this->channel = Maybe::just($channel);
     }
 
-    /**
-     * @return Either<Failure, Connection>
-     */
-    public function safe(Connection $connection): Either
+    public function uninstall(): void
     {
-        return $this->notified->match(
-            fn($signal) => $this->close($connection, $signal),
-            static fn() => Either::right($connection),
+        $_ = $this->signals->match(
+            fn($signals) => $signals->remove($this->softClose),
+            static fn() => null,
         );
     }
 
-    /**
-     * @return Either<Failure, Connection>
-     */
-    private function close(Connection $connection, Signal $signal): Either
+    public function notified(): bool
     {
+        // Return false when closing to avoid abort watching the socket during
+        // the handshake to properly close the connection.
         if ($this->closing) {
-            return Either::right($connection);
+            return false;
         }
 
-        $this->closing = true;
-
-        $closed = $this
-            ->channels
-            ->reduce(
-                Either::right($connection),
-                $this->closeChannel(...),
-            )
-            ->flatMap(
-                static fn($connection) => $connection
-                    ->close()
-                    ->either()
-                    ->leftMap(static fn() => Failure::toCloseConnection())
-                    ->flatMap(static fn() => Either::left(Failure::closedBySignal($signal))),
-            );
-        $this->closing = false; // technically this method should never be called twice
-
-        return $closed;
+        return $this->notified;
     }
 
     /**
-     * @param Either<Failure, Connection> $connection
+     * @template T
      *
-     * @return Either<Failure, Connection>
+     * @param callable(): Either<Failure, T> $continue
+     *
+     * @return Either<Failure, T>
      */
-    private function closeChannel(Either $connection, Channel $channel): Either
+    public function close(Connection $connection, callable $continue): Either
     {
-        return $connection
-            ->map(static fn($connection) => $connection->send(
-                static fn($protocol) => $protocol->channel()->close(
-                    $channel,
-                    Close::demand(),
-                ),
-            ))
-            ->map(static fn($continuation) => $continuation->wait(Method::channelCloseOk))
-            ->flatMap(
-                static fn($continuation) => $continuation
-                    ->connection()
-                    ->leftMap(static fn() => Failure::toCloseChannel()),
+        return Maybe::all($this->received, $this->channel)
+            ->map(static fn(Signal $signal, Channel $channel) => [$signal, $channel])
+            ->filter(fn() => !$this->closing)
+            ->either()
+            ->match(
+                function($in) use ($connection) {
+                    $this->closing = true;
+                    [$signal, $channel] = $in;
+
+                    return $connection
+                        ->request(
+                            static fn($protocol) => $protocol->channel()->close(
+                                $channel,
+                                Close::demand(),
+                            ),
+                            Method::channelCloseOk,
+                        )
+                        ->leftMap(static fn() => Failure::toCloseChannel())
+                        ->flatMap(
+                            static fn() => $connection
+                                ->close()
+                                ->either()
+                                ->leftMap(static fn() => Failure::toCloseConnection()),
+                        )
+                        ->flatMap(static fn() => Either::left(Failure::closedBySignal($signal)));
+                },
+                static fn() => $continue(),
             );
     }
 }

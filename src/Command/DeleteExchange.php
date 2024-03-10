@@ -9,11 +9,15 @@ use Innmind\AMQP\{
     Model\Exchange\Deletion,
     Transport\Connection,
     Transport\Connection\MessageReader,
+    Transport\Protocol,
     Transport\Frame\Channel,
     Transport\Frame\Method,
     Failure,
 };
-use Innmind\Immutable\Either;
+use Innmind\Immutable\{
+    Either,
+    Sequence,
+};
 
 final class DeleteExchange implements Command
 {
@@ -28,17 +32,20 @@ final class DeleteExchange implements Command
         Connection $connection,
         Channel $channel,
         MessageReader $read,
-        mixed $state,
+        State $state,
     ): Either {
-        /** @var Either<Failure, State> */
-        return $connection
-            ->send(fn($protocol) => $protocol->exchange()->delete(
-                $channel,
-                $this->command,
-            ))
-            ->maybeWait($this->command->shouldWait(), Method::exchangeDeleteOk)
-            ->connection()
-            ->map(static fn($connection) => State::of($connection, $state))
+        $frames = fn(Protocol $protocol): Sequence => $protocol->exchange()->delete(
+            $channel,
+            $this->command,
+        );
+
+        $sideEffect = match ($this->command->shouldWait()) {
+            true => $connection->request($frames, Method::exchangeDeleteOk),
+            false => $connection->send($frames),
+        };
+
+        return $sideEffect
+            ->map(static fn() => $state)
             ->leftMap(fn() => Failure::toDeleteExchange($this->command));
     }
 

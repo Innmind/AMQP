@@ -10,10 +10,9 @@ use Innmind\AMQP\{
     Transport\Frame\Method,
     Model\Channel\Close as CloseChannel,
 };
-use Innmind\OperatingSystem\CurrentProcess;
-use Innmind\Stream\{
-    Capabilities,
-    Streams,
+use Innmind\OperatingSystem\{
+    CurrentProcess,
+    Filesystem,
 };
 use Innmind\Immutable\{
     Either,
@@ -27,7 +26,7 @@ final class Client
     private Maybe $command;
     /** @var callable(): Maybe<Connection> */
     private $load;
-    private Capabilities $streams;
+    private Filesystem $filesystem;
     /** @var Maybe<CurrentProcess> */
     private Maybe $signals;
 
@@ -39,19 +38,19 @@ final class Client
     private function __construct(
         Maybe $command,
         callable $load,
-        Capabilities $streams,
+        Filesystem $filesystem,
         Maybe $signals,
     ) {
         $this->command = $command;
         $this->load = $load;
-        $this->streams = $streams;
+        $this->filesystem = $filesystem;
         $this->signals = $signals;
     }
 
     /**
      * @param callable(): Maybe<Connection> $load
      */
-    public static function of(callable $load, Capabilities $streams = null): self
+    public static function of(callable $load, Filesystem $filesystem): self
     {
         /** @var Maybe<Command> */
         $command = Maybe::nothing();
@@ -61,7 +60,7 @@ final class Client
         return new self(
             $command,
             $load,
-            $streams ?? Streams::fromAmbientAuthority(),
+            $filesystem,
             $signals,
         );
     }
@@ -74,22 +73,17 @@ final class Client
                 ->map(static fn($previous) => new Command\Pipe($previous, $command))
                 ->otherwise(static fn() => Maybe::just($command)),
             $this->load,
-            $this->streams,
+            $this->filesystem,
             $this->signals,
         );
     }
 
     public function listenSignals(CurrentProcess $currentProcess): self
     {
-        // We ask for the current process instead of the signals wrapper directly
-        // because the user may fork the process between the time this method is
-        // called and the time the listeners are installed (when run is called).
-        // This would result on the listeners being installed for the parent
-        // process instead of the child.
         return new self(
             $this->command,
             $this->load,
-            $this->streams,
+            $this->filesystem,
             Maybe::just($currentProcess),
         );
     }
@@ -108,12 +102,12 @@ final class Client
                 ->openChannel()
                 ->flatMap(function($in) use ($command, $state) {
                     [$connection, $channel] = $in;
-                    $read = MessageReader::of($this->streams);
+                    $read = MessageReader::of($this->filesystem);
 
-                    return $command($connection, $channel, $read, $state)->flatMap(
-                        fn($clientState) => $this
-                            ->close($clientState->connection(), $channel)
-                            ->map(static fn(): mixed => $clientState->userState()),
+                    return $command($connection, $channel, $read, Client\State::of($state))->flatMap(
+                        fn($state) => $this
+                            ->close($connection, $channel)
+                            ->map(static fn(): mixed => $state->unwrap()),
                     );
                 }),
             static fn() => Either::right($state),
@@ -134,21 +128,20 @@ final class Client
         return ($this->load)()
             ->either()
             ->leftMap(static fn() => Failure::toOpenConnection())
-            ->map(static fn($connection) => $connection->send(
-                static fn($protocol) => $protocol->channel()->open($channel),
-            ))
-            ->map(static fn($continuation) => $continuation->wait(Method::channelOpenOk))
             ->flatMap(
-                fn($continuation) => $continuation
-                    ->connection()
-                    ->map(fn($connection) => $this->signals->match(
+                fn($connection) => $connection
+                    ->request(
+                        static fn($protocol) => $protocol->channel()->open($channel),
+                        Method::channelOpenOk,
+                    )
+                    ->map(fn() => $this->signals->match(
                         static fn($process) => $connection->listenSignals(
                             $process->signals(),
                             $channel,
                         ),
-                        static fn() => $connection,
+                        static fn() => null,
                     ))
-                    ->map(static fn($connection) => [$connection, $channel])
+                    ->map(static fn() => [$connection, $channel])
                     ->leftMap(static fn() => Failure::toOpenChannel()),
             );
     }
@@ -160,15 +153,16 @@ final class Client
     {
         /** @var Either<Failure, SideEffect> */
         return $connection
-            ->send(static fn($protocol) => $protocol->channel()->close(
-                $channel,
-                CloseChannel::demand(),
-            ))
-            ->wait(Method::channelCloseOk)
-            ->connection()
+            ->request(
+                static fn($protocol) => $protocol->channel()->close(
+                    $channel,
+                    CloseChannel::demand(),
+                ),
+                Method::channelCloseOk,
+            )
             ->leftMap(static fn() => Failure::toCloseChannel())
             ->flatMap(
-                static fn($connection) => $connection
+                static fn() => $connection
                     ->close()
                     ->either()
                     ->leftMap(static fn() => Failure::toCloseConnection()),

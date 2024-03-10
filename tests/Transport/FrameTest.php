@@ -9,7 +9,6 @@ use Innmind\AMQP\Transport\{
     Frame\Channel,
     Frame\Method,
     Frame\MethodClass,
-    Frame\Value,
     Frame\Value\Bits,
     Frame\Value\LongString,
 };

@@ -4,11 +4,8 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
-use Innmind\Stream\Readable;
-use Innmind\Immutable\{
-    Str,
-    Maybe,
-};
+use Innmind\IO\Readable\Frame;
+use Innmind\Immutable\Str;
 
 /**
  * @implements Value<void>
@@ -17,11 +14,13 @@ use Innmind\Immutable\{
 final class VoidValue implements Value
 {
     /**
-     * @return Maybe<self>
+     * @psalm-pure
+     *
+     * @return Frame<Unpacked<self>>
      */
-    public static function unpack(Readable $stream): Maybe
+    public static function frame(): Frame
     {
-        return Maybe::just(new self);
+        return Frame\NoOp::of(Unpacked::of(0, new self));
     }
 
     public function original(): void

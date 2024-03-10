@@ -10,7 +10,6 @@ use Innmind\AMQP\{
     Model\Connection\Open,
     Model\Connection\Close,
     Transport\Frame,
-    Transport\Frame\Type,
     Transport\Frame\Channel,
     Transport\Frame\Method,
     Transport\Frame\Value,

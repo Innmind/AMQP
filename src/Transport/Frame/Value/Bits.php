@@ -4,11 +4,11 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
-use Innmind\Stream\Readable;
+use Innmind\IO\Readable\Frame;
 use Innmind\Immutable\{
     Str,
     Sequence,
-    Maybe,
+    Either,
 };
 
 /**
@@ -38,14 +38,26 @@ final class Bits implements Value
     }
 
     /**
-     * @return Maybe<self>
+     * @psalm-pure
+     *
+     * @return Either<mixed, Value>
      */
-    public static function unpack(Readable $stream): Maybe
+    public static function wrap(mixed $value): Either
     {
-        return $stream
-            ->read(1)
-            ->map(static fn($chunk) => $chunk->toEncoding(Str\Encoding::ascii))
-            ->filter(static fn($chunk) => $chunk->length() === 1)
+        return match (true) {
+            \is_bool($value) => Either::right(self::of($value)),
+            default => Either::left($value),
+        };
+    }
+
+    /**
+     * @psalm-pure
+     *
+     * @return Frame<Unpacked<self>>
+     */
+    public static function frame(): Frame
+    {
+        return Frame\Chunk::of(1)
             ->map(
                 static fn($chunk) => $chunk
                     ->map(static fn($chunk) => \decbin(\ord($chunk)))
@@ -53,8 +65,9 @@ final class Bits implements Value
                     ->map(static fn($bit) => (bool) (int) $bit->toString())
                     ->reverse(),
             )
-            ->exclude(static fn($bits) => $bits->empty())
-            ->map(static fn($bits) => new self($bits));
+            ->filter(static fn($bits) => !$bits->empty())
+            ->map(static fn($bits) => new self($bits))
+            ->map(static fn($value) => Unpacked::of(1, $value));
     }
 
     /**

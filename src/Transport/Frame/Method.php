@@ -3,7 +3,24 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport\Frame;
 
-use Innmind\Immutable\Maybe;
+use Innmind\AMQP\Transport\Frame\Value\{
+    Unpacked,
+    Bits,
+    LongString,
+    ShortString,
+    UnsignedLongInteger,
+    UnsignedLongLongInteger,
+    UnsignedOctet,
+    UnsignedShortInteger,
+    Table,
+};
+use Innmind\TimeContinuum\Clock;
+use Innmind\IO\Readable\Frame;
+use Innmind\Immutable\{
+    Maybe,
+    Sequence,
+    Predicate\Instance,
+};
 
 /**
  * @psalm-immutable
@@ -74,6 +91,19 @@ enum Method
         return self::maybe($class, $method)->match(
             static fn($self) => $self,
             static fn() => throw new \RuntimeException("$class,$method"),
+        );
+    }
+
+    /**
+     * @psalm-pure
+     *
+     * @return Frame<self>
+     */
+    public static function frame(int $class, int $method): Frame
+    {
+        return self::maybe($class, $method)->match(
+            static fn($self) => Frame\NoOp::of($self),
+            static fn() => Frame\NoOp::of(self::connectionStart)->filter(static fn() => false), // force fail
         );
     }
 
@@ -267,5 +297,126 @@ enum Method
     public function equals(self $method): bool
     {
         return $method === $this;
+    }
+
+    /**
+     * @return Frame<Sequence<Value>>
+     */
+    public function incomingFrame(Clock $clock): Frame
+    {
+        /**
+         * @psalm-suppress NamedArgumentNotAllowed
+         * @var Frame<Sequence<Unpacked>>
+         */
+        $frame = match ($this) {
+            Method::basicQosOk,
+            Method::basicRecoverOk,
+            Method::channelCloseOk,
+            Method::connectionCloseOk,
+            Method::exchangeDeclareOk,
+            Method::exchangeDeleteOk,
+            Method::queueBindOk,
+            Method::queueUnbindOk,
+            Method::transactionSelectOk,
+            Method::transactionCommitOk,
+            Method::transactionRollbackOk => Frame\NoOp::of(Sequence::of()), // no arguments
+            Method::basicConsumeOk => ShortString::frame()->map(Sequence::of(...)), // consumer tag
+            Method::basicCancelOk => ShortString::frame()->map(Sequence::of(...)), // consumer tag
+            Method::basicReturn => Frame\Composite::of(
+                static fn(Unpacked ...$values) => Sequence::of(...$values),
+                UnsignedShortInteger::frame(), // reply code
+                ShortString::frame(), // reply text
+                ShortString::frame(), // exchange
+                ShortString::frame(), // routing key
+            ),
+            Method::basicDeliver => Frame\Composite::of(
+                static fn(Unpacked ...$values) => Sequence::of(...$values),
+                ShortString::frame(), // consumer tag
+                UnsignedLongLongInteger::frame(), // delivery tag
+                Bits::frame(), // redelivered
+                ShortString::frame(), // exchange
+                ShortString::frame(), // routing key
+            ),
+            Method::basicGetOk => Frame\Composite::of(
+                static fn(Unpacked ...$values) => Sequence::of(...$values),
+                UnsignedLongLongInteger::frame(), // delivery tag
+                Bits::frame(), // redelivered
+                ShortString::frame(), // exchange
+                ShortString::frame(), // routing key
+                UnsignedLongInteger::frame(), // message count
+            ),
+            Method::basicGetEmpty => ShortString::frame()->map(Sequence::of(...)), // reserved,
+            Method::channelOpenOk => LongString::frame()->map(Sequence::of(...)), // reserved
+            Method::channelFlow => Bits::frame()->map(Sequence::of(...)), // active
+            Method::channelFlowOk => Bits::frame()->map(Sequence::of(...)), // active
+            Method::channelClose => Frame\Composite::of(
+                static fn(Unpacked ...$values) => Sequence::of(...$values),
+                UnsignedShortInteger::frame(), // reply code
+                ShortString::frame(), // reply text
+                UnsignedShortInteger::frame(), // failing class id
+                UnsignedShortInteger::frame(), // failing method id
+            ),
+            Method::connectionStart => Frame\Composite::of(
+                static fn(Unpacked ...$values) => Sequence::of(...$values),
+                UnsignedOctet::frame(), // major version
+                UnsignedOctet::frame(), // minor version
+                Table::frame($clock), // server properties
+                LongString::frame(), // mechanisms
+                LongString::frame(), // locales
+            ),
+            Method::connectionSecure => LongString::frame()->map(Sequence::of(...)), // challenge
+            Method::connectionTune => Frame\Composite::of(
+                static fn(Unpacked ...$values) => Sequence::of(...$values),
+                UnsignedShortInteger::frame(), // max channels
+                UnsignedLongInteger::frame(), // max frame size
+                UnsignedShortInteger::frame(), // heartbeat delay
+            ),
+            Method::connectionOpenOk => ShortString::frame()->map(Sequence::of(...)), // known hosts
+            Method::connectionClose => Frame\Composite::of(
+                static fn(Unpacked ...$values) => Sequence::of(...$values),
+                UnsignedShortInteger::frame(), // reply code
+                ShortString::frame(), // reply text
+                UnsignedShortInteger::frame(), // failing class id
+                UnsignedShortInteger::frame(), // failing method id
+            ),
+            Method::queueDeclareOk => Frame\Composite::of(
+                static fn(Unpacked ...$values) => Sequence::of(...$values),
+                ShortString::frame(), // queue
+                UnsignedLongInteger::frame(), // message count
+                UnsignedLongInteger::frame(), // consumer count
+            ),
+            Method::queuePurgeOk => UnsignedLongInteger::frame()->map(Sequence::of(...)), // message count
+            Method::queueDeleteOk => UnsignedLongInteger::frame()->map(Sequence::of(...)), // message count
+            Method::basicAck,
+            Method::basicCancel,
+            Method::basicConsume,
+            Method::basicGet,
+            Method::basicPublish,
+            Method::basicQos,
+            Method::basicRecover,
+            Method::basicRecoverAsync,
+            Method::basicReject,
+            Method::channelOpen,
+            Method::connectionOpen,
+            Method::connectionSecureOk,
+            Method::connectionStartOk,
+            Method::connectionTuneOk,
+            Method::exchangeDeclare,
+            Method::exchangeDelete,
+            Method::queueBind,
+            Method::queueDeclare,
+            Method::queueDelete,
+            Method::queuePurge,
+            Method::queueUnbind,
+            Method::transactionCommit,
+            Method::transactionRollback,
+            Method::transactionSelect => throw new \LogicException('Server should never send this method'),
+        };
+
+        return $frame->map(
+            static fn($values) => $values
+                ->keep(Instance::of(Unpacked::class))
+                ->map(static fn($unpacked) => $unpacked->unwrap()),
+        );
     }
 }

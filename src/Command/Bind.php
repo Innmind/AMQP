@@ -9,11 +9,15 @@ use Innmind\AMQP\{
     Failure,
     Transport\Connection,
     Transport\Connection\MessageReader,
+    Transport\Protocol,
     Transport\Frame\Channel,
     Transport\Frame\Method,
     Model\Queue\Binding,
 };
-use Innmind\Immutable\Either;
+use Innmind\Immutable\{
+    Either,
+    Sequence,
+};
 
 final class Bind implements Command
 {
@@ -28,17 +32,20 @@ final class Bind implements Command
         Connection $connection,
         Channel $channel,
         MessageReader $read,
-        mixed $state,
+        State $state,
     ): Either {
-        /** @var Either<Failure, State> */
-        return $connection
-            ->send(fn($protocol) => $protocol->queue()->bind(
-                $channel,
-                $this->command,
-            ))
-            ->maybeWait($this->command->shouldWait(), Method::queueBindOk)
-            ->connection()
-            ->map(static fn($connection) => State::of($connection, $state))
+        $frames = fn(Protocol $protocol): Sequence => $protocol->queue()->bind(
+            $channel,
+            $this->command,
+        );
+
+        $sideEffect = match ($this->command->shouldWait()) {
+            true => $connection->request($frames, Method::queueBindOk),
+            false => $connection->send($frames),
+        };
+
+        return $sideEffect
+            ->map(static fn() => $state)
             ->leftMap(fn() => Failure::toBind($this->command));
     }
 

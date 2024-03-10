@@ -7,11 +7,13 @@ use Innmind\AMQP\{
     Transport\Frame\Value\UnsignedLongInteger,
     Transport\Frame\Value,
 };
-use Innmind\Math\{
-    Algebra\Integer,
-    Exception\OutOfDefinitionSet,
+use Innmind\Math\Exception\OutOfDefinitionSet;
+use Innmind\IO\IO;
+use Innmind\Stream\{
+    Readable\Stream,
+    Watch\Select,
 };
-use Innmind\Stream\Readable\Stream;
+use Innmind\Immutable\Str;
 use PHPUnit\Framework\TestCase;
 
 class UnsignedLongIntegerTest extends TestCase
@@ -56,10 +58,16 @@ class UnsignedLongIntegerTest extends TestCase
      */
     public function testFromStream($expected, $string)
     {
-        $value = UnsignedLongInteger::unpack(Stream::ofContent($string))->match(
-            static fn($value) => $value,
-            static fn() => null,
-        );
+        $value = IO::of(Select::waitForever(...))
+            ->readable()
+            ->wrap(Stream::ofContent($string))
+            ->toEncoding(Str\Encoding::ascii)
+            ->frames(UnsignedLongInteger::frame())
+            ->one()
+            ->match(
+                static fn($value) => $value->unwrap(),
+                static fn() => null,
+            );
 
         $this->assertInstanceOf(UnsignedLongInteger::class, $value);
         $this->assertSame($expected, $value->original());

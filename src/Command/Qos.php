@@ -28,17 +28,17 @@ final class Qos implements Command
         Connection $connection,
         Channel $channel,
         MessageReader $read,
-        mixed $state,
+        State $state,
     ): Either {
-        /** @var Either<Failure, State> */
         return $connection
-            ->send(fn($protocol) => $protocol->basic()->qos(
-                $channel,
-                $this->command,
-            ))
-            ->wait(Method::basicQosOk)
-            ->connection()
-            ->map(static fn($connection) => State::of($connection, $state))
+            ->request(
+                fn($protocol) => $protocol->basic()->qos(
+                    $channel,
+                    $this->command,
+                ),
+                Method::basicQosOk,
+            )
+            ->map(static fn() => $state)
             ->leftMap(static fn() => Failure::toAdjustQos());
     }
 
