@@ -110,10 +110,10 @@ Feel free to look at the `Command` namespace to explore all capabilities.
 make benchmark
 Publishing 4000 msgs with 1KB of content:
 php benchmark/producer.php 4000
-0.39038109779358
+0.48978996276855
 Consuming 4000:
 php benchmark/consumer.php
-Pid: 701, Count: 4000, Time: 1.6017
+Pid: 701, Count: 4000, Time: 2.3580
 ```
 
 By comparison, the `php-amqplib` produces this result:
