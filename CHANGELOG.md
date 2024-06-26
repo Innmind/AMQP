@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- Requires `innmind/immutable:~5.7`
+- The `Sequence` of frames to publish a message is only lazy when the message content is a lazy sequence of chunks
+
 ## 5.0.0 - 2024-03-10
 
 ### Changed
