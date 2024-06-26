@@ -120,33 +120,28 @@ final class Basic
         Publish $command,
         MaxFrameSize $maxFrameSize,
     ): Sequence {
-        // we use a lazy sequence to allow streaming frames for messages having
-        // a lazy sequence of chunks for a body
-        $frames = Sequence::lazyStartingWith(
-            Frame::method(
-                $channel,
-                Method::basicPublish,
-                UnsignedShortInteger::internal(0), // ticket (reserved)
-                ShortString::of(Str::of($command->exchange())),
-                ShortString::of(Str::of($command->routingKey())),
-                Bits::of(
-                    $command->mandatory(),
-                    $command->immediate(),
+        return $maxFrameSize
+            ->chunk($command->message())
+            ->map(static fn($chunk) => Frame::body($channel, $chunk))
+            ->prepend(Sequence::of(
+                Frame::method(
+                    $channel,
+                    Method::basicPublish,
+                    UnsignedShortInteger::internal(0), // ticket (reserved)
+                    ShortString::of(Str::of($command->exchange())),
+                    ShortString::of(Str::of($command->routingKey())),
+                    Bits::of(
+                        $command->mandatory(),
+                        $command->immediate(),
+                    ),
                 ),
-            ),
-            Frame::header(
-                $channel,
-                MethodClass::basic,
-                UnsignedLongLongInteger::of($command->message()->length()),
-                ...$this->serializeProperties($command->message()),
-            ),
-        );
-
-        return $frames->append(
-            $maxFrameSize
-                ->chunk($command->message())
-                ->map(static fn($chunk) => Frame::body($channel, $chunk)),
-        );
+                Frame::header(
+                    $channel,
+                    MethodClass::basic,
+                    UnsignedLongLongInteger::of($command->message()->length()),
+                    ...$this->serializeProperties($command->message()),
+                ),
+            ));
     }
 
     /**
