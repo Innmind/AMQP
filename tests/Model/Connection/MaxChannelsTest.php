@@ -93,7 +93,7 @@ class MaxChannelsTest extends TestCase
     {
         $this
             ->forAll(
-                Set\Integers::between(0, 65535), // max allowed by the specification 0.9.1
+                Set\Integers::between(1, 65535), // max allowed by the specification 0.9.1, minimum of 1 as 0 means unlimited
                 Set\Integers::between(1, 65535),
             )
             ->then(function($allowed, $extraNumber) {
