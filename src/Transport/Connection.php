@@ -19,8 +19,6 @@ use Innmind\AMQP\{
     Model\Connection\MaxFrameSize,
     Model\Connection\TuneOk,
     Failure,
-    Exception\FrameChannelExceedAllowedChannelNumber,
-    Exception\FrameExceedAllowedSize,
 };
 use Innmind\OperatingSystem\CurrentProcess\Signals;
 use Innmind\IO\{
@@ -250,30 +248,31 @@ final class Connection
      *
      * @param callable(Protocol, MaxFrameSize): Sequence<Frame> $frames
      *
-     * @throws FrameChannelExceedAllowedChannelNumber
-     * @throws FrameExceedAllowedSize
-     *
      * @return Attempt<SideEffect>
      */
     private function sendFrames(callable $frames): Attempt
     {
         $data = $frames($this->protocol, $this->maxFrameSize)
-            ->map(function($frame) {
-                $this->maxChannels->verify($frame->channel()->toInt());
-
-                return $frame;
-            })
-            ->map(static fn($frame) => $frame->pack())
-            ->map(function($frame) {
-                $this->maxFrameSize->verify($frame->length());
-
-                return $frame;
-            });
+            ->map(
+                fn($frame) => $this
+                    ->maxChannels
+                    ->verify($frame->channel()->toInt())
+                    ->map(static fn() => $frame),
+            )
+            ->map(static fn($frame) => $frame->map(
+                static fn($frame) => $frame->pack(),
+            ))
+            ->map(fn($frame) => $frame->flatMap(
+                fn($frame) => $this
+                    ->maxFrameSize
+                    ->verify($frame->length())
+                    ->map(static fn() => $frame),
+            ));
 
         return $this
             ->socket
             ->abortWhen($this->signals->notified(...))
-            ->sink($data)
+            ->sinkAttempts($data)
             ->eitherWay(
                 static fn() => Attempt::result(new SideEffect),
                 fn() => $this->signals->close(

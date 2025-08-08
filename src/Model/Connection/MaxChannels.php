@@ -4,6 +4,10 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Model\Connection;
 
 use Innmind\AMQP\Exception\FrameChannelExceedAllowedChannelNumber;
+use Innmind\Immutable\{
+    Attempt,
+    SideEffect,
+};
 
 /**
  * @psalm-immutable
@@ -52,14 +56,16 @@ final class MaxChannels
     }
 
     /**
-     * @throws FrameChannelExceedAllowedChannelNumber
+     * @return Attempt<SideEffect>
      */
     #[\NoDiscard]
-    public function verify(int $channel): void
+    public function verify(int $channel): Attempt
     {
         if (!$this->allows($channel)) {
-            throw new FrameChannelExceedAllowedChannelNumber($channel, $this);
+            return Attempt::error(new FrameChannelExceedAllowedChannelNumber($channel, $this));
         }
+
+        return Attempt::result(SideEffect::identity());
     }
 
     /**

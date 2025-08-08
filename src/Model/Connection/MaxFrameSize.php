@@ -10,6 +10,8 @@ use Innmind\AMQP\{
 use Innmind\Immutable\{
     Sequence,
     Str,
+    Attempt,
+    SideEffect,
 };
 
 /**
@@ -69,14 +71,16 @@ final class MaxFrameSize
     }
 
     /**
-     * @throws FrameExceedAllowedSize
+     * @return Attempt<SideEffect>
      */
     #[\NoDiscard]
-    public function verify(int $size): void
+    public function verify(int $size): Attempt
     {
         if (!$this->allows($size)) {
-            throw new FrameExceedAllowedSize($size, $this);
+            return Attempt::error(new FrameExceedAllowedSize($size, $this));
         }
+
+        return Attempt::result(SideEffect::identity());
     }
 
     /**
