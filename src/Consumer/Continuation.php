@@ -76,7 +76,7 @@ final class Continuation
         Channel $channel,
         MessageReader $read,
         int $deliveryTag,
-        string $consumerTag = null,
+        ?string $consumerTag = null,
     ): Either {
         /** @var Either<Failure, Client\State|Canceled> */
         return match ($this->response) {
