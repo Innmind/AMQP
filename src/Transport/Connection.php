@@ -252,22 +252,18 @@ final class Connection
      */
     private function sendFrames(callable $frames): Attempt
     {
-        $data = $frames($this->protocol, $this->maxFrameSize)
-            ->map(
-                fn($frame) => $this
-                    ->maxChannels
-                    ->verify($frame->channel()->toInt())
-                    ->map(static fn() => $frame),
-            )
-            ->map(static fn($frame) => $frame->map(
-                static fn($frame) => $frame->pack(),
-            ))
-            ->map(fn($frame) => $frame->flatMap(
-                fn($frame) => $this
-                    ->maxFrameSize
-                    ->verify($frame->length())
-                    ->map(static fn() => $frame),
-            ));
+        $data = $frames($this->protocol, $this->maxFrameSize)->map(
+            fn($frame) => $this
+                ->maxChannels
+                ->verify($frame->channel()->toInt())
+                ->map(static fn() => $frame->pack())
+                ->flatMap(
+                    fn($frame) => $this
+                        ->maxFrameSize
+                        ->verify($frame->length())
+                        ->map(static fn() => $frame),
+                )
+        );
 
         return $this
             ->socket
