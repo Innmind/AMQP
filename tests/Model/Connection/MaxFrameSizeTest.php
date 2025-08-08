@@ -7,6 +7,7 @@ use Innmind\AMQP\{
     Model\Connection\MaxFrameSize,
     Exception\FrameExceedAllowedSize,
 };
+use Innmind\Immutable\SideEffect;
 use Innmind\BlackBox\{
     PHPUnit\BlackBox,
     PHPUnit\Framework\TestCase,
@@ -86,7 +87,10 @@ class MaxFrameSizeTest extends TestCase
             ->then(function($size) {
                 $max = MaxFrameSize::of(0);
 
-                $this->assertNull($max->verify($size));
+                $this->assertInstanceOf(
+                    SideEffect::class,
+                    $max->verify($size)->unwrap(),
+                );
             });
         $this
             ->forAll(
@@ -96,7 +100,10 @@ class MaxFrameSizeTest extends TestCase
             ->then(function($allowed, $sizeBelow) {
                 $max = MaxFrameSize::of($allowed);
 
-                $this->assertNull($max->verify($allowed - $sizeBelow));
+                $this->assertInstanceOf(
+                    SideEffect::class,
+                    $max->verify($allowed - $sizeBelow)->unwrap(),
+                );
             });
     }
 
@@ -117,7 +124,7 @@ class MaxFrameSizeTest extends TestCase
                 $this->expectException(FrameExceedAllowedSize::class);
                 $this->expectExceptionMessage("Max frame size can be $allowed but got $above");
 
-                $max->verify($above);
+                $max->verify($above)->unwrap();
             });
     }
 
