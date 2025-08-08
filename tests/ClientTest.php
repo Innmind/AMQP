@@ -738,7 +738,11 @@ class ClientTest extends TestCase
     public function testPublishRandomContent(): BlackBox\Proof
     {
         return $this
-            ->forAll(Set\Strings::madeOf(Set\Unicode::any())->between(0, 1_000))
+            ->forAll(
+                Set::strings()
+                    ->madeOf(Set::strings()->unicode()->char())
+                    ->between(0, 1_000),
+            )
             ->prove(function($message) {
                 $result = $this
                     ->client

@@ -32,7 +32,7 @@ class MaxFrameSizeTest extends TestCase
     public function testAllowAnySizeWhenNoLimit(): BlackBox\Proof
     {
         return $this
-            ->forAll(Set\Integers::between(0, 4294967295)) // max allowed by the specification 0.9.1
+            ->forAll(Set::integers()->between(0, 4294967295)) // max allowed by the specification 0.9.1
             ->prove(function($size) {
                 $max = MaxFrameSize::of(0);
 
@@ -44,8 +44,8 @@ class MaxFrameSizeTest extends TestCase
     {
         return $this
             ->forAll(
-                Set\Integers::between(9, 4294967295), // max allowed by the specification 0.9.1
-                Set\Integers::between(1, 4294967295 - 9),
+                Set::integers()->between(9, 4294967295), // max allowed by the specification 0.9.1
+                Set::integers()->between(1, 4294967295 - 9),
             )
             ->prove(function($allowed, $extraSize) {
                 $max = MaxFrameSize::of($allowed);
@@ -58,8 +58,8 @@ class MaxFrameSizeTest extends TestCase
     {
         return $this
             ->forAll(
-                Set\Integers::between(9, 4294967295), // max allowed by the specification 0.9.1
-                Set\Integers::between(0, 4294967295 - 9),
+                Set::integers()->between(9, 4294967295), // max allowed by the specification 0.9.1
+                Set::integers()->between(0, 4294967295 - 9),
             )
             ->prove(function($allowed, $sizeBelow) {
                 $max = MaxFrameSize::of($allowed);
@@ -71,7 +71,7 @@ class MaxFrameSizeTest extends TestCase
     public function testVerifyAllowedSizes()
     {
         $this
-            ->forAll(Set\Integers::between(0, 4294967295)) // max allowed by the specification 0.9.1
+            ->forAll(Set::integers()->between(0, 4294967295)) // max allowed by the specification 0.9.1
             ->then(function($size) {
                 $max = MaxFrameSize::of(0);
 
@@ -79,8 +79,8 @@ class MaxFrameSizeTest extends TestCase
             });
         $this
             ->forAll(
-                Set\Integers::between(9, 4294967295), // max allowed by the specification 0.9.1
-                Set\Integers::between(0, 4294967295 - 9),
+                Set::integers()->between(9, 4294967295), // max allowed by the specification 0.9.1
+                Set::integers()->between(0, 4294967295 - 9),
             )
             ->then(function($allowed, $sizeBelow) {
                 $max = MaxFrameSize::of($allowed);
@@ -93,8 +93,8 @@ class MaxFrameSizeTest extends TestCase
     {
         return $this
             ->forAll(
-                Set\Integers::between(9, 4294967295), // max allowed by the specification 0.9.1
-                Set\Integers::between(1, 4294967295 - 9),
+                Set::integers()->between(9, 4294967295), // max allowed by the specification 0.9.1
+                Set::integers()->between(1, 4294967295 - 9),
             )
             ->prove(function($allowed, $extraSize) {
                 $max = MaxFrameSize::of($allowed);

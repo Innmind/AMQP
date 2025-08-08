@@ -32,7 +32,7 @@ class MaxChannelsTest extends TestCase
     public function testAllowAnyNumberWhenNoLimit(): BlackBox\Proof
     {
         return $this
-            ->forAll(Set\Integers::between(0, 65535)) // max allowed by the specification 0.9.1
+            ->forAll(Set::integers()->between(0, 65535)) // max allowed by the specification 0.9.1
             ->prove(function($number) {
                 $max = MaxChannels::of(0);
 
@@ -44,8 +44,8 @@ class MaxChannelsTest extends TestCase
     {
         return $this
             ->forAll(
-                Set\Integers::between(1, 65535), // max allowed by the specification 0.9.1
-                Set\Integers::between(1, 65535),
+                Set::integers()->between(1, 65535), // max allowed by the specification 0.9.1
+                Set::integers()->between(1, 65535),
             )
             ->prove(function($allowed, $extraNumber) {
                 $max = MaxChannels::of($allowed);
@@ -58,8 +58,8 @@ class MaxChannelsTest extends TestCase
     {
         return $this
             ->forAll(
-                Set\Integers::between(1, 65535), // max allowed by the specification 0.9.1
-                Set\Integers::between(0, 65535),
+                Set::integers()->between(1, 65535), // max allowed by the specification 0.9.1
+                Set::integers()->between(0, 65535),
             )
             ->prove(function($allowed, $sizeBelow) {
                 $max = MaxChannels::of($allowed);
@@ -71,7 +71,7 @@ class MaxChannelsTest extends TestCase
     public function testVerifyAllowedNumbers()
     {
         $this
-            ->forAll(Set\Integers::between(0, 65535)) // max allowed by the specification 0.9.1
+            ->forAll(Set::integers()->between(0, 65535)) // max allowed by the specification 0.9.1
             ->then(function($size) {
                 $max = MaxChannels::of(0);
 
@@ -79,8 +79,8 @@ class MaxChannelsTest extends TestCase
             });
         $this
             ->forAll(
-                Set\Integers::between(0, 65535), // max allowed by the specification 0.9.1
-                Set\Integers::between(1, 65535),
+                Set::integers()->between(0, 65535), // max allowed by the specification 0.9.1
+                Set::integers()->between(1, 65535),
             )
             ->then(function($allowed, $numberBelow) {
                 $max = MaxChannels::of($allowed);
@@ -93,8 +93,8 @@ class MaxChannelsTest extends TestCase
     {
         return $this
             ->forAll(
-                Set\Integers::between(1, 65535), // max allowed by the specification 0.9.1, minimum of 1 as 0 means unlimited
-                Set\Integers::between(1, 65535),
+                Set::integers()->between(1, 65535), // max allowed by the specification 0.9.1, minimum of 1 as 0 means unlimited
+                Set::integers()->between(1, 65535),
             )
             ->prove(function($allowed, $extraNumber) {
                 $max = MaxChannels::of($allowed);
