@@ -84,8 +84,10 @@ final class UnsignedOctet implements Value
     {
         return Frame\Chunk::of(1)
             ->map(static function($chunk) {
-                /** @psalm-suppress PossiblyInvalidArrayAccess Todo apply a predicate */
-                /** @var int<0, 255> $octet */
+                /**
+                 * @psalm-suppress PossiblyInvalidArrayAccess Todo apply a predicate
+                 * @var int<0, 255> $octet
+                 */
                 [, $octet] = \unpack('C', $chunk->toString());
 
                 return $octet;

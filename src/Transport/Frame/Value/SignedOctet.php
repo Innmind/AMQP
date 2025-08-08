@@ -73,8 +73,10 @@ final class SignedOctet implements Value
     {
         return Frame\Chunk::of(1)
             ->map(static function($chunk) {
-                /** @psalm-suppress PossiblyInvalidArrayAccess Todo apply a predicate */
-                /** @var int<-128, 127> $value */
+                /**
+                 * @psalm-suppress PossiblyInvalidArrayAccess Todo apply a predicate
+                 * @var int<-128, 127> $value
+                 */
                 [, $value] = \unpack('c', $chunk->toString());
 
                 return $value;

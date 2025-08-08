@@ -71,8 +71,10 @@ final class SignedShortInteger implements Value
     {
         return Frame\Chunk::of(2)
             ->map(static function($chunk) {
-                /** @psalm-suppress PossiblyInvalidArrayAccess Todo apply a predicate */
-                /** @var int<-32768, 32767> $value */
+                /**
+                 * @psalm-suppress PossiblyInvalidArrayAccess Todo apply a predicate
+                 * @var int<-32768, 32767> $value
+                 */
                 [, $value] = \unpack('s', $chunk->toString());
 
                 return $value;

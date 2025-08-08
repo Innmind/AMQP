@@ -83,8 +83,10 @@ final class UnsignedLongLongInteger implements Value
     {
         return Frame\Chunk::of(8)
             ->map(static function($chunk) {
-                /** @psalm-suppress PossiblyInvalidArrayAccess Todo apply a predicate */
-                /** @var int<0, max> $value */
+                /**
+                 * @psalm-suppress PossiblyInvalidArrayAccess Todo apply a predicate
+                 * @var int<0, max> $value
+                 */
                 [, $value] = \unpack('J', $chunk->toString());
 
                 return $value;

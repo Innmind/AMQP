@@ -56,8 +56,10 @@ final class SignedLongLongInteger implements Value
     {
         return Frame\Chunk::of(8)
             ->map(static function($chunk) {
-                /** @psalm-suppress PossiblyInvalidArrayAccess Todo apply a predicate */
-                /** @var int $value */
+                /**
+                 * @psalm-suppress PossiblyInvalidArrayAccess Todo apply a predicate
+                 * @var int $value
+                 */
                 [, $value] = \unpack('q', $chunk->toString());
 
                 return $value;
