@@ -50,6 +50,7 @@ final class DeclareExchange implements Command
             ->leftMap(fn() => Failure::toDeclareExchange($this->command));
     }
 
+    #[\NoDiscard]
     public static function of(string $name, Type $type): self
     {
         return new self(Declaration::durable($name, $type));

@@ -29,6 +29,7 @@ final class Binding
     /**
      * @psalm-pure
      */
+    #[\NoDiscard]
     public static function of(string $exchange, string $queue, string $routingKey = ''): self
     {
         return new self($exchange, $queue, $routingKey);
@@ -37,6 +38,7 @@ final class Binding
     /**
      * Don't wait for the server response
      */
+    #[\NoDiscard]
     public function dontWait(): self
     {
         $self = clone $this;
@@ -48,6 +50,7 @@ final class Binding
     /**
      * Wait for the response server
      */
+    #[\NoDiscard]
     public function wait(): self
     {
         $self = clone $this;
@@ -56,6 +59,7 @@ final class Binding
         return $self;
     }
 
+    #[\NoDiscard]
     public function withArgument(string $key, mixed $value): self
     {
         $self = clone $this;
@@ -64,21 +68,25 @@ final class Binding
         return $self;
     }
 
+    #[\NoDiscard]
     public function exchange(): string
     {
         return $this->exchange;
     }
 
+    #[\NoDiscard]
     public function queue(): string
     {
         return $this->queue;
     }
 
+    #[\NoDiscard]
     public function routingKey(): string
     {
         return $this->routingKey;
     }
 
+    #[\NoDiscard]
     public function shouldWait(): bool
     {
         return $this->wait;
@@ -87,6 +95,7 @@ final class Binding
     /**
      * @return Map<string, mixed>
      */
+    #[\NoDiscard]
     public function arguments(): Map
     {
         return $this->arguments;

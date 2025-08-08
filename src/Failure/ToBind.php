@@ -23,6 +23,7 @@ final class ToBind extends Failure
         $this->command = $command;
     }
 
+    #[\NoDiscard]
     public function command(): Command
     {
         return $this->command;

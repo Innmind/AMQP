@@ -25,6 +25,7 @@ final class ToCancel extends Failure
         return Kind::toCancel;
     }
 
+    #[\NoDiscard]
     public function queue(): string
     {
         return $this->queue;

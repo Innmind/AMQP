@@ -18,6 +18,7 @@ final class Recover
     /**
      * @psalm-pure
      */
+    #[\NoDiscard]
     public static function withoutRequeue(): self
     {
         return new self(false);
@@ -29,11 +30,13 @@ final class Recover
      *
      * @psalm-pure
      */
+    #[\NoDiscard]
     public static function requeue(): self
     {
         return new self(true);
     }
 
+    #[\NoDiscard]
     public function shouldRequeue(): bool
     {
         return $this->requeue;

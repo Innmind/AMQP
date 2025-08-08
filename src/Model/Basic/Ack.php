@@ -27,6 +27,7 @@ final class Ack
      *
      * @param int<0, max> $deliveryTag
      */
+    #[\NoDiscard]
     public static function of(int $deliveryTag): self
     {
         return new self($deliveryTag);
@@ -37,6 +38,7 @@ final class Ack
      *
      * @param int<0, max> $deliveryTag
      */
+    #[\NoDiscard]
     public static function multiple(int $deliveryTag): self
     {
         $self = new self($deliveryTag);
@@ -48,11 +50,13 @@ final class Ack
     /**
      * @return int<0, max>
      */
+    #[\NoDiscard]
     public function deliveryTag(): int
     {
         return $this->deliveryTag;
     }
 
+    #[\NoDiscard]
     public function isMultiple(): bool
     {
         return $this->multiple;

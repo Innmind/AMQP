@@ -80,11 +80,13 @@ final class DeclareQueue implements Command
             ->leftMap(fn() => Failure::toDeclareQueue($this->command));
     }
 
+    #[\NoDiscard]
     public static function of(string $name): self
     {
         return new self(Declaration::durable()->withName($name));
     }
 
+    #[\NoDiscard]
     public function withArgument(string $key, mixed $value): self
     {
         return new self($this->command->withArgument($key, $value));

@@ -45,6 +45,7 @@ final class Qos implements Command
     /**
      * @param int<0, 65535> $count The number of messages to prefetch for consumers
      */
+    #[\NoDiscard]
     public static function of(int $count): self
     {
         // the size is not exposed as RabbitMQ doesn't support it

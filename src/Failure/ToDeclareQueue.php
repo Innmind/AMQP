@@ -23,6 +23,7 @@ final class ToDeclareQueue extends Failure
         $this->command = $command;
     }
 
+    #[\NoDiscard]
     public function command(): Command
     {
         return $this->command;

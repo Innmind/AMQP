@@ -73,6 +73,7 @@ final class Consume implements Command
         );
     }
 
+    #[\NoDiscard]
     public static function of(string $queue): self
     {
         return new self(
@@ -84,6 +85,7 @@ final class Consume implements Command
     /**
      * @param callable(mixed, Message, Continuation, Details): Continuation $consume
      */
+    #[\NoDiscard]
     public function handle(callable $consume): self
     {
         return new self($this->command, $consume);

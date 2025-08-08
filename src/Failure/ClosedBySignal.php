@@ -26,6 +26,7 @@ final class ClosedBySignal extends Failure
         return Kind::closedBySignal;
     }
 
+    #[\NoDiscard]
     public function signal(): Signal
     {
         return $this->signal;

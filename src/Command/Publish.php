@@ -50,6 +50,7 @@ final class Publish implements Command
             ->map(static fn() => $state);
     }
 
+    #[\NoDiscard]
     public static function one(Message $message): self
     {
         return new self(Sequence::of(Model::a($message)));
@@ -58,11 +59,13 @@ final class Publish implements Command
     /**
      * @param Sequence<Message> $messages
      */
+    #[\NoDiscard]
     public static function many(Sequence $messages): self
     {
         return new self($messages->map(Model::a(...)));
     }
 
+    #[\NoDiscard]
     public function to(string $exchange): self
     {
         return new self($this->commands->map(
@@ -70,6 +73,7 @@ final class Publish implements Command
         ));
     }
 
+    #[\NoDiscard]
     public function withRoutingKey(string $routingKey): self
     {
         return new self($this->commands->map(

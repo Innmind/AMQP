@@ -40,6 +40,7 @@ final class Details
     /**
      * @param int<0, max> $deliveryTag
      */
+    #[\NoDiscard]
     public static function ofGet(
         int $deliveryTag,
         bool $redelivered,
@@ -59,6 +60,7 @@ final class Details
     /**
      * @param int<0, max> $deliveryTag
      */
+    #[\NoDiscard]
     public static function ofConsume(
         int $deliveryTag,
         bool $redelivered,
@@ -82,21 +84,25 @@ final class Details
      *
      * @return int<0, max>
      */
+    #[\NoDiscard]
     public function deliveryTag(): int
     {
         return $this->deliveryTag;
     }
 
+    #[\NoDiscard]
     public function redelivered(): bool
     {
         return $this->redelivered;
     }
 
+    #[\NoDiscard]
     public function exchange(): string
     {
         return $this->exchange;
     }
 
+    #[\NoDiscard]
     public function routingKey(): string
     {
         return $this->routingKey;
@@ -107,6 +113,7 @@ final class Details
      *
      * @return Maybe<Count>
      */
+    #[\NoDiscard]
     public function messages(): Maybe
     {
         return $this->messages;

@@ -53,6 +53,7 @@ final class Transaction implements Command
     /**
      * @param callable(mixed): bool $predicate If true it will commit otherwise it will rollback
      */
+    #[\NoDiscard]
     public static function of(
         callable $predicate,
         Command $command,
@@ -60,6 +61,7 @@ final class Transaction implements Command
         return new self($command, $predicate);
     }
 
+    #[\NoDiscard]
     public function with(Command $command): self
     {
         return new self(

@@ -32,6 +32,7 @@ final class ContentType
      *
      * @throws DomainException
      */
+    #[\NoDiscard]
     public static function of(string $topLevel, string $subType): self
     {
         try {
@@ -46,11 +47,13 @@ final class ContentType
      *
      * @return Maybe<self>
      */
+    #[\NoDiscard]
     public static function maybe(string $value): Maybe
     {
         return MediaType::maybe($value)->map(static fn($type) => new self($type));
     }
 
+    #[\NoDiscard]
     public function toString(): string
     {
         return $this->value;

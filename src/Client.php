@@ -50,6 +50,7 @@ final class Client
     /**
      * @param callable(): Maybe<Connection> $load
      */
+    #[\NoDiscard]
     public static function of(callable $load, Filesystem $filesystem): self
     {
         /** @var Maybe<Command> */
@@ -65,6 +66,7 @@ final class Client
         );
     }
 
+    #[\NoDiscard]
     public function with(Command $command): self
     {
         return new self(
@@ -78,6 +80,7 @@ final class Client
         );
     }
 
+    #[\NoDiscard]
     public function listenSignals(CurrentProcess $currentProcess): self
     {
         return new self(
@@ -95,6 +98,7 @@ final class Client
      *
      * @return Either<Failure, T>
      */
+    #[\NoDiscard]
     public function run(mixed $state): Either
     {
         return $this->command->match(

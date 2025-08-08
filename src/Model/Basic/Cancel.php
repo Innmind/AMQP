@@ -19,11 +19,13 @@ final class Cancel
     /**
      * @psalm-pure
      */
+    #[\NoDiscard]
     public static function of(string $consumerTag): self
     {
         return new self($consumerTag);
     }
 
+    #[\NoDiscard]
     public function dontWait(): self
     {
         $self = clone $this;
@@ -32,6 +34,7 @@ final class Cancel
         return $self;
     }
 
+    #[\NoDiscard]
     public function wait(): self
     {
         $self = clone $this;
@@ -40,11 +43,13 @@ final class Cancel
         return $self;
     }
 
+    #[\NoDiscard]
     public function consumerTag(): string
     {
         return $this->consumerTag;
     }
 
+    #[\NoDiscard]
     public function shouldWait(): bool
     {
         return $this->wait;

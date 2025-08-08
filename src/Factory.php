@@ -17,11 +17,13 @@ final class Factory
         $this->os = $os;
     }
 
+    #[\NoDiscard]
     public static function of(OperatingSystem $os): self
     {
         return new self($os);
     }
 
+    #[\NoDiscard]
     public function make(
         Socket $transport,
         Url $server,

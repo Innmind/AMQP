@@ -28,11 +28,13 @@ final class Unbinding
     /**
      * @psalm-pure
      */
+    #[\NoDiscard]
     public static function of(string $exchange, string $queue, string $routingKey = ''): self
     {
         return new self($exchange, $queue, $routingKey);
     }
 
+    #[\NoDiscard]
     public function withArgument(string $key, mixed $value): self
     {
         $self = clone $this;
@@ -41,16 +43,19 @@ final class Unbinding
         return $self;
     }
 
+    #[\NoDiscard]
     public function exchange(): string
     {
         return $this->exchange;
     }
 
+    #[\NoDiscard]
     public function queue(): string
     {
         return $this->queue;
     }
 
+    #[\NoDiscard]
     public function routingKey(): string
     {
         return $this->routingKey;
@@ -59,6 +64,7 @@ final class Unbinding
     /**
      * @return Map<string, mixed>
      */
+    #[\NoDiscard]
     public function arguments(): Map
     {
         return $this->arguments;

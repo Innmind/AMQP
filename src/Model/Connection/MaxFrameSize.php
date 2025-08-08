@@ -33,6 +33,7 @@ final class MaxFrameSize
      *
      * @param int<0, 4294967295> $value
      */
+    #[\NoDiscard]
     public static function of(int $value): self
     {
         return new self($value);
@@ -41,6 +42,7 @@ final class MaxFrameSize
     /**
      * @psalm-pure
      */
+    #[\NoDiscard]
     public static function unlimited(): self
     {
         return new self(0);
@@ -50,11 +52,13 @@ final class MaxFrameSize
      * @psalm-assert-if-true positive-int $this->value
      * @psalm-assert-if-true positive-int $this->toInt()
      */
+    #[\NoDiscard]
     public function isLimited(): bool
     {
         return $this->value > 0;
     }
 
+    #[\NoDiscard]
     public function allows(int $size): bool
     {
         if (!$this->isLimited()) {
@@ -67,6 +71,7 @@ final class MaxFrameSize
     /**
      * @throws FrameExceedAllowedSize
      */
+    #[\NoDiscard]
     public function verify(int $size): void
     {
         if (!$this->allows($size)) {
@@ -77,6 +82,7 @@ final class MaxFrameSize
     /**
      * @return int<0, 4294967295>
      */
+    #[\NoDiscard]
     public function toInt(): int
     {
         return $this->value;
@@ -85,6 +91,7 @@ final class MaxFrameSize
     /**
      * @return Sequence<Str>
      */
+    #[\NoDiscard]
     public function chunk(Message $message): Sequence
     {
         if (!$this->isLimited()) {

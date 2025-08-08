@@ -66,6 +66,7 @@ final class DeleteQueue implements Command
             ->leftMap(fn() => Failure::toDeleteQueue($this->command));
     }
 
+    #[\NoDiscard]
     public static function of(string $name): self
     {
         return new self(Deletion::of($name));

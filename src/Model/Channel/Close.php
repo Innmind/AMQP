@@ -22,6 +22,7 @@ final class Close
     /**
      * @psalm-pure
      */
+    #[\NoDiscard]
     public static function demand(): self
     {
         return new self;
@@ -32,6 +33,7 @@ final class Close
      *
      * @param int<0, 65535> $code
      */
+    #[\NoDiscard]
     public static function reply(int $code, string $text): self
     {
         $self = new self;
@@ -43,6 +45,7 @@ final class Close
     /**
      * @return Maybe<array{int<0, 65535>, string}>
      */
+    #[\NoDiscard]
     public function response(): Maybe
     {
         return $this->reply;

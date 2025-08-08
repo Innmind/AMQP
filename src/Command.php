@@ -15,6 +15,7 @@ interface Command
     /**
      * @return Either<Failure, Client\State>
      */
+    #[\NoDiscard]
     public function __invoke(
         Connection $connection,
         Channel $channel,

@@ -32,22 +32,26 @@ final class Continuation
         $this->response = $response;
     }
 
+    #[\NoDiscard]
     public static function of(Client\State $state): self
     {
         // by default we auto ack the message
         return new self($state, State::ack);
     }
 
+    #[\NoDiscard]
     public function ack(mixed $state): self
     {
         return new self(Client\State::of($state), State::ack);
     }
 
+    #[\NoDiscard]
     public function reject(mixed $state): self
     {
         return new self(Client\State::of($state), State::reject);
     }
 
+    #[\NoDiscard]
     public function requeue(mixed $state): self
     {
         return new self(Client\State::of($state), State::requeue);
@@ -58,6 +62,7 @@ final class Continuation
      *
      * Before canceling the consumer, the current message will be acknowledged
      */
+    #[\NoDiscard]
     public function cancel(mixed $state): self
     {
         return new self(Client\State::of($state), State::cancel);

@@ -24,6 +24,7 @@ enum Priority
     /**
      * @psalm-pure
      */
+    #[\NoDiscard]
     public static function lowest(): self
     {
         return self::zero;
@@ -32,6 +33,7 @@ enum Priority
     /**
      * @psalm-pure
      */
+    #[\NoDiscard]
     public static function highest(): self
     {
         return self::nine;
@@ -40,6 +42,7 @@ enum Priority
     /**
      * @psalm-pure
      */
+    #[\NoDiscard]
     public static function of(int $value): self
     {
         return match ($value) {
@@ -61,6 +64,7 @@ enum Priority
      *
      * @return Maybe<self>
      */
+    #[\NoDiscard]
     public static function maybe(int $value): Maybe
     {
         try {
@@ -74,6 +78,7 @@ enum Priority
     /**
      * @return int<0, 9>
      */
+    #[\NoDiscard]
     public function toInt(): int
     {
         return match ($this) {

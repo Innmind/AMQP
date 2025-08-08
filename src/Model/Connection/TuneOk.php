@@ -27,6 +27,7 @@ final class TuneOk
     /**
      * @psalm-pure
      */
+    #[\NoDiscard]
     public static function of(
         MaxChannels $maxChannels,
         MaxFrameSize $maxFrameSize,
@@ -38,6 +39,7 @@ final class TuneOk
     /**
      * @return int<0, 65535>
      */
+    #[\NoDiscard]
     public function maxChannels(): int
     {
         return $this->maxChannels->toInt();
@@ -46,11 +48,13 @@ final class TuneOk
     /**
      * @return int<0, 4294967295>
      */
+    #[\NoDiscard]
     public function maxFrameSize(): int
     {
         return $this->maxFrameSize->toInt();
     }
 
+    #[\NoDiscard]
     public function heartbeat(): ElapsedPeriod
     {
         return $this->heartbeat;

@@ -69,6 +69,7 @@ final class Get implements Command
         );
     }
 
+    #[\NoDiscard]
     public static function of(string $queue): self
     {
         return new self(
@@ -81,6 +82,7 @@ final class Get implements Command
     /**
      * @param callable(mixed, Message, Continuation, Details): Continuation $consume
      */
+    #[\NoDiscard]
     public function handle(callable $consume): self
     {
         return new self($this->command, $consume, $this->take);
@@ -89,6 +91,7 @@ final class Get implements Command
     /**
      * @param positive-int $take
      */
+    #[\NoDiscard]
     public function take(int $take): self
     {
         return new self($this->command, $this->consume, $take);
