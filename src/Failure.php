@@ -18,6 +18,8 @@ final class Failure extends Exception\RuntimeException
     }
 
     /**
+     * @internal
+     *
      * @return callable(\Throwable): \Throwable
      */
     public static function as(self $failure): callable
