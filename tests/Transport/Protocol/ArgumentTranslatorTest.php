@@ -17,7 +17,7 @@ use Innmind\BlackBox\{
     PHPUnit\Framework\TestCase,
     Set,
 };
-use Fixtures\Innmind\TimeContinuum\Earth\PointInTime;
+use Fixtures\Innmind\TimeContinuum\PointInTime;
 use PHPUnit\Framework\Attributes\Group;
 
 class ArgumentTranslatorTest extends TestCase

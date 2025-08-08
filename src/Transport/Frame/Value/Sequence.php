@@ -8,7 +8,7 @@ use Innmind\AMQP\Transport\{
     Protocol\ArgumentTranslator,
 };
 use Innmind\TimeContinuum\Clock;
-use Innmind\IO\Readable\Frame;
+use Innmind\IO\Frame;
 use Innmind\Immutable\{
     Sequence as Seq,
     Monoid\Concat,
@@ -72,7 +72,7 @@ final class Sequence implements Value
 
         return UnsignedLongInteger::frame()->flatMap(
             static fn($length) => match ($length->unwrap()->original()) {
-                0 => Frame\NoOp::of(Unpacked::of($length->read(), $self)),
+                0 => Frame::just(Unpacked::of($length->read(), $self)),
                 default => self::unpackNested(
                     $clock,
                     Unpacked::of($length->read(), $self),
@@ -124,7 +124,8 @@ final class Sequence implements Value
         Unpacked $unpacked,
         int $length,
     ): Frame {
-        return Frame\Chunk::of(1)
+        return Frame::chunk(1)
+            ->strict()
             ->flatMap(static fn($chunk) => Symbol::frame($clock, $chunk->toString()))
             ->map(static fn($value) => Unpacked::of(
                 $unpacked->read() + $value->read() + 1,
@@ -136,7 +137,7 @@ final class Sequence implements Value
                     $value,
                     $length,
                 ),
-                false => Frame\NoOp::of($value),
+                false => Frame::just($value),
             });
     }
 }

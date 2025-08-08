@@ -254,7 +254,14 @@ final class Basic
         [$flagBits, $properties] = $message->expiration()->match(
             static fn($expiration) => [
                 $flagBits | (1 << 8),
-                ($properties)(ShortString::of(Str::of((string) $expiration->milliseconds()))),
+                ($properties)(ShortString::of(Str::of((string) (
+                    $expiration
+                        ->asPeriod()
+                        ->milliseconds() +
+                    $expiration
+                        ->asPeriod()
+                        ->seconds() * 1000
+                )))),
             ],
             static fn() => [$flagBits, $properties],
         );

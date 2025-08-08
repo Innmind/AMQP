@@ -9,12 +9,8 @@ use Innmind\AMQP\{
     Transport\Frame\Value\LongString,
     Transport\Frame\Value,
 };
-use Innmind\TimeContinuum\Earth\Clock;
+use Innmind\TimeContinuum\Clock;
 use Innmind\IO\IO;
-use Innmind\Stream\{
-    Readable\Stream,
-    Watch\Select,
-};
 use Innmind\Immutable\{
     Map,
     Str,
@@ -52,11 +48,16 @@ class TableTest extends TestCase
     #[DataProvider('cases')]
     public function testFromStream($string, $expected)
     {
-        $value = IO::of(Select::waitForever(...))
-            ->readable()
-            ->wrap(Stream::ofContent($string))
+        $tmp = \fopen('php://temp', 'w+');
+        \fwrite($tmp, $string);
+        \fseek($tmp, 0);
+
+        $value = IO::fromAmbientAuthority()
+            ->streams()
+            ->acquire($tmp)
+            ->read()
             ->toEncoding(Str\Encoding::ascii)
-            ->frames(Table::frame(new Clock))
+            ->frames(Table::frame(Clock::live()))
             ->one()
             ->match(
                 static fn($value) => $value->unwrap(),

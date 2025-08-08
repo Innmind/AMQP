@@ -4,7 +4,7 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
-use Innmind\IO\Readable\Frame;
+use Innmind\IO\Frame;
 use Innmind\Immutable\{
     Str,
     Maybe,
@@ -74,8 +74,8 @@ final class LongString implements Value
     {
         return UnsignedLongInteger::frame()->flatMap(
             static fn($length) => (match ($length->unwrap()->original()) {
-                0 => Frame\NoOp::of(Str::of('')),
-                default => Frame\Chunk::of($length->unwrap()->original()),
+                0 => Frame::just(Str::of('')),
+                default => Frame::chunk($length->unwrap()->original())->strict(),
             })
                 ->map(static fn($string) => new self($string))
                 ->map(static fn($value) => Unpacked::of(

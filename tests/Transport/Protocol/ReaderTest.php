@@ -14,9 +14,8 @@ use Innmind\AMQP\Transport\{
     Frame\Value\Table,
     Frame\Value\LongString
 };
-use Innmind\TimeContinuum\Earth\Clock;
+use Innmind\TimeContinuum\Clock;
 use Innmind\IO\IO;
-use Innmind\Stream\Readable\Stream;
 use Innmind\Immutable\{
     Str,
     Sequence,
@@ -41,10 +40,15 @@ class ReaderTest extends TestCase
             $args .= $arg->pack()->toString();
         }
 
-        $stream = IO::of(static fn() => null)
-            ->readable()
-            ->wrap(Stream::ofContent($args))
-            ->frames($method->incomingFrame(new Clock))
+        $tmp = \fopen('php://temp', 'w+');
+        \fwrite($tmp, $args);
+        \fseek($tmp, 0);
+
+        $stream = IO::fromAmbientAuthority()
+            ->streams()
+            ->acquire($tmp)
+            ->read()
+            ->frames($method->incomingFrame(Clock::live()))
             ->one()
             ->match(
                 static fn($values) => $values,

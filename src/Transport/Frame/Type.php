@@ -3,7 +3,7 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport\Frame;
 
-use Innmind\IO\Readable\Frame;
+use Innmind\IO\Frame;
 
 /**
  * @psalm-immutable
@@ -24,11 +24,11 @@ enum Type
     public static function frame(int $value): Frame
     {
         return match ($value) {
-            1 => Frame\NoOp::of(self::method),
-            2 => Frame\NoOp::of(self::header),
-            3 => Frame\NoOp::of(self::body),
-            8 => Frame\NoOp::of(self::heartbeat),
-            default => Frame\NoOp::of(self::heartbeat)->filter(static fn() => false), // force fail
+            1 => Frame::just(self::method),
+            2 => Frame::just(self::header),
+            3 => Frame::just(self::body),
+            8 => Frame::just(self::heartbeat),
+            default => Frame::just(self::heartbeat)->filter(static fn() => false), // force fail
         };
     }
 

@@ -29,16 +29,12 @@ use Innmind\AMQP\{
     Model\Basic\Message\UserId,
     Model\Connection\MaxFrameSize,
 };
-use Innmind\TimeContinuum\Earth\{
-    ElapsedPeriod,
-    PointInTime\Now,
+use Innmind\TimeContinuum\{
+    Period,
+    PointInTime,
     Clock,
 };
 use Innmind\IO\IO;
-use Innmind\Stream\{
-    Readable\Stream,
-    Watch\Select,
-};
 use Innmind\Immutable\{
     Str,
     Map,
@@ -53,7 +49,7 @@ class ProtocolTest extends TestCase
     #[Group('local')]
     public function testInterface()
     {
-        $protocol = new Protocol(new Clock, new ArgumentTranslator);
+        $protocol = new Protocol(Clock::live(), new ArgumentTranslator);
 
         $this->assertInstanceOf(Version::class, $protocol->version());
         $this->assertSame("AMQP\x00\x00\x09\x01", $protocol->version()->pack()->toString());
@@ -69,7 +65,7 @@ class ProtocolTest extends TestCase
     #[Group('local')]
     public function testReadHeader()
     {
-        $protocol = new Protocol(new Clock, new ArgumentTranslator);
+        $protocol = new Protocol(Clock::live(), new ArgumentTranslator);
 
         $header = $protocol
             ->basic()
@@ -86,9 +82,9 @@ class ProtocolTest extends TestCase
                         ->withPriority(Priority::five)
                         ->withCorrelationId(CorrelationId::of('correlation'))
                         ->withReplyTo(ReplyTo::of('reply'))
-                        ->withExpiration(new ElapsedPeriod(1000))
+                        ->withExpiration(Period::second(1)->asElapsedPeriod())
                         ->withId(Id::of('id'))
-                        ->withTimestamp($now = new Now)
+                        ->withTimestamp($now = PointInTime::now())
                         ->withType(Type::of('type'))
                         ->withUserId(UserId::of('guest'))
                         ->withAppId(AppId::of('webcrawler')),
@@ -101,19 +97,23 @@ class ProtocolTest extends TestCase
                 static fn() => null,
             );
 
-        $values = IO::of(Select::waitForever(...))
-            ->readable()
-            ->wrap(
-                Stream::ofContent(
-                    \implode(
-                        '',
-                        $header
-                            ->values()
-                            ->map(static fn($v) => $v->pack()->toString())
-                            ->toList(),
-                    ),
-                ),
-            )
+        $tmp = \fopen('php://temp', 'w+');
+        \fwrite(
+            $tmp,
+            \implode(
+                '',
+                $header
+                    ->values()
+                    ->map(static fn($v) => $v->pack()->toString())
+                    ->toList(),
+            ),
+        );
+        \fseek($tmp, 0);
+
+        $values = IO::fromAmbientAuthority()
+            ->streams()
+            ->acquire($tmp)
+            ->read()
             ->toEncoding(Str\Encoding::ascii)
             ->frames($protocol->headerFrame())
             ->one()

@@ -9,7 +9,7 @@ use Innmind\Math\{
     DefinitionSet\Set,
     DefinitionSet\Range,
 };
-use Innmind\IO\Readable\Frame;
+use Innmind\IO\Frame;
 use Innmind\Immutable\{
     Str,
     Maybe,
@@ -80,7 +80,8 @@ final class UnsignedLongInteger implements Value
      */
     public static function frame(): Frame
     {
-        return Frame\Chunk::of(4)
+        return Frame::chunk(4)
+            ->strict()
             ->map(static function($chunk) {
                 /**
                  * @psalm-suppress PossiblyInvalidArrayAccess Todo apply a predicate

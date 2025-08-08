@@ -23,13 +23,10 @@ use Innmind\AMQP\{
     Exception\FrameExceedAllowedSize,
 };
 use Innmind\OperatingSystem\CurrentProcess\Signals;
-use Innmind\Socket\{
-    Internet\Transport,
-    Client as Socket,
-};
 use Innmind\IO\{
-    Sockets\Client,
-    Readable\Frame as IOFrame,
+    Sockets\Clients\Client,
+    Sockets\Internet\Transport,
+    Frame as IOFrame,
 };
 use Innmind\Url\Url;
 use Innmind\TimeContinuum\{
@@ -52,7 +49,6 @@ use Innmind\Immutable\{
 final class Connection
 {
     private Protocol $protocol;
-    /** @var Client<Socket> */
     private Client $socket;
     /** @var IOFrame<Frame> */
     private IOFrame $frame;
@@ -60,9 +56,9 @@ final class Connection
     private MaxFrameSize $maxFrameSize;
     private Heartbeat $heartbeat;
     private SignalListener $signals;
+    private bool $closed = false;
 
     /**
-     * @param Client<Socket> $socket
      * @param IOFrame<Frame> $frame
      */
     private function __construct(
@@ -94,7 +90,6 @@ final class Connection
         Clock $clock,
         Remote $remote,
     ): Maybe {
-        /** @psalm-suppress InvalidArgument */
         return $remote
             ->socket(
                 $transport,
@@ -102,12 +97,12 @@ final class Connection
             )
             ->map(
                 static fn($socket) => $socket
-                    ->timeoutAfter($timeout)
+                    ->timeoutAfter($timeout->asPeriod())
                     ->toEncoding(Str\Encoding::ascii),
             )
             ->flatMap(
                 static fn($socket) => $socket
-                    ->send(Sequence::of($protocol->version()->pack()))
+                    ->sink(Sequence::of($protocol->version()->pack()))
                     ->map(static fn() => $socket),
             )
             ->map(static fn($socket) => new self(
@@ -119,6 +114,7 @@ final class Connection
                 (new FrameReader)($protocol),
                 SignalListener::uninstalled(),
             ))
+            ->maybe()
             ->flatMap(new Start($server->authority()))
             ->flatMap(new Handshake($server->authority()))
             ->flatMap(new OpenVHost($server->path()));
@@ -199,18 +195,13 @@ final class Connection
     {
         $this->signals->uninstall();
 
-        if ($this->closed()) {
-            /** @var Maybe<SideEffect> */
-            return Maybe::nothing();
-        }
-
         return $this
             ->request(
                 static fn($protocol) => $protocol->connection()->close(Close::demand()),
                 Method::connectionCloseOk,
             )
-            ->flatMap(fn() => $this->socket->unwrap()->close())
             ->maybe()
+            ->flatMap(fn() => $this->socket->close()->maybe())
             ->map(static fn() => new SideEffect);
     }
 
@@ -234,7 +225,7 @@ final class Connection
             ->map(fn() => new self(
                 $this->protocol,
                 $this->heartbeat->adjust($heartbeat),
-                $this->socket->timeoutAfter($heartbeat),
+                $this->socket->timeoutAfter($heartbeat->asPeriod()),
                 $maxChannels,
                 $maxFrameSize,
                 $this->frame,
@@ -286,7 +277,7 @@ final class Connection
         return $this
             ->socket
             ->abortWhen($this->signals->notified(...))
-            ->send($data)
+            ->sink($data)
             ->either()
             ->eitherWay(
                 static fn() => Either::right(new SideEffect),
@@ -370,10 +361,5 @@ final class Connection
 
         /** @var Either<Failure, ReceivedFrame> */
         return Either::left(Failure::unexpectedFrame());
-    }
-
-    private function closed(): bool
-    {
-        return $this->socket->unwrap()->closed();
     }
 }

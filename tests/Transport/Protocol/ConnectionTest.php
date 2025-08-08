@@ -22,7 +22,7 @@ use Innmind\AMQP\{
     Model\Connection\MaxChannels,
     Model\Connection\MaxFrameSize,
 };
-use Innmind\TimeContinuum\Earth\ElapsedPeriod;
+use Innmind\TimeContinuum\Period;
 use Innmind\Url\{
     Authority\UserInformation\User,
     Authority\UserInformation\Password,
@@ -370,7 +370,7 @@ class ConnectionTest extends TestCase
             TuneOk::of(
                 MaxChannels::of(1),
                 MaxFrameSize::of(10),
-                ElapsedPeriod::of(3000),
+                Period::second(3)->asElapsedPeriod(),
             ),
         )->match(
             static fn($frame) => $frame,

@@ -39,9 +39,9 @@ use Innmind\AMQP\{
     Model\Basic\Message\UserId,
     Model\Connection\MaxFrameSize,
 };
-use Innmind\TimeContinuum\Earth\{
-    PointInTime\Now,
-    ElapsedPeriod,
+use Innmind\TimeContinuum\{
+    PointInTime,
+    Period,
 };
 use Innmind\Immutable\{
     Str,
@@ -571,9 +571,9 @@ class BasicTest extends TestCase
                     ->withPriority(Priority::five)
                     ->withCorrelationId(CorrelationId::of('correlation'))
                     ->withReplyTo(ReplyTo::of('reply'))
-                    ->withExpiration(new ElapsedPeriod(1000))
+                    ->withExpiration(Period::second(1)->asElapsedPeriod())
                     ->withId(Id::of('id'))
-                    ->withTimestamp($now = new Now)
+                    ->withTimestamp($now = PointInTime::now())
                     ->withType(MessageType::of('type'))
                     ->withUserId(UserId::of('guest'))
                     ->withAppId(AppId::of('webcrawler')),

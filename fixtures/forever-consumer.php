@@ -9,8 +9,8 @@ use Innmind\AMQP\{
     Command\Consume,
 };
 use Innmind\OperatingSystem\Factory as OSFactory;
-use Innmind\Socket\Internet\Transport;
-use Innmind\TimeContinuum\Earth\ElapsedPeriod;
+use Innmind\IO\Sockets\Internet\Transport;
+use Innmind\TimeContinuum\Period;
 use Innmind\Url\Url;
 
 $os = OSFactory::build();
@@ -18,7 +18,7 @@ $success = Factory::of($os)
     ->make(
         Transport::tcp(),
         Url::of('//guest:guest@localhost:5672/'),
-        new ElapsedPeriod(1000),
+        Period::second(1)->asElapsedPeriod(),
     )
     ->listenSignals($os->process())
     ->with(DeclareQueue::of('always-empty'))

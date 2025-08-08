@@ -24,11 +24,11 @@ use Innmind\AMQP\{
     TimeContinuum\Format\Timestamp as TimestampFormat,
     Exception\BasicGetNotCancellable,
 };
-use Innmind\Socket\Internet\Transport;
+use Innmind\IO\Sockets\Internet\Transport;
 use Innmind\OperatingSystem\Factory as OSFactory;
-use Innmind\TimeContinuum\Earth\{
-    ElapsedPeriod,
-    Period\Millisecond,
+use Innmind\TimeContinuum\{
+    Period,
+    Format,
 };
 use Innmind\Filesystem\Name;
 use Innmind\Server\Control\Server\{
@@ -68,7 +68,7 @@ class ClientTest extends TestCase
         $this->client = Factory::of($this->os)->make(
             Transport::tcp(),
             Url::of('//guest:guest@localhost:5672/'),
-            new ElapsedPeriod(1000),
+            Period::second(1)->asElapsedPeriod(),
         );
     }
 
@@ -284,7 +284,7 @@ class ClientTest extends TestCase
             ->withPriority(Message\Priority::five)
             ->withCorrelationId(Message\CorrelationId::of('correlation'))
             ->withReplyTo(Message\ReplyTo::of('reply'))
-            ->withExpiration(ElapsedPeriod::of(10000))
+            ->withExpiration(Period::second(10)->asElapsedPeriod())
             ->withId(Message\Id::of('id'))
             ->withTimestamp($now = $this->os->clock()->now())
             ->withType(Message\Type::of('type'))
@@ -372,9 +372,9 @@ class ClientTest extends TestCase
                         static fn() => null,
                     ));
                     $this->assertSame(
-                        (int) ($ts->milliseconds() / 1000), //timestamp expressed in seconds and not milliseconds
+                        (int) $ts->format(Format::of('U')), // timestamp expressed in seconds and not milliseconds
                         $message->headers()->get('timestamp')->match(
-                            static fn($value) => (int) ($value->milliseconds() / 1000),
+                            static fn($value) => (int) $value->format(Format::of('U')),
                             static fn() => null,
                         ),
                     );
@@ -416,7 +416,7 @@ class ClientTest extends TestCase
                         static fn() => null,
                     ));
                     $this->assertSame(10000, $message->expiration()->match(
-                        static fn($value) => $value->milliseconds(),
+                        static fn($value) => $value->asPeriod()->seconds() * 1000,
                         static fn() => null,
                     ));
                     $this->assertSame('id', $message->id()->match(
@@ -424,9 +424,9 @@ class ClientTest extends TestCase
                         static fn() => null,
                     ));
                     $this->assertSame(
-                        $now->format(new TimestampFormat),
+                        $now->format(TimestampFormat::new()),
                         $message->timestamp()->match(
-                            static fn($value) => $value->format(new TimestampFormat),
+                            static fn($value) => $value->format(TimestampFormat::new()),
                             static fn() => null,
                         ),
                     );
@@ -466,6 +466,7 @@ class ClientTest extends TestCase
             ->os
             ->filesystem()
             ->mount(Path::of(__DIR__.'/'))
+            ->unwrap()
             ->get(Name::of(\basename(__FILE__)))
             ->match(
                 static fn($file) => $file->content(),
@@ -735,8 +736,9 @@ class ClientTest extends TestCase
                     ->withArgument('fixtures/forever-consumer.php')
                     ->withEnvironment('PATH', $_SERVER['PATH'])
                     ->withWorkingDirectory(Path::of(\getcwd())),
-            );
-        $this->os->process()->halt(new Millisecond(100));
+            )
+            ->unwrap();
+        $this->os->process()->halt(Period::millisecond(100));
         $this
             ->os
             ->control()
