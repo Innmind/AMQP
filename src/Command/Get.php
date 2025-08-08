@@ -206,7 +206,6 @@ final class Get implements Command
             ->map(static fn($state) => match (true) {
                 $state instanceof Canceled => $state->state(),
                 default => $state,
-            })
-            ->attempt(static fn($failure) => $failure);
+            });
     }
 }

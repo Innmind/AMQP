@@ -268,7 +268,6 @@ final class Consume implements Command
                 $read,
                 $details->deliveryTag(),
                 $consumerTag,
-            )
-            ->attempt(static fn($failure) => $failure);
+            );
     }
 }
