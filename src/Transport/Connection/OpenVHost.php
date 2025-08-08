@@ -35,7 +35,6 @@ final class OpenVHost
                 ),
                 Method::connectionOpenOk,
             )
-            ->attempt(static fn($failure) => $failure)
             ->map(static fn() => $connection);
     }
 }

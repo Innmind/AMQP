@@ -47,7 +47,7 @@ final class DeleteExchange implements Command
 
         return $sideEffect
             ->map(static fn() => $state)
-            ->attempt(fn() => Failure::toDeleteExchange($this->command));
+            ->recover(fn() => Attempt::error(Failure::toDeleteExchange($this->command)));
     }
 
     #[\NoDiscard]

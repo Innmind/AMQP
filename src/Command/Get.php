@@ -109,7 +109,6 @@ final class Get implements Command
                 Method::basicGetOk,
                 Method::basicGetEmpty,
             )
-            ->attempt(static fn($failure) => $failure)
             ->flatMap(
                 fn($frame) => $this->maybeConsume(
                     $connection,

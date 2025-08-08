@@ -57,14 +57,14 @@ final class Purge implements Command
                         ->map(static fn($value) => $value->original())
                         ->map(Count::of(...))
                         ->map(PurgeOk::of(...))
-                        ->either(),
+                        ->attempt(static fn() => new \RuntimeException('Unable to find message count')),
                 ),
             false => $connection->send($frames),
         };
 
         return $sideEffect
             ->map(static fn() => $state)
-            ->attempt(fn() => Failure::toPurge($this->command));
+            ->recover(fn() => Attempt::error(Failure::toPurge($this->command)));
     }
 
     #[\NoDiscard]

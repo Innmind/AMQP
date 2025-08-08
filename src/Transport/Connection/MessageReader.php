@@ -52,6 +52,8 @@ final class MessageReader
     {
         return $connection
             ->wait()
+            ->either()
+            ->leftMap(static fn() => Failure::unexpectedFrame()) // todo delete
             ->flatMap(fn($received) => $this->decode(
                 $connection,
                 $received->frame(),

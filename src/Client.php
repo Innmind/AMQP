@@ -129,8 +129,7 @@ final class Client
         $channel = new Channel(1);
 
         return ($this->load)()
-            ->either()
-            ->leftMap(static fn() => Failure::toOpenConnection())
+            ->recover(static fn() => Attempt::error(Failure::toOpenConnection()))
             ->flatMap(
                 fn($connection) => $connection
                     ->request(
@@ -145,9 +144,8 @@ final class Client
                         static fn() => null,
                     ))
                     ->map(static fn() => [$connection, $channel])
-                    ->leftMap(static fn() => Failure::toOpenChannel()),
-            )
-            ->attempt(static fn($failure) => $failure);
+                    ->recover(static fn() => Attempt::error(Failure::toOpenChannel())),
+            );
     }
 
     /**
@@ -163,11 +161,11 @@ final class Client
                 ),
                 Method::channelCloseOk,
             )
-            ->attempt(static fn() => Failure::toCloseChannel())
+            ->recover(static fn() => Attempt::error(Failure::toCloseChannel()))
             ->flatMap(
                 static fn() => $connection
                     ->close()
-                    ->attempt(static fn() => Failure::toCloseConnection()),
+                    ->recover(static fn() => Attempt::error(Failure::toCloseConnection())),
             );
     }
 }

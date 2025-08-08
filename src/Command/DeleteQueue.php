@@ -57,14 +57,14 @@ final class DeleteQueue implements Command
                         ->map(static fn($value) => $value->original())
                         ->map(Count::of(...))
                         ->map(DeleteOk::of(...))
-                        ->either(),
+                        ->attempt(static fn() => new \RuntimeException('Unable to find message count')),
                 ),
             false => $connection->send($frames),
         };
 
         return $sideEffect
             ->map(static fn() => $state)
-            ->attempt(fn() => Failure::toDeleteQueue($this->command));
+            ->recover(fn() => Attempt::error(Failure::toDeleteQueue($this->command)));
     }
 
     #[\NoDiscard]

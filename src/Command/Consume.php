@@ -57,7 +57,6 @@ final class Consume implements Command
         $sideEffect = match ($this->command->shouldWait()) {
             true => $connection
                 ->request($frames, Method::basicConsumeOk)
-                ->attempt(static fn($failure) => $failure)
                 ->flatMap(fn($frame) => $this->maybeStart(
                     $connection,
                     $channel,
@@ -67,8 +66,7 @@ final class Consume implements Command
                 )),
             false => $connection
                 ->send($frames)
-                ->map(static fn() => $state)
-                ->attempt(static fn($failure) => $failure),
+                ->map(static fn() => $state),
         };
 
         return $sideEffect->recover(
@@ -173,7 +171,6 @@ final class Consume implements Command
     ): Attempt {
         return $connection
             ->wait(Method::basicDeliver)
-            ->attempt(static fn($failure) => $failure)
             ->flatMap(
                 fn($received) => $read($connection)
                     ->attempt(static fn($failure) => $failure)

@@ -71,14 +71,14 @@ final class DeclareQueue implements Command
                     // maybe in the future we could expose this info to the user
                     return Maybe::all($name, $message, $consumer)
                         ->map(DeclareOk::of(...))
-                        ->either();
+                        ->attempt(static fn() => new \RuntimeException('Invalid declare.ok response'));
                 }),
             false => $connection->send($frames),
         };
 
         return $sideEffect
             ->map(static fn() => $state)
-            ->attempt(fn() => Failure::toDeclareQueue($this->command));
+            ->recover(fn() => Attempt::error(Failure::toDeclareQueue($this->command)));
     }
 
     #[\NoDiscard]

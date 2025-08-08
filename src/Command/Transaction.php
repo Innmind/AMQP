@@ -84,7 +84,7 @@ final class Transaction implements Command
                 Method::transactionSelectOk,
             )
             ->map(static fn() => $connection)
-            ->attempt(static fn() => Failure::toSelect());
+            ->recover(static fn() => Attempt::error(Failure::toSelect()));
     }
 
     /**
@@ -115,7 +115,7 @@ final class Transaction implements Command
                 Method::transactionCommitOk,
             )
             ->map(static fn() => $state)
-            ->attempt(static fn() => Failure::toCommit());
+            ->recover(static fn() => Attempt::error(Failure::toCommit()));
     }
 
     /**
@@ -132,6 +132,6 @@ final class Transaction implements Command
                 Method::transactionRollbackOk,
             )
             ->map(static fn() => $state)
-            ->attempt(static fn() => Failure::toRollback());
+            ->recover(static fn() => Attempt::error(Failure::toRollback()));
     }
 }

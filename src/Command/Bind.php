@@ -47,7 +47,7 @@ final class Bind implements Command
 
         return $sideEffect
             ->map(static fn() => $state)
-            ->attempt(fn() => Failure::toBind($this->command));
+            ->recover(fn() => Attempt::error(Failure::toBind($this->command)));
     }
 
     #[\NoDiscard]

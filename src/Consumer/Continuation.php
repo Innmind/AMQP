@@ -125,9 +125,11 @@ final class Continuation
             // read all the frames for the prefetched message then wait for next
             // frame
             $received = $received->flatMap(
-                static fn() => $read($connection)->flatMap(
-                    static fn() => $connection->wait(),
-                ),
+                static fn() => $read($connection)
+                    ->attempt(static fn($failure) => $failure)
+                    ->flatMap(
+                        static fn() => $connection->wait(),
+                    ),
             );
             $walkOverPrefetchedMessages = $received->match(
                 static fn($received) => $received->is(Method::basicDeliver),
@@ -151,6 +153,7 @@ final class Continuation
                 ),
                 Method::basicRecoverOk,
             ))
+            ->either()
             ->map(fn() => Canceled::of($this->state))
             ->leftMap(static fn() => Failure::toRecover($queue));
     }
@@ -171,6 +174,7 @@ final class Continuation
                 $channel,
                 Ack::of($deliveryTag),
             ))
+            ->either()
             ->leftMap(static fn() => Failure::toAck($queue));
     }
 
@@ -190,6 +194,7 @@ final class Continuation
                 $channel,
                 Reject::of($deliveryTag),
             ))
+            ->either()
             ->leftMap(static fn() => Failure::toReject($queue));
     }
 
@@ -209,6 +214,7 @@ final class Continuation
                 $channel,
                 Reject::requeue($deliveryTag),
             ))
+            ->either()
             ->leftMap(static fn() => Failure::toReject($queue));
     }
 
@@ -231,6 +237,7 @@ final class Continuation
                 $channel,
                 Cancel::of($consumerTag),
             ))
+            ->either()
             ->leftMap(static fn() => Failure::toCancel($queue));
     }
 }

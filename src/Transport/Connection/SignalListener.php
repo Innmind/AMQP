@@ -13,7 +13,7 @@ use Innmind\AMQP\{
 use Innmind\OperatingSystem\CurrentProcess\Signals;
 use Innmind\Signals\Signal;
 use Innmind\Immutable\{
-    Either,
+    Attempt,
     Maybe,
 };
 
@@ -100,21 +100,21 @@ final class SignalListener
     /**
      * @template T
      *
-     * @param callable(): Either<Failure, T> $continue
+     * @param callable(): Attempt<T> $continue
      *
-     * @return Either<Failure, T>
+     * @return Attempt<T>
      */
-    public function close(Connection $connection, callable $continue): Either
+    public function close(Connection $connection, callable $continue): Attempt
     {
         return Maybe::all($this->received, $this->channel)
             ->map(static fn(Signal $signal, Channel $channel) => [$signal, $channel])
             ->filter(fn() => !$this->closing)
-            ->either()
             ->match(
                 function($in) use ($connection) {
                     $this->closing = true;
                     [$signal, $channel] = $in;
 
+                    /** @var Attempt<T> Todo fix */
                     return $connection
                         ->request(
                             static fn($protocol) => $protocol->channel()->close(
@@ -123,14 +123,13 @@ final class SignalListener
                             ),
                             Method::channelCloseOk,
                         )
-                        ->leftMap(static fn() => Failure::toCloseChannel())
+                        ->recover(static fn() => Attempt::error(Failure::toCloseChannel()))
                         ->flatMap(
                             static fn() => $connection
                                 ->close()
-                                ->either()
-                                ->leftMap(static fn() => Failure::toCloseConnection()),
+                                ->recover(static fn() => Attempt::error(Failure::toCloseConnection())),
                         )
-                        ->flatMap(static fn() => Either::left(Failure::closedBySignal($signal)));
+                        ->recover(static fn() => Attempt::error(Failure::closedBySignal($signal)));
                 },
                 static fn() => $continue(),
             );
