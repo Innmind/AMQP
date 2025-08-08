@@ -3,15 +3,12 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Failure;
 
-use Innmind\AMQP\{
-    Failure,
-    Model\Basic\Publish as Command,
-};
+use Innmind\AMQP\Model\Basic\Publish as Command;
 
 /**
  * @psalm-immutable
  */
-final class ToPublish extends Failure
+final class ToPublish
 {
     private Command $command;
 
@@ -27,11 +24,5 @@ final class ToPublish extends Failure
     public function command(): Command
     {
         return $this->command;
-    }
-
-    #[\Override]
-    public function kind(): Kind
-    {
-        return Kind::toPublish;
     }
 }

@@ -12,7 +12,7 @@ use Innmind\AMQP\{
     Transport\Frame\Channel,
     Transport\Frame\Method,
 };
-use Innmind\Immutable\Either;
+use Innmind\Immutable\Attempt;
 
 final class Transaction implements Command
 {
@@ -35,7 +35,7 @@ final class Transaction implements Command
         Channel $channel,
         MessageReader $read,
         State $state,
-    ): Either {
+    ): Attempt {
         return $this
             ->select($connection, $channel)
             ->flatMap(fn($connection) => ($this->command)(
@@ -72,29 +72,29 @@ final class Transaction implements Command
     }
 
     /**
-     * @return Either<Failure, Connection>
+     * @return Attempt<Connection>
      */
     private function select(
         Connection $connection,
         Channel $channel,
-    ): Either {
+    ): Attempt {
         return $connection
             ->request(
                 static fn($protocol) => $protocol->transaction()->select($channel),
                 Method::transactionSelectOk,
             )
             ->map(static fn() => $connection)
-            ->leftMap(static fn() => Failure::toSelect());
+            ->mapError(Failure::as(Failure::toSelect()));
     }
 
     /**
-     * @return Either<Failure, State>
+     * @return Attempt<State>
      */
     private function finish(
         Connection $connection,
         Channel $channel,
         State $state,
-    ): Either {
+    ): Attempt {
         return match (($this->predicate)($state->unwrap())) {
             true => $this->commit($connection, $channel, $state),
             false => $this->rollback($connection, $channel, $state),
@@ -102,36 +102,36 @@ final class Transaction implements Command
     }
 
     /**
-     * @return Either<Failure, State>
+     * @return Attempt<State>
      */
     private function commit(
         Connection $connection,
         Channel $channel,
         State $state,
-    ): Either {
+    ): Attempt {
         return $connection
             ->request(
                 static fn($protocol) => $protocol->transaction()->commit($channel),
                 Method::transactionCommitOk,
             )
             ->map(static fn() => $state)
-            ->leftMap(static fn() => Failure::toCommit());
+            ->mapError(Failure::as(Failure::toCommit()));
     }
 
     /**
-     * @return Either<Failure, State>
+     * @return Attempt<State>
      */
     private function rollback(
         Connection $connection,
         Channel $channel,
         State $state,
-    ): Either {
+    ): Attempt {
         return $connection
             ->request(
                 static fn($protocol) => $protocol->transaction()->rollback($channel),
                 Method::transactionRollbackOk,
             )
             ->map(static fn() => $state)
-            ->leftMap(static fn() => Failure::toRollback());
+            ->mapError(Failure::as(Failure::toRollback()));
     }
 }

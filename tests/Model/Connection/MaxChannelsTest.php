@@ -7,6 +7,7 @@ use Innmind\AMQP\{
     Model\Connection\MaxChannels,
     Exception\FrameChannelExceedAllowedChannelNumber,
 };
+use Innmind\Immutable\SideEffect;
 use Innmind\BlackBox\{
     PHPUnit\BlackBox,
     PHPUnit\Framework\TestCase,
@@ -86,7 +87,10 @@ class MaxChannelsTest extends TestCase
             ->then(function($size) {
                 $max = MaxChannels::of(0);
 
-                $this->assertNull($max->verify($size));
+                $this->assertInstanceOf(
+                    SideEffect::class,
+                    $max->verify($size)->unwrap(),
+                );
             });
         $this
             ->forAll(
@@ -96,7 +100,10 @@ class MaxChannelsTest extends TestCase
             ->then(function($allowed, $numberBelow) {
                 $max = MaxChannels::of($allowed);
 
-                $this->assertNull($max->verify($allowed - $numberBelow));
+                $this->assertInstanceOf(
+                    SideEffect::class,
+                    $max->verify($allowed - $numberBelow)->unwrap(),
+                );
             });
     }
 
@@ -115,7 +122,7 @@ class MaxChannelsTest extends TestCase
                 $above = $allowed + $extraNumber;
 
                 try {
-                    $max->verify($above);
+                    $max->verify($above)->unwrap();
                     $this->fail('it should throw');
                 } catch (FrameChannelExceedAllowedChannelNumber $e) {
                     $this->assertSame(

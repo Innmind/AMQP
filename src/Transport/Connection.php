@@ -19,8 +19,6 @@ use Innmind\AMQP\{
     Model\Connection\MaxFrameSize,
     Model\Connection\TuneOk,
     Failure,
-    Exception\FrameChannelExceedAllowedChannelNumber,
-    Exception\FrameExceedAllowedSize,
 };
 use Innmind\OperatingSystem\CurrentProcess\Signals;
 use Innmind\IO\{
@@ -36,8 +34,8 @@ use Innmind\TimeContinuum\{
 use Innmind\OperatingSystem\Remote;
 use Innmind\Immutable\{
     Str,
+    Attempt,
     Maybe,
-    Either,
     Sequence,
     SideEffect,
     Predicate\Instance,
@@ -80,7 +78,7 @@ final class Connection
     }
 
     /**
-     * @return Maybe<self>
+     * @return Attempt<self>
      */
     public static function open(
         Transport $transport,
@@ -89,7 +87,7 @@ final class Connection
         Period $timeout,
         Clock $clock,
         Remote $remote,
-    ): Maybe {
+    ): Attempt {
         return $remote
             ->socket(
                 $transport,
@@ -114,7 +112,6 @@ final class Connection
                 (new FrameReader)($protocol),
                 SignalListener::uninstalled(),
             ))
-            ->maybe()
             ->flatMap(new Start($server->authority()))
             ->flatMap(new Handshake($server->authority()))
             ->flatMap(new OpenVHost($server->path()));
@@ -123,9 +120,9 @@ final class Connection
     /**
      * @param callable(Protocol, MaxFrameSize): Sequence<Frame> $frames
      *
-     * @return Either<Failure, SideEffect>
+     * @return Attempt<SideEffect>
      */
-    public function respondTo(Method $method, callable $frames): Either
+    public function respondTo(Method $method, callable $frames): Attempt
     {
         return $this
             ->wait($method)
@@ -137,9 +134,9 @@ final class Connection
     /**
      * @param callable(Protocol, MaxFrameSize): Sequence<Frame> $frames
      *
-     * @return Either<Failure, Frame>
+     * @return Attempt<Frame>
      */
-    public function request(callable $frames, Method $method, Method ...$methods): Either
+    public function request(callable $frames, Method $method, Method ...$methods): Attempt
     {
         return $this
             ->sendFrames($frames)
@@ -150,17 +147,17 @@ final class Connection
     /**
      * @param callable(Protocol, MaxFrameSize): Sequence<Frame> $frames
      *
-     * @return Either<Failure, SideEffect>
+     * @return Attempt<SideEffect>
      */
-    public function send(callable $frames): Either
+    public function send(callable $frames): Attempt
     {
         return $this->sendFrames($frames);
     }
 
     /**
-     * @return Either<Failure, ReceivedFrame>
+     * @return Attempt<ReceivedFrame>
      */
-    public function wait(Method ...$names): Either
+    public function wait(Method ...$names): Attempt
     {
         return $this
             ->socket
@@ -175,7 +172,6 @@ final class Connection
             ->one()
             ->map(ReceivedFrame::of(...))
             ->map($this->flagActive(...))
-            ->either()
             ->eitherWay(
                 fn($received) => match ($received->frame()->type()) {
                     Type::heartbeat => $this->wait(...$names),
@@ -183,15 +179,15 @@ final class Connection
                 },
                 fn() => $this->signals->close(
                     $this,
-                    static fn() => Either::left(Failure::toReadFrame()),
+                    static fn() => Attempt::error(Failure::toReadFrame()),
                 ),
             );
     }
 
     /**
-     * @return Maybe<SideEffect>
+     * @return Attempt<SideEffect>
      */
-    public function close(): Maybe
+    public function close(): Attempt
     {
         $this->signals->uninstall();
 
@@ -200,19 +196,18 @@ final class Connection
                 static fn($protocol) => $protocol->connection()->close(Close::demand()),
                 Method::connectionCloseOk,
             )
-            ->maybe()
-            ->flatMap(fn() => $this->socket->close()->maybe())
+            ->flatMap(fn() => $this->socket->close())
             ->map(static fn() => new SideEffect);
     }
 
     /**
-     * @return Maybe<self>
+     * @return Attempt<self>
      */
     public function tune(
         MaxChannels $maxChannels,
         MaxFrameSize $maxFrameSize,
         Period $heartbeat,
-    ): Maybe {
+    ): Attempt {
         return $this
             ->send(static fn($protocol) => $protocol->connection()->tuneOk(
                 TuneOk::of(
@@ -221,7 +216,6 @@ final class Connection
                     $heartbeat,
                 ),
             ))
-            ->maybe()
             ->map(fn() => new self(
                 $this->protocol,
                 $this->heartbeat->adjust($heartbeat),
@@ -254,68 +248,62 @@ final class Connection
      *
      * @param callable(Protocol, MaxFrameSize): Sequence<Frame> $frames
      *
-     * @throws FrameChannelExceedAllowedChannelNumber
-     * @throws FrameExceedAllowedSize
-     *
-     * @return Either<Failure, SideEffect>
+     * @return Attempt<SideEffect>
      */
-    private function sendFrames(callable $frames): Either
+    private function sendFrames(callable $frames): Attempt
     {
-        $data = $frames($this->protocol, $this->maxFrameSize)
-            ->map(function($frame) {
-                $this->maxChannels->verify($frame->channel()->toInt());
-
-                return $frame;
-            })
-            ->map(static fn($frame) => $frame->pack())
-            ->map(function($frame) {
-                $this->maxFrameSize->verify($frame->length());
-
-                return $frame;
-            });
+        $data = $frames($this->protocol, $this->maxFrameSize)->map(
+            fn($frame) => $this
+                ->maxChannels
+                ->verify($frame->channel()->toInt())
+                ->map(static fn() => $frame->pack())
+                ->flatMap(
+                    fn($frame) => $this
+                        ->maxFrameSize
+                        ->verify($frame->length())
+                        ->map(static fn() => $frame),
+                ),
+        );
 
         return $this
             ->socket
             ->abortWhen($this->signals->notified(...))
-            ->sink($data)
-            ->either()
+            ->sinkAttempts($data)
             ->eitherWay(
-                static fn() => Either::right(new SideEffect),
+                static fn() => Attempt::result(new SideEffect),
                 fn() => $this->signals->close(
                     $this,
-                    static fn() => Either::left(Failure::toSendFrame()),
+                    static fn() => Attempt::error(Failure::toSendFrame()),
                 ),
             );
     }
 
     /**
-     * @return Either<Failure, ReceivedFrame>
+     * @return Attempt<ReceivedFrame>
      */
     private function ensureValidFrame(
         ReceivedFrame $received,
         Method ...$names,
-    ): Either {
+    ): Attempt {
         if (\count($names) === 0) {
-            /** @var Either<Failure, ReceivedFrame> */
-            return Either::right($received);
+            return Attempt::result($received);
         }
 
         if ($received->frame()->type() !== Type::method) {
             // someone must have forgot a wait() call
-            /** @var Either<Failure, ReceivedFrame> */
-            return Either::left(Failure::unexpectedFrame());
+            /** @var Attempt<ReceivedFrame> */
+            return Attempt::error(Failure::unexpectedFrame());
         }
 
         if ($received->oneOf(...$names)) {
-            /** @var Either<Failure, ReceivedFrame> */
-            return Either::right($received);
+            return Attempt::result($received);
         }
 
         if ($received->is(Method::connectionClose)) {
-            /** @var Either<Failure, ReceivedFrame> */
+            /** @var Attempt<ReceivedFrame> */
             return $this
                 ->send(static fn($protocol) => $protocol->connection()->closeOk())
-                ->leftMap(static fn() => Failure::toCloseConnection())
+                ->mapError(Failure::as(Failure::toCloseConnection()))
                 ->flatMap(static function() use ($received) {
                     $message = $received
                         ->frame()
@@ -355,11 +343,11 @@ final class Connection
                         static fn(int $class, int $method) => Method::of($class, $method),
                     );
 
-                    return Either::left(Failure::closedByServer($message, $code, $method));
+                    return Attempt::error(Failure::closedByServer($message, $code, $method));
                 });
         }
 
-        /** @var Either<Failure, ReceivedFrame> */
-        return Either::left(Failure::unexpectedFrame());
+        /** @var Attempt<ReceivedFrame> */
+        return Attempt::error(Failure::unexpectedFrame());
     }
 }

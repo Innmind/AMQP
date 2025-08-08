@@ -13,7 +13,7 @@ use Innmind\AMQP\{
     Transport\Frame\Method,
     Model\Queue\Unbinding,
 };
-use Innmind\Immutable\Either;
+use Innmind\Immutable\Attempt;
 
 final class Unbind implements Command
 {
@@ -30,7 +30,7 @@ final class Unbind implements Command
         Channel $channel,
         MessageReader $read,
         State $state,
-    ): Either {
+    ): Attempt {
         return $connection
             ->request(
                 fn($protocol) => $protocol->queue()->unbind(
@@ -40,7 +40,7 @@ final class Unbind implements Command
                 Method::queueUnbindOk,
             )
             ->map(static fn() => $state)
-            ->leftMap(fn() => Failure::toUnbind($this->command));
+            ->mapError(Failure::as(Failure::toUnbind($this->command)));
     }
 
     #[\NoDiscard]

@@ -15,7 +15,7 @@ use Innmind\OperatingSystem\{
     Filesystem,
 };
 use Innmind\Immutable\{
-    Either,
+    Attempt,
     Maybe,
     SideEffect,
 };
@@ -24,7 +24,7 @@ final class Client
 {
     /** @var Maybe<Command> */
     private Maybe $command;
-    /** @var callable(): Maybe<Connection> */
+    /** @var callable(): Attempt<Connection> */
     private $load;
     private Filesystem $filesystem;
     /** @var Maybe<CurrentProcess> */
@@ -32,7 +32,7 @@ final class Client
 
     /**
      * @param Maybe<Command> $command
-     * @param callable(): Maybe<Connection> $load
+     * @param callable(): Attempt<Connection> $load
      * @param Maybe<CurrentProcess> $signals
      */
     private function __construct(
@@ -48,7 +48,7 @@ final class Client
     }
 
     /**
-     * @param callable(): Maybe<Connection> $load
+     * @param callable(): Attempt<Connection> $load
      */
     #[\NoDiscard]
     public static function of(callable $load, Filesystem $filesystem): self
@@ -96,10 +96,10 @@ final class Client
      *
      * @param T $state
      *
-     * @return Either<Failure, T>
+     * @return Attempt<T>
      */
     #[\NoDiscard]
-    public function run(mixed $state): Either
+    public function run(mixed $state): Attempt
     {
         return $this->command->match(
             fn($command) => $this
@@ -114,24 +114,22 @@ final class Client
                             ->map(static fn(): mixed => $state->unwrap()),
                     );
                 }),
-            static fn() => Either::right($state),
+            static fn() => Attempt::result($state),
         );
     }
 
     /**
-     * @return Either<Failure, array{Connection, Channel}>
+     * @return Attempt<array{Connection, Channel}>
      */
-    private function openChannel(): Either
+    private function openChannel(): Attempt
     {
         // Since the connection is never shared between objects then there is no
         // need to have a dynamic channel number as there will ALWAYS be one
         // channel per connection
         $channel = new Channel(1);
 
-        /** @var Either<Failure, array{Connection, Channel}> */
         return ($this->load)()
-            ->either()
-            ->leftMap(static fn() => Failure::toOpenConnection())
+            ->mapError(Failure::as(Failure::toOpenConnection()))
             ->flatMap(
                 fn($connection) => $connection
                     ->request(
@@ -146,16 +144,15 @@ final class Client
                         static fn() => null,
                     ))
                     ->map(static fn() => [$connection, $channel])
-                    ->leftMap(static fn() => Failure::toOpenChannel()),
+                    ->mapError(Failure::as(Failure::toOpenChannel())),
             );
     }
 
     /**
-     * @return Either<Failure, SideEffect>
+     * @return Attempt<SideEffect>
      */
-    private function close(Connection $connection, Channel $channel): Either
+    private function close(Connection $connection, Channel $channel): Attempt
     {
-        /** @var Either<Failure, SideEffect> */
         return $connection
             ->request(
                 static fn($protocol) => $protocol->channel()->close(
@@ -164,12 +161,11 @@ final class Client
                 ),
                 Method::channelCloseOk,
             )
-            ->leftMap(static fn() => Failure::toCloseChannel())
+            ->mapError(Failure::as(Failure::toCloseChannel()))
             ->flatMap(
                 static fn() => $connection
                     ->close()
-                    ->either()
-                    ->leftMap(static fn() => Failure::toCloseConnection()),
+                    ->mapError(Failure::as(Failure::toCloseConnection())),
             );
     }
 }

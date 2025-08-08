@@ -3,15 +3,12 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Failure;
 
-use Innmind\AMQP\{
-    Failure,
-    Model\Basic\Get as Command,
-};
+use Innmind\AMQP\Model\Basic\Get as Command;
 
 /**
  * @psalm-immutable
  */
-final class ToGet extends Failure
+final class ToGet
 {
     private Command $command;
 
@@ -27,11 +24,5 @@ final class ToGet extends Failure
     public function command(): Command
     {
         return $this->command;
-    }
-
-    #[\Override]
-    public function kind(): Kind
-    {
-        return Kind::toGet;
     }
 }

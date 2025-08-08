@@ -3,15 +3,12 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Failure;
 
-use Innmind\AMQP\{
-    Failure,
-    Model\Exchange\Declaration as Command,
-};
+use Innmind\AMQP\Model\Exchange\Declaration as Command;
 
 /**
  * @psalm-immutable
  */
-final class ToDeclareExchange extends Failure
+final class ToDeclareExchange
 {
     private Command $command;
 
@@ -27,11 +24,5 @@ final class ToDeclareExchange extends Failure
     public function command(): Command
     {
         return $this->command;
-    }
-
-    #[\Override]
-    public function kind(): Kind
-    {
-        return Kind::toDeclareExchange;
     }
 }

@@ -10,7 +10,7 @@ use Innmind\AMQP\{
     Transport\Frame\Channel,
     Client\State,
 };
-use Innmind\Immutable\Either;
+use Innmind\Immutable\Attempt;
 
 /**
  * @internal
@@ -32,7 +32,7 @@ final class Pipe implements Command
         Channel $channel,
         MessageReader $read,
         State $state,
-    ): Either {
+    ): Attempt {
         return ($this->first)($connection, $channel, $read, $state)->flatMap(
             fn($state) => ($this->second)(
                 $connection,

@@ -3,15 +3,12 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Failure;
 
-use Innmind\AMQP\{
-    Failure,
-    Model\Queue\Unbinding as Command,
-};
+use Innmind\AMQP\Model\Queue\Unbinding as Command;
 
 /**
  * @psalm-immutable
  */
-final class ToUnbind extends Failure
+final class ToUnbind
 {
     private Command $command;
 
@@ -27,11 +24,5 @@ final class ToUnbind extends Failure
     public function command(): Command
     {
         return $this->command;
-    }
-
-    #[\Override]
-    public function kind(): Kind
-    {
-        return Kind::toUnbind;
     }
 }

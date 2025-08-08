@@ -3,15 +3,12 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Failure;
 
-use Innmind\AMQP\{
-    Failure,
-    Model\Queue\Deletion as Command,
-};
+use Innmind\AMQP\Model\Queue\Deletion as Command;
 
 /**
  * @psalm-immutable
  */
-final class ToDeleteQueue extends Failure
+final class ToDeleteQueue
 {
     private Command $command;
 
@@ -27,11 +24,5 @@ final class ToDeleteQueue extends Failure
     public function command(): Command
     {
         return $this->command;
-    }
-
-    #[\Override]
-    public function kind(): Kind
-    {
-        return Kind::toDeleteQueue;
     }
 }

@@ -16,7 +16,7 @@ use Innmind\AMQP\{
     Failure,
 };
 use Innmind\Immutable\{
-    Either,
+    Attempt,
     Sequence,
 };
 
@@ -35,7 +35,7 @@ final class DeclareExchange implements Command
         Channel $channel,
         MessageReader $read,
         State $state,
-    ): Either {
+    ): Attempt {
         $frames = fn(Protocol $protocol): Sequence => $protocol->exchange()->declare(
             $channel,
             $this->command,
@@ -48,7 +48,7 @@ final class DeclareExchange implements Command
 
         return $sideEffect
             ->map(static fn() => $state)
-            ->leftMap(fn() => Failure::toDeclareExchange($this->command));
+            ->mapError(Failure::as(Failure::toDeclareExchange($this->command)));
     }
 
     #[\NoDiscard]

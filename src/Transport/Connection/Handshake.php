@@ -16,8 +16,8 @@ use Innmind\AMQP\{
 use Innmind\TimeContinuum\Period;
 use Innmind\Url\Authority;
 use Innmind\Immutable\{
+    Attempt,
     Maybe,
-    Either,
     Predicate\Instance,
 };
 
@@ -34,23 +34,22 @@ final class Handshake
     }
 
     /**
-     * @return Maybe<Connection>
+     * @return Attempt<Connection>
      */
-    public function __invoke(Connection $connection): Maybe
+    public function __invoke(Connection $connection): Attempt
     {
         return $connection
             ->wait(Method::connectionSecure, Method::connectionTune)
             ->flatMap(fn($received) => match ($received->is(Method::connectionSecure)) {
                 true => $this->secure($connection),
                 false => $this->maybeTune($connection, $received->frame()),
-            })
-            ->maybe();
+            });
     }
 
     /**
-     * @return Either<Failure, Connection>
+     * @return Attempt<Connection>
      */
-    private function secure(Connection $connection): Either
+    private function secure(Connection $connection): Attempt
     {
         return $connection
             ->request(
@@ -66,9 +65,9 @@ final class Handshake
     }
 
     /**
-     * @return Either<Failure, Connection>
+     * @return Attempt<Connection>
      */
-    private function maybeTune(Connection $connection, Frame $frame): Either
+    private function maybeTune(Connection $connection, Frame $frame): Attempt
     {
         $maxChannels = $frame
             ->values()
@@ -90,8 +89,15 @@ final class Handshake
             ->map(Period::millisecond(...));
 
         return Maybe::all($maxChannels, $maxFrameSize, $heartbeat)
-            ->flatMap($connection->tune(...))
-            ->either()
-            ->leftMap(static fn() => Failure::toOpenConnection());
+            ->flatMap(
+                static fn(
+                    MaxChannels $maxChannels,
+                    MaxFrameSize $maxFrameSize,
+                    Period $heartbeat,
+                ) => $connection
+                    ->tune($maxChannels, $maxFrameSize, $heartbeat)
+                    ->maybe(),
+            )
+            ->attempt(static fn() => Failure::toOpenConnection());
     }
 }

@@ -14,7 +14,7 @@ use Innmind\AMQP\{
     Model\Basic\Message,
 };
 use Innmind\Immutable\{
-    Either,
+    Attempt,
     Sequence,
     SideEffect,
 };
@@ -38,16 +38,15 @@ final class Publish implements Command
         Channel $channel,
         MessageReader $read,
         State $state,
-    ): Either {
-        /** @var Either<Failure, State> */
+    ): Attempt {
         return $this
             ->commands
-            ->reduce(
-                Either::right(new SideEffect),
-                fn(Either $state, $command) => $state->flatMap(
-                    fn() => $this->publish($connection, $channel, $command),
-                ),
-            )
+            ->sink(SideEffect::identity())
+            ->attempt(fn($_, $command) => $this->publish(
+                $connection,
+                $channel,
+                $command,
+            ))
             ->map(static fn() => $state);
     }
 
@@ -83,19 +82,19 @@ final class Publish implements Command
     }
 
     /**
-     * @return Either<Failure, SideEffect>
+     * @return Attempt<SideEffect>
      */
     private function publish(
         Connection $connection,
         Channel $channel,
         Model $command,
-    ): Either {
+    ): Attempt {
         return $connection
             ->send(static fn($protocol, $maxFrameSize) => $protocol->basic()->publish(
                 $channel,
                 $command,
                 $maxFrameSize,
             ))
-            ->leftMap(static fn() => Failure::toPublish($command));
+            ->mapError(Failure::as(Failure::toPublish($command)));
     }
 }

@@ -3,15 +3,12 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Failure;
 
-use Innmind\AMQP\{
-    Failure,
-    Model\Queue\Binding as Command,
-};
+use Innmind\AMQP\Model\Queue\Binding as Command;
 
 /**
  * @psalm-immutable
  */
-final class ToBind extends Failure
+final class ToBind
 {
     private Command $command;
 
@@ -27,11 +24,5 @@ final class ToBind extends Failure
     public function command(): Command
     {
         return $this->command;
-    }
-
-    #[\Override]
-    public function kind(): Kind
-    {
-        return Kind::toBind;
     }
 }

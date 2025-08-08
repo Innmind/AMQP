@@ -17,7 +17,7 @@ use Innmind\AMQP\{
     Exception\BasicGetNotCancellable,
 };
 use Innmind\Immutable\{
-    Either,
+    Attempt,
     SideEffect,
 };
 
@@ -73,7 +73,7 @@ final class Continuation
      *
      * @param int<0, max> $deliveryTag
      *
-     * @return Either<Failure, Client\State|Canceled>
+     * @return Attempt<Client\State|Canceled>
      */
     public function respond(
         string $queue,
@@ -82,8 +82,8 @@ final class Continuation
         MessageReader $read,
         int $deliveryTag,
         ?string $consumerTag = null,
-    ): Either {
-        /** @var Either<Failure, Client\State|Canceled> */
+    ): Attempt {
+        /** @var Attempt<Client\State|Canceled> */
         return match ($this->response) {
             State::cancel => $this
                 ->doAck($queue, $connection, $channel, $deliveryTag)
@@ -107,14 +107,14 @@ final class Continuation
     }
 
     /**
-     * @return Either<Failure, Canceled>
+     * @return Attempt<Canceled>
      */
     private function recover(
         string $queue,
         Connection $connection,
         Channel $channel,
         MessageReader $read,
-    ): Either {
+    ): Attempt {
         $received = $connection->wait();
         $walkOverPrefetchedMessages = $received->match(
             static fn($received) => $received->is(Method::basicDeliver),
@@ -142,7 +142,6 @@ final class Continuation
         // to "consume" within the same channel will receive new messages but
         // won't receive previously prefetched messages leading to out of order
         // messages handling
-        /** @var Either<Failure, Canceled> */
         return $received
             ->flatMap(static fn() => $connection->request(
                 static fn($protocol) => $protocol->basic()->recover(
@@ -152,75 +151,75 @@ final class Continuation
                 Method::basicRecoverOk,
             ))
             ->map(fn() => Canceled::of($this->state))
-            ->leftMap(static fn() => Failure::toRecover($queue));
+            ->mapError(Failure::as(Failure::toRecover($queue)));
     }
 
     /**
      * @param int<0, max> $deliveryTag
      *
-     * @return Either<Failure, SideEffect>
+     * @return Attempt<SideEffect>
      */
     private function doAck(
         string $queue,
         Connection $connection,
         Channel $channel,
         int $deliveryTag,
-    ): Either {
+    ): Attempt {
         return $connection
             ->send(static fn($protocol) => $protocol->basic()->ack(
                 $channel,
                 Ack::of($deliveryTag),
             ))
-            ->leftMap(static fn() => Failure::toAck($queue));
+            ->mapError(Failure::as(Failure::toAck($queue)));
     }
 
     /**
      * @param int<0, max> $deliveryTag
      *
-     * @return Either<Failure, SideEffect>
+     * @return Attempt<SideEffect>
      */
     private function doReject(
         string $queue,
         Connection $connection,
         Channel $channel,
         int $deliveryTag,
-    ): Either {
+    ): Attempt {
         return $connection
             ->send(static fn($protocol) => $protocol->basic()->reject(
                 $channel,
                 Reject::of($deliveryTag),
             ))
-            ->leftMap(static fn() => Failure::toReject($queue));
+            ->mapError(Failure::as(Failure::toReject($queue)));
     }
 
     /**
      * @param int<0, max> $deliveryTag
      *
-     * @return Either<Failure, SideEffect>
+     * @return Attempt<SideEffect>
      */
     private function doRequeue(
         string $queue,
         Connection $connection,
         Channel $channel,
         int $deliveryTag,
-    ): Either {
+    ): Attempt {
         return $connection
             ->send(static fn($protocol) => $protocol->basic()->reject(
                 $channel,
                 Reject::requeue($deliveryTag),
             ))
-            ->leftMap(static fn() => Failure::toReject($queue));
+            ->mapError(Failure::as(Failure::toReject($queue)));
     }
 
     /**
-     * @return Either<Failure, SideEffect>
+     * @return Attempt<SideEffect>
      */
     private function doCancel(
         string $queue,
         Connection $connection,
         Channel $channel,
         ?string $consumerTag,
-    ): Either {
+    ): Attempt {
         if (\is_null($consumerTag)) {
             // this means the user called self::cancel when inside a Get
             throw new BasicGetNotCancellable;
@@ -231,6 +230,6 @@ final class Continuation
                 $channel,
                 Cancel::of($consumerTag),
             ))
-            ->leftMap(static fn() => Failure::toCancel($queue));
+            ->mapError(Failure::as(Failure::toCancel($queue)));
     }
 }

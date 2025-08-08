@@ -3,13 +3,12 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Failure;
 
-use Innmind\AMQP\Failure;
 use Innmind\Signals\Signal;
 
 /**
  * @psalm-immutable
  */
-final class ClosedBySignal extends Failure
+final class ClosedBySignal
 {
     private Signal $signal;
 
@@ -19,12 +18,6 @@ final class ClosedBySignal extends Failure
     public function __construct(Signal $signal)
     {
         $this->signal = $signal;
-    }
-
-    #[\Override]
-    public function kind(): Kind
-    {
-        return Kind::closedBySignal;
     }
 
     #[\NoDiscard]
