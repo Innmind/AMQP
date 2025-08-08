@@ -262,7 +262,7 @@ final class Connection
                         ->maxFrameSize
                         ->verify($frame->length())
                         ->map(static fn() => $frame),
-                )
+                ),
         );
 
         return $this
