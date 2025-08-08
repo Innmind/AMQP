@@ -4,28 +4,27 @@ declare(strict_types = 1);
 namespace Innmind\AMQP;
 
 use Innmind\OperatingSystem\OperatingSystem;
-use Innmind\Socket\Internet\Transport as Socket;
+use Innmind\IO\Sockets\Internet\Transport as Socket;
 use Innmind\Url\Url;
-use Innmind\TimeContinuum\ElapsedPeriod;
+use Innmind\TimeContinuum\Period;
 
 final class Factory
 {
-    private OperatingSystem $os;
-
-    private function __construct(OperatingSystem $os)
+    private function __construct(private OperatingSystem $os)
     {
-        $this->os = $os;
     }
 
+    #[\NoDiscard]
     public static function of(OperatingSystem $os): self
     {
         return new self($os);
     }
 
+    #[\NoDiscard]
     public function make(
         Socket $transport,
         Url $server,
-        ElapsedPeriod $timeout,
+        Period $timeout,
     ): Client {
         return Client::of(
             fn() => Transport\Connection::open(

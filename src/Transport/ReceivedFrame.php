@@ -8,11 +8,8 @@ namespace Innmind\AMQP\Transport;
  */
 final class ReceivedFrame
 {
-    private Frame $frame;
-
-    private function __construct(Frame $frame)
+    private function __construct(private Frame $frame)
     {
-        $this->frame = $frame;
     }
 
     public static function of(Frame $frame): self

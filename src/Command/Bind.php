@@ -15,25 +15,23 @@ use Innmind\AMQP\{
     Model\Queue\Binding,
 };
 use Innmind\Immutable\{
-    Either,
+    Attempt,
     Sequence,
 };
 
 final class Bind implements Command
 {
-    private Binding $command;
-
-    private function __construct(Binding $command)
+    private function __construct(private Binding $command)
     {
-        $this->command = $command;
     }
 
+    #[\Override]
     public function __invoke(
         Connection $connection,
         Channel $channel,
         MessageReader $read,
         State $state,
-    ): Either {
+    ): Attempt {
         $frames = fn(Protocol $protocol): Sequence => $protocol->queue()->bind(
             $channel,
             $this->command,
@@ -46,9 +44,10 @@ final class Bind implements Command
 
         return $sideEffect
             ->map(static fn() => $state)
-            ->leftMap(fn() => Failure::toBind($this->command));
+            ->mapError(Failure::as(Failure::toBind($this->command)));
     }
 
+    #[\NoDiscard]
     public static function of(
         string $exchange,
         string $queue,
@@ -57,6 +56,7 @@ final class Bind implements Command
         return new self(Binding::of($exchange, $queue, $routingKey));
     }
 
+    #[\NoDiscard]
     public function withArgument(string $key, mixed $value): self
     {
         return new self($this->command->withArgument($key, $value));

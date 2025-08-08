@@ -8,21 +8,20 @@ namespace Innmind\AMQP\Model\Basic\Message;
  */
 final class Type
 {
-    private string $value;
-
-    private function __construct(string $value)
+    private function __construct(private string $value)
     {
-        $this->value = $value;
     }
 
     /**
      * @psalm-pure
      */
+    #[\NoDiscard]
     public static function of(string $value): self
     {
         return new self($value);
     }
 
+    #[\NoDiscard]
     public function toString(): string
     {
         return $this->value;

@@ -13,23 +13,21 @@ use Innmind\AMQP\{
     Transport\Frame\Method,
     Model\Queue\Unbinding,
 };
-use Innmind\Immutable\Either;
+use Innmind\Immutable\Attempt;
 
 final class Unbind implements Command
 {
-    private Unbinding $command;
-
-    private function __construct(Unbinding $command)
+    private function __construct(private Unbinding $command)
     {
-        $this->command = $command;
     }
 
+    #[\Override]
     public function __invoke(
         Connection $connection,
         Channel $channel,
         MessageReader $read,
         State $state,
-    ): Either {
+    ): Attempt {
         return $connection
             ->request(
                 fn($protocol) => $protocol->queue()->unbind(
@@ -39,9 +37,10 @@ final class Unbind implements Command
                 Method::queueUnbindOk,
             )
             ->map(static fn() => $state)
-            ->leftMap(fn() => Failure::toUnbind($this->command));
+            ->mapError(Failure::as(Failure::toUnbind($this->command)));
     }
 
+    #[\NoDiscard]
     public static function of(
         string $exchange,
         string $queue,
@@ -50,6 +49,7 @@ final class Unbind implements Command
         return new self(Unbinding::of($exchange, $queue, $routingKey));
     }
 
+    #[\NoDiscard]
     public function withArgument(string $key, mixed $value): self
     {
         return new self($this->command->withArgument($key, $value));

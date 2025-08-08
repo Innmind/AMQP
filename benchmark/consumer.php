@@ -32,4 +32,4 @@ $count = $client
         static fn($failure) => throw new \RuntimeException($failure::class),
     );
 
-printf("Pid: %s, Count: %s, Time: %.4f\n", getmypid(), $count, microtime(true) - $start);
+printf("Pid: %s, Count: %s, Time: %.4f\n", (string) getmypid(), $count, microtime(true) - $start);

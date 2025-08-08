@@ -8,13 +8,16 @@ This is an AMQP client implementing the version `0.9` of the protocol.
 
 The goal of this implementation is to provide a PHP land implementation (for ease of use and readability)  with a clear separation between the AMQP Model, transport layer and user API.
 
-**Note**: This implementation couldn't have been done without [`php-amqplib`](https://packagist.org/packages/php-amqplib/php-amqplib) that helped a lot to figure out the details of the transport layer.
+> [!NOTE]
+> This implementation couldn't have been done without [`php-amqplib`](https://packagist.org/packages/php-amqplib/php-amqplib) that helped a lot to figure out the details of the transport layer.
 
-**Important**: If you are using RabbitMQ be aware that it doesn't implemented the specification completely, `Qos` and `Recover` methods are not implemented. And if you find yourself using [`Value`](src/Transport/Frame/Value.php) implementations note that `ShortString`, `SignedLongLongInteger` and `SignedShortInteger` generate server errors on some methods (like using them as message headers).
+> [!IMPORTANT]
+> If you are using RabbitMQ be aware that it doesn't implemented the specification completely, `Qos` and `Recover` methods are not implemented. And if you find yourself using [`Value`](src/Transport/Frame/Value.php) implementations note that `ShortString`, `SignedLongLongInteger` and `SignedShortInteger` generate server errors on some methods (like using them as message headers).
 
 [Documentation](docs)
 
-**Important**: you must use [`vimeo/psalm`](https://packagist.org/packages/vimeo/psalm) to make sure you use this library correctly.
+> [!IMPORTANT]
+> You must use [`vimeo/psalm`](https://packagist.org/packages/vimeo/psalm) to make sure you use this library correctly.
 
 ## Installation
 
@@ -34,8 +37,8 @@ use Innmind\AMQP\{
     Model\Basic\Message,
     Model\Exchange\Type,
 };
-use Innmind\Socket\Internet\Transport;
-use Innmind\TimeContinuum\Earth\ElapsedPeriod;
+use Innmind\IO\Sockets\Internet\Transport;
+use Innmind\TimeContinuum\Period;
 use Innmind\OperatingSystem\Factory as OSFactory;
 use Innmind\Url\Url;
 use Innmind\Immutable\Str;
@@ -45,17 +48,14 @@ $client = Factory::of($os)
     ->make(
         Transport::tcp(),
         Url::of('amqp://guest:guest@localhost:5672/'),
-        new ElapsedPeriod(1000), // timeout
+        Period::second(1), // timeout
     )
     ->with(DeclareExchange::of('crawler', Type::direct))
     ->with(DeclareQueue::of('parser'))
     ->with(Bind::of('crawler', 'parser'))
     ->with(Publish::one(Message::of(Str::of('https://github.com')))->to('crawler'))
     ->run(null)
-    ->match(
-        static fn() => null, // success
-        static fn($failure) => throw new \RuntimeException($failure::class),
-    );
+    ->unwrap();
 ```
 
 The above example will declare an exchange named `crawler` and queue `parser` that will receive messages from our exchange. Finally it will publish a message with the payload `http://github.com/` to `crawler` (and the server will route it to `parser`).
@@ -77,10 +77,7 @@ $state = $client
         return $continuation->ack($state);
     }))
     ->run(null) // <- this argument will passed as the state to the handler above
-    ->match(
-        static fn($state) => $state,
-        static fn($failure) => throw new \RuntimeException($failure::class),
-    );
+    ->unwrap();
 echo $state; // will print "http://github.com/"
 // or
 $client
@@ -92,10 +89,7 @@ $client
         return $continuation->cancel($state); // instruct to stop receiving messages (current will be acknowledged first)
     }))
     ->run(null)
-    ->match(
-        static fn() => null, // in this case only reachable when you cancel the consumer
-        static fn($failure) => throw new \RuntimeException($failure::class),
-    );
+    ->unwrap(); // in this case only reachable when you cancel the consumer
 ```
 
 `reject()` and `requeue()` can also be used in the `get` callback.
@@ -129,4 +123,5 @@ Pid: 46862, Count: 4000, Time: 0.2366
 
 So it appears _pure_ functions come at a cost!
 
-**Note**: both benchmarks use manual acknowledgement of messages
+> [!NOTE]
+> both benchmarks use manual acknowledgement of messages

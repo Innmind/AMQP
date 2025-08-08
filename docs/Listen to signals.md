@@ -20,4 +20,5 @@ $client
 
 In this case if the process receives a signal `$failure` will be an instance of `Failure\ClosedBySignal`.
 
-**Important**: When the process is signaled the [state](Handle%20state.md) will be lost.
+> [!IMPORTANT]
+> When the process is signaled the [state](Handle%20state.md) will be lost.

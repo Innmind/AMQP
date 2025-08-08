@@ -32,10 +32,7 @@ function publish(Client $client, Sequence $users): void {
                 )),
         )->to('my-exchange'))
         ->run(null)
-        ->match(
-            static fn() => null, // all users published
-            static fn($failure) => throw new \RuntimeException($failure::class),
-        );
+        ->unwrap(); // all users published
 }
 
 $os = OSFactory::build();
@@ -43,6 +40,7 @@ $client = Factory::of($os)->make(/* details */);
 $os
     ->filesystem()
     ->mount(Path::of('/path/to/some/directory/'))
+    ->unwrap()
     ->get(Name::of('leads.csv'))
     ->map(
         static fn($file) => $file

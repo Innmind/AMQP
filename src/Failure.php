@@ -7,157 +7,298 @@ use Innmind\AMQP\Transport\Frame\Method;
 use Innmind\Signals\Signal;
 use Innmind\Immutable\Maybe;
 
-/**
- * @psalm-immutable
- */
-abstract class Failure
+final class Failure extends Exception\RuntimeException
 {
-    final public static function toOpenConnection(): self
-    {
-        return new Failure\ToOpenConnection;
+    private function __construct(
+        private object $failure,
+        private Failure\Kind $kind,
+        ?\Throwable $previous = null,
+    ) {
+        parent::__construct('', 0, $previous);
     }
 
-    final public static function toOpenChannel(): self
+    /**
+     * @internal
+     *
+     * @return callable(\Throwable): \Throwable
+     */
+    public static function as(self $failure): callable
     {
-        return new Failure\ToOpenChannel;
+        return static fn(\Throwable $e) => new self(
+            $failure->failure,
+            $failure->kind,
+            $e,
+        );
     }
 
-    final public static function toCloseChannel(): self
+    #[\NoDiscard]
+    public static function toOpenConnection(): self
     {
-        return new Failure\ToCloseChannel;
+        return new self(
+            new Failure\ToOpenConnection,
+            Failure\Kind::toOpenConnection,
+        );
     }
 
-    final public static function toCloseConnection(): self
+    #[\NoDiscard]
+    public static function toOpenChannel(): self
     {
-        return new Failure\ToCloseConnection;
+        return new self(
+            new Failure\ToOpenChannel,
+            Failure\Kind::toOpenChannel,
+        );
     }
 
-    final public static function toDeleteQueue(Model\Queue\Deletion $command): self
+    #[\NoDiscard]
+    public static function toCloseChannel(): self
     {
-        return new Failure\ToDeleteQueue($command);
+        return new self(
+            new Failure\ToCloseChannel,
+            Failure\Kind::toCloseChannel,
+        );
     }
 
-    final public static function toDeleteExchange(Model\Exchange\Deletion $command): self
+    #[\NoDiscard]
+    public static function toCloseConnection(): self
     {
-        return new Failure\ToDeleteExchange($command);
+        return new self(
+            new Failure\ToCloseConnection,
+            Failure\Kind::toCloseConnection,
+        );
     }
 
-    final public static function toDeclareQueue(Model\Queue\Declaration $command): self
+    #[\NoDiscard]
+    public static function toDeleteQueue(Model\Queue\Deletion $command): self
     {
-        return new Failure\ToDeclareQueue($command);
+        return new self(
+            new Failure\ToDeleteQueue($command),
+            Failure\Kind::toDeleteQueue,
+        );
     }
 
-    final public static function toDeclareExchange(Model\Exchange\Declaration $command): self
+    #[\NoDiscard]
+    public static function toDeleteExchange(Model\Exchange\Deletion $command): self
     {
-        return new Failure\ToDeclareExchange($command);
+        return new self(
+            new Failure\ToDeleteExchange($command),
+            Failure\Kind::toDeleteExchange,
+        );
     }
 
-    final public static function toBind(Model\Queue\Binding $command): self
+    #[\NoDiscard]
+    public static function toDeclareQueue(Model\Queue\Declaration $command): self
     {
-        return new Failure\ToBind($command);
+        return new self(
+            new Failure\ToDeclareQueue($command),
+            Failure\Kind::toDeclareQueue,
+        );
     }
 
-    final public static function toUnbind(Model\Queue\Unbinding $command): self
+    #[\NoDiscard]
+    public static function toDeclareExchange(Model\Exchange\Declaration $command): self
     {
-        return new Failure\ToUnbind($command);
+        return new self(
+            new Failure\ToDeclareExchange($command),
+            Failure\Kind::toDeclareExchange,
+        );
     }
 
-    final public static function toPurge(Model\Queue\Purge $command): self
+    #[\NoDiscard]
+    public static function toBind(Model\Queue\Binding $command): self
     {
-        return new Failure\ToPurge($command);
+        return new self(
+            new Failure\ToBind($command),
+            Failure\Kind::toBind,
+        );
     }
 
-    final public static function toAdjustQos(): self
+    #[\NoDiscard]
+    public static function toUnbind(Model\Queue\Unbinding $command): self
     {
-        return new Failure\ToAdjustQos;
+        return new self(
+            new Failure\ToUnbind($command),
+            Failure\Kind::toUnbind,
+        );
     }
 
-    final public static function toPublish(Model\Basic\Publish $command): self
+    #[\NoDiscard]
+    public static function toPurge(Model\Queue\Purge $command): self
     {
-        return new Failure\ToPublish($command);
+        return new self(
+            new Failure\ToPurge($command),
+            Failure\Kind::toPurge,
+        );
     }
 
-    final public static function toGet(Model\Basic\Get $command): self
+    #[\NoDiscard]
+    public static function toAdjustQos(): self
     {
-        return new Failure\ToGet($command);
+        return new self(
+            new Failure\ToAdjustQos,
+            Failure\Kind::toAdjustQos,
+        );
     }
 
-    final public static function toConsume(Model\Basic\Consume $command): self
+    #[\NoDiscard]
+    public static function toPublish(Model\Basic\Publish $command): self
     {
-        return new Failure\ToConsume($command);
+        return new self(
+            new Failure\ToPublish($command),
+            Failure\Kind::toPublish,
+        );
     }
 
-    final public static function toAck(string $queue): self
+    #[\NoDiscard]
+    public static function toGet(Model\Basic\Get $command): self
     {
-        return new Failure\ToAck($queue);
+        return new self(
+            new Failure\ToGet($command),
+            Failure\Kind::toGet,
+        );
     }
 
-    final public static function toReject(string $queue): self
+    #[\NoDiscard]
+    public static function toConsume(Model\Basic\Consume $command): self
     {
-        return new Failure\ToReject($queue);
+        return new self(
+            new Failure\ToConsume($command),
+            Failure\Kind::toConsume,
+        );
     }
 
-    final public static function toCancel(string $queue): self
+    #[\NoDiscard]
+    public static function toAck(string $queue): self
     {
-        return new Failure\ToCancel($queue);
+        return new self(
+            new Failure\ToAck($queue),
+            Failure\Kind::toAck,
+        );
     }
 
-    final public static function toRecover(string $queue): self
+    #[\NoDiscard]
+    public static function toReject(string $queue): self
     {
-        return new Failure\ToRecover($queue);
+        return new self(
+            new Failure\ToReject($queue),
+            Failure\Kind::toReject,
+        );
     }
 
-    final public static function toSelect(): self
+    #[\NoDiscard]
+    public static function toCancel(string $queue): self
     {
-        return new Failure\ToSelect;
+        return new self(
+            new Failure\ToCancel($queue),
+            Failure\Kind::toCancel,
+        );
     }
 
-    final public static function toCommit(): self
+    #[\NoDiscard]
+    public static function toRecover(string $queue): self
     {
-        return new Failure\ToCommit;
+        return new self(
+            new Failure\ToRecover($queue),
+            Failure\Kind::toRecover,
+        );
     }
 
-    final public static function toRollback(): self
+    #[\NoDiscard]
+    public static function toSelect(): self
     {
-        return new Failure\ToRollback;
+        return new self(
+            new Failure\ToSelect,
+            Failure\Kind::toSelect,
+        );
     }
 
-    final public static function toSendFrame(): self
+    #[\NoDiscard]
+    public static function toCommit(): self
     {
-        return new Failure\ToSendFrame;
+        return new self(
+            new Failure\ToCommit,
+            Failure\Kind::toCommit,
+        );
     }
 
-    final public static function toReadFrame(): self
+    #[\NoDiscard]
+    public static function toRollback(): self
     {
-        return new Failure\ToReadFrame;
+        return new self(
+            new Failure\ToRollback,
+            Failure\Kind::toRollback,
+        );
     }
 
-    final public static function toReadMessage(): self
+    #[\NoDiscard]
+    public static function toSendFrame(): self
     {
-        return new Failure\ToReadMessage;
+        return new self(
+            new Failure\ToSendFrame,
+            Failure\Kind::toSendFrame,
+        );
     }
 
-    final public static function unexpectedFrame(): self
+    #[\NoDiscard]
+    public static function toReadFrame(): self
     {
-        return new Failure\UnexpectedFrame;
+        return new self(
+            new Failure\ToReadFrame,
+            Failure\Kind::toReadFrame,
+        );
+    }
+
+    #[\NoDiscard]
+    public static function toReadMessage(): self
+    {
+        return new self(
+            new Failure\ToReadMessage,
+            Failure\Kind::toReadMessage,
+        );
+    }
+
+    #[\NoDiscard]
+    public static function unexpectedFrame(): self
+    {
+        return new self(
+            new Failure\UnexpectedFrame,
+            Failure\Kind::unexpectedFrame,
+        );
     }
 
     /**
      * @param int<0, 65535> $code
      * @param Maybe<Method> $method
      */
-    final public static function closedByServer(
+    #[\NoDiscard]
+    public static function closedByServer(
         string $message,
         int $code,
         Maybe $method,
     ): self {
-        return new Failure\ClosedByServer($message, $code, $method);
+        return new self(
+            new Failure\ClosedByServer($message, $code, $method),
+            Failure\Kind::closedByServer,
+        );
     }
 
-    final public static function closedBySignal(Signal $signal): self
+    #[\NoDiscard]
+    public static function closedBySignal(Signal $signal): self
     {
-        return new Failure\ClosedBySignal($signal);
+        return new self(
+            new Failure\ClosedBySignal($signal),
+            Failure\Kind::closedBySignal,
+        );
     }
 
-    abstract public function kind(): Failure\Kind;
+    #[\NoDiscard]
+    public function unwrap(): object
+    {
+        return $this->failure;
+    }
+
+    #[\NoDiscard]
+    public function kind(): Failure\Kind
+    {
+        return $this->kind;
+    }
 }

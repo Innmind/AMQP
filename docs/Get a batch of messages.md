@@ -14,10 +14,7 @@ $state = $client
             }),
     )
     ->run(0)
-    ->match(
-        static fn($state) => $state,
-        static fn($failure) => throw new \RuntimeException($failure::class),
-    );
+    ->unwrap();
 ```
 
 This will try to get `10` messages but since the server may not respond with messages the returned `$state` is **at most** `10`.

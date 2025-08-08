@@ -17,37 +17,38 @@ use Innmind\AMQP\{
     Exception\BasicGetNotCancellable,
 };
 use Innmind\Immutable\{
-    Either,
+    Attempt,
     SideEffect,
 };
 
 final class Continuation
 {
-    private Client\State $state;
-    private State $response;
-
-    private function __construct(Client\State $state, State $response)
-    {
-        $this->state = $state;
-        $this->response = $response;
+    private function __construct(
+        private Client\State $state,
+        private State $response,
+    ) {
     }
 
+    #[\NoDiscard]
     public static function of(Client\State $state): self
     {
         // by default we auto ack the message
         return new self($state, State::ack);
     }
 
+    #[\NoDiscard]
     public function ack(mixed $state): self
     {
         return new self(Client\State::of($state), State::ack);
     }
 
+    #[\NoDiscard]
     public function reject(mixed $state): self
     {
         return new self(Client\State::of($state), State::reject);
     }
 
+    #[\NoDiscard]
     public function requeue(mixed $state): self
     {
         return new self(Client\State::of($state), State::requeue);
@@ -58,6 +59,7 @@ final class Continuation
      *
      * Before canceling the consumer, the current message will be acknowledged
      */
+    #[\NoDiscard]
     public function cancel(mixed $state): self
     {
         return new self(Client\State::of($state), State::cancel);
@@ -68,7 +70,7 @@ final class Continuation
      *
      * @param int<0, max> $deliveryTag
      *
-     * @return Either<Failure, Client\State|Canceled>
+     * @return Attempt<Client\State|Canceled>
      */
     public function respond(
         string $queue,
@@ -76,9 +78,9 @@ final class Continuation
         Channel $channel,
         MessageReader $read,
         int $deliveryTag,
-        string $consumerTag = null,
-    ): Either {
-        /** @var Either<Failure, Client\State|Canceled> */
+        ?string $consumerTag = null,
+    ): Attempt {
+        /** @var Attempt<Client\State|Canceled> */
         return match ($this->response) {
             State::cancel => $this
                 ->doAck($queue, $connection, $channel, $deliveryTag)
@@ -102,14 +104,14 @@ final class Continuation
     }
 
     /**
-     * @return Either<Failure, Canceled>
+     * @return Attempt<Canceled>
      */
     private function recover(
         string $queue,
         Connection $connection,
         Channel $channel,
         MessageReader $read,
-    ): Either {
+    ): Attempt {
         $received = $connection->wait();
         $walkOverPrefetchedMessages = $received->match(
             static fn($received) => $received->is(Method::basicDeliver),
@@ -137,7 +139,6 @@ final class Continuation
         // to "consume" within the same channel will receive new messages but
         // won't receive previously prefetched messages leading to out of order
         // messages handling
-        /** @var Either<Failure, Canceled> */
         return $received
             ->flatMap(static fn() => $connection->request(
                 static fn($protocol) => $protocol->basic()->recover(
@@ -147,75 +148,75 @@ final class Continuation
                 Method::basicRecoverOk,
             ))
             ->map(fn() => Canceled::of($this->state))
-            ->leftMap(static fn() => Failure::toRecover($queue));
+            ->mapError(Failure::as(Failure::toRecover($queue)));
     }
 
     /**
      * @param int<0, max> $deliveryTag
      *
-     * @return Either<Failure, SideEffect>
+     * @return Attempt<SideEffect>
      */
     private function doAck(
         string $queue,
         Connection $connection,
         Channel $channel,
         int $deliveryTag,
-    ): Either {
+    ): Attempt {
         return $connection
             ->send(static fn($protocol) => $protocol->basic()->ack(
                 $channel,
                 Ack::of($deliveryTag),
             ))
-            ->leftMap(static fn() => Failure::toAck($queue));
+            ->mapError(Failure::as(Failure::toAck($queue)));
     }
 
     /**
      * @param int<0, max> $deliveryTag
      *
-     * @return Either<Failure, SideEffect>
+     * @return Attempt<SideEffect>
      */
     private function doReject(
         string $queue,
         Connection $connection,
         Channel $channel,
         int $deliveryTag,
-    ): Either {
+    ): Attempt {
         return $connection
             ->send(static fn($protocol) => $protocol->basic()->reject(
                 $channel,
                 Reject::of($deliveryTag),
             ))
-            ->leftMap(static fn() => Failure::toReject($queue));
+            ->mapError(Failure::as(Failure::toReject($queue)));
     }
 
     /**
      * @param int<0, max> $deliveryTag
      *
-     * @return Either<Failure, SideEffect>
+     * @return Attempt<SideEffect>
      */
     private function doRequeue(
         string $queue,
         Connection $connection,
         Channel $channel,
         int $deliveryTag,
-    ): Either {
+    ): Attempt {
         return $connection
             ->send(static fn($protocol) => $protocol->basic()->reject(
                 $channel,
                 Reject::requeue($deliveryTag),
             ))
-            ->leftMap(static fn() => Failure::toReject($queue));
+            ->mapError(Failure::as(Failure::toReject($queue)));
     }
 
     /**
-     * @return Either<Failure, SideEffect>
+     * @return Attempt<SideEffect>
      */
     private function doCancel(
         string $queue,
         Connection $connection,
         Channel $channel,
         ?string $consumerTag,
-    ): Either {
+    ): Attempt {
         if (\is_null($consumerTag)) {
             // this means the user called self::cancel when inside a Get
             throw new BasicGetNotCancellable;
@@ -226,6 +227,6 @@ final class Continuation
                 $channel,
                 Cancel::of($consumerTag),
             ))
-            ->leftMap(static fn() => Failure::toCancel($queue));
+            ->mapError(Failure::as(Failure::toCancel($queue)));
     }
 }

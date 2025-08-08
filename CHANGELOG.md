@@ -1,5 +1,20 @@
 # Changelog
 
+## 6.0.0 - 2025-08-08
+
+### Changed
+
+- Requires `innmind/foundation:~1.7`
+- `Innmind\AMQP\Factory::make()` timeout argument is now expressed via `Innmind\TimeContinuum\Period`
+- `Innmind\AMQP\Model\Basic\Message` expiration is now expressed via `Innmind\TimeContinuum\Period`
+- `Innmind\AMQP\Failure` is now an exception that wraps each possible failure object
+- `Innmind\AMQP\Client::run()` now returns an `Innmind\Immutable\Attempt`
+- `Innmind\AMQP\Command::__invoke()` now must return an `Innmind\Immutable\Attempt`
+
+### Fixed
+
+- PHP `8.4` deprecations
+
 ## 5.1.0 - 2024-06-16
 
 ### Changed

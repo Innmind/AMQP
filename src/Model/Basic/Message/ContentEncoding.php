@@ -16,11 +16,8 @@ use Innmind\Immutable\{
  */
 final class ContentEncoding
 {
-    private string $value;
-
-    private function __construct(string $value)
+    private function __construct(private string $value)
     {
-        $this->value = $value;
     }
 
     /**
@@ -28,6 +25,7 @@ final class ContentEncoding
      *
      * @throws DomainException
      */
+    #[\NoDiscard]
     public static function of(string $value): self
     {
         return self::maybe($value)->match(
@@ -41,6 +39,7 @@ final class ContentEncoding
      *
      * @return Maybe<self>
      */
+    #[\NoDiscard]
     public static function maybe(string $value): Maybe
     {
         return Maybe::just($value)
@@ -49,6 +48,7 @@ final class ContentEncoding
             ->map(static fn($value) => new self($value->toString()));
     }
 
+    #[\NoDiscard]
     public function toString(): string
     {
         return $this->value;

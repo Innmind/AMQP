@@ -14,31 +14,38 @@ use Innmind\Immutable\{
 };
 use Innmind\BlackBox\{
     PHPUnit\BlackBox,
+    PHPUnit\Framework\TestCase,
     Set,
 };
-use Fixtures\Innmind\TimeContinuum\Earth\PointInTime;
-use PHPUnit\Framework\TestCase;
+use Fixtures\Innmind\TimeContinuum\PointInTime;
+use PHPUnit\Framework\Attributes\Group;
 
 class ArgumentTranslatorTest extends TestCase
 {
     use BlackBox;
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $this->assertInstanceOf(ArgumentTranslator::class, new ArgumentTranslator);
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testInvokation()
     {
-        $value = $this->createMock(Value::class);
+        $value = new Value\VoidValue;
 
         $this->assertSame($value, (new ArgumentTranslator)($value));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testWideRangeOfValues()
     {
-        $primitive = Set\Either::any(
-            Set\Integers::any(),
+        $primitive = Set::either(
+            Set::integers(),
             PointInTime::any(),
         );
 
@@ -55,7 +62,7 @@ class ArgumentTranslatorTest extends TestCase
                 );
             });
         $this
-            ->forAll(Set\Unicode::strings())
+            ->forAll(Set::strings()->unicode())
             ->then(function($value) {
                 $this->assertInstanceOf(
                     Value::class,
@@ -67,7 +74,7 @@ class ArgumentTranslatorTest extends TestCase
                 );
             });
         $this
-            ->forAll(Set\Sequence::of($primitive)->map(static fn($values) => Sequence::of(...$values)))
+            ->forAll(Set::sequence($primitive)->map(static fn($values) => Sequence::of(...$values)))
             ->then(function($value) {
                 $this->assertInstanceOf(
                     Value::class,
@@ -83,11 +90,12 @@ class ArgumentTranslatorTest extends TestCase
             });
         $this
             ->forAll(
-                Set\Sequence::of(
-                    Set\Strings::madeOf(Set\Chars::alphanumerical())
+                Set::sequence(
+                    Set::strings()
+                        ->madeOf(Set::strings()->chars()->alphanumerical())
                         ->atMost(255),
                 )->atMost(20),
-                Set\Sequence::of($primitive)->atMost(20),
+                Set::sequence($primitive)->atMost(20),
             )
             ->then(function($keys, $values) {
                 $max = \min(\count($keys), \count($values));
@@ -111,6 +119,8 @@ class ArgumentTranslatorTest extends TestCase
             });
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testThrowWhenValueNotTranslatable()
     {
         try {

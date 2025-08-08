@@ -9,7 +9,7 @@ use Innmind\Math\{
     DefinitionSet\Set,
     DefinitionSet\Range,
 };
-use Innmind\IO\Readable\Frame;
+use Innmind\IO\Frame;
 use Innmind\Immutable\{
     Str,
     Maybe,
@@ -22,15 +22,11 @@ use Innmind\Immutable\{
  */
 final class SignedLongInteger implements Value
 {
-    /** @var int<-2147483648, 2147483647> */
-    private int $original;
-
     /**
-     * @param int<-2147483648, 2147483647> $value
+     * @param int<-2147483648, 2147483647> $original
      */
-    private function __construct(int $value)
+    private function __construct(private int $original)
     {
-        $this->original = $value;
     }
 
     /**
@@ -69,9 +65,13 @@ final class SignedLongInteger implements Value
      */
     public static function frame(): Frame
     {
-        return Frame\Chunk::of(4)
+        return Frame::chunk(4)
+            ->strict()
             ->map(static function($chunk) {
-                /** @var int<-2147483648, 2147483647> $value */
+                /**
+                 * @psalm-suppress PossiblyInvalidArrayAccess Todo apply a predicate
+                 * @var int<-2147483648, 2147483647> $value
+                 */
                 [, $value] = \unpack('l', $chunk->toString());
 
                 return $value;
@@ -83,16 +83,19 @@ final class SignedLongInteger implements Value
     /**
      * @return int<-2147483648, 2147483647>
      */
+    #[\Override]
     public function original(): int
     {
         return $this->original;
     }
 
+    #[\Override]
     public function symbol(): Symbol
     {
         return Symbol::signedLongInteger;
     }
 
+    #[\Override]
     public function pack(): Str
     {
         return Str::of(\pack('l', $this->original));

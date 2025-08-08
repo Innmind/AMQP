@@ -21,15 +21,16 @@ use Innmind\AMQP\{
     Failure,
 };
 use Innmind\OperatingSystem\Filesystem;
-use Innmind\TimeContinuum\Earth\ElapsedPeriod;
+use Innmind\TimeContinuum\Period;
 use Innmind\Filesystem\File\Content;
-use Innmind\Stream\Stream\Size\Unit;
+use Innmind\IO\Stream\Size\Unit;
+use Innmind\Validation\Is;
 use Innmind\Immutable\{
     Str,
     Predicate\Instance,
     Sequence,
     Maybe,
-    Either,
+    Attempt,
 };
 
 /**
@@ -37,17 +38,14 @@ use Innmind\Immutable\{
  */
 final class MessageReader
 {
-    private Filesystem $filesystem;
-
-    private function __construct(Filesystem $filesystem)
+    private function __construct(private Filesystem $filesystem)
     {
-        $this->filesystem = $filesystem;
     }
 
     /**
-     * @return Either<Failure, Message>
+     * @return Attempt<Message>
      */
-    public function __invoke(Connection $connection): Either
+    public function __invoke(Connection $connection): Attempt
     {
         return $connection
             ->wait()
@@ -63,19 +61,18 @@ final class MessageReader
     }
 
     /**
-     * @return Either<Failure, Message>
+     * @return Attempt<Message>
      */
     private function decode(
         Connection $connection,
         Frame $header,
-    ): Either {
+    ): Attempt {
         return $header
             ->values()
             ->first()
             ->keep(Instance::of(Value\UnsignedLongLongInteger::class))
             ->map(static fn($value) => $value->original())
-            ->either()
-            ->leftMap(static fn() => Failure::toReadMessage())
+            ->attempt(static fn() => Failure::toReadMessage())
             ->flatMap(fn($bodySize) => $this->readMessage($connection, $bodySize))
             ->flatMap(
                 fn($message) => $header
@@ -83,8 +80,7 @@ final class MessageReader
                     ->get(1)
                     ->keep(Instance::of(Value\UnsignedShortInteger::class))
                     ->map(static fn($value) => $value->original())
-                    ->either()
-                    ->leftMap(static fn() => Failure::toReadMessage())
+                    ->attempt(static fn() => Failure::toReadMessage())
                     ->flatMap(fn($flagBits) => $this->addProperties(
                         $message,
                         $flagBits,
@@ -98,13 +94,13 @@ final class MessageReader
     /**
      * @param Sequence<Value> $properties
      *
-     * @return Either<Failure, Message>
+     * @return Attempt<Message>
      */
     private function addProperties(
         Message $message,
         int $flagBits,
         Sequence $properties,
-    ): Either {
+    ): Attempt {
         /** @var Sequence<array{int, callable(Maybe<Value>, Message): Maybe<Message>}> */
         $toParse = Sequence::of(
             [
@@ -173,7 +169,13 @@ final class MessageReader
                 static fn(Maybe $value, Message $message) => $value
                     ->keep(Instance::of(Value\ShortString::class))
                     ->map(static fn($value) => (int) $value->original()->toString())
-                    ->flatMap(ElapsedPeriod::maybe(...))
+                    ->keep(
+                        Is::int()
+                            ->positive()
+                            ->or(Is::value(0))
+                            ->asPredicate(),
+                    )
+                    ->map(Period::millisecond(...))
                     ->map(static fn($expiration) => $message->withExpiration($expiration)),
             ],
             [
@@ -221,30 +223,26 @@ final class MessageReader
          * @psalm-suppress MixedArrayAccess
          * @psalm-suppress MixedArgument
          * @psalm-suppress MixedMethodCall
-         * @var Either<Failure, Message>
          */
         return $toParse
             ->filter(static fn($pair) => (bool) ($flagBits & (1 << $pair[0])))
             ->map(static fn($pair) => $pair[1])
-            ->reduce(
-                Maybe::just([$properties, $message]),
-                static fn(Maybe $state, $parse): Maybe => $state->flatMap(
-                    static fn($state) => $parse($state[0]->first(), $state[1])
-                        ->map(static fn($message) => [$state[0]->drop(1), $message]),
-                ),
+            ->sink([$properties, $message])
+            ->maybe(
+                static fn($state, $parse) => $parse($state[0]->first(), $state[1])
+                    ->map(static fn($message) => [$state[0]->drop(1), $message]),
             )
             ->map(static fn($state) => $state[1])
-            ->either()
-            ->leftMap(static fn() => Failure::toReadMessage());
+            ->attempt(static fn() => Failure::toReadMessage());
     }
 
     /**
-     * @return Either<Failure, Message>
+     * @return Attempt<Message>
      */
     private function readMessage(
         Connection $connection,
         int $bodySize,
-    ): Either {
+    ): Attempt {
         $chunks = Sequence::lazy(static function() use ($connection, $bodySize) {
             $continue = $bodySize !== 0;
             $read = 0;
@@ -254,7 +252,8 @@ final class MessageReader
                     ->wait()
                     ->maybe()
                     ->flatMap(static fn($received) => $received->frame()->content())
-                    ->map(static fn($chunk) => $chunk->toEncoding(Str\Encoding::ascii));
+                    ->map(static fn($chunk) => $chunk->toEncoding(Str\Encoding::ascii))
+                    ->attempt(static fn() => new \RuntimeException('Failed to read chunk'));
                 $read += $chunk->match(
                     static fn($chunk) => $chunk->length(),
                     static fn() => 0,
@@ -268,25 +267,21 @@ final class MessageReader
             }
         });
 
-        /** @psalm-suppress MixedArgumentTypeCoercion Because of the reduce it doesn't understand the type of the Sequence */
+        /** @var Sequence<Str> */
+        $unfolded = Sequence::of();
         $content = match (true) {
             $bodySize <= Unit::megabytes->times(2) => $chunks
-                ->reduce(
-                    Maybe::just(Sequence::of()),
-                    static fn(Maybe $content, $chunk) => Maybe::all($content, $chunk)->map(
-                        static fn(Sequence $chunks, Str $chunk) => ($chunks)($chunk),
-                    ),
-                )
+                ->sink($unfolded)
+                ->attempt(static fn($chunks, $chunk) => $chunk->map($chunks))
                 ->map(Content::ofChunks(...)),
             default => $this
                 ->filesystem
                 ->temporary($chunks)
-                ->memoize(), // to prevent using a deferred Maybe that would result in out of order reading the socket
+                ->memoize(), // to prevent using a deferred Attempt that would result in out of order reading the socket
         };
 
         return $content
-            ->either()
             ->map(Message::file(...))
-            ->leftMap(static fn() => Failure::toReadMessage());
+            ->mapError(Failure::as(Failure::toReadMessage()));
     }
 }

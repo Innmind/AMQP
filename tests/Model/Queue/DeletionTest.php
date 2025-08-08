@@ -4,10 +4,13 @@ declare(strict_types = 1);
 namespace Tests\Innmind\AMQP\Model\Queue;
 
 use Innmind\AMQP\Model\Queue\Deletion;
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 class DeletionTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $command = Deletion::of('foo');
@@ -18,6 +21,8 @@ class DeletionTest extends TestCase
         $this->assertTrue($command->shouldWait());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testIfUnused()
     {
         $command = Deletion::of('foo');
@@ -29,6 +34,8 @@ class DeletionTest extends TestCase
         $this->assertTrue($command2->onlyIfUnused());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testIfUsed()
     {
         $command = Deletion::of('foo');
@@ -40,6 +47,8 @@ class DeletionTest extends TestCase
         $this->assertFalse($command2->onlyIfUnused());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testIfEmpty()
     {
         $command = Deletion::of('foo');
@@ -51,6 +60,8 @@ class DeletionTest extends TestCase
         $this->assertTrue($command2->onlyIfEmpty());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testIfNotEmpty()
     {
         $command = Deletion::of('foo');
@@ -62,6 +73,8 @@ class DeletionTest extends TestCase
         $this->assertFalse($command2->onlyIfEmpty());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testDontWait()
     {
         $command = Deletion::of('foo');
@@ -73,6 +86,8 @@ class DeletionTest extends TestCase
         $this->assertFalse($command2->shouldWait());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testWait()
     {
         $command = Deletion::of('foo');

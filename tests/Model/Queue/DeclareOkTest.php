@@ -7,10 +7,13 @@ use Innmind\AMQP\Model\{
     Queue\DeclareOk,
     Count,
 };
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 class DeclareOkTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $model = DeclareOk::of(

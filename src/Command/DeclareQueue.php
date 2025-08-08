@@ -19,26 +19,24 @@ use Innmind\AMQP\{
 };
 use Innmind\Immutable\{
     Maybe,
-    Either,
+    Attempt,
     Sequence,
     Predicate\Instance,
 };
 
 final class DeclareQueue implements Command
 {
-    private Declaration $command;
-
-    private function __construct(Declaration $command)
+    private function __construct(private Declaration $command)
     {
-        $this->command = $command;
     }
 
+    #[\Override]
     public function __invoke(
         Connection $connection,
         Channel $channel,
         MessageReader $read,
         State $state,
-    ): Either {
+    ): Attempt {
         $frames = fn(Protocol $protocol): Sequence => $protocol->queue()->declare(
             $channel,
             $this->command,
@@ -70,21 +68,23 @@ final class DeclareQueue implements Command
                     // maybe in the future we could expose this info to the user
                     return Maybe::all($name, $message, $consumer)
                         ->map(DeclareOk::of(...))
-                        ->either();
+                        ->attempt(static fn() => new \RuntimeException('Invalid declare.ok response'));
                 }),
             false => $connection->send($frames),
         };
 
         return $sideEffect
             ->map(static fn() => $state)
-            ->leftMap(fn() => Failure::toDeclareQueue($this->command));
+            ->mapError(Failure::as(Failure::toDeclareQueue($this->command)));
     }
 
+    #[\NoDiscard]
     public static function of(string $name): self
     {
         return new self(Declaration::durable()->withName($name));
     }
 
+    #[\NoDiscard]
     public function withArgument(string $key, mixed $value): self
     {
         return new self($this->command->withArgument($key, $value));

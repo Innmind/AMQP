@@ -8,15 +8,17 @@ use Innmind\AMQP\Transport\Frame\{
     Value,
 };
 use Innmind\IO\IO;
-use Innmind\Stream\{
-    Readable\Stream,
-    Watch\Select,
-};
 use Innmind\Immutable\Str;
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\{
+    DataProvider,
+    Group,
+};
 
 class SignedLongLongIntegerTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $this->assertInstanceOf(
@@ -25,9 +27,9 @@ class SignedLongLongIntegerTest extends TestCase
         );
     }
 
-    /**
-     * @dataProvider cases
-     */
+    #[Group('ci')]
+    #[Group('local')]
+    #[DataProvider('cases')]
     public function testStringCast($int, $expected)
     {
         $value = SignedLongLongInteger::of($int);
@@ -35,14 +37,19 @@ class SignedLongLongIntegerTest extends TestCase
         $this->assertSame($int, $value->original());
     }
 
-    /**
-     * @dataProvider cases
-     */
+    #[Group('ci')]
+    #[Group('local')]
+    #[DataProvider('cases')]
     public function testFromStream($expected, $string)
     {
-        $value = IO::of(Select::waitForever(...))
-            ->readable()
-            ->wrap(Stream::ofContent($string))
+        $tmp = \fopen('php://temp', 'w+');
+        \fwrite($tmp, $string);
+        \fseek($tmp, 0);
+
+        $value = IO::fromAmbientAuthority()
+            ->streams()
+            ->acquire($tmp)
+            ->read()
             ->toEncoding(Str\Encoding::ascii)
             ->frames(SignedLongLongInteger::frame())
             ->one()

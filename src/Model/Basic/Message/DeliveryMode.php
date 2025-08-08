@@ -21,6 +21,7 @@ enum DeliveryMode
     /**
      * @return int<1, 2>
      */
+    #[\NoDiscard]
     public function toInt(): int
     {
         return match ($this) {

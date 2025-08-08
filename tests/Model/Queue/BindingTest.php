@@ -5,10 +5,13 @@ namespace Tests\Innmind\AMQP\Model\Queue;
 
 use Innmind\AMQP\Model\Queue\Binding;
 use Innmind\Immutable\Map;
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 class BindingTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $command = Binding::of('foo', 'bar', 'baz');
@@ -21,6 +24,8 @@ class BindingTest extends TestCase
         $this->assertCount(0, $command->arguments());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testDontWait()
     {
         $command = Binding::of('foo', 'bar', 'baz');
@@ -32,6 +37,8 @@ class BindingTest extends TestCase
         $this->assertFalse($command2->shouldWait());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testWait()
     {
         $command = Binding::of('foo', 'bar', 'baz');
@@ -43,6 +50,8 @@ class BindingTest extends TestCase
         $this->assertTrue($command2->shouldWait());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testWithArgument()
     {
         $command = Binding::of('foo', 'bar', 'baz');

@@ -10,21 +10,20 @@ use Innmind\Url\Path;
  */
 final class Open
 {
-    private Path $virtualHost;
-
-    private function __construct(Path $virtualHost)
+    private function __construct(private Path $virtualHost)
     {
-        $this->virtualHost = $virtualHost;
     }
 
     /**
      * @psalm-pure
      */
+    #[\NoDiscard]
     public static function of(Path $virtualHost): self
     {
         return new self($virtualHost);
     }
 
+    #[\NoDiscard]
     public function virtualHost(): Path
     {
         return $this->virtualHost;

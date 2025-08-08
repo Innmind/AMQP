@@ -8,28 +8,30 @@ use Innmind\AMQP\{
     Transport\Frame\Value\LongString,
     Transport\Frame\Value,
 };
-use Innmind\TimeContinuum\Earth\Clock;
+use Innmind\TimeContinuum\Clock;
 use Innmind\IO\IO;
-use Innmind\Stream\{
-    Readable\Stream,
-    Watch\Select,
-};
 use Innmind\Immutable\{
     Sequence as Seq,
     Str,
 };
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\{
+    DataProvider,
+    Group,
+};
 
 class SequenceTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $this->assertInstanceOf(Value::class, Sequence::of());
     }
 
-    /**
-     * @dataProvider cases
-     */
+    #[Group('ci')]
+    #[Group('local')]
+    #[DataProvider('cases')]
     public function testStringCast($expected, $values)
     {
         $value = Sequence::of(...$values);
@@ -38,16 +40,21 @@ class SequenceTest extends TestCase
         $this->assertSame($values, $value->original()->toList());
     }
 
-    /**
-     * @dataProvider cases
-     */
+    #[Group('ci')]
+    #[Group('local')]
+    #[DataProvider('cases')]
     public function testFromStream($string, $expected)
     {
-        $value = IO::of(Select::waitForever(...))
-            ->readable()
-            ->wrap(Stream::ofContent($string))
+        $tmp = \fopen('php://temp', 'w+');
+        \fwrite($tmp, $string);
+        \fseek($tmp, 0);
+
+        $value = IO::fromAmbientAuthority()
+            ->streams()
+            ->acquire($tmp)
+            ->read()
             ->toEncoding(Str\Encoding::ascii)
-            ->frames(Sequence::frame(new Clock))
+            ->frames(Sequence::frame(Clock::live()))
             ->one()
             ->match(
                 static fn($value) => $value->unwrap(),

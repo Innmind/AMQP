@@ -97,7 +97,9 @@ final class Connection
             UnsignedShortInteger::internal($command->maxChannels()),
             UnsignedLongInteger::internal($command->maxFrameSize()),
             UnsignedShortInteger::of(
-                (int) ($command->heartbeat()->milliseconds() / 1000),
+                $command
+                    ->heartbeat()
+                    ->seconds(),
             ),
         ));
     }

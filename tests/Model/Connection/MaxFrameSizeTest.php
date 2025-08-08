@@ -7,16 +7,20 @@ use Innmind\AMQP\{
     Model\Connection\MaxFrameSize,
     Exception\FrameExceedAllowedSize,
 };
-use PHPUnit\Framework\TestCase;
+use Innmind\Immutable\SideEffect;
 use Innmind\BlackBox\{
     PHPUnit\BlackBox,
+    PHPUnit\Framework\TestCase,
     Set,
 };
+use PHPUnit\Framework\Attributes\Group;
 
 class MaxFrameSizeTest extends TestCase
 {
     use BlackBox;
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $max = MaxFrameSize::of(42);
@@ -29,74 +33,90 @@ class MaxFrameSizeTest extends TestCase
         $this->assertTrue((MaxFrameSize::of(0))->allows(1));
     }
 
-    public function testAllowAnySizeWhenNoLimit()
+    #[Group('ci')]
+    #[Group('local')]
+    public function testAllowAnySizeWhenNoLimit(): BlackBox\Proof
     {
-        $this
-            ->forAll(Set\Integers::between(0, 4294967295)) // max allowed by the specification 0.9.1
-            ->then(function($size) {
+        return $this
+            ->forAll(Set::integers()->between(0, 4294967295)) // max allowed by the specification 0.9.1
+            ->prove(function($size) {
                 $max = MaxFrameSize::of(0);
 
                 $this->assertTrue($max->allows($size));
             });
     }
 
-    public function testDoesntAllowAnySizeAboveTheLimit()
+    #[Group('ci')]
+    #[Group('local')]
+    public function testDoesntAllowAnySizeAboveTheLimit(): BlackBox\Proof
     {
-        $this
+        return $this
             ->forAll(
-                Set\Integers::between(9, 4294967295), // max allowed by the specification 0.9.1
-                Set\Integers::between(1, 4294967295 - 9),
+                Set::integers()->between(9, 4294967295), // max allowed by the specification 0.9.1
+                Set::integers()->between(1, 4294967295 - 9),
             )
-            ->then(function($allowed, $extraSize) {
+            ->prove(function($allowed, $extraSize) {
                 $max = MaxFrameSize::of($allowed);
 
                 $this->assertFalse($max->allows($allowed + $extraSize));
             });
     }
 
-    public function testAllowAnySizeBelowTheLimit()
+    #[Group('ci')]
+    #[Group('local')]
+    public function testAllowAnySizeBelowTheLimit(): BlackBox\Proof
     {
-        $this
+        return $this
             ->forAll(
-                Set\Integers::between(9, 4294967295), // max allowed by the specification 0.9.1
-                Set\Integers::between(0, 4294967295 - 9),
+                Set::integers()->between(9, 4294967295), // max allowed by the specification 0.9.1
+                Set::integers()->between(0, 4294967295 - 9),
             )
-            ->then(function($allowed, $sizeBelow) {
+            ->prove(function($allowed, $sizeBelow) {
                 $max = MaxFrameSize::of($allowed);
 
                 $this->assertTrue($max->allows($allowed - $sizeBelow));
             });
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testVerifyAllowedSizes()
     {
         $this
-            ->forAll(Set\Integers::between(0, 4294967295)) // max allowed by the specification 0.9.1
+            ->forAll(Set::integers()->between(0, 4294967295)) // max allowed by the specification 0.9.1
             ->then(function($size) {
                 $max = MaxFrameSize::of(0);
 
-                $this->assertNull($max->verify($size));
+                $this->assertInstanceOf(
+                    SideEffect::class,
+                    $max->verify($size)->unwrap(),
+                );
             });
         $this
             ->forAll(
-                Set\Integers::between(9, 4294967295), // max allowed by the specification 0.9.1
-                Set\Integers::between(0, 4294967295 - 9),
+                Set::integers()->between(9, 4294967295), // max allowed by the specification 0.9.1
+                Set::integers()->between(0, 4294967295 - 9),
             )
             ->then(function($allowed, $sizeBelow) {
                 $max = MaxFrameSize::of($allowed);
 
-                $this->assertNull($max->verify($allowed - $sizeBelow));
+                $this->assertInstanceOf(
+                    SideEffect::class,
+                    $max->verify($allowed - $sizeBelow)->unwrap(),
+                );
             });
     }
 
-    public function testThrowWhenVerifyingSizeAboveMaxAllowed()
+    #[Group('ci')]
+    #[Group('local')]
+    public function testThrowWhenVerifyingSizeAboveMaxAllowed(): BlackBox\Proof
     {
-        $this
+        return $this
             ->forAll(
-                Set\Integers::between(9, 4294967295), // max allowed by the specification 0.9.1
-                Set\Integers::between(1, 4294967295 - 9),
+                Set::integers()->between(9, 4294967295), // max allowed by the specification 0.9.1
+                Set::integers()->between(1, 4294967295 - 9),
             )
-            ->then(function($allowed, $extraSize) {
+            ->prove(function($allowed, $extraSize) {
                 $max = MaxFrameSize::of($allowed);
 
                 $above = $allowed + $extraSize;
@@ -104,10 +124,12 @@ class MaxFrameSizeTest extends TestCase
                 $this->expectException(FrameExceedAllowedSize::class);
                 $this->expectExceptionMessage("Max frame size can be $allowed but got $above");
 
-                $max->verify($above);
+                $max->verify($above)->unwrap();
             });
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testIsLimited()
     {
         $this->assertTrue(MaxFrameSize::of(42)->isLimited());

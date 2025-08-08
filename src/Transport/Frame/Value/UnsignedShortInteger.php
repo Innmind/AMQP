@@ -9,7 +9,7 @@ use Innmind\Math\{
     DefinitionSet\Set,
     DefinitionSet\Range,
 };
-use Innmind\IO\Readable\Frame;
+use Innmind\IO\Frame;
 use Innmind\Immutable\{
     Str,
     Maybe,
@@ -22,15 +22,11 @@ use Innmind\Immutable\{
  */
 final class UnsignedShortInteger implements Value
 {
-    /** @var int<0, 65535> */
-    private int $original;
-
     /**
-     * @param int<0, 65535> $value
+     * @param int<0, 65535> $original
      */
-    private function __construct(int $value)
+    private function __construct(private int $original)
     {
-        $this->original = $value;
     }
 
     /**
@@ -80,9 +76,13 @@ final class UnsignedShortInteger implements Value
      */
     public static function frame(): Frame
     {
-        return Frame\Chunk::of(2)
+        return Frame::chunk(2)
+            ->strict()
             ->map(static function($chunk) {
-                /** @var int<0, 65535> $value */
+                /**
+                 * @psalm-suppress PossiblyInvalidArrayAccess Todo apply a predicate
+                 * @var int<0, 65535> $value
+                 */
                 [, $value] = \unpack('n', $chunk->toString());
 
                 return $value;
@@ -94,16 +94,19 @@ final class UnsignedShortInteger implements Value
     /**
      * @return int<0, 65535>
      */
+    #[\Override]
     public function original(): int
     {
         return $this->original;
     }
 
+    #[\Override]
     public function symbol(): Symbol
     {
         return Symbol::unsignedShortInteger;
     }
 
+    #[\Override]
     public function pack(): Str
     {
         return Str::of(\pack('n', $this->original));

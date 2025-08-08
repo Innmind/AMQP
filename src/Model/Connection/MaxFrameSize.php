@@ -10,6 +10,8 @@ use Innmind\AMQP\{
 use Innmind\Immutable\{
     Sequence,
     Str,
+    Attempt,
+    SideEffect,
 };
 
 /**
@@ -17,15 +19,11 @@ use Innmind\Immutable\{
  */
 final class MaxFrameSize
 {
-    /** @var int<0, 4294967295> */
-    private int $value;
-
     /**
      * @param int<0, 4294967295> $value
      */
-    private function __construct(int $value)
+    private function __construct(private int $value)
     {
-        $this->value = $value;
     }
 
     /**
@@ -33,6 +31,7 @@ final class MaxFrameSize
      *
      * @param int<0, 4294967295> $value
      */
+    #[\NoDiscard]
     public static function of(int $value): self
     {
         return new self($value);
@@ -41,20 +40,23 @@ final class MaxFrameSize
     /**
      * @psalm-pure
      */
+    #[\NoDiscard]
     public static function unlimited(): self
     {
         return new self(0);
     }
 
     /**
-     * @psalm-assert-if-true positive-int $this->value
-     * @psalm-assert-if-true positive-int $this->toInt()
+     * @psalm-assert-if-true int<1, max> $this->value
+     * @psalm-assert-if-true int<1, max> $this->toInt()
      */
+    #[\NoDiscard]
     public function isLimited(): bool
     {
         return $this->value > 0;
     }
 
+    #[\NoDiscard]
     public function allows(int $size): bool
     {
         if (!$this->isLimited()) {
@@ -65,18 +67,22 @@ final class MaxFrameSize
     }
 
     /**
-     * @throws FrameExceedAllowedSize
+     * @return Attempt<SideEffect>
      */
-    public function verify(int $size): void
+    #[\NoDiscard]
+    public function verify(int $size): Attempt
     {
         if (!$this->allows($size)) {
-            throw new FrameExceedAllowedSize($size, $this);
+            return Attempt::error(new FrameExceedAllowedSize($size, $this));
         }
+
+        return Attempt::result(SideEffect::identity());
     }
 
     /**
      * @return int<0, 4294967295>
      */
+    #[\NoDiscard]
     public function toInt(): int
     {
         return $this->value;
@@ -85,6 +91,7 @@ final class MaxFrameSize
     /**
      * @return Sequence<Str>
      */
+    #[\NoDiscard]
     public function chunk(Message $message): Sequence
     {
         if (!$this->isLimited()) {

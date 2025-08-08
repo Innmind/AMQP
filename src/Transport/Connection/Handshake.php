@@ -13,11 +13,11 @@ use Innmind\AMQP\{
     Model\Connection\MaxFrameSize,
     Failure,
 };
-use Innmind\TimeContinuum\Earth\ElapsedPeriod;
+use Innmind\TimeContinuum\Period;
 use Innmind\Url\Authority;
 use Innmind\Immutable\{
+    Attempt,
     Maybe,
-    Either,
     Predicate\Instance,
 };
 
@@ -26,31 +26,27 @@ use Innmind\Immutable\{
  */
 final class Handshake
 {
-    private Authority $authority;
-
-    public function __construct(Authority $authority)
+    public function __construct(private Authority $authority)
     {
-        $this->authority = $authority;
     }
 
     /**
-     * @return Maybe<Connection>
+     * @return Attempt<Connection>
      */
-    public function __invoke(Connection $connection): Maybe
+    public function __invoke(Connection $connection): Attempt
     {
         return $connection
             ->wait(Method::connectionSecure, Method::connectionTune)
             ->flatMap(fn($received) => match ($received->is(Method::connectionSecure)) {
                 true => $this->secure($connection),
                 false => $this->maybeTune($connection, $received->frame()),
-            })
-            ->maybe();
+            });
     }
 
     /**
-     * @return Either<Failure, Connection>
+     * @return Attempt<Connection>
      */
-    private function secure(Connection $connection): Either
+    private function secure(Connection $connection): Attempt
     {
         return $connection
             ->request(
@@ -66,9 +62,9 @@ final class Handshake
     }
 
     /**
-     * @return Either<Failure, Connection>
+     * @return Attempt<Connection>
      */
-    private function maybeTune(Connection $connection, Frame $frame): Either
+    private function maybeTune(Connection $connection, Frame $frame): Attempt
     {
         $maxChannels = $frame
             ->values()
@@ -87,11 +83,18 @@ final class Handshake
             ->get(2)
             ->keep(Instance::of(Value\UnsignedShortInteger::class))
             ->map(static fn($value) => $value->original())
-            ->map(ElapsedPeriod::of(...));
+            ->map(Period::millisecond(...));
 
         return Maybe::all($maxChannels, $maxFrameSize, $heartbeat)
-            ->flatMap($connection->tune(...))
-            ->either()
-            ->leftMap(static fn() => Failure::toOpenConnection());
+            ->flatMap(
+                static fn(
+                    MaxChannels $maxChannels,
+                    MaxFrameSize $maxFrameSize,
+                    Period $heartbeat,
+                ) => $connection
+                    ->tune($maxChannels, $maxFrameSize, $heartbeat)
+                    ->maybe(),
+            )
+            ->attempt(static fn() => Failure::toOpenConnection());
     }
 }

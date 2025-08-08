@@ -14,7 +14,7 @@ use Innmind\AMQP\Transport\{
     Frame\Value\UnsignedShortInteger,
     Frame\Value\UnsignedLongInteger,
 };
-use Innmind\IO\Readable\Frame as IOFrame;
+use Innmind\IO\Frame as IOFrame;
 use Innmind\Immutable\Str;
 
 /**
@@ -53,7 +53,7 @@ final class FrameReader
                 Type::method => $this->readMethod($protocol, $channel),
                 Type::header => $this->readHeader($protocol, $channel),
                 Type::body => $this->readBody($channel, $length),
-                Type::heartbeat => IOFrame\NoOp::of(Frame::heartbeat()),
+                Type::heartbeat => IOFrame::just(Frame::heartbeat()),
             })
             ->flatMap(
                 static fn($frame) => UnsignedOctet::frame()
@@ -119,7 +119,8 @@ final class FrameReader
             ->map(static fn($value) => $value->unwrap()->original())
             ->flatMap(MethodClass::frame(...))
             ->flatMap(
-                static fn($class) => IOFrame\Chunk::of(2) // walk over the weight definition
+                static fn($class) => IOFrame::chunk(2) // walk over the weight definition
+                    ->strict()
                     ->map(static fn() => $class),
             )
             ->flatMap(
@@ -143,8 +144,8 @@ final class FrameReader
         int $length,
     ): IOFrame {
         return (match ($length) {
-            0 => IOFrame\NoOp::of(Str::of('')),
-            default => IOFrame\Chunk::of($length),
+            0 => IOFrame::just(Str::of('')),
+            default => IOFrame::chunk($length)->strict(),
         })
             ->map(static fn($data) => Frame::body($channel, $data));
     }

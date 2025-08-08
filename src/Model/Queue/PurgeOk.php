@@ -10,21 +10,20 @@ use Innmind\AMQP\Model\Count;
  */
 final class PurgeOk
 {
-    private Count $message;
-
-    private function __construct(Count $message)
+    private function __construct(private Count $message)
     {
-        $this->message = $message;
     }
 
     /**
      * @psalm-pure
      */
+    #[\NoDiscard]
     public static function of(Count $message): self
     {
         return new self($message);
     }
 
+    #[\NoDiscard]
     public function message(): Count
     {
         return $this->message;

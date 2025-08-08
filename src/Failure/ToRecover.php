@@ -3,28 +3,19 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Failure;
 
-use Innmind\AMQP\Failure;
-
 /**
  * @psalm-immutable
  */
-final class ToRecover extends Failure
+final class ToRecover
 {
-    private string $queue;
-
     /**
      * @internal
      */
-    public function __construct(string $queue)
+    public function __construct(private string $queue)
     {
-        $this->queue = $queue;
     }
 
-    public function kind(): Kind
-    {
-        return Kind::toRecover;
-    }
-
+    #[\NoDiscard]
     public function queue(): string
     {
         return $this->queue;

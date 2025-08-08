@@ -22,16 +22,19 @@ use Innmind\AMQP\{
     Model\Connection\MaxChannels,
     Model\Connection\MaxFrameSize,
 };
-use Innmind\TimeContinuum\Earth\ElapsedPeriod;
+use Innmind\TimeContinuum\Period;
 use Innmind\Url\{
     Authority\UserInformation\User,
     Authority\UserInformation\Password,
     Path,
 };
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 class ConnectionTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testStartOk()
     {
         $frame = (new Connection)->startOk(
@@ -327,6 +330,8 @@ class ConnectionTest extends TestCase
         ));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testSecureOk()
     {
         $frame = (new Connection)->secureOk(
@@ -357,13 +362,15 @@ class ConnectionTest extends TestCase
         );
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testTuneOk()
     {
         $frame = (new Connection)->tuneOk(
             TuneOk::of(
                 MaxChannels::of(1),
                 MaxFrameSize::of(10),
-                ElapsedPeriod::of(3000),
+                Period::second(3),
             ),
         )->match(
             static fn($frame) => $frame,
@@ -410,6 +417,8 @@ class ConnectionTest extends TestCase
         ));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testOpen()
     {
         $frame = (new Connection)->open(
@@ -462,6 +471,8 @@ class ConnectionTest extends TestCase
         ));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testClose()
     {
         $frame = (new Connection)->close(
@@ -546,6 +557,8 @@ class ConnectionTest extends TestCase
         ));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testCloseOk()
     {
         $frame = (new Connection)->closeOk()->match(

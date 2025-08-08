@@ -18,26 +18,24 @@ use Innmind\AMQP\{
     Model\Count,
 };
 use Innmind\Immutable\{
-    Either,
+    Attempt,
     Sequence,
     Predicate\Instance,
 };
 
 final class Purge implements Command
 {
-    private Model $command;
-
-    private function __construct(Model $command)
+    private function __construct(private Model $command)
     {
-        $this->command = $command;
     }
 
+    #[\Override]
     public function __invoke(
         Connection $connection,
         Channel $channel,
         MessageReader $read,
         State $state,
-    ): Either {
+    ): Attempt {
         $frames = fn(Protocol $protocol): Sequence => $protocol->queue()->purge(
             $channel,
             $this->command,
@@ -56,16 +54,17 @@ final class Purge implements Command
                         ->map(static fn($value) => $value->original())
                         ->map(Count::of(...))
                         ->map(PurgeOk::of(...))
-                        ->either(),
+                        ->attempt(static fn() => new \RuntimeException('Unable to find message count')),
                 ),
             false => $connection->send($frames),
         };
 
         return $sideEffect
             ->map(static fn() => $state)
-            ->leftMap(fn() => Failure::toPurge($this->command));
+            ->mapError(Failure::as(Failure::toPurge($this->command)));
     }
 
+    #[\NoDiscard]
     public static function of(string $queue): self
     {
         return new self(Model::of($queue));

@@ -8,7 +8,7 @@ use Innmind\AMQP\Transport\{
     Protocol\ArgumentTranslator,
 };
 use Innmind\TimeContinuum\Clock;
-use Innmind\IO\Readable\Frame;
+use Innmind\IO\Frame;
 use Innmind\Immutable\{
     Sequence as Seq,
     Monoid\Concat,
@@ -26,15 +26,11 @@ use Innmind\Immutable\{
  */
 final class Sequence implements Value
 {
-    /** @var Seq<Value> */
-    private Seq $original;
-
     /**
-     * @param Seq<Value> $values
+     * @param Seq<Value> $original
      */
-    private function __construct(Seq $values)
+    private function __construct(private Seq $original)
     {
-        $this->original = $values;
     }
 
     /**
@@ -72,7 +68,7 @@ final class Sequence implements Value
 
         return UnsignedLongInteger::frame()->flatMap(
             static fn($length) => match ($length->unwrap()->original()) {
-                0 => Frame\NoOp::of(Unpacked::of($length->read(), $self)),
+                0 => Frame::just(Unpacked::of($length->read(), $self)),
                 default => self::unpackNested(
                     $clock,
                     Unpacked::of($length->read(), $self),
@@ -85,16 +81,19 @@ final class Sequence implements Value
     /**
      * @return Seq<Value>
      */
+    #[\Override]
     public function original(): Seq
     {
         return $this->original;
     }
 
+    #[\Override]
     public function symbol(): Symbol
     {
         return Symbol::sequence;
     }
 
+    #[\Override]
     public function pack(): Str
     {
         $data = $this
@@ -121,7 +120,8 @@ final class Sequence implements Value
         Unpacked $unpacked,
         int $length,
     ): Frame {
-        return Frame\Chunk::of(1)
+        return Frame::chunk(1)
+            ->strict()
             ->flatMap(static fn($chunk) => Symbol::frame($clock, $chunk->toString()))
             ->map(static fn($value) => Unpacked::of(
                 $unpacked->read() + $value->read() + 1,
@@ -133,7 +133,7 @@ final class Sequence implements Value
                     $value,
                     $length,
                 ),
-                false => Frame\NoOp::of($value),
+                false => Frame::just($value),
             });
     }
 }

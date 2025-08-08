@@ -16,25 +16,23 @@ use Innmind\AMQP\{
     Failure,
 };
 use Innmind\Immutable\{
-    Either,
+    Attempt,
     Sequence,
 };
 
 final class DeclareExchange implements Command
 {
-    private Declaration $command;
-
-    private function __construct(Declaration $command)
+    private function __construct(private Declaration $command)
     {
-        $this->command = $command;
     }
 
+    #[\Override]
     public function __invoke(
         Connection $connection,
         Channel $channel,
         MessageReader $read,
         State $state,
-    ): Either {
+    ): Attempt {
         $frames = fn(Protocol $protocol): Sequence => $protocol->exchange()->declare(
             $channel,
             $this->command,
@@ -47,9 +45,10 @@ final class DeclareExchange implements Command
 
         return $sideEffect
             ->map(static fn() => $state)
-            ->leftMap(fn() => Failure::toDeclareExchange($this->command));
+            ->mapError(Failure::as(Failure::toDeclareExchange($this->command)));
     }
 
+    #[\NoDiscard]
     public static function of(string $name, Type $type): self
     {
         return new self(Declaration::durable($name, $type));

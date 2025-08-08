@@ -9,7 +9,7 @@ use Innmind\AMQP\{
 use Innmind\TimeContinuum\{
     Clock,
     PointInTime,
-    ElapsedPeriod,
+    Period,
 };
 use Innmind\Immutable\Sequence;
 
@@ -18,21 +18,14 @@ use Innmind\Immutable\Sequence;
  */
 final class Heartbeat
 {
-    private Clock $clock;
-    private ElapsedPeriod $threshold;
-    private PointInTime $lastReceivedData;
-
     private function __construct(
-        Clock $clock,
-        ElapsedPeriod $threshold,
-        PointInTime $lastReceivedData,
+        private Clock $clock,
+        private Period $threshold,
+        private PointInTime $lastReceivedData,
     ) {
-        $this->clock = $clock;
-        $this->threshold = $threshold;
-        $this->lastReceivedData = $lastReceivedData;
     }
 
-    public static function start(Clock $clock, ElapsedPeriod $threshold): self
+    public static function start(Clock $clock, Period $threshold): self
     {
         return new self($clock, $threshold, $clock->now());
     }
@@ -47,7 +40,7 @@ final class Heartbeat
                 ->clock
                 ->now()
                 ->elapsedSince($this->lastReceivedData)
-                ->longerThan($this->threshold)
+                ->longerThan($this->threshold->asElapsedPeriod())
         ) {
             $this->lastReceivedData = $this->clock->now();
 
@@ -62,7 +55,7 @@ final class Heartbeat
         $this->lastReceivedData = $this->clock->now();
     }
 
-    public function adjust(ElapsedPeriod $threshold): self
+    public function adjust(Period $threshold): self
     {
         return new self(
             $this->clock,

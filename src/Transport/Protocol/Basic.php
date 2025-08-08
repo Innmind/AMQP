@@ -39,11 +39,8 @@ use Innmind\Immutable\{
  */
 final class Basic
 {
-    private ArgumentTranslator $translate;
-
-    public function __construct(ArgumentTranslator $translator)
+    public function __construct(private ArgumentTranslator $translate)
     {
-        $this->translate = $translator;
     }
 
     /**
@@ -254,7 +251,10 @@ final class Basic
         [$flagBits, $properties] = $message->expiration()->match(
             static fn($expiration) => [
                 $flagBits | (1 << 8),
-                ($properties)(ShortString::of(Str::of((string) $expiration->milliseconds()))),
+                ($properties)(ShortString::of(Str::of((string) (
+                    $expiration->milliseconds() +
+                    $expiration->seconds() * 1000
+                )))),
             ],
             static fn() => [$flagBits, $properties],
         );

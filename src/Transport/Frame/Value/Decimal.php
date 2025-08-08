@@ -4,7 +4,7 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
-use Innmind\IO\Readable\Frame;
+use Innmind\IO\Frame;
 use Innmind\Immutable\Str;
 
 /**
@@ -13,13 +13,10 @@ use Innmind\Immutable\Str;
  */
 final class Decimal implements Value
 {
-    private SignedLongInteger $value;
-    private UnsignedOctet $scale;
-
-    private function __construct(SignedLongInteger $value, UnsignedOctet $scale)
-    {
-        $this->scale = $scale;
-        $this->value = $value;
+    private function __construct(
+        private SignedLongInteger $value,
+        private UnsignedOctet $scale,
+    ) {
     }
 
     /**
@@ -50,16 +47,20 @@ final class Decimal implements Value
         );
     }
 
+    #[\Override]
     public function original(): int|float
     {
+        /** @psalm-suppress InvalidOperand */
         return $this->value->original() / (10 ** $this->scale->original());
     }
 
+    #[\Override]
     public function symbol(): Symbol
     {
         return Symbol::decimal;
     }
 
+    #[\Override]
     public function pack(): Str
     {
         return $this->scale->pack()->append($this->value->pack()->toString());

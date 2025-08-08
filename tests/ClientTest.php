@@ -24,11 +24,11 @@ use Innmind\AMQP\{
     TimeContinuum\Format\Timestamp as TimestampFormat,
     Exception\BasicGetNotCancellable,
 };
-use Innmind\Socket\Internet\Transport;
+use Innmind\IO\Sockets\Internet\Transport;
 use Innmind\OperatingSystem\Factory as OSFactory;
-use Innmind\TimeContinuum\Earth\{
-    ElapsedPeriod,
-    Period\Millisecond,
+use Innmind\TimeContinuum\{
+    Period,
+    Format,
 };
 use Innmind\Filesystem\Name;
 use Innmind\Server\Control\Server\{
@@ -46,9 +46,13 @@ use Innmind\Immutable\{
 };
 use Innmind\BlackBox\{
     PHPUnit\BlackBox,
+    PHPUnit\Framework\TestCase,
     Set,
 };
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\{
+    DataProvider,
+    Group,
+};
 
 class ClientTest extends TestCase
 {
@@ -64,10 +68,12 @@ class ClientTest extends TestCase
         $this->client = Factory::of($this->os)->make(
             Transport::tcp(),
             Url::of('//guest:guest@localhost:5672/'),
-            new ElapsedPeriod(1000),
+            Period::second(1),
         );
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testDeclareExchange()
     {
         $result = $this
@@ -113,6 +119,8 @@ class ClientTest extends TestCase
         $this->assertSame('message', $result);
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testMultipleGet()
     {
         $result = $this
@@ -144,6 +152,8 @@ class ClientTest extends TestCase
         $this->assertSame(2, $result);
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testCancelingAGetThrowsAnException()
     {
         $this->expectException(BasicGetNotCancellable::class);
@@ -170,6 +180,8 @@ class ClientTest extends TestCase
             ->run(null);
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testConsume()
     {
         $result = $this
@@ -222,6 +234,8 @@ class ClientTest extends TestCase
         $this->assertSame(4, $result);
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testReject()
     {
         $result = $this
@@ -259,6 +273,8 @@ class ClientTest extends TestCase
         $this->assertSame('rejected', $result);
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testGetMessageWithAllProperties()
     {
         $message = Message::of(Str::of('message'))
@@ -268,7 +284,7 @@ class ClientTest extends TestCase
             ->withPriority(Message\Priority::five)
             ->withCorrelationId(Message\CorrelationId::of('correlation'))
             ->withReplyTo(Message\ReplyTo::of('reply'))
-            ->withExpiration(ElapsedPeriod::of(10000))
+            ->withExpiration(Period::second(10))
             ->withId(Message\Id::of('id'))
             ->withTimestamp($now = $this->os->clock()->now())
             ->withType(Message\Type::of('type'))
@@ -356,9 +372,9 @@ class ClientTest extends TestCase
                         static fn() => null,
                     ));
                     $this->assertSame(
-                        (int) ($ts->milliseconds() / 1000), //timestamp expressed in seconds and not milliseconds
+                        (int) $ts->format(Format::of('U')), // timestamp expressed in seconds and not milliseconds
                         $message->headers()->get('timestamp')->match(
-                            static fn($value) => (int) ($value->milliseconds() / 1000),
+                            static fn($value) => (int) $value->format(Format::of('U')),
                             static fn() => null,
                         ),
                     );
@@ -400,7 +416,7 @@ class ClientTest extends TestCase
                         static fn() => null,
                     ));
                     $this->assertSame(10000, $message->expiration()->match(
-                        static fn($value) => $value->milliseconds(),
+                        static fn($value) => $value->seconds() * 1000,
                         static fn() => null,
                     ));
                     $this->assertSame('id', $message->id()->match(
@@ -408,9 +424,9 @@ class ClientTest extends TestCase
                         static fn() => null,
                     ));
                     $this->assertSame(
-                        $now->format(new TimestampFormat),
+                        $now->format(TimestampFormat::new()),
                         $message->timestamp()->match(
-                            static fn($value) => $value->format(new TimestampFormat),
+                            static fn($value) => $value->format(TimestampFormat::new()),
                             static fn() => null,
                         ),
                     );
@@ -442,12 +458,15 @@ class ClientTest extends TestCase
         $this->assertTrue($result);
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testPublishContentOfAFile()
     {
         $file = $this
             ->os
             ->filesystem()
             ->mount(Path::of(__DIR__.'/'))
+            ->unwrap()
             ->get(Name::of(\basename(__FILE__)))
             ->match(
                 static fn($file) => $file->content(),
@@ -485,6 +504,8 @@ class ClientTest extends TestCase
         $this->assertTrue($result);
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testSegmentedConsumingDoesntAlterMessageOrdering()
     {
         $messages = Sequence::of(...\range(1, 100))->map(
@@ -532,6 +553,8 @@ class ClientTest extends TestCase
         $this->assertSame(101, $result);
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testSegmentedConsumingDoesntAlterMessageOrderingBetweenConnections()
     {
         $messages = Sequence::of(...\range(1, 100))->map(
@@ -594,6 +617,8 @@ class ClientTest extends TestCase
         $this->assertNull($result);
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testCommitTransaction()
     {
         $result = $this
@@ -631,6 +656,8 @@ class ClientTest extends TestCase
         $this->assertTrue($result);
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testRollbackTransaction()
     {
         $result = $this
@@ -666,6 +693,8 @@ class ClientTest extends TestCase
         $this->assertFalse($result);
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testPurge()
     {
         $result = $this
@@ -694,16 +723,10 @@ class ClientTest extends TestCase
         $this->assertNull($result);
     }
 
-    /**
-     * @dataProvider signals
-     */
+    #[Group('local')]
+    #[DataProvider('signals')]
     public function testSignals($signal)
     {
-        if (\getenv('CI')) {
-            // for some reason the kill command doesn't work in a github action
-            $this->markTestSkipped();
-        }
-
         $process = $this
             ->os
             ->control()
@@ -713,8 +736,9 @@ class ClientTest extends TestCase
                     ->withArgument('fixtures/forever-consumer.php')
                     ->withEnvironment('PATH', $_SERVER['PATH'])
                     ->withWorkingDirectory(Path::of(\getcwd())),
-            );
-        $this->os->process()->halt(new Millisecond(100));
+            )
+            ->unwrap();
+        $this->os->process()->halt(Period::millisecond(100));
         $this
             ->os
             ->control()
@@ -736,11 +760,17 @@ class ClientTest extends TestCase
         );
     }
 
-    public function testPublishRandomContent()
+    #[Group('ci')]
+    #[Group('local')]
+    public function testPublishRandomContent(): BlackBox\Proof
     {
-        $this
-            ->forAll(Set\Strings::madeOf(Set\Unicode::any())->between(0, 1_000))
-            ->then(function($message) {
+        return $this
+            ->forAll(
+                Set::strings()
+                    ->madeOf(Set::strings()->unicode()->char())
+                    ->between(0, 1_000),
+            )
+            ->prove(function($message) {
                 $result = $this
                     ->client
                     ->with(DeclareExchange::of('test-random', Type::direct))

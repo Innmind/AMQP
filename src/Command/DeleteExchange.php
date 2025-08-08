@@ -15,25 +15,23 @@ use Innmind\AMQP\{
     Failure,
 };
 use Innmind\Immutable\{
-    Either,
+    Attempt,
     Sequence,
 };
 
 final class DeleteExchange implements Command
 {
-    private Deletion $command;
-
-    private function __construct(Deletion $command)
+    private function __construct(private Deletion $command)
     {
-        $this->command = $command;
     }
 
+    #[\Override]
     public function __invoke(
         Connection $connection,
         Channel $channel,
         MessageReader $read,
         State $state,
-    ): Either {
+    ): Attempt {
         $frames = fn(Protocol $protocol): Sequence => $protocol->exchange()->delete(
             $channel,
             $this->command,
@@ -46,9 +44,10 @@ final class DeleteExchange implements Command
 
         return $sideEffect
             ->map(static fn() => $state)
-            ->leftMap(fn() => Failure::toDeleteExchange($this->command));
+            ->mapError(Failure::as(Failure::toDeleteExchange($this->command)));
     }
 
+    #[\NoDiscard]
     public static function of(string $name): self
     {
         return new self(Deletion::of($name));

@@ -4,7 +4,7 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
-use Innmind\IO\Readable\Frame;
+use Innmind\IO\Frame;
 use Innmind\Immutable\{
     Str,
     Maybe,
@@ -17,11 +17,8 @@ use Innmind\Immutable\{
  */
 final class SignedLongLongInteger implements Value
 {
-    private int $original;
-
-    private function __construct(int $value)
+    private function __construct(private int $original)
     {
-        $this->original = $value;
     }
 
     /**
@@ -54,9 +51,13 @@ final class SignedLongLongInteger implements Value
      */
     public static function frame(): Frame
     {
-        return Frame\Chunk::of(8)
+        return Frame::chunk(8)
+            ->strict()
             ->map(static function($chunk) {
-                /** @var int $value */
+                /**
+                 * @psalm-suppress PossiblyInvalidArrayAccess Todo apply a predicate
+                 * @var int $value
+                 */
                 [, $value] = \unpack('q', $chunk->toString());
 
                 return $value;
@@ -65,16 +66,19 @@ final class SignedLongLongInteger implements Value
             ->map(static fn($value) => Unpacked::of(8, $value));
     }
 
+    #[\Override]
     public function original(): int
     {
         return $this->original;
     }
 
+    #[\Override]
     public function symbol(): Symbol
     {
         return Symbol::signedLongLongInteger;
     }
 
+    #[\Override]
     public function pack(): Str
     {
         return Str::of(\pack('q', $this->original));

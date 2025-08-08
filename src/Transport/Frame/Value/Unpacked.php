@@ -12,26 +12,21 @@ use Innmind\AMQP\Transport\Frame\Value;
  */
 final class Unpacked
 {
-    /** @var 0|positive-int */
-    private int $read;
-    /** @var T */
-    private Value $value;
-
     /**
-     * @param 0|positive-int $read
+     * @param int<0, max> $read
      * @param T $value
      */
-    private function __construct(int $read, Value $value)
-    {
-        $this->read = $read;
-        $this->value = $value;
+    private function __construct(
+        private int $read,
+        private Value $value,
+    ) {
     }
 
     /**
      * @psalm-pure
      * @template V of Value
      *
-     * @param 0|positive-int $read
+     * @param int<0, max> $read
      * @param V $value
      *
      * @return self<V>
@@ -42,7 +37,7 @@ final class Unpacked
     }
 
     /**
-     * @return 0|positive-int
+     * @return int<0, max>
      */
     public function read(): int
     {

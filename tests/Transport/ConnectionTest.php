@@ -12,18 +12,21 @@ use Innmind\AMQP\{
     Transport\Frame\Method,
     Failure,
 };
-use Innmind\Socket\Internet\Transport;
+use Innmind\IO\Sockets\Internet\Transport;
 use Innmind\Url\Url;
-use Innmind\TimeContinuum\Earth\ElapsedPeriod;
+use Innmind\TimeContinuum\Period;
 use Innmind\OperatingSystem\Factory;
 use Innmind\Immutable\{
     Sequence,
     SideEffect,
 };
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 class ConnectionTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $os = Factory::build();
@@ -31,7 +34,7 @@ class ConnectionTest extends TestCase
             Transport::tcp(),
             Url::of('//guest:guest@localhost:5672/'),
             $protocol = new Protocol($os->clock(), new ArgumentTranslator),
-            new ElapsedPeriod(1000),
+            Period::second(1),
             $os->clock(),
             $os->remote(),
             $os->sockets(),
@@ -64,6 +67,8 @@ class ConnectionTest extends TestCase
         ); //test it closes without exception
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testClose()
     {
         $os = Factory::build();
@@ -71,7 +76,7 @@ class ConnectionTest extends TestCase
             Transport::tcp(),
             Url::of('//guest:guest@localhost:5672/'),
             $protocol = new Protocol($os->clock(), new ArgumentTranslator),
-            new ElapsedPeriod(1000),
+            Period::second(1),
             $os->clock(),
             $os->remote(),
             $os->sockets(),
@@ -86,6 +91,8 @@ class ConnectionTest extends TestCase
         ));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testReturnFailureWhenReceivedFrameIsNotTheExpectedOne()
     {
         $os = Factory::build();
@@ -93,7 +100,7 @@ class ConnectionTest extends TestCase
             Transport::tcp(),
             Url::of('//guest:guest@localhost:5672/'),
             new Protocol($os->clock(), new ArgumentTranslator),
-            new ElapsedPeriod(1000),
+            Period::second(1),
             $os->clock(),
             $os->remote(),
             $os->sockets(),
@@ -116,6 +123,8 @@ class ConnectionTest extends TestCase
         );
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testReturnFailureWhenConnectionClosedByServer()
     {
         $os = Factory::build();
@@ -123,7 +132,7 @@ class ConnectionTest extends TestCase
             Transport::tcp(),
             Url::of('//guest:guest@localhost:5672/'),
             $protocol = new Protocol($os->clock(), new ArgumentTranslator),
-            new ElapsedPeriod(1000),
+            Period::second(1),
             $os->clock(),
             $os->remote(),
             $os->sockets(),

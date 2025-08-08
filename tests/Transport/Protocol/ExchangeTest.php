@@ -17,7 +17,8 @@ use Innmind\AMQP\{
     Model\Exchange\Deletion,
     Model\Exchange\Type,
 };
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 class ExchangeTest extends TestCase
 {
@@ -28,6 +29,8 @@ class ExchangeTest extends TestCase
         $this->exchange = new Exchange(new ArgumentTranslator);
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testDeclare()
     {
         $frame = $this->exchange->declare(
@@ -171,6 +174,8 @@ class ExchangeTest extends TestCase
         );
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testDeletion()
     {
         $frame = $this->exchange->delete(

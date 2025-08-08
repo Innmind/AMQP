@@ -4,7 +4,7 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
-use Innmind\IO\Readable\Frame;
+use Innmind\IO\Frame;
 use Innmind\Immutable\{
     Str,
     Sequence,
@@ -17,15 +17,11 @@ use Innmind\Immutable\{
  */
 final class Bits implements Value
 {
-    /** @var Sequence<bool> */
-    private Sequence $original;
-
     /**
      * @param Sequence<bool> $original
      */
-    private function __construct(Sequence $original)
+    private function __construct(private Sequence $original)
     {
-        $this->original = $original;
     }
 
     /**
@@ -57,7 +53,8 @@ final class Bits implements Value
      */
     public static function frame(): Frame
     {
-        return Frame\Chunk::of(1)
+        return Frame::chunk(1)
+            ->strict()
             ->map(
                 static fn($chunk) => $chunk
                     ->map(static fn($chunk) => \decbin(\ord($chunk)))
@@ -73,16 +70,19 @@ final class Bits implements Value
     /**
      * @return Sequence<bool>
      */
+    #[\Override]
     public function original(): Sequence
     {
         return $this->original;
     }
 
+    #[\Override]
     public function symbol(): Symbol
     {
         return Symbol::bits;
     }
 
+    #[\Override]
     public function pack(): Str
     {
         $value = $this

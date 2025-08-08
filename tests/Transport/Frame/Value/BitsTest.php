@@ -8,26 +8,28 @@ use Innmind\AMQP\Transport\Frame\{
     Value,
 };
 use Innmind\IO\IO;
-use Innmind\Stream\{
-    Readable\Stream,
-    Watch\Select,
-};
 use Innmind\Immutable\{
     Sequence,
     Str,
 };
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\{
+    DataProvider,
+    Group,
+};
 
 class BitsTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $this->assertInstanceOf(Value::class, Bits::of(true));
     }
 
-    /**
-     * @dataProvider cases
-     */
+    #[Group('ci')]
+    #[Group('local')]
+    #[DataProvider('cases')]
     public function testStringCast($bits, $expected)
     {
         $value = Bits::of(...$bits);
@@ -36,14 +38,19 @@ class BitsTest extends TestCase
         $this->assertSame($bits, $value->original()->toList());
     }
 
-    /**
-     * @dataProvider decode
-     */
+    #[Group('ci')]
+    #[Group('local')]
+    #[DataProvider('decode')]
     public function testFromStream($expected, $string)
     {
-        $value = IO::of(Select::waitForever(...))
-            ->readable()
-            ->wrap(Stream::ofContent($string))
+        $tmp = \fopen('php://temp', 'w+');
+        \fwrite($tmp, $string);
+        \fseek($tmp, 0);
+
+        $value = IO::fromAmbientAuthority()
+            ->streams()
+            ->acquire($tmp)
+            ->read()
             ->toEncoding(Str\Encoding::ascii)
             ->frames(Bits::frame())
             ->one()

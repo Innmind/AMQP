@@ -9,7 +9,7 @@ use Innmind\Math\{
     DefinitionSet\Set,
     DefinitionSet\Range,
 };
-use Innmind\IO\Readable\Frame;
+use Innmind\IO\Frame;
 use Innmind\Immutable\{
     Str,
     Maybe,
@@ -24,15 +24,11 @@ use Innmind\Immutable\{
  */
 final class SignedOctet implements Value
 {
-    /** @var int<-128, 127> */
-    private int $original;
-
     /**
-     * @param int<-128, 127> $octet
+     * @param int<-128, 127> $original
      */
-    private function __construct(int $octet)
+    private function __construct(private int $original)
     {
-        $this->original = $octet;
     }
 
     /**
@@ -71,9 +67,13 @@ final class SignedOctet implements Value
      */
     public static function frame(): Frame
     {
-        return Frame\Chunk::of(1)
+        return Frame::chunk(1)
+            ->strict()
             ->map(static function($chunk) {
-                /** @var int<-128, 127> $value */
+                /**
+                 * @psalm-suppress PossiblyInvalidArrayAccess Todo apply a predicate
+                 * @var int<-128, 127> $value
+                 */
                 [, $value] = \unpack('c', $chunk->toString());
 
                 return $value;
@@ -85,16 +85,19 @@ final class SignedOctet implements Value
     /**
      * @return int<-128, 127>
      */
+    #[\Override]
     public function original(): int
     {
         return $this->original;
     }
 
+    #[\Override]
     public function symbol(): Symbol
     {
         return Symbol::signedOctet;
     }
 
+    #[\Override]
     public function pack(): Str
     {
         return Str::of(\pack('c', $this->original));

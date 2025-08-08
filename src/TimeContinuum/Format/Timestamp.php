@@ -6,13 +6,15 @@ namespace Innmind\AMQP\TimeContinuum\Format;
 use Innmind\TimeContinuum\Format;
 
 /**
- * @psalm-immutable
  * @internal
  */
-final class Timestamp implements Format
+final class Timestamp
 {
-    public function toString(): string
+    /**
+     * @psalm-pure
+     */
+    public static function new(): Format
     {
-        return 'U';
+        return Format::of('U');
     }
 }

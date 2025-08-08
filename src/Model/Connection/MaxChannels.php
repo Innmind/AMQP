@@ -4,21 +4,21 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Model\Connection;
 
 use Innmind\AMQP\Exception\FrameChannelExceedAllowedChannelNumber;
+use Innmind\Immutable\{
+    Attempt,
+    SideEffect,
+};
 
 /**
  * @psalm-immutable
  */
 final class MaxChannels
 {
-    /** @var int<0, 65535> */
-    private int $value;
-
     /**
      * @param int<0, 65535> $value
      */
-    private function __construct(int $value)
+    private function __construct(private int $value)
     {
-        $this->value = $value;
     }
 
     /**
@@ -26,6 +26,7 @@ final class MaxChannels
      *
      * @param int<0, 65535> $value
      */
+    #[\NoDiscard]
     public static function of(int $value): self
     {
         return new self($value);
@@ -34,11 +35,13 @@ final class MaxChannels
     /**
      * @psalm-pure
      */
+    #[\NoDiscard]
     public static function unlimited(): self
     {
         return new self(0);
     }
 
+    #[\NoDiscard]
     public function allows(int $channel): bool
     {
         if ($this->value === 0) {
@@ -49,18 +52,22 @@ final class MaxChannels
     }
 
     /**
-     * @throws FrameChannelExceedAllowedChannelNumber
+     * @return Attempt<SideEffect>
      */
-    public function verify(int $channel): void
+    #[\NoDiscard]
+    public function verify(int $channel): Attempt
     {
         if (!$this->allows($channel)) {
-            throw new FrameChannelExceedAllowedChannelNumber($channel, $this);
+            return Attempt::error(new FrameChannelExceedAllowedChannelNumber($channel, $this));
         }
+
+        return Attempt::result(SideEffect::identity());
     }
 
     /**
      * @return int<0, 65535>
      */
+    #[\NoDiscard]
     public function toInt(): int
     {
         return $this->value;

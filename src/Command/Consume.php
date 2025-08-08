@@ -22,32 +22,29 @@ use Innmind\AMQP\{
 };
 use Innmind\Immutable\{
     Maybe,
-    Either,
+    Attempt,
     Sequence,
     Predicate\Instance,
 };
 
 final class Consume implements Command
 {
-    private Model $command;
-    /** @var callable(mixed, Message, Continuation, Details): Continuation */
-    private $consume;
-
     /**
-     * @param callable(mixed, Message, Continuation, Details): Continuation $consume
+     * @param \Closure(mixed, Message, Continuation, Details): Continuation $consume
      */
-    private function __construct(Model $command, callable $consume)
-    {
-        $this->command = $command;
-        $this->consume = $consume;
+    private function __construct(
+        private Model $command,
+        private \Closure $consume,
+    ) {
     }
 
+    #[\Override]
     public function __invoke(
         Connection $connection,
         Channel $channel,
         MessageReader $read,
         State $state,
-    ): Either {
+    ): Attempt {
         $frames = fn(Protocol $protocol): Sequence => $protocol->basic()->consume(
             $channel,
             $this->command,
@@ -68,11 +65,12 @@ final class Consume implements Command
                 ->map(static fn() => $state),
         };
 
-        return $sideEffect->leftMap(
-            fn() => Failure::toConsume($this->command),
+        return $sideEffect->mapError(
+            Failure::as(Failure::toConsume($this->command)),
         );
     }
 
+    #[\NoDiscard]
     public static function of(string $queue): self
     {
         return new self(
@@ -84,13 +82,14 @@ final class Consume implements Command
     /**
      * @param callable(mixed, Message, Continuation, Details): Continuation $consume
      */
+    #[\NoDiscard]
     public function handle(callable $consume): self
     {
-        return new self($this->command, $consume);
+        return new self($this->command, \Closure::fromCallable($consume));
     }
 
     /**
-     * @return Either<Failure, State>
+     * @return Attempt<State>
      */
     private function maybeStart(
         Connection $connection,
@@ -98,14 +97,14 @@ final class Consume implements Command
         MessageReader $read,
         Frame $frame,
         State $state,
-    ): Either {
+    ): Attempt {
         return $frame
             ->values()
             ->first()
             ->keep(Instance::of(Value\ShortString::class))
             ->map(static fn($value) => $value->original()->toString())
             ->either()
-            ->leftMap(fn() => Failure::toConsume($this->command))
+            ->attempt(fn() => Failure::toConsume($this->command))
             ->flatMap(fn($consumerTag) => $this->start(
                 $connection,
                 $channel,
@@ -116,7 +115,7 @@ final class Consume implements Command
     }
 
     /**
-     * @return Either<Failure, State>
+     * @return Attempt<State>
      */
     private function start(
         Connection $connection,
@@ -124,9 +123,9 @@ final class Consume implements Command
         MessageReader $read,
         State $state,
         string $consumerTag,
-    ): Either {
-        /** @var Either<Failure, State|Canceled> */
-        $consumed = Either::right($state);
+    ): Attempt {
+        /** @var Attempt<State|Canceled> */
+        $consumed = Attempt::result($state);
         // here the best approach would be to use recursion to avoid unwrapping
         // the monads but it would end up with a too deep call stack for inifite
         // consumers as each new message would mean a new function call in the
@@ -157,7 +156,7 @@ final class Consume implements Command
     }
 
     /**
-     * @return Either<Failure, State|Canceled>
+     * @return Attempt<State|Canceled>
      */
     private function waitDeliver(
         Connection $connection,
@@ -165,8 +164,7 @@ final class Consume implements Command
         State $state,
         string $consumerTag,
         MessageReader $read,
-    ): Either {
-        /** @var Either<Failure, State|Canceled> */
+    ): Attempt {
         return $connection
             ->wait(Method::basicDeliver)
             ->flatMap(
@@ -182,11 +180,11 @@ final class Consume implements Command
                     ),
                 ),
             )
-            ->leftMap(fn() => Failure::toConsume($this->command));
+            ->mapError(Failure::as(Failure::toConsume($this->command)));
     }
 
     /**
-     * @return Either<Failure, State|Canceled>
+     * @return Attempt<State|Canceled>
      */
     private function maybeConsume(
         Connection $connection,
@@ -196,7 +194,7 @@ final class Consume implements Command
         string $consumerTag,
         Frame $frame,
         Message $message,
-    ): Either {
+    ): Attempt {
         $destinationConsumerTag = $frame
             ->values()
             ->first()
@@ -229,8 +227,7 @@ final class Consume implements Command
             ->flatMap(static fn($details) => $destinationConsumerTag->map(
                 static fn() => $details, // this manipulation is to make sure the consumerTag is indeed for this consumer
             ))
-            ->either()
-            ->leftMap(fn() => Failure::toConsume($this->command))
+            ->attempt(fn() => Failure::toConsume($this->command))
             ->flatMap(fn($details) => $this->consume(
                 $connection,
                 $channel,
@@ -243,7 +240,7 @@ final class Consume implements Command
     }
 
     /**
-     * @return Either<Failure, State|Canceled>
+     * @return Attempt<State|Canceled>
      */
     private function consume(
         Connection $connection,
@@ -253,7 +250,7 @@ final class Consume implements Command
         Details $details,
         Message $message,
         string $consumerTag,
-    ): Either {
+    ): Attempt {
         return ($this->consume)(
             $state->unwrap(),
             $message,

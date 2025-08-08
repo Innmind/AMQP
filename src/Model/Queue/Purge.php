@@ -19,11 +19,13 @@ final class Purge
     /**
      * @psalm-pure
      */
+    #[\NoDiscard]
     public static function of(string $name): self
     {
         return new self($name);
     }
 
+    #[\NoDiscard]
     public function dontWait(): self
     {
         $self = clone $this;
@@ -32,6 +34,7 @@ final class Purge
         return $self;
     }
 
+    #[\NoDiscard]
     public function wait(): self
     {
         $self = clone $this;
@@ -40,11 +43,13 @@ final class Purge
         return $self;
     }
 
+    #[\NoDiscard]
     public function name(): string
     {
         return $this->name;
     }
 
+    #[\NoDiscard]
     public function shouldWait(): bool
     {
         return $this->wait;

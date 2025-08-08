@@ -8,16 +8,14 @@ namespace Innmind\AMQP\Model\Basic;
  */
 final class Recover
 {
-    private bool $requeue = false;
-
-    private function __construct(bool $requeue)
+    private function __construct(private bool $requeue)
     {
-        $this->requeue = $requeue;
     }
 
     /**
      * @psalm-pure
      */
+    #[\NoDiscard]
     public static function withoutRequeue(): self
     {
         return new self(false);
@@ -29,11 +27,13 @@ final class Recover
      *
      * @psalm-pure
      */
+    #[\NoDiscard]
     public static function requeue(): self
     {
         return new self(true);
     }
 
+    #[\NoDiscard]
     public function shouldRequeue(): bool
     {
         return $this->requeue;

@@ -9,10 +9,13 @@ use Innmind\AMQP\{
     Exception\NotWaitingPassiveDeclarationDoesNothing,
 };
 use Innmind\Immutable\Map;
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 class DeclarationTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testPassive()
     {
         $command = Declaration::passive('foo', $type = Type::direct);
@@ -28,6 +31,8 @@ class DeclarationTest extends TestCase
         $this->assertCount(0, $command->arguments());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testDurable()
     {
         $command = Declaration::durable('foo', $type = Type::direct);
@@ -43,6 +48,8 @@ class DeclarationTest extends TestCase
         $this->assertCount(0, $command->arguments());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testTemporary()
     {
         $command = Declaration::temporary('foo', $type = Type::direct);
@@ -58,6 +65,8 @@ class DeclarationTest extends TestCase
         $this->assertCount(0, $command->arguments());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testAutoDeleted()
     {
         $command = Declaration::autoDelete('foo', $type = Type::direct);
@@ -73,6 +82,8 @@ class DeclarationTest extends TestCase
         $this->assertCount(0, $command->arguments());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testDontWait()
     {
         $command = Declaration::durable('too', Type::direct);
@@ -84,6 +95,8 @@ class DeclarationTest extends TestCase
         $this->assertFalse($command2->shouldWait());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testThrowWhenNotWaitingPassiveDeclaration()
     {
         $this->expectException(NotWaitingPassiveDeclarationDoesNothing::class);
@@ -91,6 +104,8 @@ class DeclarationTest extends TestCase
         Declaration::passive('foo', Type::direct)->dontWait();
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testWait()
     {
         $command = Declaration::passive('foo', Type::direct);
@@ -102,6 +117,8 @@ class DeclarationTest extends TestCase
         $this->assertTrue($command2->shouldWait());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testWithArgument()
     {
         $command = Declaration::durable('foo', Type::direct);

@@ -11,35 +11,23 @@ use Innmind\Immutable\Maybe;
  */
 final class Details
 {
-    /** @var int<0, max> */
-    private int $deliveryTag;
-    private bool $redelivered;
-    private string $exchange;
-    private string $routingKey;
-    /** @var Maybe<Count> */
-    private Maybe $messages;
-
     /**
      * @param int<0, max> $deliveryTag
      * @param Maybe<Count> $messages
      */
     private function __construct(
-        int $deliveryTag,
-        bool $redelivered,
-        string $exchange,
-        string $routingKey,
-        Maybe $messages,
+        private int $deliveryTag,
+        private bool $redelivered,
+        private string $exchange,
+        private string $routingKey,
+        private Maybe $messages,
     ) {
-        $this->deliveryTag = $deliveryTag;
-        $this->redelivered = $redelivered;
-        $this->exchange = $exchange;
-        $this->routingKey = $routingKey;
-        $this->messages = $messages;
     }
 
     /**
      * @param int<0, max> $deliveryTag
      */
+    #[\NoDiscard]
     public static function ofGet(
         int $deliveryTag,
         bool $redelivered,
@@ -59,6 +47,7 @@ final class Details
     /**
      * @param int<0, max> $deliveryTag
      */
+    #[\NoDiscard]
     public static function ofConsume(
         int $deliveryTag,
         bool $redelivered,
@@ -82,21 +71,25 @@ final class Details
      *
      * @return int<0, max>
      */
+    #[\NoDiscard]
     public function deliveryTag(): int
     {
         return $this->deliveryTag;
     }
 
+    #[\NoDiscard]
     public function redelivered(): bool
     {
         return $this->redelivered;
     }
 
+    #[\NoDiscard]
     public function exchange(): string
     {
         return $this->exchange;
     }
 
+    #[\NoDiscard]
     public function routingKey(): string
     {
         return $this->routingKey;
@@ -107,6 +100,7 @@ final class Details
      *
      * @return Maybe<Count>
      */
+    #[\NoDiscard]
     public function messages(): Maybe
     {
         return $this->messages;

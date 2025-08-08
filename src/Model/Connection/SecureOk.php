@@ -13,28 +13,28 @@ use Innmind\Url\Authority\UserInformation\{
  */
 final class SecureOk
 {
-    private User $user;
-    private Password $password;
-
-    private function __construct(User $user, Password $password)
-    {
-        $this->user = $user;
-        $this->password = $password;
+    private function __construct(
+        private User $user,
+        private Password $password,
+    ) {
     }
 
     /**
      * @psalm-pure
      */
+    #[\NoDiscard]
     public static function of(User $user, Password $password): self
     {
         return new self($user, $password);
     }
 
+    #[\NoDiscard]
     public function user(): User
     {
         return $this->user;
     }
 
+    #[\NoDiscard]
     public function password(): Password
     {
         return $this->password;

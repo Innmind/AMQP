@@ -10,7 +10,7 @@ use Innmind\Math\{
     DefinitionSet\Set,
     DefinitionSet\Range,
 };
-use Innmind\IO\Readable\Frame;
+use Innmind\IO\Frame;
 use Innmind\Immutable\{
     Str,
     Maybe,
@@ -23,15 +23,11 @@ use Innmind\Immutable\{
  */
 final class UnsignedLongLongInteger implements Value
 {
-    /** @var int<0, max> */
-    private int $original;
-
     /**
-     * @param int<0, max> $value
+     * @param int<0, max> $original
      */
-    private function __construct(int $value)
+    private function __construct(private int $original)
     {
-        $this->original = $value;
     }
 
     /**
@@ -81,9 +77,13 @@ final class UnsignedLongLongInteger implements Value
      */
     public static function frame(): Frame
     {
-        return Frame\Chunk::of(8)
+        return Frame::chunk(8)
+            ->strict()
             ->map(static function($chunk) {
-                /** @var int<0, max> $value */
+                /**
+                 * @psalm-suppress PossiblyInvalidArrayAccess Todo apply a predicate
+                 * @var int<0, max> $value
+                 */
                 [, $value] = \unpack('J', $chunk->toString());
 
                 return $value;
@@ -95,16 +95,19 @@ final class UnsignedLongLongInteger implements Value
     /**
      * @return int<0, max>
      */
+    #[\Override]
     public function original(): int
     {
         return $this->original;
     }
 
+    #[\Override]
     public function symbol(): Symbol
     {
         return Symbol::unsignedLongLongInteger;
     }
 
+    #[\Override]
     public function pack(): Str
     {
         return Str::of(\pack('J', $this->original));

@@ -9,23 +9,25 @@ use Innmind\AMQP\{
 };
 use Innmind\Math\Exception\OutOfDefinitionSet;
 use Innmind\IO\IO;
-use Innmind\Stream\{
-    Readable\Stream,
-    Watch\Select,
-};
 use Innmind\Immutable\Str;
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\{
+    DataProvider,
+    Group,
+};
 
 class ShortStringTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $this->assertInstanceOf(Value::class, ShortString::literal(''));
     }
 
-    /**
-     * @dataProvider cases
-     */
+    #[Group('ci')]
+    #[Group('local')]
+    #[DataProvider('cases')]
     public function testStringCast($string, $expected)
     {
         $value = ShortString::literal($string);
@@ -33,14 +35,19 @@ class ShortStringTest extends TestCase
         $this->assertSame($string, $value->original()->toString());
     }
 
-    /**
-     * @dataProvider cases
-     */
+    #[Group('ci')]
+    #[Group('local')]
+    #[DataProvider('cases')]
     public function testFromStream($expected, $string)
     {
-        $value = IO::of(Select::waitForever(...))
-            ->readable()
-            ->wrap(Stream::ofContent($string))
+        $tmp = \fopen('php://temp', 'w+');
+        \fwrite($tmp, $string);
+        \fseek($tmp, 0);
+
+        $value = IO::fromAmbientAuthority()
+            ->streams()
+            ->acquire($tmp)
+            ->read()
             ->toEncoding(Str\Encoding::ascii)
             ->frames(ShortString::frame())
             ->one()
@@ -54,6 +61,8 @@ class ShortStringTest extends TestCase
         $this->assertSame($string, $value->pack()->toString());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testThrowWhenTooLongString()
     {
         $this->expectException(OutOfDefinitionSet::class);

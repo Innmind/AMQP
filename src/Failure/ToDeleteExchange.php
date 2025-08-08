@@ -3,33 +3,23 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Failure;
 
-use Innmind\AMQP\{
-    Failure,
-    Model\Exchange\Deletion as Command,
-};
+use Innmind\AMQP\Model\Exchange\Deletion as Command;
 
 /**
  * @psalm-immutable
  */
-final class ToDeleteExchange extends Failure
+final class ToDeleteExchange
 {
-    private Command $command;
-
     /**
      * @internal
      */
-    public function __construct(Command $command)
+    public function __construct(private Command $command)
     {
-        $this->command = $command;
     }
 
+    #[\NoDiscard]
     public function command(): Command
     {
         return $this->command;
-    }
-
-    public function kind(): Kind
-    {
-        return Kind::toDeleteExchange;
     }
 }

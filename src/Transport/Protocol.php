@@ -22,7 +22,7 @@ use Innmind\AMQP\Transport\{
     Frame\Value,
 };
 use Innmind\TimeContinuum\Clock;
-use Innmind\IO\Readable\Frame;
+use Innmind\IO\Frame;
 use Innmind\Immutable\Sequence;
 
 /**
@@ -147,12 +147,12 @@ final class Protocol
 
         /** @var Frame<Sequence<Value>> */
         return $toChunk->match(
-            static fn($first, $rest) => Frame\Composite::of(
+            static fn($first, $rest) => Frame::compose(
                 static fn(Value ...$values) => Sequence::of($bodySize, $flags, ...$values),
                 $first,
                 ...$rest->toList(),
             ),
-            static fn() => Frame\NoOp::of(Sequence::of($bodySize, $flags)),
+            static fn() => Frame::just(Sequence::of($bodySize, $flags)),
         );
     }
 }

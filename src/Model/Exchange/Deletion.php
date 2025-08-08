@@ -20,11 +20,13 @@ final class Deletion
     /**
      * @psalm-pure
      */
+    #[\NoDiscard]
     public static function of(string $name): self
     {
         return new self($name);
     }
 
+    #[\NoDiscard]
     public function ifUnused(): self
     {
         $self = clone $this;
@@ -33,6 +35,7 @@ final class Deletion
         return $self;
     }
 
+    #[\NoDiscard]
     public function ifUsed(): self
     {
         $self = clone $this;
@@ -41,6 +44,7 @@ final class Deletion
         return $self;
     }
 
+    #[\NoDiscard]
     public function dontWait(): self
     {
         $self = clone $this;
@@ -49,6 +53,7 @@ final class Deletion
         return $self;
     }
 
+    #[\NoDiscard]
     public function wait(): self
     {
         $self = clone $this;
@@ -57,16 +62,19 @@ final class Deletion
         return $self;
     }
 
+    #[\NoDiscard]
     public function name(): string
     {
         return $this->name;
     }
 
+    #[\NoDiscard]
     public function onlyIfUnused(): bool
     {
         return $this->ifUnused;
     }
 
+    #[\NoDiscard]
     public function shouldWait(): bool
     {
         return $this->wait;

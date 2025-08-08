@@ -9,15 +9,17 @@ use Innmind\AMQP\{
 };
 use Innmind\Math\Exception\OutOfDefinitionSet;
 use Innmind\IO\IO;
-use Innmind\Stream\{
-    Readable\Stream,
-    Watch\Select,
-};
 use Innmind\Immutable\Str;
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\{
+    DataProvider,
+    Group,
+};
 
 class DecimalTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $this->assertInstanceOf(
@@ -26,9 +28,9 @@ class DecimalTest extends TestCase
         );
     }
 
-    /**
-     * @dataProvider cases
-     */
+    #[Group('ci')]
+    #[Group('local')]
+    #[DataProvider('cases')]
     public function testStringCast($number, $scale, $expected)
     {
         $value = Decimal::of($number, $scale);
@@ -36,14 +38,19 @@ class DecimalTest extends TestCase
         $this->assertSame($number / (10**$scale), $value->original());
     }
 
-    /**
-     * @dataProvider cases
-     */
+    #[Group('ci')]
+    #[Group('local')]
+    #[DataProvider('cases')]
     public function testFromStream($number, $scale, $string)
     {
-        $value = IO::of(Select::waitForever(...))
-            ->readable()
-            ->wrap(Stream::ofContent($string))
+        $tmp = \fopen('php://temp', 'w+');
+        \fwrite($tmp, $string);
+        \fseek($tmp, 0);
+
+        $value = IO::fromAmbientAuthority()
+            ->streams()
+            ->acquire($tmp)
+            ->read()
             ->toEncoding(Str\Encoding::ascii)
             ->frames(Decimal::frame())
             ->one()
@@ -57,6 +64,8 @@ class DecimalTest extends TestCase
         $this->assertSame($string, $value->pack()->toString());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testThrowWhenValueTooHigh()
     {
         $this->expectException(OutOfDefinitionSet::class);
@@ -65,6 +74,8 @@ class DecimalTest extends TestCase
         Decimal::of(2147483648, 0);
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testThrowWhenValueTooLow()
     {
         $this->expectException(OutOfDefinitionSet::class);
@@ -73,6 +84,8 @@ class DecimalTest extends TestCase
         Decimal::of(-2147483649, 0);
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testThrowWhenScaleTooHigh()
     {
         $this->expectException(OutOfDefinitionSet::class);
@@ -81,6 +94,8 @@ class DecimalTest extends TestCase
         Decimal::of(1, 256);
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testThrowWhenScaleTooLow()
     {
         $this->expectException(OutOfDefinitionSet::class);

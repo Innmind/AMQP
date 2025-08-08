@@ -3,33 +3,23 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Failure;
 
-use Innmind\AMQP\{
-    Failure,
-    Model\Basic\Consume as Command,
-};
+use Innmind\AMQP\Model\Basic\Consume as Command;
 
 /**
  * @psalm-immutable
  */
-final class ToConsume extends Failure
+final class ToConsume
 {
-    private Command $command;
-
     /**
      * @internal
      */
-    public function __construct(Command $command)
+    public function __construct(private Command $command)
     {
-        $this->command = $command;
     }
 
+    #[\NoDiscard]
     public function command(): Command
     {
         return $this->command;
-    }
-
-    public function kind(): Kind
-    {
-        return Kind::toConsume;
     }
 }

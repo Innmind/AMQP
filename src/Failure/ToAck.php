@@ -3,28 +3,19 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Failure;
 
-use Innmind\AMQP\Failure;
-
 /**
  * @psalm-immutable
  */
-final class ToAck extends Failure
+final class ToAck
 {
-    private string $queue;
-
     /**
      * @internal
      */
-    public function __construct(string $queue)
+    public function __construct(private string $queue)
     {
-        $this->queue = $queue;
     }
 
-    public function kind(): Kind
-    {
-        return Kind::toAck;
-    }
-
+    #[\NoDiscard]
     public function queue(): string
     {
         return $this->queue;

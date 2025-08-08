@@ -18,26 +18,24 @@ use Innmind\AMQP\{
     Failure,
 };
 use Innmind\Immutable\{
-    Either,
+    Attempt,
     Sequence,
     Predicate\Instance,
 };
 
 final class DeleteQueue implements Command
 {
-    private Deletion $command;
-
-    private function __construct(Deletion $command)
+    private function __construct(private Deletion $command)
     {
-        $this->command = $command;
     }
 
+    #[\Override]
     public function __invoke(
         Connection $connection,
         Channel $channel,
         MessageReader $read,
         State $state,
-    ): Either {
+    ): Attempt {
         $frames = fn(Protocol $protocol): Sequence => $protocol->queue()->delete(
             $channel,
             $this->command,
@@ -56,16 +54,17 @@ final class DeleteQueue implements Command
                         ->map(static fn($value) => $value->original())
                         ->map(Count::of(...))
                         ->map(DeleteOk::of(...))
-                        ->either(),
+                        ->attempt(static fn() => new \RuntimeException('Unable to find message count')),
                 ),
             false => $connection->send($frames),
         };
 
         return $sideEffect
             ->map(static fn() => $state)
-            ->leftMap(fn() => Failure::toDeleteQueue($this->command));
+            ->mapError(Failure::as(Failure::toDeleteQueue($this->command)));
     }
 
+    #[\NoDiscard]
     public static function of(string $name): self
     {
         return new self(Deletion::of($name));
