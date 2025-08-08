@@ -22,15 +22,11 @@ use Innmind\Immutable\{
  */
 final class UnsignedLongInteger implements Value
 {
-    /** @var int<0, 4294967295> */
-    private int $original;
-
     /**
-     * @param int<0, 4294967295> $value
+     * @param int<0, 4294967295> $original
      */
-    private function __construct(int $value)
+    private function __construct(private int $original)
     {
-        $this->original = $value;
     }
 
     /**

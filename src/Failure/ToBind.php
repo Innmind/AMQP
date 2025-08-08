@@ -10,14 +10,11 @@ use Innmind\AMQP\Model\Queue\Binding as Command;
  */
 final class ToBind
 {
-    private Command $command;
-
     /**
      * @internal
      */
-    public function __construct(Command $command)
+    public function __construct(private Command $command)
     {
-        $this->command = $command;
     }
 
     #[\NoDiscard]

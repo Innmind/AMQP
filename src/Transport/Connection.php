@@ -46,35 +46,19 @@ use Innmind\Immutable\{
  */
 final class Connection
 {
-    private Protocol $protocol;
-    private Client $socket;
-    /** @var IOFrame<Frame> */
-    private IOFrame $frame;
-    private MaxChannels $maxChannels;
-    private MaxFrameSize $maxFrameSize;
-    private Heartbeat $heartbeat;
-    private SignalListener $signals;
-    private bool $closed = false;
-
     /**
      * @param IOFrame<Frame> $frame
      */
     private function __construct(
-        Protocol $protocol,
-        Heartbeat $heartbeat,
-        Client $socket,
-        MaxChannels $maxChannels,
-        MaxFrameSize $maxFrameSize,
-        IOFrame $frame,
-        SignalListener $signals,
+        private Protocol $protocol,
+        private Heartbeat $heartbeat,
+        private Client $socket,
+        private MaxChannels $maxChannels,
+        private MaxFrameSize $maxFrameSize,
+        private IOFrame $frame,
+        private SignalListener $signals,
+        private bool $closed = false,
     ) {
-        $this->protocol = $protocol;
-        $this->socket = $socket;
-        $this->frame = $frame;
-        $this->maxChannels = $maxChannels;
-        $this->maxFrameSize = $maxFrameSize;
-        $this->heartbeat = $heartbeat;
-        $this->signals = $signals;
     }
 
     /**
@@ -197,7 +181,7 @@ final class Connection
                 Method::connectionCloseOk,
             )
             ->flatMap(fn() => $this->socket->close())
-            ->map(static fn() => new SideEffect);
+            ->map(SideEffect::identity(...));
     }
 
     /**
@@ -270,7 +254,7 @@ final class Connection
             ->abortWhen($this->signals->notified(...))
             ->sinkAttempts($data)
             ->eitherWay(
-                static fn() => Attempt::result(new SideEffect),
+                static fn() => Attempt::result(SideEffect::identity()),
                 fn() => $this->signals->close(
                     $this,
                     static fn() => Attempt::error(Failure::toSendFrame()),

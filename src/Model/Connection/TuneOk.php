@@ -10,18 +10,11 @@ use Innmind\TimeContinuum\Period;
  */
 final class TuneOk
 {
-    private MaxChannels $maxChannels;
-    private MaxFrameSize $maxFrameSize;
-    private Period $heartbeat;
-
     private function __construct(
-        MaxChannels $maxChannels,
-        MaxFrameSize $maxFrameSize,
-        Period $heartbeat,
+        private MaxChannels $maxChannels,
+        private MaxFrameSize $maxFrameSize,
+        private Period $heartbeat,
     ) {
-        $this->maxChannels = $maxChannels;
-        $this->maxFrameSize = $maxFrameSize;
-        $this->heartbeat = $heartbeat;
     }
 
     /**

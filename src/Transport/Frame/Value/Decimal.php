@@ -13,13 +13,10 @@ use Innmind\Immutable\Str;
  */
 final class Decimal implements Value
 {
-    private SignedLongInteger $value;
-    private UnsignedOctet $scale;
-
-    private function __construct(SignedLongInteger $value, UnsignedOctet $scale)
-    {
-        $this->scale = $scale;
-        $this->value = $value;
+    private function __construct(
+        private SignedLongInteger $value,
+        private UnsignedOctet $scale,
+    ) {
     }
 
     /**

@@ -16,11 +16,8 @@ use Innmind\Immutable\Attempt;
  */
 final class OpenVHost
 {
-    private Path $vhost;
-
-    public function __construct(Path $vhost)
+    public function __construct(private Path $vhost)
     {
-        $this->vhost = $vhost;
     }
 
     /**

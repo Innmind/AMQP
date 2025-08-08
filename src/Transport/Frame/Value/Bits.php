@@ -17,15 +17,11 @@ use Innmind\Immutable\{
  */
 final class Bits implements Value
 {
-    /** @var Sequence<bool> */
-    private Sequence $original;
-
     /**
      * @param Sequence<bool> $original
      */
-    private function __construct(Sequence $original)
+    private function __construct(private Sequence $original)
     {
-        $this->original = $original;
     }
 
     /**

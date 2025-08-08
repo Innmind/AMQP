@@ -14,15 +14,11 @@ use Innmind\Immutable\{
  */
 final class MaxChannels
 {
-    /** @var int<0, 65535> */
-    private int $value;
-
     /**
      * @param int<0, 65535> $value
      */
-    private function __construct(int $value)
+    private function __construct(private int $value)
     {
-        $this->value = $value;
     }
 
     /**

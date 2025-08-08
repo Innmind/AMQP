@@ -16,17 +16,13 @@ use Innmind\Immutable\Attempt;
 
 final class Transaction implements Command
 {
-    private Command $command;
-    /** @var callable(mixed): bool */
-    private $predicate;
-
     /**
-     * @param callable(mixed): bool $predicate
+     * @param \Closure(mixed): bool $predicate
      */
-    private function __construct(Command $command, callable $predicate)
-    {
-        $this->command = $command;
-        $this->predicate = $predicate;
+    private function __construct(
+        private Command $command,
+        private \Closure $predicate,
+    ) {
     }
 
     #[\Override]
@@ -59,7 +55,7 @@ final class Transaction implements Command
         callable $predicate,
         Command $command,
     ): self {
-        return new self($command, $predicate);
+        return new self($command, \Closure::fromCallable($predicate));
     }
 
     #[\NoDiscard]

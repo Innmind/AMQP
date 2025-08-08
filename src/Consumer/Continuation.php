@@ -23,13 +23,10 @@ use Innmind\Immutable\{
 
 final class Continuation
 {
-    private Client\State $state;
-    private State $response;
-
-    private function __construct(Client\State $state, State $response)
-    {
-        $this->state = $state;
-        $this->response = $response;
+    private function __construct(
+        private Client\State $state,
+        private State $response,
+    ) {
     }
 
     #[\NoDiscard]

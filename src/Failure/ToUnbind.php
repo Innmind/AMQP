@@ -10,14 +10,11 @@ use Innmind\AMQP\Model\Queue\Unbinding as Command;
  */
 final class ToUnbind
 {
-    private Command $command;
-
     /**
      * @internal
      */
-    public function __construct(Command $command)
+    public function __construct(private Command $command)
     {
-        $this->command = $command;
     }
 
     #[\NoDiscard]

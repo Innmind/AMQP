@@ -19,15 +19,11 @@ use Innmind\Immutable\{
  */
 final class MaxFrameSize
 {
-    /** @var int<0, 4294967295> */
-    private int $value;
-
     /**
      * @param int<0, 4294967295> $value
      */
-    private function __construct(int $value)
+    private function __construct(private int $value)
     {
-        $this->value = $value;
     }
 
     /**
@@ -51,8 +47,8 @@ final class MaxFrameSize
     }
 
     /**
-     * @psalm-assert-if-true positive-int $this->value
-     * @psalm-assert-if-true positive-int $this->toInt()
+     * @psalm-assert-if-true int<1, max> $this->value
+     * @psalm-assert-if-true int<1, max> $this->toInt()
      */
     #[\NoDiscard]
     public function isLimited(): bool

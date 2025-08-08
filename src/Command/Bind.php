@@ -21,11 +21,8 @@ use Innmind\Immutable\{
 
 final class Bind implements Command
 {
-    private Binding $command;
-
-    private function __construct(Binding $command)
+    private function __construct(private Binding $command)
     {
-        $this->command = $command;
     }
 
     #[\Override]

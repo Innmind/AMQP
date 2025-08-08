@@ -13,13 +13,10 @@ use Innmind\Url\Authority\UserInformation\{
  */
 final class StartOk
 {
-    private User $user;
-    private Password $password;
-
-    private function __construct(User $user, Password $password)
-    {
-        $this->user = $user;
-        $this->password = $password;
+    private function __construct(
+        private User $user,
+        private Password $password,
+    ) {
     }
 
     /**

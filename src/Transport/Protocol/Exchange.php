@@ -24,11 +24,8 @@ use Innmind\Immutable\{
  */
 final class Exchange
 {
-    private ArgumentTranslator $translate;
-
-    public function __construct(ArgumentTranslator $translator)
+    public function __construct(private ArgumentTranslator $translate)
     {
-        $this->translate = $translator;
     }
 
     /**

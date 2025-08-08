@@ -10,11 +10,8 @@ namespace Innmind\AMQP\Model\Basic\Message;
  */
 final class UserId
 {
-    private string $value;
-
-    private function __construct(string $value)
+    private function __construct(private string $value)
     {
-        $this->value = $value;
     }
 
     /**

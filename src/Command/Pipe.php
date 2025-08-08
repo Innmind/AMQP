@@ -17,13 +17,10 @@ use Innmind\Immutable\Attempt;
  */
 final class Pipe implements Command
 {
-    private Command $first;
-    private Command $second;
-
-    public function __construct(Command $first, Command $second)
-    {
-        $this->first = $first;
-        $this->second = $second;
+    public function __construct(
+        private Command $first,
+        private Command $second,
+    ) {
     }
 
     #[\Override]

@@ -18,18 +18,11 @@ use Innmind\Immutable\Sequence;
  */
 final class Heartbeat
 {
-    private Clock $clock;
-    private Period $threshold;
-    private PointInTime $lastReceivedData;
-
     private function __construct(
-        Clock $clock,
-        Period $threshold,
-        PointInTime $lastReceivedData,
+        private Clock $clock,
+        private Period $threshold,
+        private PointInTime $lastReceivedData,
     ) {
-        $this->clock = $clock;
-        $this->threshold = $threshold;
-        $this->lastReceivedData = $lastReceivedData;
     }
 
     public static function start(Clock $clock, Period $threshold): self

@@ -17,11 +17,8 @@ use Innmind\Immutable\{
  */
 final class LongString implements Value
 {
-    private Str $original;
-
-    private function __construct(Str $string)
+    private function __construct(private Str $original)
     {
-        $this->original = $string;
     }
 
     /**

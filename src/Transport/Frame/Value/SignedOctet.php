@@ -24,15 +24,11 @@ use Innmind\Immutable\{
  */
 final class SignedOctet implements Value
 {
-    /** @var int<-128, 127> */
-    private int $original;
-
     /**
-     * @param int<-128, 127> $octet
+     * @param int<-128, 127> $original
      */
-    private function __construct(int $octet)
+    private function __construct(private int $original)
     {
-        $this->original = $octet;
     }
 
     /**

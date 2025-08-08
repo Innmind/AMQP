@@ -17,11 +17,8 @@ use Innmind\Immutable\{
  */
 final class SignedLongLongInteger implements Value
 {
-    private int $original;
-
-    private function __construct(int $value)
+    private function __construct(private int $original)
     {
-        $this->original = $value;
     }
 
     /**

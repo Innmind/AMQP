@@ -5,11 +5,8 @@ namespace Innmind\AMQP\Client;
 
 final class State
 {
-    private mixed $value;
-
-    private function __construct(mixed $value)
+    private function __construct(private mixed $value)
     {
-        $this->value = $value;
     }
 
     public static function of(mixed $value): self

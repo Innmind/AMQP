@@ -10,14 +10,11 @@ use Innmind\Signals\Signal;
  */
 final class ClosedBySignal
 {
-    private Signal $signal;
-
     /**
      * @internal
      */
-    public function __construct(Signal $signal)
+    public function __construct(private Signal $signal)
     {
-        $this->signal = $signal;
     }
 
     #[\NoDiscard]

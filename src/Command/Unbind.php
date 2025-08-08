@@ -17,11 +17,8 @@ use Innmind\Immutable\Attempt;
 
 final class Unbind implements Command
 {
-    private Unbinding $command;
-
-    private function __construct(Unbinding $command)
+    private function __construct(private Unbinding $command)
     {
-        $this->command = $command;
     }
 
     #[\Override]

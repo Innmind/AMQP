@@ -8,15 +8,11 @@ namespace Innmind\AMQP\Model;
  */
 final class Count
 {
-    /** @var int<0, max> */
-    private int $value;
-
     /**
      * @param int<0, max> $value
      */
-    private function __construct(int $value)
+    private function __construct(private int $value)
     {
-        $this->value = $value;
     }
 
     /**

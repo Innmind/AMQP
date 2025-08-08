@@ -21,11 +21,8 @@ use Innmind\Immutable\{
 
 final class DeleteExchange implements Command
 {
-    private Deletion $command;
-
-    private function __construct(Deletion $command)
+    private function __construct(private Deletion $command)
     {
-        $this->command = $command;
     }
 
     #[\Override]

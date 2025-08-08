@@ -26,15 +26,11 @@ use Innmind\Immutable\{
  */
 final class Sequence implements Value
 {
-    /** @var Seq<Value> */
-    private Seq $original;
-
     /**
-     * @param Seq<Value> $values
+     * @param Seq<Value> $original
      */
-    private function __construct(Seq $values)
+    private function __construct(private Seq $original)
     {
-        $this->original = $values;
     }
 
     /**

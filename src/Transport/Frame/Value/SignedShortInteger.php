@@ -22,15 +22,11 @@ use Innmind\Immutable\{
  */
 final class SignedShortInteger implements Value
 {
-    /** @var int<-32768, 32767> */
-    private int $original;
-
     /**
-     * @param int<-32768, 32767> $value
+     * @param int<-32768, 32767> $original
      */
-    private function __construct(int $value)
+    private function __construct(private int $original)
     {
-        $this->original = $value;
     }
 
     /**
