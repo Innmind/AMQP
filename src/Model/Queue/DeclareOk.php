@@ -10,15 +10,11 @@ use Innmind\AMQP\Model\Count;
  */
 final class DeclareOk
 {
-    private string $name;
-    private Count $message;
-    private Count $consumer;
-
-    private function __construct(string $name, Count $message, Count $consumer)
-    {
-        $this->name = $name;
-        $this->message = $message;
-        $this->consumer = $consumer;
+    private function __construct(
+        private string $name,
+        private Count $message,
+        private Count $consumer,
+    ) {
     }
 
     /**

@@ -9,15 +9,11 @@ namespace Innmind\AMQP\Transport\Frame;
  */
 final class Channel
 {
-    /** @var int<0, 65535> */
-    private int $value;
-
     /**
      * @param int<0, 65535> $value
      */
-    public function __construct(int $value)
+    public function __construct(private int $value)
     {
-        $this->value = $value;
     }
 
     /**

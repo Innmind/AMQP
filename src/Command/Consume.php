@@ -29,17 +29,13 @@ use Innmind\Immutable\{
 
 final class Consume implements Command
 {
-    private Model $command;
-    /** @var callable(mixed, Message, Continuation, Details): Continuation */
-    private $consume;
-
     /**
-     * @param callable(mixed, Message, Continuation, Details): Continuation $consume
+     * @param \Closure(mixed, Message, Continuation, Details): Continuation $consume
      */
-    private function __construct(Model $command, callable $consume)
-    {
-        $this->command = $command;
-        $this->consume = $consume;
+    private function __construct(
+        private Model $command,
+        private \Closure $consume,
+    ) {
     }
 
     #[\Override]
@@ -89,7 +85,7 @@ final class Consume implements Command
     #[\NoDiscard]
     public function handle(callable $consume): self
     {
-        return new self($this->command, $consume);
+        return new self($this->command, \Closure::fromCallable($consume));
     }
 
     /**

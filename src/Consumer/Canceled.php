@@ -10,11 +10,8 @@ use Innmind\AMQP\Client\State;
  */
 final class Canceled
 {
-    private State $state;
-
-    private function __construct(State $state)
+    private function __construct(private State $state)
     {
-        $this->state = $state;
     }
 
     public static function of(State $state): self

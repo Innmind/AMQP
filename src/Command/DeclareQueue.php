@@ -26,11 +26,8 @@ use Innmind\Immutable\{
 
 final class DeclareQueue implements Command
 {
-    private Declaration $command;
-
-    private function __construct(Declaration $command)
+    private function __construct(private Declaration $command)
     {
-        $this->command = $command;
     }
 
     #[\Override]

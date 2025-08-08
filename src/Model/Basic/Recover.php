@@ -8,11 +8,8 @@ namespace Innmind\AMQP\Model\Basic;
  */
 final class Recover
 {
-    private bool $requeue = false;
-
-    private function __construct(bool $requeue)
+    private function __construct(private bool $requeue)
     {
-        $this->requeue = $requeue;
     }
 
     /**

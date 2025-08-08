@@ -19,15 +19,11 @@ use Innmind\Immutable\{
  */
 final class MaxFrameSize
 {
-    /** @var int<0, 4294967295> */
-    private int $value;
-
     /**
      * @param int<0, 4294967295> $value
      */
-    private function __construct(int $value)
+    private function __construct(private int $value)
     {
-        $this->value = $value;
     }
 
     /**

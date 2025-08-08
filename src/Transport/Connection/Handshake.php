@@ -26,11 +26,8 @@ use Innmind\Immutable\{
  */
 final class Handshake
 {
-    private Authority $authority;
-
-    public function __construct(Authority $authority)
+    public function __construct(private Authority $authority)
     {
-        $this->authority = $authority;
     }
 
     /**

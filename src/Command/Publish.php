@@ -21,15 +21,11 @@ use Innmind\Immutable\{
 
 final class Publish implements Command
 {
-    /** @var Sequence<Model> */
-    private Sequence $commands;
-
     /**
      * @param Sequence<Model> $commands
      */
-    private function __construct(Sequence $commands)
+    private function __construct(private Sequence $commands)
     {
-        $this->commands = $commands;
     }
 
     #[\Override]

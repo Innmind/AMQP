@@ -39,11 +39,8 @@ use Innmind\Immutable\{
  */
 final class Basic
 {
-    private ArgumentTranslator $translate;
-
-    public function __construct(ArgumentTranslator $translator)
+    public function __construct(private ArgumentTranslator $translate)
     {
-        $this->translate = $translator;
     }
 
     /**

@@ -22,29 +22,17 @@ use Innmind\Immutable\{
 
 final class Client
 {
-    /** @var Maybe<Command> */
-    private Maybe $command;
-    /** @var callable(): Attempt<Connection> */
-    private $load;
-    private Filesystem $filesystem;
-    /** @var Maybe<CurrentProcess> */
-    private Maybe $signals;
-
     /**
      * @param Maybe<Command> $command
-     * @param callable(): Attempt<Connection> $load
+     * @param \Closure(): Attempt<Connection> $load
      * @param Maybe<CurrentProcess> $signals
      */
     private function __construct(
-        Maybe $command,
-        callable $load,
-        Filesystem $filesystem,
-        Maybe $signals,
+        private Maybe $command,
+        private \Closure $load,
+        private Filesystem $filesystem,
+        private Maybe $signals,
     ) {
-        $this->command = $command;
-        $this->load = $load;
-        $this->filesystem = $filesystem;
-        $this->signals = $signals;
     }
 
     /**
@@ -60,7 +48,7 @@ final class Client
 
         return new self(
             $command,
-            $load,
+            \Closure::fromCallable($load),
             $filesystem,
             $signals,
         );

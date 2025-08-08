@@ -17,11 +17,8 @@ use Innmind\Immutable\Attempt;
 
 final class Qos implements Command
 {
-    private Model $command;
-
-    private function __construct(Model $command)
+    private function __construct(private Model $command)
     {
-        $this->command = $command;
     }
 
     #[\Override]

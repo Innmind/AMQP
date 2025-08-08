@@ -25,11 +25,8 @@ use Innmind\Immutable\{
  */
 final class Timestamp implements Value
 {
-    private PointInTime $original;
-
-    private function __construct(PointInTime $point)
+    private function __construct(private PointInTime $original)
     {
-        $this->original = $point;
     }
 
     /**

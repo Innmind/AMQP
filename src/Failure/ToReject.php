@@ -8,14 +8,11 @@ namespace Innmind\AMQP\Failure;
  */
 final class ToReject
 {
-    private string $queue;
-
     /**
      * @internal
      */
-    public function __construct(string $queue)
+    public function __construct(private string $queue)
     {
-        $this->queue = $queue;
     }
 
     #[\NoDiscard]

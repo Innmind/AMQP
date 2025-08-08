@@ -11,30 +11,17 @@ use Innmind\Immutable\Maybe;
  */
 final class Details
 {
-    /** @var int<0, max> */
-    private int $deliveryTag;
-    private bool $redelivered;
-    private string $exchange;
-    private string $routingKey;
-    /** @var Maybe<Count> */
-    private Maybe $messages;
-
     /**
      * @param int<0, max> $deliveryTag
      * @param Maybe<Count> $messages
      */
     private function __construct(
-        int $deliveryTag,
-        bool $redelivered,
-        string $exchange,
-        string $routingKey,
-        Maybe $messages,
+        private int $deliveryTag,
+        private bool $redelivered,
+        private string $exchange,
+        private string $routingKey,
+        private Maybe $messages,
     ) {
-        $this->deliveryTag = $deliveryTag;
-        $this->redelivered = $redelivered;
-        $this->exchange = $exchange;
-        $this->routingKey = $routingKey;
-        $this->messages = $messages;
     }
 
     /**

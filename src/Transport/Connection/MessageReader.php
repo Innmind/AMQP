@@ -38,11 +38,8 @@ use Innmind\Immutable\{
  */
 final class MessageReader
 {
-    private Filesystem $filesystem;
-
-    private function __construct(Filesystem $filesystem)
+    private function __construct(private Filesystem $filesystem)
     {
-        $this->filesystem = $filesystem;
     }
 
     /**

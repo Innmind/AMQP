@@ -10,11 +10,8 @@ use Innmind\TimeContinuum\Period;
 
 final class Factory
 {
-    private OperatingSystem $os;
-
-    private function __construct(OperatingSystem $os)
+    private function __construct(private OperatingSystem $os)
     {
-        $this->os = $os;
     }
 
     #[\NoDiscard]

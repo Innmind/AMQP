@@ -25,15 +25,11 @@ use Innmind\Immutable\{
  */
 final class Table implements Value
 {
-    /** @var Map<string, Value> */
-    private Map $original;
-
     /**
-     * @param Map<string, Value> $map
+     * @param Map<string, Value> $original
      */
-    private function __construct(Map $map)
+    private function __construct(private Map $original)
     {
-        $this->original = $map;
     }
 
     /**

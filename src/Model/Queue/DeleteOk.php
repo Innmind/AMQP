@@ -10,11 +10,8 @@ use Innmind\AMQP\Model\Count;
  */
 final class DeleteOk
 {
-    private Count $message;
-
-    private function __construct(Count $message)
+    private function __construct(private Count $message)
     {
-        $this->message = $message;
     }
 
     /**

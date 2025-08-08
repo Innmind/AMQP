@@ -11,23 +11,17 @@ use Innmind\Immutable\Maybe;
  */
 final class ClosedByServer
 {
-    private string $message;
-    /** @var int<0, 65535> */
-    private int $code;
-    /** @var Maybe<Method> */
-    private Maybe $method;
-
     /**
      * @internal
      *
      * @param int<0, 65535> $code
      * @param Maybe<Method> $method
      */
-    public function __construct(string $message, int $code, Maybe $method)
-    {
-        $this->message = $message;
-        $this->code = $code;
-        $this->method = $method;
+    public function __construct(
+        private string $message,
+        private int $code,
+        private Maybe $method,
+    ) {
     }
 
     #[\NoDiscard]

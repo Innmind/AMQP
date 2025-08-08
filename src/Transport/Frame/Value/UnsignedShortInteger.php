@@ -22,15 +22,11 @@ use Innmind\Immutable\{
  */
 final class UnsignedShortInteger implements Value
 {
-    /** @var int<0, 65535> */
-    private int $original;
-
     /**
-     * @param int<0, 65535> $value
+     * @param int<0, 65535> $original
      */
-    private function __construct(int $value)
+    private function __construct(private int $original)
     {
-        $this->original = $value;
     }
 
     /**

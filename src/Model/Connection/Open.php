@@ -10,11 +10,8 @@ use Innmind\Url\Path;
  */
 final class Open
 {
-    private Path $virtualHost;
-
-    private function __construct(Path $virtualHost)
+    private function __construct(private Path $virtualHost)
     {
-        $this->virtualHost = $virtualHost;
     }
 
     /**
