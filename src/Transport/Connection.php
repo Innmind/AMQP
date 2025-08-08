@@ -36,6 +36,7 @@ use Innmind\TimeContinuum\{
 use Innmind\OperatingSystem\Remote;
 use Innmind\Immutable\{
     Str,
+    Attempt,
     Maybe,
     Either,
     Sequence,
@@ -80,7 +81,7 @@ final class Connection
     }
 
     /**
-     * @return Maybe<self>
+     * @return Attempt<self>
      */
     public static function open(
         Transport $transport,
@@ -89,7 +90,7 @@ final class Connection
         Period $timeout,
         Clock $clock,
         Remote $remote,
-    ): Maybe {
+    ): Attempt {
         return $remote
             ->socket(
                 $transport,
@@ -114,7 +115,6 @@ final class Connection
                 (new FrameReader)($protocol),
                 SignalListener::uninstalled(),
             ))
-            ->maybe()
             ->flatMap(new Start($server->authority()))
             ->flatMap(new Handshake($server->authority()))
             ->flatMap(new OpenVHost($server->path()));

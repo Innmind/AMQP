@@ -16,6 +16,7 @@ use Innmind\AMQP\{
 use Innmind\TimeContinuum\Period;
 use Innmind\Url\Authority;
 use Innmind\Immutable\{
+    Attempt,
     Maybe,
     Either,
     Predicate\Instance,
@@ -34,9 +35,9 @@ final class Handshake
     }
 
     /**
-     * @return Maybe<Connection>
+     * @return Attempt<Connection>
      */
-    public function __invoke(Connection $connection): Maybe
+    public function __invoke(Connection $connection): Attempt
     {
         return $connection
             ->wait(Method::connectionSecure, Method::connectionTune)
@@ -44,7 +45,7 @@ final class Handshake
                 true => $this->secure($connection),
                 false => $this->maybeTune($connection, $received->frame()),
             })
-            ->maybe();
+            ->attempt(static fn($failure) => $failure);
     }
 
     /**

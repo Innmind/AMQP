@@ -9,7 +9,7 @@ use Innmind\AMQP\{
     Model\Connection\StartOk,
 };
 use Innmind\Url\Authority;
-use Innmind\Immutable\Maybe;
+use Innmind\Immutable\Attempt;
 
 /**
  * @internal
@@ -24,9 +24,9 @@ final class Start
     }
 
     /**
-     * @return Maybe<Connection>
+     * @return Attempt<Connection>
      */
-    public function __invoke(Connection $connection): Maybe
+    public function __invoke(Connection $connection): Attempt
     {
         // at this point the server could respond with a simple text "AMQP0xyz"
         // where xyz represent the version of the protocol it supports meaning
@@ -43,7 +43,7 @@ final class Start
                     ),
                 ),
             )
-            ->maybe()
+            ->attempt(static fn($failure) => $failure)
             ->map(static fn() => $connection);
     }
 }

@@ -9,7 +9,7 @@ use Innmind\AMQP\{
     Model\Connection\Open,
 };
 use Innmind\Url\Path;
-use Innmind\Immutable\Maybe;
+use Innmind\Immutable\Attempt;
 
 /**
  * @internal
@@ -24,9 +24,9 @@ final class OpenVHost
     }
 
     /**
-     * @return Maybe<Connection>
+     * @return Attempt<Connection>
      */
-    public function __invoke(Connection $connection): Maybe
+    public function __invoke(Connection $connection): Attempt
     {
         return $connection
             ->request(
@@ -35,7 +35,7 @@ final class OpenVHost
                 ),
                 Method::connectionOpenOk,
             )
-            ->maybe()
+            ->attempt(static fn($failure) => $failure)
             ->map(static fn() => $connection);
     }
 }
