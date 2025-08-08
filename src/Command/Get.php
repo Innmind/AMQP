@@ -31,7 +31,7 @@ final class Get implements Command
 {
     /**
      * @param \Closure(mixed, Message, Continuation, Details): Continuation $consume
-     * @param positive-int $take
+     * @param int<1, max> $take
      */
     private function __construct(
         private Model $command,
@@ -77,7 +77,7 @@ final class Get implements Command
     }
 
     /**
-     * @param positive-int $take
+     * @param int<1, max> $take
      */
     #[\NoDiscard]
     public function take(int $take): self

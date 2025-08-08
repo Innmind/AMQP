@@ -13,7 +13,7 @@ use Innmind\AMQP\Transport\Frame\Value;
 final class Unpacked
 {
     /**
-     * @param 0|positive-int $read
+     * @param int<0, max> $read
      * @param T $value
      */
     private function __construct(
@@ -26,7 +26,7 @@ final class Unpacked
      * @psalm-pure
      * @template V of Value
      *
-     * @param 0|positive-int $read
+     * @param int<0, max> $read
      * @param V $value
      *
      * @return self<V>
@@ -37,7 +37,7 @@ final class Unpacked
     }
 
     /**
-     * @return 0|positive-int
+     * @return int<0, max>
      */
     public function read(): int
     {

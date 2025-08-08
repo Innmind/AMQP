@@ -47,8 +47,8 @@ final class MaxFrameSize
     }
 
     /**
-     * @psalm-assert-if-true positive-int $this->value
-     * @psalm-assert-if-true positive-int $this->toInt()
+     * @psalm-assert-if-true int<1, max> $this->value
+     * @psalm-assert-if-true int<1, max> $this->toInt()
      */
     #[\NoDiscard]
     public function isLimited(): bool
