@@ -13,7 +13,7 @@ use Innmind\AMQP\{
     Transport\Frame\Method,
     Model\Basic\Qos as Model,
 };
-use Innmind\Immutable\Either;
+use Innmind\Immutable\Attempt;
 
 final class Qos implements Command
 {
@@ -30,7 +30,7 @@ final class Qos implements Command
         Channel $channel,
         MessageReader $read,
         State $state,
-    ): Either {
+    ): Attempt {
         return $connection
             ->request(
                 fn($protocol) => $protocol->basic()->qos(
@@ -40,7 +40,7 @@ final class Qos implements Command
                 Method::basicQosOk,
             )
             ->map(static fn() => $state)
-            ->leftMap(static fn() => Failure::toAdjustQos());
+            ->attempt(static fn() => Failure::toAdjustQos());
     }
 
     /**

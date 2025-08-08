@@ -18,7 +18,7 @@ use Innmind\AMQP\{
     Failure,
 };
 use Innmind\Immutable\{
-    Either,
+    Attempt,
     Sequence,
     Predicate\Instance,
 };
@@ -38,7 +38,7 @@ final class DeleteQueue implements Command
         Channel $channel,
         MessageReader $read,
         State $state,
-    ): Either {
+    ): Attempt {
         $frames = fn(Protocol $protocol): Sequence => $protocol->queue()->delete(
             $channel,
             $this->command,
@@ -64,7 +64,7 @@ final class DeleteQueue implements Command
 
         return $sideEffect
             ->map(static fn() => $state)
-            ->leftMap(fn() => Failure::toDeleteQueue($this->command));
+            ->attempt(fn() => Failure::toDeleteQueue($this->command));
     }
 
     #[\NoDiscard]

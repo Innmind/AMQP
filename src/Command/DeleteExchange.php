@@ -15,7 +15,7 @@ use Innmind\AMQP\{
     Failure,
 };
 use Innmind\Immutable\{
-    Either,
+    Attempt,
     Sequence,
 };
 
@@ -34,7 +34,7 @@ final class DeleteExchange implements Command
         Channel $channel,
         MessageReader $read,
         State $state,
-    ): Either {
+    ): Attempt {
         $frames = fn(Protocol $protocol): Sequence => $protocol->exchange()->delete(
             $channel,
             $this->command,
@@ -47,7 +47,7 @@ final class DeleteExchange implements Command
 
         return $sideEffect
             ->map(static fn() => $state)
-            ->leftMap(fn() => Failure::toDeleteExchange($this->command));
+            ->attempt(fn() => Failure::toDeleteExchange($this->command));
     }
 
     #[\NoDiscard]

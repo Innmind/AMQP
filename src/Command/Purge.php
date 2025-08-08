@@ -18,7 +18,7 @@ use Innmind\AMQP\{
     Model\Count,
 };
 use Innmind\Immutable\{
-    Either,
+    Attempt,
     Sequence,
     Predicate\Instance,
 };
@@ -38,7 +38,7 @@ final class Purge implements Command
         Channel $channel,
         MessageReader $read,
         State $state,
-    ): Either {
+    ): Attempt {
         $frames = fn(Protocol $protocol): Sequence => $protocol->queue()->purge(
             $channel,
             $this->command,
@@ -64,7 +64,7 @@ final class Purge implements Command
 
         return $sideEffect
             ->map(static fn() => $state)
-            ->leftMap(fn() => Failure::toPurge($this->command));
+            ->attempt(fn() => Failure::toPurge($this->command));
     }
 
     #[\NoDiscard]

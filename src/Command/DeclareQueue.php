@@ -19,7 +19,7 @@ use Innmind\AMQP\{
 };
 use Innmind\Immutable\{
     Maybe,
-    Either,
+    Attempt,
     Sequence,
     Predicate\Instance,
 };
@@ -39,7 +39,7 @@ final class DeclareQueue implements Command
         Channel $channel,
         MessageReader $read,
         State $state,
-    ): Either {
+    ): Attempt {
         $frames = fn(Protocol $protocol): Sequence => $protocol->queue()->declare(
             $channel,
             $this->command,
@@ -78,7 +78,7 @@ final class DeclareQueue implements Command
 
         return $sideEffect
             ->map(static fn() => $state)
-            ->leftMap(fn() => Failure::toDeclareQueue($this->command));
+            ->attempt(fn() => Failure::toDeclareQueue($this->command));
     }
 
     #[\NoDiscard]

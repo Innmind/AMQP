@@ -8,12 +8,12 @@ use Innmind\AMQP\Transport\{
     Frame\Channel,
     Connection\MessageReader,
 };
-use Innmind\Immutable\Either;
+use Innmind\Immutable\Attempt;
 
 interface Command
 {
     /**
-     * @return Either<Failure, Client\State>
+     * @return Attempt<Client\State>
      */
     #[\NoDiscard]
     public function __invoke(
@@ -21,5 +21,5 @@ interface Command
         Channel $channel,
         MessageReader $read,
         Client\State $state,
-    ): Either;
+    ): Attempt;
 }

@@ -15,7 +15,7 @@ use Innmind\AMQP\{
     Model\Queue\Binding,
 };
 use Innmind\Immutable\{
-    Either,
+    Attempt,
     Sequence,
 };
 
@@ -34,7 +34,7 @@ final class Bind implements Command
         Channel $channel,
         MessageReader $read,
         State $state,
-    ): Either {
+    ): Attempt {
         $frames = fn(Protocol $protocol): Sequence => $protocol->queue()->bind(
             $channel,
             $this->command,
@@ -47,7 +47,7 @@ final class Bind implements Command
 
         return $sideEffect
             ->map(static fn() => $state)
-            ->leftMap(fn() => Failure::toBind($this->command));
+            ->attempt(fn() => Failure::toBind($this->command));
     }
 
     #[\NoDiscard]

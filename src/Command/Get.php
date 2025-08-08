@@ -22,7 +22,7 @@ use Innmind\AMQP\{
 };
 use Innmind\Immutable\{
     Maybe,
-    Either,
+    Attempt,
     Sequence,
     Predicate\Instance,
 };
@@ -52,22 +52,15 @@ final class Get implements Command
         Channel $channel,
         MessageReader $read,
         State $state,
-    ): Either {
-        /**
-         * @psalm-suppress MixedArgumentTypeCoercion
-         * @var Either<Failure, State>
-         */
-        return Sequence::of(...\array_fill(0, $this->take, null))->reduce(
-            Either::right($state),
-            fn(Either $state) => $state->flatMap(
-                fn(State $state) => $this->doGet(
-                    $connection,
-                    $channel,
-                    $read,
-                    $state,
-                ),
-            ),
-        );
+    ): Attempt {
+        return Sequence::of(...\array_fill(0, $this->take, null))
+            ->sink($state)
+            ->attempt(fn($state) => $this->doGet(
+                $connection,
+                $channel,
+                $read,
+                $state,
+            ));
     }
 
     #[\NoDiscard]
@@ -99,15 +92,14 @@ final class Get implements Command
     }
 
     /**
-     * @return Either<Failure, State>
+     * @return Attempt<State>
      */
     public function doGet(
         Connection $connection,
         Channel $channel,
         MessageReader $read,
         State $state,
-    ): Either {
-        /** @var Either<Failure, State> */
+    ): Attempt {
         return $connection
             ->request(
                 fn($protocol) => $protocol->basic()->get(
@@ -117,6 +109,7 @@ final class Get implements Command
                 Method::basicGetOk,
                 Method::basicGetEmpty,
             )
+            ->attempt(static fn($failure) => $failure)
             ->flatMap(
                 fn($frame) => $this->maybeConsume(
                     $connection,
@@ -126,11 +119,11 @@ final class Get implements Command
                     $state,
                 ),
             )
-            ->leftMap(fn() => Failure::toGet($this->command));
+            ->recover(fn() => Attempt::error(Failure::toGet($this->command)));
     }
 
     /**
-     * @return Either<Failure, State>
+     * @return Attempt<State>
      */
     private function maybeConsume(
         Connection $connection,
@@ -138,10 +131,9 @@ final class Get implements Command
         MessageReader $read,
         Frame $frame,
         State $state,
-    ): Either {
+    ): Attempt {
         if ($frame->is(Method::basicGetEmpty)) {
-            /** @var Either<Failure, State> */
-            return Either::right($state);
+            return Attempt::result($state);
         }
 
         $deliveryTag = $frame
@@ -171,27 +163,27 @@ final class Get implements Command
             ->map(static fn($value) => $value->original())
             ->map(Count::of(...));
 
-        /** @var Either<Failure, State> */
         return Maybe::all($deliveryTag, $redelivered, $exchange, $routingKey, $messageCount)
             ->map(Details::ofGet(...))
-            ->either()
-            ->leftMap(fn() => Failure::toGet($this->command))
+            ->attempt(fn() => Failure::toGet($this->command))
             ->flatMap(
-                fn($details) => $read($connection)->flatMap(
-                    fn($message) => $this->consume(
-                        $connection,
-                        $channel,
-                        $read,
-                        $state,
-                        $message,
-                        $details,
+                fn($details) => $read($connection)
+                    ->attempt(static fn($failure) => $failure)
+                    ->flatMap(
+                        fn($message) => $this->consume(
+                            $connection,
+                            $channel,
+                            $read,
+                            $state,
+                            $message,
+                            $details,
+                        ),
                     ),
-                ),
             );
     }
 
     /**
-     * @return Either<Failure, State>
+     * @return Attempt<State>
      */
     private function consume(
         Connection $connection,
@@ -200,7 +192,7 @@ final class Get implements Command
         State $state,
         Message $message,
         Details $details,
-    ): Either {
+    ): Attempt {
         return ($this->consume)(
             $state->unwrap(),
             $message,
@@ -217,6 +209,7 @@ final class Get implements Command
             ->map(static fn($state) => match (true) {
                 $state instanceof Canceled => $state->state(),
                 default => $state,
-            });
+            })
+            ->attempt(static fn($failure) => $failure);
     }
 }

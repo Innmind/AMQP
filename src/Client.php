@@ -16,7 +16,6 @@ use Innmind\OperatingSystem\{
 };
 use Innmind\Immutable\{
     Attempt,
-    Either,
     Maybe,
     SideEffect,
 };
@@ -113,7 +112,7 @@ final class Client
                         fn($state) => $this
                             ->close($connection, $channel)
                             ->map(static fn(): mixed => $state->unwrap()),
-                    )->attempt(static fn($failure) => $failure);
+                    );
                 }),
             static fn() => Attempt::result($state),
         );
@@ -152,11 +151,10 @@ final class Client
     }
 
     /**
-     * @return Either<Failure, SideEffect>
+     * @return Attempt<SideEffect>
      */
-    private function close(Connection $connection, Channel $channel): Either
+    private function close(Connection $connection, Channel $channel): Attempt
     {
-        /** @var Either<Failure, SideEffect> */
         return $connection
             ->request(
                 static fn($protocol) => $protocol->channel()->close(
@@ -165,12 +163,11 @@ final class Client
                 ),
                 Method::channelCloseOk,
             )
-            ->leftMap(static fn() => Failure::toCloseChannel())
+            ->attempt(static fn() => Failure::toCloseChannel())
             ->flatMap(
                 static fn() => $connection
                     ->close()
-                    ->either()
-                    ->leftMap(static fn() => Failure::toCloseConnection()),
+                    ->attempt(static fn() => Failure::toCloseConnection()),
             );
     }
 }
