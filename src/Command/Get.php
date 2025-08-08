@@ -166,18 +166,16 @@ final class Get implements Command
             ->map(Details::ofGet(...))
             ->attempt(fn() => Failure::toGet($this->command))
             ->flatMap(
-                fn($details) => $read($connection)
-                    ->attempt(static fn($failure) => $failure)
-                    ->flatMap(
-                        fn($message) => $this->consume(
-                            $connection,
-                            $channel,
-                            $read,
-                            $state,
-                            $message,
-                            $details,
-                        ),
+                fn($details) => $read($connection)->flatMap(
+                    fn($message) => $this->consume(
+                        $connection,
+                        $channel,
+                        $read,
+                        $state,
+                        $message,
+                        $details,
                     ),
+                ),
             );
     }
 

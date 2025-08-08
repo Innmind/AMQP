@@ -125,11 +125,9 @@ final class Continuation
             // read all the frames for the prefetched message then wait for next
             // frame
             $received = $received->flatMap(
-                static fn() => $read($connection)
-                    ->attempt(static fn($failure) => $failure)
-                    ->flatMap(
-                        static fn() => $connection->wait(),
-                    ),
+                static fn() => $read($connection)->flatMap(
+                    static fn() => $connection->wait(),
+                ),
             );
             $walkOverPrefetchedMessages = $received->match(
                 static fn($received) => $received->is(Method::basicDeliver),

@@ -30,7 +30,7 @@ use Innmind\Immutable\{
     Predicate\Instance,
     Sequence,
     Maybe,
-    Either,
+    Attempt,
 };
 
 /**
@@ -46,14 +46,12 @@ final class MessageReader
     }
 
     /**
-     * @return Either<Failure, Message>
+     * @return Attempt<Message>
      */
-    public function __invoke(Connection $connection): Either
+    public function __invoke(Connection $connection): Attempt
     {
         return $connection
             ->wait()
-            ->either()
-            ->leftMap(static fn() => Failure::unexpectedFrame()) // todo delete
             ->flatMap(fn($received) => $this->decode(
                 $connection,
                 $received->frame(),
@@ -66,19 +64,18 @@ final class MessageReader
     }
 
     /**
-     * @return Either<Failure, Message>
+     * @return Attempt<Message>
      */
     private function decode(
         Connection $connection,
         Frame $header,
-    ): Either {
+    ): Attempt {
         return $header
             ->values()
             ->first()
             ->keep(Instance::of(Value\UnsignedLongLongInteger::class))
             ->map(static fn($value) => $value->original())
-            ->either()
-            ->leftMap(static fn() => Failure::toReadMessage())
+            ->attempt(static fn() => Failure::toReadMessage())
             ->flatMap(fn($bodySize) => $this->readMessage($connection, $bodySize))
             ->flatMap(
                 fn($message) => $header
@@ -86,8 +83,7 @@ final class MessageReader
                     ->get(1)
                     ->keep(Instance::of(Value\UnsignedShortInteger::class))
                     ->map(static fn($value) => $value->original())
-                    ->either()
-                    ->leftMap(static fn() => Failure::toReadMessage())
+                    ->attempt(static fn() => Failure::toReadMessage())
                     ->flatMap(fn($flagBits) => $this->addProperties(
                         $message,
                         $flagBits,
@@ -101,13 +97,13 @@ final class MessageReader
     /**
      * @param Sequence<Value> $properties
      *
-     * @return Either<Failure, Message>
+     * @return Attempt<Message>
      */
     private function addProperties(
         Message $message,
         int $flagBits,
         Sequence $properties,
-    ): Either {
+    ): Attempt {
         /** @var Sequence<array{int, callable(Maybe<Value>, Message): Maybe<Message>}> */
         $toParse = Sequence::of(
             [
@@ -230,7 +226,6 @@ final class MessageReader
          * @psalm-suppress MixedArrayAccess
          * @psalm-suppress MixedArgument
          * @psalm-suppress MixedMethodCall
-         * @var Either<Failure, Message>
          */
         return $toParse
             ->filter(static fn($pair) => (bool) ($flagBits & (1 << $pair[0])))
@@ -243,17 +238,16 @@ final class MessageReader
                 ),
             )
             ->map(static fn($state) => $state[1])
-            ->either()
-            ->leftMap(static fn() => Failure::toReadMessage());
+            ->attempt(static fn() => Failure::toReadMessage());
     }
 
     /**
-     * @return Either<Failure, Message>
+     * @return Attempt<Message>
      */
     private function readMessage(
         Connection $connection,
         int $bodySize,
-    ): Either {
+    ): Attempt {
         $chunks = Sequence::lazy(static function() use ($connection, $bodySize) {
             $continue = $bodySize !== 0;
             $read = 0;
@@ -292,8 +286,7 @@ final class MessageReader
         };
 
         return $content
-            ->either()
             ->map(Message::file(...))
-            ->leftMap(static fn() => Failure::toReadMessage());
+            ->mapError(Failure::as(Failure::toReadMessage()));
     }
 }

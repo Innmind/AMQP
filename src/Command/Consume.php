@@ -172,19 +172,17 @@ final class Consume implements Command
         return $connection
             ->wait(Method::basicDeliver)
             ->flatMap(
-                fn($received) => $read($connection)
-                    ->attempt(static fn($failure) => $failure)
-                    ->flatMap(
-                        fn($message) => $this->maybeConsume(
-                            $connection,
-                            $channel,
-                            $read,
-                            $state,
-                            $consumerTag,
-                            $received->frame(),
-                            $message,
-                        ),
+                fn($received) => $read($connection)->flatMap(
+                    fn($message) => $this->maybeConsume(
+                        $connection,
+                        $channel,
+                        $read,
+                        $state,
+                        $consumerTag,
+                        $received->frame(),
+                        $message,
                     ),
+                ),
             )
             ->mapError(Failure::as(Failure::toConsume($this->command)));
     }
