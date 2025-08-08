@@ -4,14 +4,13 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Failure;
 
 use Innmind\AMQP\{
-    Failure,
     Model\Queue\Purge as Command,
 };
 
 /**
  * @psalm-immutable
  */
-final class ToPurge extends Failure
+final class ToPurge
 {
     private Command $command;
 
@@ -29,7 +28,7 @@ final class ToPurge extends Failure
         return $this->command;
     }
 
-    #[\Override]
+    #[\NoDiscard]
     public function kind(): Kind
     {
         return Kind::toPurge;

@@ -3,12 +3,10 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Failure;
 
-use Innmind\AMQP\Failure;
-
 /**
  * @psalm-immutable
  */
-final class ToRollback extends Failure
+final class ToRollback
 {
     /**
      * @internal
@@ -17,7 +15,7 @@ final class ToRollback extends Failure
     {
     }
 
-    #[\Override]
+    #[\NoDiscard]
     public function kind(): Kind
     {
         return Kind::toRollback;

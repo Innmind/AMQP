@@ -7,6 +7,7 @@
 - Requires `innmind/foundation:~1.5`
 - `Innmind\AMQP\Factory::make()` timeout argument is now expressed via `Innmind\TimeContinuum\Period`
 - `Innmind\AMQP\Model\Basic\Message` expiration is now expressed via `Innmind\TimeContinuum\Period`
+- `Innmind\AMQP\Failure` is now an exception that wraps each possible failure object
 
 ### Fixed
 

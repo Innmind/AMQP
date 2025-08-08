@@ -4,14 +4,13 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Failure;
 
 use Innmind\AMQP\{
-    Failure,
     Model\Queue\Declaration as Command,
 };
 
 /**
  * @psalm-immutable
  */
-final class ToDeclareQueue extends Failure
+final class ToDeclareQueue
 {
     private Command $command;
 
@@ -29,7 +28,7 @@ final class ToDeclareQueue extends Failure
         return $this->command;
     }
 
-    #[\Override]
+    #[\NoDiscard]
     public function kind(): Kind
     {
         return Kind::toDeclareQueue;

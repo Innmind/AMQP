@@ -3,12 +3,10 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Failure;
 
-use Innmind\AMQP\Failure;
-
 /**
  * @psalm-immutable
  */
-final class ToCancel extends Failure
+final class ToCancel
 {
     private string $queue;
 
@@ -20,7 +18,7 @@ final class ToCancel extends Failure
         $this->queue = $queue;
     }
 
-    #[\Override]
+    #[\NoDiscard]
     public function kind(): Kind
     {
         return Kind::toCancel;

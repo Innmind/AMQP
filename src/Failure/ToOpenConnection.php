@@ -3,12 +3,10 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Failure;
 
-use Innmind\AMQP\Failure;
-
 /**
  * @psalm-immutable
  */
-final class ToOpenConnection extends Failure
+final class ToOpenConnection
 {
     /**
      * @internal
@@ -17,7 +15,7 @@ final class ToOpenConnection extends Failure
     {
     }
 
-    #[\Override]
+    #[\NoDiscard]
     public function kind(): Kind
     {
         return Kind::toOpenConnection;

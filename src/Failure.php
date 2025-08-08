@@ -7,165 +7,167 @@ use Innmind\AMQP\Transport\Frame\Method;
 use Innmind\Signals\Signal;
 use Innmind\Immutable\Maybe;
 
-/**
- * @psalm-immutable
- */
-abstract class Failure
+final class Failure extends Exception\RuntimeException
 {
-    #[\NoDiscard]
-    final public static function toOpenConnection(): self
-    {
-        return new Failure\ToOpenConnection;
+    private function __construct(
+        private object $failure,
+    ) {
     }
 
     #[\NoDiscard]
-    final public static function toOpenChannel(): self
+    public static function toOpenConnection(): self
     {
-        return new Failure\ToOpenChannel;
+        return new self(new Failure\ToOpenConnection);
     }
 
     #[\NoDiscard]
-    final public static function toCloseChannel(): self
+    public static function toOpenChannel(): self
     {
-        return new Failure\ToCloseChannel;
+        return new self(new Failure\ToOpenChannel);
     }
 
     #[\NoDiscard]
-    final public static function toCloseConnection(): self
+    public static function toCloseChannel(): self
     {
-        return new Failure\ToCloseConnection;
+        return new self(new Failure\ToCloseChannel);
     }
 
     #[\NoDiscard]
-    final public static function toDeleteQueue(Model\Queue\Deletion $command): self
+    public static function toCloseConnection(): self
     {
-        return new Failure\ToDeleteQueue($command);
+        return new self(new Failure\ToCloseConnection);
     }
 
     #[\NoDiscard]
-    final public static function toDeleteExchange(Model\Exchange\Deletion $command): self
+    public static function toDeleteQueue(Model\Queue\Deletion $command): self
     {
-        return new Failure\ToDeleteExchange($command);
+        return new self(new Failure\ToDeleteQueue($command));
     }
 
     #[\NoDiscard]
-    final public static function toDeclareQueue(Model\Queue\Declaration $command): self
+    public static function toDeleteExchange(Model\Exchange\Deletion $command): self
     {
-        return new Failure\ToDeclareQueue($command);
+        return new self(new Failure\ToDeleteExchange($command));
     }
 
     #[\NoDiscard]
-    final public static function toDeclareExchange(Model\Exchange\Declaration $command): self
+    public static function toDeclareQueue(Model\Queue\Declaration $command): self
     {
-        return new Failure\ToDeclareExchange($command);
+        return new self(new Failure\ToDeclareQueue($command));
     }
 
     #[\NoDiscard]
-    final public static function toBind(Model\Queue\Binding $command): self
+    public static function toDeclareExchange(Model\Exchange\Declaration $command): self
     {
-        return new Failure\ToBind($command);
+        return new self(new Failure\ToDeclareExchange($command));
     }
 
     #[\NoDiscard]
-    final public static function toUnbind(Model\Queue\Unbinding $command): self
+    public static function toBind(Model\Queue\Binding $command): self
     {
-        return new Failure\ToUnbind($command);
+        return new self(new Failure\ToBind($command));
     }
 
     #[\NoDiscard]
-    final public static function toPurge(Model\Queue\Purge $command): self
+    public static function toUnbind(Model\Queue\Unbinding $command): self
     {
-        return new Failure\ToPurge($command);
+        return new self(new Failure\ToUnbind($command));
     }
 
     #[\NoDiscard]
-    final public static function toAdjustQos(): self
+    public static function toPurge(Model\Queue\Purge $command): self
     {
-        return new Failure\ToAdjustQos;
+        return new self(new Failure\ToPurge($command));
     }
 
     #[\NoDiscard]
-    final public static function toPublish(Model\Basic\Publish $command): self
+    public static function toAdjustQos(): self
     {
-        return new Failure\ToPublish($command);
+        return new self(new Failure\ToAdjustQos);
     }
 
     #[\NoDiscard]
-    final public static function toGet(Model\Basic\Get $command): self
+    public static function toPublish(Model\Basic\Publish $command): self
     {
-        return new Failure\ToGet($command);
+        return new self(new Failure\ToPublish($command));
     }
 
     #[\NoDiscard]
-    final public static function toConsume(Model\Basic\Consume $command): self
+    public static function toGet(Model\Basic\Get $command): self
     {
-        return new Failure\ToConsume($command);
+        return new self(new Failure\ToGet($command));
     }
 
     #[\NoDiscard]
-    final public static function toAck(string $queue): self
+    public static function toConsume(Model\Basic\Consume $command): self
     {
-        return new Failure\ToAck($queue);
+        return new self(new Failure\ToConsume($command));
     }
 
     #[\NoDiscard]
-    final public static function toReject(string $queue): self
+    public static function toAck(string $queue): self
     {
-        return new Failure\ToReject($queue);
+        return new self(new Failure\ToAck($queue));
     }
 
     #[\NoDiscard]
-    final public static function toCancel(string $queue): self
+    public static function toReject(string $queue): self
     {
-        return new Failure\ToCancel($queue);
+        return new self(new Failure\ToReject($queue));
     }
 
     #[\NoDiscard]
-    final public static function toRecover(string $queue): self
+    public static function toCancel(string $queue): self
     {
-        return new Failure\ToRecover($queue);
+        return new self(new Failure\ToCancel($queue));
     }
 
     #[\NoDiscard]
-    final public static function toSelect(): self
+    public static function toRecover(string $queue): self
     {
-        return new Failure\ToSelect;
+        return new self(new Failure\ToRecover($queue));
     }
 
     #[\NoDiscard]
-    final public static function toCommit(): self
+    public static function toSelect(): self
     {
-        return new Failure\ToCommit;
+        return new self(new Failure\ToSelect);
     }
 
     #[\NoDiscard]
-    final public static function toRollback(): self
+    public static function toCommit(): self
     {
-        return new Failure\ToRollback;
+        return new self(new Failure\ToCommit);
     }
 
     #[\NoDiscard]
-    final public static function toSendFrame(): self
+    public static function toRollback(): self
     {
-        return new Failure\ToSendFrame;
+        return new self(new Failure\ToRollback);
     }
 
     #[\NoDiscard]
-    final public static function toReadFrame(): self
+    public static function toSendFrame(): self
     {
-        return new Failure\ToReadFrame;
+        return new self(new Failure\ToSendFrame);
     }
 
     #[\NoDiscard]
-    final public static function toReadMessage(): self
+    public static function toReadFrame(): self
     {
-        return new Failure\ToReadMessage;
+        return new self(new Failure\ToReadFrame);
     }
 
     #[\NoDiscard]
-    final public static function unexpectedFrame(): self
+    public static function toReadMessage(): self
     {
-        return new Failure\UnexpectedFrame;
+        return new self(new Failure\ToReadMessage);
+    }
+
+    #[\NoDiscard]
+    public static function unexpectedFrame(): self
+    {
+        return new self(new Failure\UnexpectedFrame);
     }
 
     /**
@@ -173,20 +175,30 @@ abstract class Failure
      * @param Maybe<Method> $method
      */
     #[\NoDiscard]
-    final public static function closedByServer(
+    public static function closedByServer(
         string $message,
         int $code,
         Maybe $method,
     ): self {
-        return new Failure\ClosedByServer($message, $code, $method);
+        return new self(new Failure\ClosedByServer($message, $code, $method));
     }
 
     #[\NoDiscard]
-    final public static function closedBySignal(Signal $signal): self
+    public static function closedBySignal(Signal $signal): self
     {
-        return new Failure\ClosedBySignal($signal);
+        return new self(new Failure\ClosedBySignal($signal));
     }
 
     #[\NoDiscard]
-    abstract public function kind(): Failure\Kind;
+    public function unwrap(): object
+    {
+        return $this->failure;
+    }
+
+    #[\NoDiscard]
+    public function kind(): Failure\Kind
+    {
+        /** @psalm-suppress MixedMethodCall,MixedReturnStatement */
+        return $this->failure->kind();
+    }
 }

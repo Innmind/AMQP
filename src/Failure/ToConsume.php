@@ -4,14 +4,13 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Failure;
 
 use Innmind\AMQP\{
-    Failure,
     Model\Basic\Consume as Command,
 };
 
 /**
  * @psalm-immutable
  */
-final class ToConsume extends Failure
+final class ToConsume
 {
     private Command $command;
 
@@ -29,7 +28,7 @@ final class ToConsume extends Failure
         return $this->command;
     }
 
-    #[\Override]
+    #[\NoDiscard]
     public function kind(): Kind
     {
         return Kind::toConsume;
