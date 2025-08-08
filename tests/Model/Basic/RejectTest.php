@@ -5,9 +5,12 @@ namespace Tests\Innmind\AMQP\Model\Basic;
 
 use Innmind\AMQP\Model\Basic\Reject;
 use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 class RejectTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $command = Reject::of(42);
@@ -16,6 +19,8 @@ class RejectTest extends TestCase
         $this->assertFalse($command->shouldRequeue());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testRequeue()
     {
         $command = Reject::requeue(42);

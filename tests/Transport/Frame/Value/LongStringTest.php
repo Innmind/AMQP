@@ -14,15 +14,22 @@ use Innmind\Stream\{
 };
 use Innmind\Immutable\Str;
 use Innmind\BlackBox\PHPUnit\Framework\TestCase;
-use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\{
+    DataProvider,
+    Group,
+};
 
 class LongStringTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $this->assertInstanceOf(Value::class, LongString::literal(''));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     #[DataProvider('cases')]
     public function testStringCast($string, $expected)
     {
@@ -31,6 +38,8 @@ class LongStringTest extends TestCase
         $this->assertSame($string, $value->original()->toString());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     #[DataProvider('cases')]
     public function testFromStream($expected, $string)
     {

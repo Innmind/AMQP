@@ -8,9 +8,12 @@ use Innmind\AMQP\Model\{
     Count,
 };
 use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 class DeclareOkTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $model = DeclareOk::of(

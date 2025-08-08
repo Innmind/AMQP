@@ -5,9 +5,12 @@ namespace Tests\Innmind\AMQP\Model;
 
 use Innmind\AMQP\Model\Count;
 use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 class CountTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $this->assertSame(0, Count::of(0)->toInt());

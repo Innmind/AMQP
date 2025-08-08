@@ -15,10 +15,15 @@ use Innmind\Stream\{
 };
 use Innmind\Immutable\Str;
 use Innmind\BlackBox\PHPUnit\Framework\TestCase;
-use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\{
+    DataProvider,
+    Group,
+};
 
 class UnsignedLongLongIntegerTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $this->assertInstanceOf(
@@ -27,6 +32,8 @@ class UnsignedLongLongIntegerTest extends TestCase
         );
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testThrowWhenIntegerTooLow()
     {
         $this->expectException(OutOfDefinitionSet::class);
@@ -35,6 +42,8 @@ class UnsignedLongLongIntegerTest extends TestCase
         UnsignedLongLongInteger::of(-1);
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     #[DataProvider('cases')]
     public function testStringCast($int, $expected)
     {
@@ -43,6 +52,8 @@ class UnsignedLongLongIntegerTest extends TestCase
         $this->assertSame($int, $value->original());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     #[DataProvider('cases')]
     public function testFromStream($expected, $string)
     {

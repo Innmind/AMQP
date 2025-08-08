@@ -18,16 +18,21 @@ use Innmind\BlackBox\{
     Set,
 };
 use Fixtures\Innmind\TimeContinuum\Earth\PointInTime;
+use PHPUnit\Framework\Attributes\Group;
 
 class ArgumentTranslatorTest extends TestCase
 {
     use BlackBox;
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $this->assertInstanceOf(ArgumentTranslator::class, new ArgumentTranslator);
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testInvokation()
     {
         $value = new Value\VoidValue;
@@ -35,6 +40,8 @@ class ArgumentTranslatorTest extends TestCase
         $this->assertSame($value, (new ArgumentTranslator)($value));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testWideRangeOfValues()
     {
         $primitive = Set::either(
@@ -112,6 +119,8 @@ class ArgumentTranslatorTest extends TestCase
             });
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testThrowWhenValueNotTranslatable()
     {
         try {

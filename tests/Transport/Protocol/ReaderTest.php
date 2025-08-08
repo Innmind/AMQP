@@ -23,10 +23,15 @@ use Innmind\Immutable\{
     Map,
 };
 use Innmind\BlackBox\PHPUnit\Framework\TestCase;
-use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\{
+    DataProvider,
+    Group,
+};
 
 class ReaderTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     #[DataProvider('cases')]
     public function testInvokation($method, $arguments)
     {

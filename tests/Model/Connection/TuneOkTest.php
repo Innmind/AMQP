@@ -10,9 +10,12 @@ use Innmind\AMQP\Model\Connection\{
 };
 use Innmind\TimeContinuum\Earth\ElapsedPeriod;
 use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 class TuneOkTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $command = TuneOk::of(

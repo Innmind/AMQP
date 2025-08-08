@@ -5,9 +5,12 @@ namespace Tests\Innmind\AMQP\Model\Basic;
 
 use Innmind\AMQP\Model\Basic\Qos;
 use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 class QosTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $command = Qos::of(0, 1);
@@ -17,6 +20,8 @@ class QosTest extends TestCase
         $this->assertFalse($command->isGlobal());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testGlobal()
     {
         $command = Qos::global(0, 1);

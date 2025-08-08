@@ -14,10 +14,15 @@ use Innmind\Stream\{
 };
 use Innmind\Immutable\Str;
 use Innmind\BlackBox\PHPUnit\Framework\TestCase;
-use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\{
+    DataProvider,
+    Group,
+};
 
 class SignedLongLongIntegerTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $this->assertInstanceOf(
@@ -26,6 +31,8 @@ class SignedLongLongIntegerTest extends TestCase
         );
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     #[DataProvider('cases')]
     public function testStringCast($int, $expected)
     {
@@ -34,6 +41,8 @@ class SignedLongLongIntegerTest extends TestCase
         $this->assertSame($int, $value->original());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     #[DataProvider('cases')]
     public function testFromStream($expected, $string)
     {

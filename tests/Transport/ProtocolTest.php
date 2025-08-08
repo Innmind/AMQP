@@ -45,9 +45,12 @@ use Innmind\Immutable\{
     Sequence,
 };
 use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 class ProtocolTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $protocol = new Protocol(new Clock, new ArgumentTranslator);
@@ -62,6 +65,8 @@ class ProtocolTest extends TestCase
         $this->assertInstanceOf(Transaction::class, $protocol->transaction());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testReadHeader()
     {
         $protocol = new Protocol(new Clock, new ArgumentTranslator);

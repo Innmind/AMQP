@@ -17,9 +17,12 @@ use Innmind\Immutable\{
     Sequence,
 };
 use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 class FrameTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testMethod()
     {
         $frame = Frame::method(
@@ -41,6 +44,8 @@ class FrameTest extends TestCase
         );
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testHeader()
     {
         $frame = Frame::header(
@@ -60,6 +65,8 @@ class FrameTest extends TestCase
         );
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testBody()
     {
         $frame = Frame::body(
@@ -81,6 +88,8 @@ class FrameTest extends TestCase
         );
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testHeartbeat()
     {
         $frame = Frame::heartbeat();

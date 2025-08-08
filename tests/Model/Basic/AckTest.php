@@ -5,9 +5,12 @@ namespace Tests\Innmind\AMQP\Model\Basic;
 
 use Innmind\AMQP\Model\Basic\Ack;
 use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 class AckTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $command = Ack::of(42);
@@ -16,6 +19,8 @@ class AckTest extends TestCase
         $this->assertFalse($command->isMultiple());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testMultiple()
     {
         $command = Ack::multiple(42);

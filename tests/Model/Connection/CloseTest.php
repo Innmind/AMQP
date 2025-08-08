@@ -5,9 +5,12 @@ namespace Tests\Innmind\AMQP\Model\Connection;
 
 use Innmind\AMQP\Model\Connection\Close;
 use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 class CloseTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $command = Close::demand();
@@ -18,6 +21,8 @@ class CloseTest extends TestCase
         ));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testReply()
     {
         $command = Close::reply(42, 'foo');

@@ -49,7 +49,10 @@ use Innmind\BlackBox\{
     PHPUnit\Framework\TestCase,
     Set,
 };
-use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\{
+    DataProvider,
+    Group,
+};
 
 class ClientTest extends TestCase
 {
@@ -69,6 +72,8 @@ class ClientTest extends TestCase
         );
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testDeclareExchange()
     {
         $result = $this
@@ -114,6 +119,8 @@ class ClientTest extends TestCase
         $this->assertSame('message', $result);
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testMultipleGet()
     {
         $result = $this
@@ -145,6 +152,8 @@ class ClientTest extends TestCase
         $this->assertSame(2, $result);
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testCancelingAGetThrowsAnException()
     {
         $this->expectException(BasicGetNotCancellable::class);
@@ -171,6 +180,8 @@ class ClientTest extends TestCase
             ->run(null);
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testConsume()
     {
         $result = $this
@@ -223,6 +234,8 @@ class ClientTest extends TestCase
         $this->assertSame(4, $result);
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testReject()
     {
         $result = $this
@@ -260,6 +273,8 @@ class ClientTest extends TestCase
         $this->assertSame('rejected', $result);
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testGetMessageWithAllProperties()
     {
         $message = Message::of(Str::of('message'))
@@ -443,6 +458,8 @@ class ClientTest extends TestCase
         $this->assertTrue($result);
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testPublishContentOfAFile()
     {
         $file = $this
@@ -486,6 +503,8 @@ class ClientTest extends TestCase
         $this->assertTrue($result);
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testSegmentedConsumingDoesntAlterMessageOrdering()
     {
         $messages = Sequence::of(...\range(1, 100))->map(
@@ -533,6 +552,8 @@ class ClientTest extends TestCase
         $this->assertSame(101, $result);
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testSegmentedConsumingDoesntAlterMessageOrderingBetweenConnections()
     {
         $messages = Sequence::of(...\range(1, 100))->map(
@@ -595,6 +616,8 @@ class ClientTest extends TestCase
         $this->assertNull($result);
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testCommitTransaction()
     {
         $result = $this
@@ -632,6 +655,8 @@ class ClientTest extends TestCase
         $this->assertTrue($result);
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testRollbackTransaction()
     {
         $result = $this
@@ -667,6 +692,8 @@ class ClientTest extends TestCase
         $this->assertFalse($result);
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testPurge()
     {
         $result = $this
@@ -695,14 +722,10 @@ class ClientTest extends TestCase
         $this->assertNull($result);
     }
 
+    #[Group('local')]
     #[DataProvider('signals')]
     public function testSignals($signal)
     {
-        if (\getenv('CI')) {
-            // for some reason the kill command doesn't work in a github action
-            return;
-        }
-
         $process = $this
             ->os
             ->control()
@@ -735,6 +758,8 @@ class ClientTest extends TestCase
         );
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testPublishRandomContent(): BlackBox\Proof
     {
         return $this

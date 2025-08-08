@@ -17,15 +17,22 @@ use Innmind\Immutable\{
     Str,
 };
 use Innmind\BlackBox\PHPUnit\Framework\TestCase;
-use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\{
+    DataProvider,
+    Group,
+};
 
 class BitsTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $this->assertInstanceOf(Value::class, Bits::of(true));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     #[DataProvider('cases')]
     public function testStringCast($bits, $expected)
     {
@@ -35,6 +42,8 @@ class BitsTest extends TestCase
         $this->assertSame($bits, $value->original()->toList());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     #[DataProvider('decode')]
     public function testFromStream($expected, $string)
     {

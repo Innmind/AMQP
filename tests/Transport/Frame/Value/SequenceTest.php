@@ -19,15 +19,22 @@ use Innmind\Immutable\{
     Str,
 };
 use Innmind\BlackBox\PHPUnit\Framework\TestCase;
-use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\{
+    DataProvider,
+    Group,
+};
 
 class SequenceTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $this->assertInstanceOf(Value::class, Sequence::of());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     #[DataProvider('cases')]
     public function testStringCast($expected, $values)
     {
@@ -37,6 +44,8 @@ class SequenceTest extends TestCase
         $this->assertSame($values, $value->original()->toList());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     #[DataProvider('cases')]
     public function testFromStream($string, $expected)
     {

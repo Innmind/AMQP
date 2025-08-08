@@ -21,6 +21,7 @@ use Innmind\AMQP\{
     Model\Queue\Purge,
 };
 use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 class QueueTest extends TestCase
 {
@@ -31,6 +32,8 @@ class QueueTest extends TestCase
         $this->queue = new Queue(new ArgumentTranslator);
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testDeclare()
     {
         $frame = $this->queue->declare(
@@ -215,6 +218,8 @@ class QueueTest extends TestCase
         ));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testDelete()
     {
         $frame = $this->queue->delete(
@@ -310,6 +315,8 @@ class QueueTest extends TestCase
         );
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testBind()
     {
         $frame = $this->queue->bind(
@@ -413,6 +420,8 @@ class QueueTest extends TestCase
         ));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testUnbind()
     {
         $frame = $this->queue->unbind(
@@ -489,6 +498,8 @@ class QueueTest extends TestCase
         ));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testPurge()
     {
         $frame = $this->queue->purge(

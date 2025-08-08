@@ -49,6 +49,7 @@ use Innmind\Immutable\{
     Map,
 };
 use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 class BasicTest extends TestCase
 {
@@ -59,6 +60,8 @@ class BasicTest extends TestCase
         $this->basic = new Basic(new ArgumentTranslator);
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testAck()
     {
         $frame = $this->basic->ack(
@@ -114,6 +117,8 @@ class BasicTest extends TestCase
         ));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testCancel()
     {
         $frame = $this->basic->cancel(
@@ -166,6 +171,8 @@ class BasicTest extends TestCase
         ));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testConsume()
     {
         $frame = $this->basic->consume(
@@ -324,6 +331,8 @@ class BasicTest extends TestCase
         );
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testGet()
     {
         $frame = $this->basic->get(
@@ -387,6 +396,8 @@ class BasicTest extends TestCase
         ));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testPublish()
     {
         $frames = $this->basic->publish(
@@ -490,6 +501,8 @@ class BasicTest extends TestCase
         );
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testPublishWithChunkedMessage()
     {
         $frames = $this->basic->publish(
@@ -539,6 +552,8 @@ class BasicTest extends TestCase
         );
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testPublishWithProperties()
     {
         $basic = new Basic(new ArgumentTranslator);
@@ -802,6 +817,8 @@ class BasicTest extends TestCase
         );
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testPublishTo()
     {
         $frames = $this->basic->publish(
@@ -820,6 +837,8 @@ class BasicTest extends TestCase
         ));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testPublishWithRoutingKey()
     {
         $frames = $this->basic->publish(
@@ -838,6 +857,8 @@ class BasicTest extends TestCase
         ));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testMandatoryPublish()
     {
         $frames = $this->basic->publish(
@@ -859,6 +880,8 @@ class BasicTest extends TestCase
         );
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testImmediatePublish()
     {
         $frames = $this->basic->publish(
@@ -880,6 +903,8 @@ class BasicTest extends TestCase
         );
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testQos()
     {
         $frame = $this->basic->qos(
@@ -946,6 +971,8 @@ class BasicTest extends TestCase
         ));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testRecover()
     {
         $frame = $this->basic->recover(
@@ -990,6 +1017,8 @@ class BasicTest extends TestCase
         ));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testReject()
     {
         $frame = $this->basic->reject(

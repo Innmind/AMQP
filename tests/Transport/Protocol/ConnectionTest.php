@@ -29,9 +29,12 @@ use Innmind\Url\{
     Path,
 };
 use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 class ConnectionTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testStartOk()
     {
         $frame = (new Connection)->startOk(
@@ -327,6 +330,8 @@ class ConnectionTest extends TestCase
         ));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testSecureOk()
     {
         $frame = (new Connection)->secureOk(
@@ -357,6 +362,8 @@ class ConnectionTest extends TestCase
         );
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testTuneOk()
     {
         $frame = (new Connection)->tuneOk(
@@ -410,6 +417,8 @@ class ConnectionTest extends TestCase
         ));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testOpen()
     {
         $frame = (new Connection)->open(
@@ -462,6 +471,8 @@ class ConnectionTest extends TestCase
         ));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testClose()
     {
         $frame = (new Connection)->close(
@@ -546,6 +557,8 @@ class ConnectionTest extends TestCase
         ));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testCloseOk()
     {
         $frame = (new Connection)->closeOk()->match(

@@ -20,10 +20,15 @@ use Innmind\Immutable\{
     Str,
 };
 use Innmind\BlackBox\PHPUnit\Framework\TestCase;
-use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\{
+    DataProvider,
+    Group,
+};
 
 class TableTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $this->assertInstanceOf(
@@ -32,6 +37,8 @@ class TableTest extends TestCase
         );
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     #[DataProvider('cases')]
     public function testStringCast($expected, $map)
     {
@@ -40,6 +47,8 @@ class TableTest extends TestCase
         $this->assertSame($map, $value->original());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     #[DataProvider('cases')]
     public function testFromStream($string, $expected)
     {

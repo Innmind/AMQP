@@ -8,9 +8,12 @@ use Innmind\AMQP\Transport\Frame\{
     Value,
 };
 use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 class VoidValueTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $this->assertInstanceOf(Value::class, new VoidValue);

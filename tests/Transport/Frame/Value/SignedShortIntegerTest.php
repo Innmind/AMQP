@@ -15,10 +15,15 @@ use Innmind\Stream\{
 };
 use Innmind\Immutable\Str;
 use Innmind\BlackBox\PHPUnit\Framework\TestCase;
-use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\{
+    DataProvider,
+    Group,
+};
 
 class SignedShortIntegerTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $this->assertInstanceOf(
@@ -27,6 +32,8 @@ class SignedShortIntegerTest extends TestCase
         );
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     #[DataProvider('cases')]
     public function testStringCast($int, $expected)
     {
@@ -35,6 +42,8 @@ class SignedShortIntegerTest extends TestCase
         $this->assertSame($int, $value->original());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     #[DataProvider('cases')]
     public function testFromStream($expected, $string)
     {
@@ -54,6 +63,8 @@ class SignedShortIntegerTest extends TestCase
         $this->assertSame($string, $value->pack()->toString());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testThrowWhenIntegerTooHigh()
     {
         $this->expectException(OutOfDefinitionSet::class);
@@ -62,6 +73,8 @@ class SignedShortIntegerTest extends TestCase
         SignedShortInteger::of(32768);
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testThrowWhenIntegerTooLow()
     {
         $this->expectException(OutOfDefinitionSet::class);

@@ -12,11 +12,14 @@ use Innmind\BlackBox\{
     PHPUnit\Framework\TestCase,
     Set,
 };
+use PHPUnit\Framework\Attributes\Group;
 
 class MaxChannelsTest extends TestCase
 {
     use BlackBox;
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $max = MaxChannels::of(42);
@@ -29,6 +32,8 @@ class MaxChannelsTest extends TestCase
         $this->assertTrue((MaxChannels::of(0))->allows(1));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testAllowAnyNumberWhenNoLimit(): BlackBox\Proof
     {
         return $this
@@ -40,6 +45,8 @@ class MaxChannelsTest extends TestCase
             });
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testDoesntAllowAnyNumberAboveTheLimit(): BlackBox\Proof
     {
         return $this
@@ -54,6 +61,8 @@ class MaxChannelsTest extends TestCase
             });
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testAllowAnyNumberBelowTheLimit(): BlackBox\Proof
     {
         return $this
@@ -68,6 +77,8 @@ class MaxChannelsTest extends TestCase
             });
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testVerifyAllowedNumbers()
     {
         $this
@@ -89,6 +100,8 @@ class MaxChannelsTest extends TestCase
             });
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testThrowWhenVerifyingNumberAboveMaxAllowed(): BlackBox\Proof
     {
         return $this

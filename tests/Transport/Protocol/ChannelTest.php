@@ -17,9 +17,12 @@ use Innmind\AMQP\{
     Model\Channel\Close,
 };
 use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 class ChannelTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testOpen()
     {
         $frame = (new Channel)->open(
@@ -44,6 +47,8 @@ class ChannelTest extends TestCase
         ));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testFlow()
     {
         $frame = (new Channel)->flow(
@@ -88,6 +93,8 @@ class ChannelTest extends TestCase
         ));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testFlowOk()
     {
         $frame = (new Channel)->flowOk(
@@ -132,6 +139,8 @@ class ChannelTest extends TestCase
         ));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testClose()
     {
         $frame = (new Channel)->close(
@@ -215,6 +224,8 @@ class ChannelTest extends TestCase
         ));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testCloseOk()
     {
         $frame = (new Channel)->closeOk(

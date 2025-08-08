@@ -11,9 +11,12 @@ use Innmind\AMQP\Transport\{
     Frame\Method,
 };
 use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 class TransactionTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testSelect()
     {
         $frame = (new Transaction)->select(
@@ -30,6 +33,8 @@ class TransactionTest extends TestCase
         $this->assertCount(0, $frame->values());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testCommit()
     {
         $frame = (new Transaction)->commit(
@@ -46,6 +51,8 @@ class TransactionTest extends TestCase
         $this->assertCount(0, $frame->values());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testRollback()
     {
         $frame = (new Transaction)->rollback(

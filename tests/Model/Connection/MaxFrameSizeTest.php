@@ -12,11 +12,14 @@ use Innmind\BlackBox\{
     PHPUnit\Framework\TestCase,
     Set,
 };
+use PHPUnit\Framework\Attributes\Group;
 
 class MaxFrameSizeTest extends TestCase
 {
     use BlackBox;
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $max = MaxFrameSize::of(42);
@@ -29,6 +32,8 @@ class MaxFrameSizeTest extends TestCase
         $this->assertTrue((MaxFrameSize::of(0))->allows(1));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testAllowAnySizeWhenNoLimit(): BlackBox\Proof
     {
         return $this
@@ -40,6 +45,8 @@ class MaxFrameSizeTest extends TestCase
             });
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testDoesntAllowAnySizeAboveTheLimit(): BlackBox\Proof
     {
         return $this
@@ -54,6 +61,8 @@ class MaxFrameSizeTest extends TestCase
             });
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testAllowAnySizeBelowTheLimit(): BlackBox\Proof
     {
         return $this
@@ -68,6 +77,8 @@ class MaxFrameSizeTest extends TestCase
             });
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testVerifyAllowedSizes()
     {
         $this
@@ -89,6 +100,8 @@ class MaxFrameSizeTest extends TestCase
             });
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testThrowWhenVerifyingSizeAboveMaxAllowed(): BlackBox\Proof
     {
         return $this
@@ -108,6 +121,8 @@ class MaxFrameSizeTest extends TestCase
             });
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testIsLimited()
     {
         $this->assertTrue(MaxFrameSize::of(42)->isLimited());

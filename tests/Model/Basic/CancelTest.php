@@ -5,9 +5,12 @@ namespace Tests\Innmind\AMQP\Model\Basic;
 
 use Innmind\AMQP\Model\Basic\Cancel;
 use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 class CancelTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $command = Cancel::of('consumer');
@@ -16,6 +19,8 @@ class CancelTest extends TestCase
         $this->assertTrue($command->shouldWait());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testWait()
     {
         $command = Cancel::of('consumer');

@@ -5,9 +5,12 @@ namespace Tests\Innmind\AMQP\Model\Basic;
 
 use Innmind\AMQP\Model\Basic\Get;
 use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 class GetTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $command = Get::of('queue');
@@ -16,6 +19,8 @@ class GetTest extends TestCase
         $this->assertFalse($command->shouldAutoAcknowledge());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testAutoAcknowledge()
     {
         $command = Get::of('queue');
