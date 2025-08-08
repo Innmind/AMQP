@@ -40,7 +40,7 @@ final class Unbind implements Command
                 Method::queueUnbindOk,
             )
             ->map(static fn() => $state)
-            ->recover(fn() => Attempt::error(Failure::toUnbind($this->command)));
+            ->mapError(Failure::as(Failure::toUnbind($this->command)));
     }
 
     #[\NoDiscard]

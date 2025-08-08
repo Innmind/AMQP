@@ -64,7 +64,7 @@ final class Purge implements Command
 
         return $sideEffect
             ->map(static fn() => $state)
-            ->recover(fn() => Attempt::error(Failure::toPurge($this->command)));
+            ->mapError(Failure::as(Failure::toPurge($this->command)));
     }
 
     #[\NoDiscard]

@@ -78,7 +78,7 @@ final class DeclareQueue implements Command
 
         return $sideEffect
             ->map(static fn() => $state)
-            ->recover(fn() => Attempt::error(Failure::toDeclareQueue($this->command)));
+            ->mapError(Failure::as(Failure::toDeclareQueue($this->command)));
     }
 
     #[\NoDiscard]

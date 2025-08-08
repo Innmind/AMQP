@@ -48,7 +48,7 @@ final class DeclareExchange implements Command
 
         return $sideEffect
             ->map(static fn() => $state)
-            ->recover(fn() => Attempt::error(Failure::toDeclareExchange($this->command)));
+            ->mapError(Failure::as(Failure::toDeclareExchange($this->command)));
     }
 
     #[\NoDiscard]

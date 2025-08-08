@@ -308,7 +308,7 @@ final class Connection
             /** @var Attempt<ReceivedFrame> */
             return $this
                 ->send(static fn($protocol) => $protocol->connection()->closeOk())
-                ->recover(static fn() => Attempt::error(Failure::toCloseConnection()))
+                ->mapError(Failure::as(Failure::toCloseConnection()))
                 ->flatMap(static function() use ($received) {
                     $message = $received
                         ->frame()

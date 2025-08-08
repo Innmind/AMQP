@@ -95,6 +95,6 @@ final class Publish implements Command
                 $command,
                 $maxFrameSize,
             ))
-            ->recover(static fn() => Attempt::error(Failure::toPublish($command)));
+            ->mapError(Failure::as(Failure::toPublish($command)));
     }
 }

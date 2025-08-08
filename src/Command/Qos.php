@@ -40,7 +40,7 @@ final class Qos implements Command
                 Method::basicQosOk,
             )
             ->map(static fn() => $state)
-            ->recover(static fn() => Attempt::error(Failure::toAdjustQos()));
+            ->mapError(Failure::as(Failure::toAdjustQos()));
     }
 
     /**

@@ -12,7 +12,21 @@ final class Failure extends Exception\RuntimeException
     private function __construct(
         private object $failure,
         private Failure\Kind $kind,
+        ?\Throwable $previous = null,
     ) {
+        parent::__construct('', 0, $previous);
+    }
+
+    /**
+     * @return callable(\Throwable): \Throwable
+     */
+    public static function as(self $failure): callable
+    {
+        return static fn(\Throwable $e) => new self(
+            $failure->failure,
+            $failure->kind,
+            $e,
+        );
     }
 
     #[\NoDiscard]

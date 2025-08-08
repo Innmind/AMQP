@@ -64,7 +64,7 @@ final class DeleteQueue implements Command
 
         return $sideEffect
             ->map(static fn() => $state)
-            ->recover(fn() => Attempt::error(Failure::toDeleteQueue($this->command)));
+            ->mapError(Failure::as(Failure::toDeleteQueue($this->command)));
     }
 
     #[\NoDiscard]

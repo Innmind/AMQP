@@ -69,8 +69,8 @@ final class Consume implements Command
                 ->map(static fn() => $state),
         };
 
-        return $sideEffect->recover(
-            fn() => Attempt::error(Failure::toConsume($this->command)),
+        return $sideEffect->mapError(
+            Failure::as(Failure::toConsume($this->command)),
         );
     }
 
@@ -186,7 +186,7 @@ final class Consume implements Command
                         ),
                     ),
             )
-            ->recover(fn() => Attempt::error(Failure::toConsume($this->command)));
+            ->mapError(Failure::as(Failure::toConsume($this->command)));
     }
 
     /**

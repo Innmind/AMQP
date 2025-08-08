@@ -118,7 +118,7 @@ final class Get implements Command
                     $state,
                 ),
             )
-            ->recover(fn() => Attempt::error(Failure::toGet($this->command)));
+            ->mapError(Failure::as(Failure::toGet($this->command)));
     }
 
     /**

@@ -123,13 +123,13 @@ final class SignalListener
                             ),
                             Method::channelCloseOk,
                         )
-                        ->recover(static fn() => Attempt::error(Failure::toCloseChannel()))
+                        ->mapError(Failure::as(Failure::toCloseChannel()))
                         ->flatMap(
                             static fn() => $connection
                                 ->close()
-                                ->recover(static fn() => Attempt::error(Failure::toCloseConnection())),
+                                ->mapError(Failure::as(Failure::toCloseConnection())),
                         )
-                        ->recover(static fn() => Attempt::error(Failure::closedBySignal($signal)));
+                        ->mapError(Failure::as(Failure::closedBySignal($signal)));
                 },
                 static fn() => $continue(),
             );
