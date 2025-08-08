@@ -12,9 +12,9 @@ use Innmind\AMQP\{
     Transport\Frame\Method,
     Failure,
 };
-use Innmind\Socket\Internet\Transport;
+use Innmind\IO\Sockets\Internet\Transport;
 use Innmind\Url\Url;
-use Innmind\TimeContinuum\Earth\ElapsedPeriod;
+use Innmind\TimeContinuum\Period;
 use Innmind\OperatingSystem\Factory;
 use Innmind\Immutable\{
     Sequence,
@@ -34,7 +34,7 @@ class ConnectionTest extends TestCase
             Transport::tcp(),
             Url::of('//guest:guest@localhost:5672/'),
             $protocol = new Protocol($os->clock(), new ArgumentTranslator),
-            new ElapsedPeriod(1000),
+            Period::second(1)->asElapsedPeriod(),
             $os->clock(),
             $os->remote(),
             $os->sockets(),
@@ -76,7 +76,7 @@ class ConnectionTest extends TestCase
             Transport::tcp(),
             Url::of('//guest:guest@localhost:5672/'),
             $protocol = new Protocol($os->clock(), new ArgumentTranslator),
-            new ElapsedPeriod(1000),
+            Period::second(1)->asElapsedPeriod(),
             $os->clock(),
             $os->remote(),
             $os->sockets(),
@@ -100,7 +100,7 @@ class ConnectionTest extends TestCase
             Transport::tcp(),
             Url::of('//guest:guest@localhost:5672/'),
             new Protocol($os->clock(), new ArgumentTranslator),
-            new ElapsedPeriod(1000),
+            Period::second(1)->asElapsedPeriod(),
             $os->clock(),
             $os->remote(),
             $os->sockets(),
@@ -132,7 +132,7 @@ class ConnectionTest extends TestCase
             Transport::tcp(),
             Url::of('//guest:guest@localhost:5672/'),
             $protocol = new Protocol($os->clock(), new ArgumentTranslator),
-            new ElapsedPeriod(1000),
+            Period::second(1)->asElapsedPeriod(),
             $os->clock(),
             $os->remote(),
             $os->sockets(),

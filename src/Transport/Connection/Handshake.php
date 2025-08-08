@@ -13,7 +13,7 @@ use Innmind\AMQP\{
     Model\Connection\MaxFrameSize,
     Failure,
 };
-use Innmind\TimeContinuum\Earth\ElapsedPeriod;
+use Innmind\TimeContinuum\Period;
 use Innmind\Url\Authority;
 use Innmind\Immutable\{
     Maybe,
@@ -87,7 +87,8 @@ final class Handshake
             ->get(2)
             ->keep(Instance::of(Value\UnsignedShortInteger::class))
             ->map(static fn($value) => $value->original())
-            ->map(ElapsedPeriod::of(...));
+            ->map(Period::millisecond(...))
+            ->map(static fn($period) => $period->asElapsedPeriod());
 
         return Maybe::all($maxChannels, $maxFrameSize, $heartbeat)
             ->flatMap($connection->tune(...))

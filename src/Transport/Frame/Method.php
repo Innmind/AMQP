@@ -15,7 +15,7 @@ use Innmind\AMQP\Transport\Frame\Value\{
     Table,
 };
 use Innmind\TimeContinuum\Clock;
-use Innmind\IO\Readable\Frame;
+use Innmind\IO\Frame;
 use Innmind\Immutable\{
     Maybe,
     Sequence,
@@ -102,8 +102,8 @@ enum Method
     public static function frame(int $class, int $method): Frame
     {
         return self::maybe($class, $method)->match(
-            static fn($self) => Frame\NoOp::of($self),
-            static fn() => Frame\NoOp::of(self::connectionStart)->filter(static fn() => false), // force fail
+            static fn($self) => Frame::just($self),
+            static fn() => Frame::just(self::connectionStart)->filter(static fn() => false), // force fail
         );
     }
 
@@ -319,17 +319,17 @@ enum Method
             Method::queueUnbindOk,
             Method::transactionSelectOk,
             Method::transactionCommitOk,
-            Method::transactionRollbackOk => Frame\NoOp::of(Sequence::of()), // no arguments
+            Method::transactionRollbackOk => Frame::just(Sequence::of()), // no arguments
             Method::basicConsumeOk => ShortString::frame()->map(Sequence::of(...)), // consumer tag
             Method::basicCancelOk => ShortString::frame()->map(Sequence::of(...)), // consumer tag
-            Method::basicReturn => Frame\Composite::of(
+            Method::basicReturn => Frame::compose(
                 static fn(Unpacked ...$values) => Sequence::of(...$values),
                 UnsignedShortInteger::frame(), // reply code
                 ShortString::frame(), // reply text
                 ShortString::frame(), // exchange
                 ShortString::frame(), // routing key
             ),
-            Method::basicDeliver => Frame\Composite::of(
+            Method::basicDeliver => Frame::compose(
                 static fn(Unpacked ...$values) => Sequence::of(...$values),
                 ShortString::frame(), // consumer tag
                 UnsignedLongLongInteger::frame(), // delivery tag
@@ -337,7 +337,7 @@ enum Method
                 ShortString::frame(), // exchange
                 ShortString::frame(), // routing key
             ),
-            Method::basicGetOk => Frame\Composite::of(
+            Method::basicGetOk => Frame::compose(
                 static fn(Unpacked ...$values) => Sequence::of(...$values),
                 UnsignedLongLongInteger::frame(), // delivery tag
                 Bits::frame(), // redelivered
@@ -349,14 +349,14 @@ enum Method
             Method::channelOpenOk => LongString::frame()->map(Sequence::of(...)), // reserved
             Method::channelFlow => Bits::frame()->map(Sequence::of(...)), // active
             Method::channelFlowOk => Bits::frame()->map(Sequence::of(...)), // active
-            Method::channelClose => Frame\Composite::of(
+            Method::channelClose => Frame::compose(
                 static fn(Unpacked ...$values) => Sequence::of(...$values),
                 UnsignedShortInteger::frame(), // reply code
                 ShortString::frame(), // reply text
                 UnsignedShortInteger::frame(), // failing class id
                 UnsignedShortInteger::frame(), // failing method id
             ),
-            Method::connectionStart => Frame\Composite::of(
+            Method::connectionStart => Frame::compose(
                 static fn(Unpacked ...$values) => Sequence::of(...$values),
                 UnsignedOctet::frame(), // major version
                 UnsignedOctet::frame(), // minor version
@@ -365,21 +365,21 @@ enum Method
                 LongString::frame(), // locales
             ),
             Method::connectionSecure => LongString::frame()->map(Sequence::of(...)), // challenge
-            Method::connectionTune => Frame\Composite::of(
+            Method::connectionTune => Frame::compose(
                 static fn(Unpacked ...$values) => Sequence::of(...$values),
                 UnsignedShortInteger::frame(), // max channels
                 UnsignedLongInteger::frame(), // max frame size
                 UnsignedShortInteger::frame(), // heartbeat delay
             ),
             Method::connectionOpenOk => ShortString::frame()->map(Sequence::of(...)), // known hosts
-            Method::connectionClose => Frame\Composite::of(
+            Method::connectionClose => Frame::compose(
                 static fn(Unpacked ...$values) => Sequence::of(...$values),
                 UnsignedShortInteger::frame(), // reply code
                 ShortString::frame(), // reply text
                 UnsignedShortInteger::frame(), // failing class id
                 UnsignedShortInteger::frame(), // failing method id
             ),
-            Method::queueDeclareOk => Frame\Composite::of(
+            Method::queueDeclareOk => Frame::compose(
                 static fn(Unpacked ...$values) => Sequence::of(...$values),
                 ShortString::frame(), // queue
                 UnsignedLongInteger::frame(), // message count

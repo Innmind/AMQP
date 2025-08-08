@@ -4,7 +4,7 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
-use Innmind\IO\Readable\Frame;
+use Innmind\IO\Frame;
 use Innmind\Immutable\Str;
 
 /**
@@ -20,7 +20,7 @@ final class VoidValue implements Value
      */
     public static function frame(): Frame
     {
-        return Frame\NoOp::of(Unpacked::of(0, new self));
+        return Frame::just(Unpacked::of(0, new self));
     }
 
     #[\Override]

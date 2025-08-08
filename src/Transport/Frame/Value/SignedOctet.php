@@ -9,7 +9,7 @@ use Innmind\Math\{
     DefinitionSet\Set,
     DefinitionSet\Range,
 };
-use Innmind\IO\Readable\Frame;
+use Innmind\IO\Frame;
 use Innmind\Immutable\{
     Str,
     Maybe,
@@ -71,7 +71,8 @@ final class SignedOctet implements Value
      */
     public static function frame(): Frame
     {
-        return Frame\Chunk::of(1)
+        return Frame::chunk(1)
+            ->strict()
             ->map(static function($chunk) {
                 /**
                  * @psalm-suppress PossiblyInvalidArrayAccess Todo apply a predicate

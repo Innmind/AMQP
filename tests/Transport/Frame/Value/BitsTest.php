@@ -8,10 +8,6 @@ use Innmind\AMQP\Transport\Frame\{
     Value,
 };
 use Innmind\IO\IO;
-use Innmind\Stream\{
-    Readable\Stream,
-    Watch\Select,
-};
 use Innmind\Immutable\{
     Sequence,
     Str,
@@ -47,9 +43,14 @@ class BitsTest extends TestCase
     #[DataProvider('decode')]
     public function testFromStream($expected, $string)
     {
-        $value = IO::of(Select::waitForever(...))
-            ->readable()
-            ->wrap(Stream::ofContent($string))
+        $tmp = \fopen('php://temp', 'w+');
+        \fwrite($tmp, $string);
+        \fseek($tmp, 0);
+
+        $value = IO::fromAmbientAuthority()
+            ->streams()
+            ->acquire($tmp)
+            ->read()
             ->toEncoding(Str\Encoding::ascii)
             ->frames(Bits::frame())
             ->one()

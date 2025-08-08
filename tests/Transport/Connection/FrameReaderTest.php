@@ -34,13 +34,9 @@ use Innmind\AMQP\{
     TimeContinuum\Format\Timestamp as TimestampFormat,
 };
 use Innmind\IO\IO;
-use Innmind\Stream\{
-    Readable\Stream,
-    Watch\Select,
-};
-use Innmind\TimeContinuum\Earth\{
-    ElapsedPeriod,
-    PointInTime\Now,
+use Innmind\TimeContinuum\{
+    Period,
+    PointInTime,
     Clock,
 };
 use Innmind\Immutable\{
@@ -56,7 +52,7 @@ class FrameReaderTest extends TestCase
 
     public function setUp(): void
     {
-        $this->protocol = new Protocol(new Clock, new ArgumentTranslator);
+        $this->protocol = new Protocol(Clock::live(), new ArgumentTranslator);
     }
 
     #[Group('ci')]
@@ -78,9 +74,10 @@ class FrameReaderTest extends TestCase
         );
         \fseek($file, 0);
 
-        $frame = IO::of(Select::waitForever(...))
-            ->readable()
-            ->wrap(Stream::of($file))
+        $frame = IO::fromAmbientAuthority()
+            ->streams()
+            ->acquire($file)
+            ->read()
             ->toEncoding(Str\Encoding::ascii)
             ->frames((new FrameReader)($this->protocol))
             ->one()
@@ -111,9 +108,10 @@ class FrameReaderTest extends TestCase
         \fwrite($file, $frame);
         \fseek($file, 0);
 
-        $frame = IO::of(Select::waitForever(...))
-            ->readable()
-            ->wrap(Stream::of($file))
+        $frame = IO::fromAmbientAuthority()
+            ->streams()
+            ->acquire($file)
+            ->read()
             ->toEncoding(Str\Encoding::ascii)
             ->frames((new FrameReader)($this->protocol))
             ->one()
@@ -138,9 +136,10 @@ class FrameReaderTest extends TestCase
         \fwrite($file, $frame);
         \fseek($file, 0);
 
-        $frame = IO::of(Select::waitForever(...))
-            ->readable()
-            ->wrap(Stream::of($file))
+        $frame = IO::fromAmbientAuthority()
+            ->streams()
+            ->acquire($file)
+            ->read()
             ->toEncoding(Str\Encoding::ascii)
             ->frames((new FrameReader)($this->protocol))
             ->one()
@@ -160,9 +159,10 @@ class FrameReaderTest extends TestCase
         \fwrite($file, $content = "AMQP\x00\x00\x09\x01");
         \fseek($file, 0);
 
-        $frame = IO::of(Select::waitForever(...))
-            ->readable()
-            ->wrap(Stream::of($file))
+        $frame = IO::fromAmbientAuthority()
+            ->streams()
+            ->acquire($file)
+            ->read()
             ->toEncoding(Str\Encoding::ascii)
             ->frames((new FrameReader)($this->protocol))
             ->one()
@@ -194,9 +194,9 @@ class FrameReaderTest extends TestCase
                         ->withPriority(Priority::five)
                         ->withCorrelationId(CorrelationId::of('correlation'))
                         ->withReplyTo(ReplyTo::of('reply'))
-                        ->withExpiration(new ElapsedPeriod(1000))
+                        ->withExpiration(Period::second(1)->asElapsedPeriod())
                         ->withId(Id::of('id'))
-                        ->withTimestamp($now = new Now)
+                        ->withTimestamp($now = PointInTime::now())
                         ->withType(MessageType::of('type'))
                         ->withUserId(UserId::of('guest'))
                         ->withAppId(AppId::of('webcrawler')),
@@ -212,9 +212,10 @@ class FrameReaderTest extends TestCase
         \fwrite($file, $header->pack()->toString());
         \fseek($file, 0);
 
-        $frame = IO::of(Select::waitForever(...))
-            ->readable()
-            ->wrap(Stream::of($file))
+        $frame = IO::fromAmbientAuthority()
+            ->streams()
+            ->acquire($file)
+            ->read()
             ->toEncoding(Str\Encoding::ascii)
             ->frames((new FrameReader)($this->protocol))
             ->one()
@@ -412,9 +413,9 @@ class FrameReaderTest extends TestCase
             ),
         );
         $this->assertSame(
-            $now->format(new TimestampFormat),
+            $now->format(TimestampFormat::new()),
             $frame->values()->get(11)->match(
-                static fn($value) => $value->original()->format(new TimestampFormat),
+                static fn($value) => $value->original()->format(TimestampFormat::new()),
                 static fn() => null,
             ),
         );
@@ -473,9 +474,10 @@ class FrameReaderTest extends TestCase
         )->pack()->toString());
         \fseek($file, 0);
 
-        $frame = IO::of(Select::waitForever(...))
-            ->readable()
-            ->wrap(Stream::of($file))
+        $frame = IO::fromAmbientAuthority()
+            ->streams()
+            ->acquire($file)
+            ->read()
             ->toEncoding(Str\Encoding::ascii)
             ->frames((new FrameReader)($this->protocol))
             ->one()
@@ -502,9 +504,10 @@ class FrameReaderTest extends TestCase
         \fwrite($file, Frame::heartbeat()->pack()->toString());
         \fseek($file, 0);
 
-        $frame = IO::of(Select::waitForever(...))
-            ->readable()
-            ->wrap(Stream::of($file))
+        $frame = IO::fromAmbientAuthority()
+            ->streams()
+            ->acquire($file)
+            ->read()
             ->toEncoding(Str\Encoding::ascii)
             ->frames((new FrameReader)($this->protocol))
             ->one()

@@ -16,9 +16,9 @@ use Innmind\AMQP\Model\Basic\{
     Message\Type,
     Message\UserId,
 };
-use Innmind\TimeContinuum\Earth\{
-    PointInTime\Now,
-    ElapsedPeriod,
+use Innmind\TimeContinuum\{
+    PointInTime,
+    Period,
 };
 use Innmind\Immutable\{
     Map,
@@ -205,7 +205,7 @@ class MessageTest extends TestCase
     {
         $message = Message::of(Str::of(''));
         $message2 = $message->withExpiration(
-            $expected = new ElapsedPeriod(1000),
+            $expected = Period::second(1)->asElapsedPeriod(),
         );
 
         $this->assertInstanceOf(Message::class, $message2);
@@ -237,7 +237,7 @@ class MessageTest extends TestCase
     {
         $message = Message::of(Str::of(''));
         $message2 = $message->withTimestamp(
-            $expected = new Now,
+            $expected = PointInTime::now(),
         );
 
         $this->assertInstanceOf(Message::class, $message2);

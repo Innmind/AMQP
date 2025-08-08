@@ -8,7 +8,7 @@ use Innmind\AMQP\Model\Connection\{
     MaxChannels,
     MaxFrameSize,
 };
-use Innmind\TimeContinuum\Earth\ElapsedPeriod;
+use Innmind\TimeContinuum\Period;
 use Innmind\BlackBox\PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Group;
 
@@ -21,7 +21,7 @@ class TuneOkTest extends TestCase
         $command = TuneOk::of(
             MaxChannels::of(1),
             MaxFrameSize::of(10),
-            $heartbeat = ElapsedPeriod::of(1000),
+            $heartbeat = Period::second(1)->asElapsedPeriod(),
         );
 
         $this->assertSame(1, $command->maxChannels());

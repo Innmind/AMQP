@@ -4,7 +4,7 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
-use Innmind\IO\Readable\Frame;
+use Innmind\IO\Frame;
 use Innmind\Immutable\{
     Str,
     Sequence,
@@ -57,7 +57,8 @@ final class Bits implements Value
      */
     public static function frame(): Frame
     {
-        return Frame\Chunk::of(1)
+        return Frame::chunk(1)
+            ->strict()
             ->map(
                 static fn($chunk) => $chunk
                     ->map(static fn($chunk) => \decbin(\ord($chunk)))

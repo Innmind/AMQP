@@ -9,7 +9,7 @@ use Innmind\Math\{
     DefinitionSet\Set,
     DefinitionSet\Range,
 };
-use Innmind\IO\Readable\Frame;
+use Innmind\IO\Frame;
 use Innmind\Immutable\{
     Str,
     Maybe,
@@ -69,7 +69,8 @@ final class SignedShortInteger implements Value
      */
     public static function frame(): Frame
     {
-        return Frame\Chunk::of(2)
+        return Frame::chunk(2)
+            ->strict()
             ->map(static function($chunk) {
                 /**
                  * @psalm-suppress PossiblyInvalidArrayAccess Todo apply a predicate

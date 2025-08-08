@@ -4,7 +4,7 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
-use Innmind\IO\Readable\Frame;
+use Innmind\IO\Frame;
 use Innmind\Immutable\{
     Str,
     Maybe,
@@ -54,7 +54,8 @@ final class SignedLongLongInteger implements Value
      */
     public static function frame(): Frame
     {
-        return Frame\Chunk::of(8)
+        return Frame::chunk(8)
+            ->strict()
             ->map(static function($chunk) {
                 /**
                  * @psalm-suppress PossiblyInvalidArrayAccess Todo apply a predicate

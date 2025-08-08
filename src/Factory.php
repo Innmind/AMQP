@@ -4,7 +4,7 @@ declare(strict_types = 1);
 namespace Innmind\AMQP;
 
 use Innmind\OperatingSystem\OperatingSystem;
-use Innmind\Socket\Internet\Transport as Socket;
+use Innmind\IO\Sockets\Internet\Transport as Socket;
 use Innmind\Url\Url;
 use Innmind\TimeContinuum\ElapsedPeriod;
 

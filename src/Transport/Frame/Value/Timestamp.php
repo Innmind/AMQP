@@ -11,7 +11,7 @@ use Innmind\TimeContinuum\{
     Clock,
     PointInTime,
 };
-use Innmind\IO\Readable\Frame;
+use Innmind\IO\Frame;
 use Innmind\Immutable\{
     Str,
     Maybe,
@@ -63,15 +63,15 @@ final class Timestamp implements Value
     {
         return UnsignedLongLongInteger::frame()->flatMap(
             static fn($time) => $clock
-                ->at((string) $time->unwrap()->original(), new TimestampFormat)
+                ->at((string) $time->unwrap()->original(), TimestampFormat::new())
                 ->map(static fn($point) => new self($point))
                 ->map(static fn($value) => Unpacked::of(
                     $time->read(),
                     $value,
                 ))
                 ->match(
-                    static fn($unpacked) => Frame\NoOp::of($unpacked),
-                    static fn() => Frame\NoOp::of(Unpacked::of(
+                    static fn($unpacked) => Frame::just($unpacked),
+                    static fn() => Frame::just(Unpacked::of(
                         0,
                         new self($clock->now()),
                     ))->filter(static fn() => false), // to force failing since the read time is invalid
@@ -96,7 +96,7 @@ final class Timestamp implements Value
     {
         /** @psalm-suppress ArgumentTypeCoercion */
         return UnsignedLongLongInteger::of(
-            (int) $this->original->format(new TimestampFormat),
+            (int) $this->original->format(TimestampFormat::new()),
         )->pack();
     }
 }

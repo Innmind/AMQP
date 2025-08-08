@@ -21,9 +21,10 @@ use Innmind\AMQP\{
     Failure,
 };
 use Innmind\OperatingSystem\Filesystem;
-use Innmind\TimeContinuum\Earth\ElapsedPeriod;
+use Innmind\TimeContinuum\Period;
 use Innmind\Filesystem\File\Content;
-use Innmind\Stream\Stream\Size\Unit;
+use Innmind\IO\Stream\Size\Unit;
+use Innmind\Validation\Is;
 use Innmind\Immutable\{
     Str,
     Predicate\Instance,
@@ -173,8 +174,14 @@ final class MessageReader
                 static fn(Maybe $value, Message $message) => $value
                     ->keep(Instance::of(Value\ShortString::class))
                     ->map(static fn($value) => (int) $value->original()->toString())
-                    ->flatMap(ElapsedPeriod::maybe(...))
-                    ->map(static fn($expiration) => $message->withExpiration($expiration)),
+                    ->keep(
+                        Is::int()
+                            ->positive()
+                            ->or(Is::value(0))
+                            ->asPredicate(),
+                    )
+                    ->map(Period::millisecond(...))
+                    ->map(static fn($expiration) => $message->withExpiration($expiration->asElapsedPeriod())),
             ],
             [
                 7,
@@ -254,7 +261,8 @@ final class MessageReader
                     ->wait()
                     ->maybe()
                     ->flatMap(static fn($received) => $received->frame()->content())
-                    ->map(static fn($chunk) => $chunk->toEncoding(Str\Encoding::ascii));
+                    ->map(static fn($chunk) => $chunk->toEncoding(Str\Encoding::ascii))
+                    ->attempt(static fn() => new \RuntimeException('Failed to read chunk'));
                 $read += $chunk->match(
                     static fn($chunk) => $chunk->length(),
                     static fn() => 0,
@@ -268,20 +276,17 @@ final class MessageReader
             }
         });
 
-        /** @psalm-suppress MixedArgumentTypeCoercion Because of the reduce it doesn't understand the type of the Sequence */
+        /** @var Sequence<Str> */
+        $unfolded = Sequence::of();
         $content = match (true) {
             $bodySize <= Unit::megabytes->times(2) => $chunks
-                ->reduce(
-                    Maybe::just(Sequence::of()),
-                    static fn(Maybe $content, $chunk) => Maybe::all($content, $chunk)->map(
-                        static fn(Sequence $chunks, Str $chunk) => ($chunks)($chunk),
-                    ),
-                )
+                ->sink($unfolded)
+                ->attempt(static fn($chunks, $chunk) => $chunk->map($chunks))
                 ->map(Content::ofChunks(...)),
             default => $this
                 ->filesystem
                 ->temporary($chunks)
-                ->memoize(), // to prevent using a deferred Maybe that would result in out of order reading the socket
+                ->memoize(), // to prevent using a deferred Attempt that would result in out of order reading the socket
         };
 
         return $content
