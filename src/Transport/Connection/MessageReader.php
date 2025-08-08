@@ -230,12 +230,10 @@ final class MessageReader
         return $toParse
             ->filter(static fn($pair) => (bool) ($flagBits & (1 << $pair[0])))
             ->map(static fn($pair) => $pair[1])
-            ->reduce(
-                Maybe::just([$properties, $message]),
-                static fn(Maybe $state, $parse): Maybe => $state->flatMap(
-                    static fn($state) => $parse($state[0]->first(), $state[1])
-                        ->map(static fn($message) => [$state[0]->drop(1), $message]),
-                ),
+            ->sink([$properties, $message])
+            ->maybe(
+                static fn($state, $parse) => $parse($state[0]->first(), $state[1])
+                    ->map(static fn($message) => [$state[0]->drop(1), $message]),
             )
             ->map(static fn($state) => $state[1])
             ->attempt(static fn() => Failure::toReadMessage());
