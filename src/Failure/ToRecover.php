@@ -25,6 +25,7 @@ final class ToRecover extends Failure
         return Kind::toRecover;
     }
 
+    #[\NoDiscard]
     public function queue(): string
     {
         return $this->queue;

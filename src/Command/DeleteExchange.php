@@ -49,6 +49,7 @@ final class DeleteExchange implements Command
             ->leftMap(fn() => Failure::toDeleteExchange($this->command));
     }
 
+    #[\NoDiscard]
     public static function of(string $name): self
     {
         return new self(Deletion::of($name));

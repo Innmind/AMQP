@@ -28,6 +28,7 @@ final class ContentEncoding
      *
      * @throws DomainException
      */
+    #[\NoDiscard]
     public static function of(string $value): self
     {
         return self::maybe($value)->match(
@@ -41,6 +42,7 @@ final class ContentEncoding
      *
      * @return Maybe<self>
      */
+    #[\NoDiscard]
     public static function maybe(string $value): Maybe
     {
         return Maybe::just($value)
@@ -49,6 +51,7 @@ final class ContentEncoding
             ->map(static fn($value) => new self($value->toString()));
     }
 
+    #[\NoDiscard]
     public function toString(): string
     {
         return $this->value;

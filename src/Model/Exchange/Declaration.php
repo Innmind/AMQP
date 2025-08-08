@@ -33,6 +33,7 @@ final class Declaration
      *
      * @psalm-pure
      */
+    #[\NoDiscard]
     public static function passive(string $name, Type $type): self
     {
         $self = new self($name, $type);
@@ -46,6 +47,7 @@ final class Declaration
      *
      * @psalm-pure
      */
+    #[\NoDiscard]
     public static function durable(string $name, Type $type): self
     {
         $self = new self($name, $type);
@@ -59,6 +61,7 @@ final class Declaration
      *
      * @psalm-pure
      */
+    #[\NoDiscard]
     public static function temporary(string $name, Type $type): self
     {
         return new self($name, $type);
@@ -69,6 +72,7 @@ final class Declaration
      *
      * @psalm-pure
      */
+    #[\NoDiscard]
     public static function autoDelete(string $name, Type $type): self
     {
         $self = new self($name, $type);
@@ -81,6 +85,7 @@ final class Declaration
     /**
      * Don't wait for the server to respond
      */
+    #[\NoDiscard]
     public function dontWait(): self
     {
         if ($this->isPassive()) {
@@ -96,6 +101,7 @@ final class Declaration
     /**
      * Wait for the server to respond
      */
+    #[\NoDiscard]
     public function wait(): self
     {
         $self = clone $this;
@@ -104,6 +110,7 @@ final class Declaration
         return $self;
     }
 
+    #[\NoDiscard]
     public function withArgument(string $key, mixed $value): self
     {
         $self = clone $this;
@@ -112,31 +119,37 @@ final class Declaration
         return $self;
     }
 
+    #[\NoDiscard]
     public function name(): string
     {
         return $this->name;
     }
 
+    #[\NoDiscard]
     public function type(): Type
     {
         return $this->type;
     }
 
+    #[\NoDiscard]
     public function isPassive(): bool
     {
         return $this->passive;
     }
 
+    #[\NoDiscard]
     public function isDurable(): bool
     {
         return $this->durable;
     }
 
+    #[\NoDiscard]
     public function isAutoDeleted(): bool
     {
         return $this->autoDelete;
     }
 
+    #[\NoDiscard]
     public function shouldWait(): bool
     {
         return $this->wait;
@@ -145,6 +158,7 @@ final class Declaration
     /**
      * @return Map<string, mixed>
      */
+    #[\NoDiscard]
     public function arguments(): Map
     {
         return $this->arguments;

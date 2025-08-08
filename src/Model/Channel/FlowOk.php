@@ -18,11 +18,13 @@ final class FlowOk
     /**
      * @psalm-pure
      */
+    #[\NoDiscard]
     public static function of(bool $active): self
     {
         return new self($active);
     }
 
+    #[\NoDiscard]
     public function active(): bool
     {
         return $this->active;

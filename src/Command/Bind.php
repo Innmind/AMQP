@@ -49,6 +49,7 @@ final class Bind implements Command
             ->leftMap(fn() => Failure::toBind($this->command));
     }
 
+    #[\NoDiscard]
     public static function of(
         string $exchange,
         string $queue,
@@ -57,6 +58,7 @@ final class Bind implements Command
         return new self(Binding::of($exchange, $queue, $routingKey));
     }
 
+    #[\NoDiscard]
     public function withArgument(string $key, mixed $value): self
     {
         return new self($this->command->withArgument($key, $value));

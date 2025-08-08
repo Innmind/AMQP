@@ -35,6 +35,7 @@ final class Qos
      * @param int<0, 4294967295> $prefetchSize
      * @param int<0, 65535> $prefetchCount
      */
+    #[\NoDiscard]
     public static function of(int $prefetchSize, int $prefetchCount): self
     {
         return new self($prefetchSize, $prefetchCount);
@@ -48,6 +49,7 @@ final class Qos
      * @param int<0, 4294967295> $prefetchSize
      * @param int<0, 65535> $prefetchCount
      */
+    #[\NoDiscard]
     public static function global(int $prefetchSize, int $prefetchCount): self
     {
         $self = new self($prefetchSize, $prefetchCount);
@@ -59,6 +61,7 @@ final class Qos
     /**
      * @return int<0, 4294967295>
      */
+    #[\NoDiscard]
     public function prefetchSize(): int
     {
         return $this->prefetchSize;
@@ -67,11 +70,13 @@ final class Qos
     /**
      * @return int<0, 65535>
      */
+    #[\NoDiscard]
     public function prefetchCount(): int
     {
         return $this->prefetchCount;
     }
 
+    #[\NoDiscard]
     public function isGlobal(): bool
     {
         return $this->global;

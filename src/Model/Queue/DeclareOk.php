@@ -24,21 +24,25 @@ final class DeclareOk
     /**
      * @psalm-pure
      */
+    #[\NoDiscard]
     public static function of(string $name, Count $message, Count $consumer): self
     {
         return new self($name, $message, $consumer);
     }
 
+    #[\NoDiscard]
     public function name(): string
     {
         return $this->name;
     }
 
+    #[\NoDiscard]
     public function message(): Count
     {
         return $this->message;
     }
 
+    #[\NoDiscard]
     public function consumer(): Count
     {
         return $this->consumer;

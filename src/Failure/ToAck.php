@@ -25,6 +25,7 @@ final class ToAck extends Failure
         return Kind::toAck;
     }
 
+    #[\NoDiscard]
     public function queue(): string
     {
         return $this->queue;

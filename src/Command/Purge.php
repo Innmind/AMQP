@@ -66,6 +66,7 @@ final class Purge implements Command
             ->leftMap(fn() => Failure::toPurge($this->command));
     }
 
+    #[\NoDiscard]
     public static function of(string $queue): self
     {
         return new self(Model::of($queue));

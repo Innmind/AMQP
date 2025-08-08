@@ -105,6 +105,7 @@ final class Message
     /**
      * @psalm-pure
      */
+    #[\NoDiscard]
     public static function of(Str $body): self
     {
         return new self(
@@ -117,6 +118,7 @@ final class Message
      * Since the length of the body must be known in advance using a content
      * that can only be streamed once (ie output of a process) won't work here
      */
+    #[\NoDiscard]
     public static function file(Content $content): self
     {
         $chunks = $content->chunks()->map(
@@ -139,11 +141,13 @@ final class Message
     /**
      * @return Maybe<ContentType>
      */
+    #[\NoDiscard]
     public function contentType(): Maybe
     {
         return $this->contentType;
     }
 
+    #[\NoDiscard]
     public function withContentType(ContentType $contentType): self
     {
         $self = clone $this;
@@ -155,11 +159,13 @@ final class Message
     /**
      * @return Maybe<ContentEncoding>
      */
+    #[\NoDiscard]
     public function contentEncoding(): Maybe
     {
         return $this->contentEncoding;
     }
 
+    #[\NoDiscard]
     public function withContentEncoding(ContentEncoding $contentEncoding): self
     {
         $self = clone $this;
@@ -171,6 +177,7 @@ final class Message
     /**
      * @return Map<string, mixed>
      */
+    #[\NoDiscard]
     public function headers(): Map
     {
         return $this->headers;
@@ -179,6 +186,7 @@ final class Message
     /**
      * @param Map<string, mixed> $headers
      */
+    #[\NoDiscard]
     public function withHeaders(Map $headers): self
     {
         $self = clone $this;
@@ -190,11 +198,13 @@ final class Message
     /**
      * @return Maybe<DeliveryMode>
      */
+    #[\NoDiscard]
     public function deliveryMode(): Maybe
     {
         return $this->deliveryMode;
     }
 
+    #[\NoDiscard]
     public function withDeliveryMode(DeliveryMode $deliveryMode): self
     {
         $self = clone $this;
@@ -206,11 +216,13 @@ final class Message
     /**
      * @return Maybe<Priority>
      */
+    #[\NoDiscard]
     public function priority(): Maybe
     {
         return $this->priority;
     }
 
+    #[\NoDiscard]
     public function withPriority(Priority $priority): self
     {
         $self = clone $this;
@@ -222,11 +234,13 @@ final class Message
     /**
      * @return Maybe<CorrelationId>
      */
+    #[\NoDiscard]
     public function correlationId(): Maybe
     {
         return $this->correlationId;
     }
 
+    #[\NoDiscard]
     public function withCorrelationId(CorrelationId $correlationId): self
     {
         $self = clone $this;
@@ -238,11 +252,13 @@ final class Message
     /**
      * @return Maybe<ReplyTo>
      */
+    #[\NoDiscard]
     public function replyTo(): Maybe
     {
         return $this->replyTo;
     }
 
+    #[\NoDiscard]
     public function withReplyTo(ReplyTo $replyTo): self
     {
         $self = clone $this;
@@ -254,11 +270,13 @@ final class Message
     /**
      * @return Maybe<ElapsedPeriod>
      */
+    #[\NoDiscard]
     public function expiration(): Maybe
     {
         return $this->expiration;
     }
 
+    #[\NoDiscard]
     public function withExpiration(ElapsedPeriod $expiration): self
     {
         $self = clone $this;
@@ -270,11 +288,13 @@ final class Message
     /**
      * @return Maybe<Id>
      */
+    #[\NoDiscard]
     public function id(): Maybe
     {
         return $this->id;
     }
 
+    #[\NoDiscard]
     public function withId(Id $id): self
     {
         $self = clone $this;
@@ -286,11 +306,13 @@ final class Message
     /**
      * @return Maybe<PointInTime>
      */
+    #[\NoDiscard]
     public function timestamp(): Maybe
     {
         return $this->timestamp;
     }
 
+    #[\NoDiscard]
     public function withTimestamp(PointInTime $timestamp): self
     {
         $self = clone $this;
@@ -302,11 +324,13 @@ final class Message
     /**
      * @return Maybe<Type>
      */
+    #[\NoDiscard]
     public function type(): Maybe
     {
         return $this->type;
     }
 
+    #[\NoDiscard]
     public function withType(Type $type): self
     {
         $self = clone $this;
@@ -318,11 +342,13 @@ final class Message
     /**
      * @return Maybe<UserId>
      */
+    #[\NoDiscard]
     public function userId(): Maybe
     {
         return $this->userId;
     }
 
+    #[\NoDiscard]
     public function withUserId(UserId $userId): self
     {
         $self = clone $this;
@@ -334,11 +360,13 @@ final class Message
     /**
      * @return Maybe<AppId>
      */
+    #[\NoDiscard]
     public function appId(): Maybe
     {
         return $this->appId;
     }
 
+    #[\NoDiscard]
     public function withAppId(AppId $appId): self
     {
         $self = clone $this;
@@ -347,6 +375,7 @@ final class Message
         return $self;
     }
 
+    #[\NoDiscard]
     public function body(): Str
     {
         return $this
@@ -358,6 +387,7 @@ final class Message
     /**
      * @return Sequence<Str>
      */
+    #[\NoDiscard]
     public function chunks(): Sequence
     {
         return $this->chunks;
@@ -366,6 +396,7 @@ final class Message
     /**
      * @return int<0, max>
      */
+    #[\NoDiscard]
     public function length(): int
     {
         return $this->length;

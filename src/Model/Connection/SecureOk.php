@@ -25,16 +25,19 @@ final class SecureOk
     /**
      * @psalm-pure
      */
+    #[\NoDiscard]
     public static function of(User $user, Password $password): self
     {
         return new self($user, $password);
     }
 
+    #[\NoDiscard]
     public function user(): User
     {
         return $this->user;
     }
 
+    #[\NoDiscard]
     public function password(): Password
     {
         return $this->password;

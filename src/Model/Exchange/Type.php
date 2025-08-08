@@ -13,6 +13,7 @@ enum Type
     case topic;
     case headers;
 
+    #[\NoDiscard]
     public function toString(): string
     {
         return $this->name;

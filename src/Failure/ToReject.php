@@ -25,6 +25,7 @@ final class ToReject extends Failure
         return Kind::toReject;
     }
 
+    #[\NoDiscard]
     public function queue(): string
     {
         return $this->queue;

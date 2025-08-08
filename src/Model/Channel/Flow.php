@@ -11,6 +11,7 @@ enum Flow
     case start;
     case stop;
 
+    #[\NoDiscard]
     public function active(): bool
     {
         return match ($this) {

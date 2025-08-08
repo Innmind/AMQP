@@ -20,11 +20,13 @@ final class Open
     /**
      * @psalm-pure
      */
+    #[\NoDiscard]
     public static function of(Path $virtualHost): self
     {
         return new self($virtualHost);
     }
 
+    #[\NoDiscard]
     public function virtualHost(): Path
     {
         return $this->virtualHost;

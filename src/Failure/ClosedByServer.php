@@ -38,6 +38,7 @@ final class ClosedByServer extends Failure
         return Kind::closedByServer;
     }
 
+    #[\NoDiscard]
     public function message(): string
     {
         return $this->message;
@@ -46,6 +47,7 @@ final class ClosedByServer extends Failure
     /**
      * @return int<0, 65535>
      */
+    #[\NoDiscard]
     public function code(): int
     {
         return $this->code;
@@ -54,6 +56,7 @@ final class ClosedByServer extends Failure
     /**
      * @return Maybe<Method>
      */
+    #[\NoDiscard]
     public function method(): Maybe
     {
         return $this->method;

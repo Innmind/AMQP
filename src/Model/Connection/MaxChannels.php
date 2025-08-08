@@ -26,6 +26,7 @@ final class MaxChannels
      *
      * @param int<0, 65535> $value
      */
+    #[\NoDiscard]
     public static function of(int $value): self
     {
         return new self($value);
@@ -34,11 +35,13 @@ final class MaxChannels
     /**
      * @psalm-pure
      */
+    #[\NoDiscard]
     public static function unlimited(): self
     {
         return new self(0);
     }
 
+    #[\NoDiscard]
     public function allows(int $channel): bool
     {
         if ($this->value === 0) {
@@ -51,6 +54,7 @@ final class MaxChannels
     /**
      * @throws FrameChannelExceedAllowedChannelNumber
      */
+    #[\NoDiscard]
     public function verify(int $channel): void
     {
         if (!$this->allows($channel)) {
@@ -61,6 +65,7 @@ final class MaxChannels
     /**
      * @return int<0, 65535>
      */
+    #[\NoDiscard]
     public function toInt(): int
     {
         return $this->value;

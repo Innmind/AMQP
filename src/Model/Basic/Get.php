@@ -19,11 +19,13 @@ final class Get
     /**
      * @psalm-pure
      */
+    #[\NoDiscard]
     public static function of(string $queue): self
     {
         return new self($queue);
     }
 
+    #[\NoDiscard]
     public function manualAcknowledge(): self
     {
         $self = clone $this;
@@ -32,6 +34,7 @@ final class Get
         return $self;
     }
 
+    #[\NoDiscard]
     public function autoAcknowledge(): self
     {
         $self = clone $this;
@@ -40,11 +43,13 @@ final class Get
         return $self;
     }
 
+    #[\NoDiscard]
     public function queue(): string
     {
         return $this->queue;
     }
 
+    #[\NoDiscard]
     public function shouldAutoAcknowledge(): bool
     {
         return !$this->ack;

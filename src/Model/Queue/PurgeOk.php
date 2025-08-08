@@ -20,11 +20,13 @@ final class PurgeOk
     /**
      * @psalm-pure
      */
+    #[\NoDiscard]
     public static function of(Count $message): self
     {
         return new self($message);
     }
 
+    #[\NoDiscard]
     public function message(): Count
     {
         return $this->message;
