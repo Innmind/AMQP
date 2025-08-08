@@ -16,7 +16,7 @@
     },
     "require": {
         "php": "~8.2",
-        "innmind/foundation": "~1.5",
+        "innmind/foundation": "~1.6",
         "ramsey/uuid": "~4.0"
     },
     "autoload": {
