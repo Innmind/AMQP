@@ -21,6 +21,7 @@ final class ClosedBySignal extends Failure
         $this->signal = $signal;
     }
 
+    #[\Override]
     public function kind(): Kind
     {
         return Kind::closedBySignal;

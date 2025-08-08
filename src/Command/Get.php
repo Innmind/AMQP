@@ -46,6 +46,7 @@ final class Get implements Command
         $this->take = $take;
     }
 
+    #[\Override]
     public function __invoke(
         Connection $connection,
         Channel $channel,

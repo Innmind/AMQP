@@ -20,6 +20,7 @@ final class ToReject extends Failure
         $this->queue = $queue;
     }
 
+    #[\Override]
     public function kind(): Kind
     {
         return Kind::toReject;

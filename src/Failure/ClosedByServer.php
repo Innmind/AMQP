@@ -33,6 +33,7 @@ final class ClosedByServer extends Failure
         $this->method = $method;
     }
 
+    #[\Override]
     public function kind(): Kind
     {
         return Kind::closedByServer;

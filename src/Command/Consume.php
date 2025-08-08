@@ -42,6 +42,7 @@ final class Consume implements Command
         $this->consume = $consume;
     }
 
+    #[\Override]
     public function __invoke(
         Connection $connection,
         Channel $channel,

@@ -11,6 +11,7 @@ use Innmind\TimeContinuum\Format;
  */
 final class Timestamp implements Format
 {
+    #[\Override]
     public function toString(): string
     {
         return 'U';

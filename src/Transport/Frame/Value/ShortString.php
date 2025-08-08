@@ -85,16 +85,19 @@ final class ShortString implements Value
         );
     }
 
+    #[\Override]
     public function original(): Str
     {
         return $this->original;
     }
 
+    #[\Override]
     public function symbol(): Symbol
     {
         return Symbol::shortString;
     }
 
+    #[\Override]
     public function pack(): Str
     {
         /** @psalm-suppress InvalidArgument */

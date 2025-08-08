@@ -29,6 +29,7 @@ final class ToConsume extends Failure
         return $this->command;
     }
 
+    #[\Override]
     public function kind(): Kind
     {
         return Kind::toConsume;

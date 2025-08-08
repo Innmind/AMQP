@@ -97,16 +97,19 @@ final class Table implements Value
     /**
      * @return Map<string, Value>
      */
+    #[\Override]
     public function original(): Map
     {
         return $this->original;
     }
 
+    #[\Override]
     public function symbol(): Symbol
     {
         return Symbol::table;
     }
 
+    #[\Override]
     public function pack(): Str
     {
         /** @psalm-suppress MixedArgumentTypeCoercion */

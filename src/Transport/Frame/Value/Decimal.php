@@ -50,16 +50,20 @@ final class Decimal implements Value
         );
     }
 
+    #[\Override]
     public function original(): int|float
     {
+        /** @psalm-suppress InvalidOperand */
         return $this->value->original() / (10 ** $this->scale->original());
     }
 
+    #[\Override]
     public function symbol(): Symbol
     {
         return Symbol::decimal;
     }
 
+    #[\Override]
     public function pack(): Str
     {
         return $this->scale->pack()->append($this->value->pack()->toString());

@@ -17,6 +17,7 @@ final class ToOpenConnection extends Failure
     {
     }
 
+    #[\Override]
     public function kind(): Kind
     {
         return Kind::toOpenConnection;

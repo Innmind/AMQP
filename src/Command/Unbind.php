@@ -24,6 +24,7 @@ final class Unbind implements Command
         $this->command = $command;
     }
 
+    #[\Override]
     public function __invoke(
         Connection $connection,
         Channel $channel,

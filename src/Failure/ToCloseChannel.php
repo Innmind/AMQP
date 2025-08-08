@@ -17,6 +17,7 @@ final class ToCloseChannel extends Failure
     {
     }
 
+    #[\Override]
     public function kind(): Kind
     {
         return Kind::toCloseChannel;

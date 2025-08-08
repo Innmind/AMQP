@@ -17,6 +17,7 @@ final class ToAdjustQos extends Failure
     {
     }
 
+    #[\Override]
     public function kind(): Kind
     {
         return Kind::toAdjustQos;

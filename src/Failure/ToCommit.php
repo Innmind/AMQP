@@ -17,6 +17,7 @@ final class ToCommit extends Failure
     {
     }
 
+    #[\Override]
     public function kind(): Kind
     {
         return Kind::toCommit;

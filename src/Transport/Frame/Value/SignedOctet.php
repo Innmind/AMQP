@@ -73,6 +73,7 @@ final class SignedOctet implements Value
     {
         return Frame\Chunk::of(1)
             ->map(static function($chunk) {
+                /** @psalm-suppress PossiblyInvalidArrayAccess Todo apply a predicate */
                 /** @var int<-128, 127> $value */
                 [, $value] = \unpack('c', $chunk->toString());
 
@@ -85,16 +86,19 @@ final class SignedOctet implements Value
     /**
      * @return int<-128, 127>
      */
+    #[\Override]
     public function original(): int
     {
         return $this->original;
     }
 
+    #[\Override]
     public function symbol(): Symbol
     {
         return Symbol::signedOctet;
     }
 
+    #[\Override]
     public function pack(): Str
     {
         return Str::of(\pack('c', $this->original));
