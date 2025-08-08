@@ -114,7 +114,6 @@ final class SignalListener
                     $this->closing = true;
                     [$signal, $channel] = $in;
 
-                    /** @var Attempt<T> Todo fix */
                     return $connection
                         ->request(
                             static fn($protocol) => $protocol->channel()->close(
@@ -129,7 +128,7 @@ final class SignalListener
                                 ->close()
                                 ->mapError(Failure::as(Failure::toCloseConnection())),
                         )
-                        ->mapError(Failure::as(Failure::closedBySignal($signal)));
+                        ->flatMap(static fn() => Attempt::error(Failure::closedBySignal($signal)));
                 },
                 static fn() => $continue(),
             );
