@@ -9,7 +9,7 @@ use Innmind\AMQP\Model\Connection\{
     MaxFrameSize,
 };
 use Innmind\TimeContinuum\Earth\ElapsedPeriod;
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
 
 class TuneOkTest extends TestCase
 {

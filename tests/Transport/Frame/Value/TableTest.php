@@ -19,7 +19,8 @@ use Innmind\Immutable\{
     Map,
     Str,
 };
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class TableTest extends TestCase
 {
@@ -31,9 +32,7 @@ class TableTest extends TestCase
         );
     }
 
-    /**
-     * @dataProvider cases
-     */
+    #[DataProvider('cases')]
     public function testStringCast($expected, $map)
     {
         $value = Table::of($map);
@@ -41,9 +40,7 @@ class TableTest extends TestCase
         $this->assertSame($map, $value->original());
     }
 
-    /**
-     * @dataProvider cases
-     */
+    #[DataProvider('cases')]
     public function testFromStream($string, $expected)
     {
         $value = IO::of(Select::waitForever(...))

@@ -4,7 +4,7 @@ declare(strict_types = 1);
 namespace Tests\Innmind\AMQP\Model\Connection;
 
 use Innmind\AMQP\Model\Connection\Close;
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
 
 class CloseTest extends TestCase
 {

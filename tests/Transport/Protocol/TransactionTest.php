@@ -10,7 +10,7 @@ use Innmind\AMQP\Transport\{
     Frame\Channel,
     Frame\Method,
 };
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
 
 class TransactionTest extends TestCase
 {

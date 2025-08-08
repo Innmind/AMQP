@@ -44,7 +44,7 @@ use Innmind\Immutable\{
     Map,
     Sequence,
 };
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
 
 class ProtocolTest extends TestCase
 {

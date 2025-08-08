@@ -20,7 +20,7 @@ use Innmind\Immutable\{
     Sequence,
     SideEffect,
 };
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
 
 class ConnectionTest extends TestCase
 {

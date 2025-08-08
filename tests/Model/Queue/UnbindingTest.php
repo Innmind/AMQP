@@ -5,7 +5,7 @@ namespace Tests\Innmind\AMQP\Model\Queue;
 
 use Innmind\AMQP\Model\Queue\Unbinding;
 use Innmind\Immutable\Map;
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
 
 class UnbindingTest extends TestCase
 {

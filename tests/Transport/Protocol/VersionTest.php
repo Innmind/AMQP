@@ -4,7 +4,7 @@ declare(strict_types = 1);
 namespace Tests\Innmind\AMQP\Transport\Protocol;
 
 use Innmind\AMQP\Transport\Protocol\Version;
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
 
 class VersionTest extends TestCase
 {

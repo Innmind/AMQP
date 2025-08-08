@@ -16,15 +16,15 @@ use Innmind\AMQP\Model\Basic\{
     Message\Type,
     Message\UserId,
 };
-use Innmind\TimeContinuum\{
-    PointInTime,
-    Earth\ElapsedPeriod,
+use Innmind\TimeContinuum\Earth\{
+    PointInTime\Now,
+    ElapsedPeriod,
 };
 use Innmind\Immutable\{
     Map,
     Str,
 };
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
 
 class MessageTest extends TestCase
 {
@@ -214,7 +214,7 @@ class MessageTest extends TestCase
     {
         $message = Message::of(Str::of(''));
         $message2 = $message->withTimestamp(
-            $expected = $this->createMock(PointInTime::class),
+            $expected = new Now,
         );
 
         $this->assertInstanceOf(Message::class, $message2);

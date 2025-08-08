@@ -14,7 +14,8 @@ use Innmind\Stream\{
     Watch\Select,
 };
 use Innmind\Immutable\Str;
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class ShortStringTest extends TestCase
 {
@@ -23,9 +24,7 @@ class ShortStringTest extends TestCase
         $this->assertInstanceOf(Value::class, ShortString::literal(''));
     }
 
-    /**
-     * @dataProvider cases
-     */
+    #[DataProvider('cases')]
     public function testStringCast($string, $expected)
     {
         $value = ShortString::literal($string);
@@ -33,9 +32,7 @@ class ShortStringTest extends TestCase
         $this->assertSame($string, $value->original()->toString());
     }
 
-    /**
-     * @dataProvider cases
-     */
+    #[DataProvider('cases')]
     public function testFromStream($expected, $string)
     {
         $value = IO::of(Select::waitForever(...))

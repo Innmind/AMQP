@@ -7,7 +7,7 @@ use Innmind\AMQP\Model\{
     Queue\PurgeOk,
     Count,
 };
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
 
 class PurgeOkTest extends TestCase
 {

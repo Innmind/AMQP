@@ -7,7 +7,7 @@ use Innmind\AMQP\{
     Model\Basic\Message\ContentType,
     Exception\DomainException,
 };
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
 
 class ContentTypeTest extends TestCase
 {

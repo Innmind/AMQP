@@ -4,7 +4,7 @@ declare(strict_types = 1);
 namespace Tests\Innmind\AMQP\Model\Basic;
 
 use Innmind\AMQP\Model\Basic\Qos;
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
 
 class QosTest extends TestCase
 {

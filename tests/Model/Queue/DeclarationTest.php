@@ -10,7 +10,7 @@ use Innmind\AMQP\{
     Exception\PassiveQueueDeclarationMustHaveAName,
 };
 use Innmind\Immutable\Map;
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
 
 class DeclarationTest extends TestCase
 {

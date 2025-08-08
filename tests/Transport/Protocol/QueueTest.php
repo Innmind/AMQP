@@ -20,7 +20,7 @@ use Innmind\AMQP\{
     Model\Queue\Unbinding,
     Model\Queue\Purge,
 };
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
 
 class QueueTest extends TestCase
 {

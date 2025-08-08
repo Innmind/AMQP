@@ -14,10 +14,10 @@ use Innmind\Immutable\{
 };
 use Innmind\BlackBox\{
     PHPUnit\BlackBox,
+    PHPUnit\Framework\TestCase,
     Set,
 };
 use Fixtures\Innmind\TimeContinuum\Earth\PointInTime;
-use PHPUnit\Framework\TestCase;
 
 class ArgumentTranslatorTest extends TestCase
 {
@@ -30,7 +30,7 @@ class ArgumentTranslatorTest extends TestCase
 
     public function testInvokation()
     {
-        $value = $this->createMock(Value::class);
+        $value = new Value\VoidValue;
 
         $this->assertSame($value, (new ArgumentTranslator)($value));
     }

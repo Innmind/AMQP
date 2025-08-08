@@ -14,7 +14,8 @@ use Innmind\Stream\{
     Watch\Select,
 };
 use Innmind\Immutable\Str;
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class SignedLongIntegerTest extends TestCase
 {
@@ -26,9 +27,7 @@ class SignedLongIntegerTest extends TestCase
         );
     }
 
-    /**
-     * @dataProvider cases
-     */
+    #[DataProvider('cases')]
     public function testStringCast($int, $expected)
     {
         $value = SignedLongInteger::of($int);
@@ -36,9 +35,7 @@ class SignedLongIntegerTest extends TestCase
         $this->assertSame($int, $value->original());
     }
 
-    /**
-     * @dataProvider cases
-     */
+    #[DataProvider('cases')]
     public function testFromStream($expected, $string)
     {
         $value = IO::of(Select::waitForever(...))

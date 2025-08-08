@@ -4,7 +4,7 @@ declare(strict_types = 1);
 namespace Tests\Innmind\AMQP\Model;
 
 use Innmind\AMQP\Model\Count;
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
 
 class CountTest extends TestCase
 {

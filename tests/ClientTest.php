@@ -46,9 +46,10 @@ use Innmind\Immutable\{
 };
 use Innmind\BlackBox\{
     PHPUnit\BlackBox,
+    PHPUnit\Framework\TestCase,
     Set,
 };
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class ClientTest extends TestCase
 {
@@ -694,9 +695,7 @@ class ClientTest extends TestCase
         $this->assertNull($result);
     }
 
-    /**
-     * @dataProvider signals
-     */
+    #[DataProvider('signals')]
     public function testSignals($signal)
     {
         if (\getenv('CI')) {

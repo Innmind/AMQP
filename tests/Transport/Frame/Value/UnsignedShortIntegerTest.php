@@ -14,7 +14,8 @@ use Innmind\Stream\{
     Watch\Select,
 };
 use Innmind\Immutable\Str;
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class UnsignedShortIntegerTest extends TestCase
 {
@@ -26,9 +27,7 @@ class UnsignedShortIntegerTest extends TestCase
         );
     }
 
-    /**
-     * @dataProvider cases
-     */
+    #[DataProvider('cases')]
     public function testStringCast($int, $expected)
     {
         $value = UnsignedShortInteger::of($int);
@@ -36,9 +35,7 @@ class UnsignedShortIntegerTest extends TestCase
         $this->assertSame($int, $value->original());
     }
 
-    /**
-     * @dataProvider cases
-     */
+    #[DataProvider('cases')]
     public function testFromStream($expected, $string)
     {
         $value = IO::of(Select::waitForever(...))

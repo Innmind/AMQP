@@ -7,9 +7,9 @@ use Innmind\AMQP\{
     Model\Connection\MaxFrameSize,
     Exception\FrameExceedAllowedSize,
 };
-use PHPUnit\Framework\TestCase;
 use Innmind\BlackBox\{
     PHPUnit\BlackBox,
+    PHPUnit\Framework\TestCase,
     Set,
 };
 

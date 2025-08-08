@@ -8,7 +8,7 @@ use Innmind\Url\Authority\UserInformation\{
     User,
     Password,
 };
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
 
 class SecureOkTest extends TestCase
 {

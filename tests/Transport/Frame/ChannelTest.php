@@ -4,7 +4,7 @@ declare(strict_types = 1);
 namespace Tests\Innmind\AMQP\Transport\Frame;
 
 use Innmind\AMQP\Transport\Frame\Channel;
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
 
 class ChannelTest extends TestCase
 {

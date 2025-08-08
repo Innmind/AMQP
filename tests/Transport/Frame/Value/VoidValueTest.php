@@ -7,7 +7,7 @@ use Innmind\AMQP\Transport\Frame\{
     Value\VoidValue,
     Value,
 };
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
 
 class VoidValueTest extends TestCase
 {

@@ -16,7 +16,7 @@ use Innmind\AMQP\{
     Model\Channel\FlowOk,
     Model\Channel\Close,
 };
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
 
 class ChannelTest extends TestCase
 {

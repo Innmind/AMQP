@@ -4,7 +4,7 @@ declare(strict_types = 1);
 namespace Tests\Innmind\AMQP\Model\Queue;
 
 use Innmind\AMQP\Model\Queue\Purge;
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
 
 class PurgeTest extends TestCase
 {

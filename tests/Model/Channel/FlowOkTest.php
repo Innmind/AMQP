@@ -4,7 +4,7 @@ declare(strict_types = 1);
 namespace Tests\Innmind\AMQP\Model\Channel;
 
 use Innmind\AMQP\Model\Channel\FlowOk;
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
 
 class FlowOkTest extends TestCase
 {

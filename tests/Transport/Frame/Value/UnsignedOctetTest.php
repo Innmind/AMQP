@@ -14,7 +14,8 @@ use Innmind\Stream\{
     Watch\Select,
 };
 use Innmind\Immutable\Str;
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class UnsignedOctetTest extends TestCase
 {
@@ -26,9 +27,7 @@ class UnsignedOctetTest extends TestCase
         );
     }
 
-    /**
-     * @dataProvider cases
-     */
+    #[DataProvider('cases')]
     public function testStringCast($expected, $octet)
     {
         $value = UnsignedOctet::of($octet);
@@ -36,9 +35,7 @@ class UnsignedOctetTest extends TestCase
         $this->assertSame($octet, $value->original());
     }
 
-    /**
-     * @dataProvider cases
-     */
+    #[DataProvider('cases')]
     public function testFromStream($string, $expected)
     {
         $value = IO::of(Select::waitForever(...))

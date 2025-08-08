@@ -17,7 +17,7 @@ use Innmind\AMQP\{
     Model\Exchange\Deletion,
     Model\Exchange\Type,
 };
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
 
 class ExchangeTest extends TestCase
 {

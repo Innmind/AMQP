@@ -9,7 +9,7 @@ use Innmind\AMQP\{
     Exception\NotWaitingPassiveDeclarationDoesNothing,
 };
 use Innmind\Immutable\Map;
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
 
 class DeclarationTest extends TestCase
 {
