@@ -82,8 +82,10 @@ final class UnsignedShortInteger implements Value
     {
         return Frame\Chunk::of(2)
             ->map(static function($chunk) {
-                /** @psalm-suppress PossiblyInvalidArrayAccess Todo apply a predicate */
-                /** @var int<0, 65535> $value */
+                /**
+                 * @psalm-suppress PossiblyInvalidArrayAccess Todo apply a predicate
+                 * @var int<0, 65535> $value
+                 */
                 [, $value] = \unpack('n', $chunk->toString());
 
                 return $value;
