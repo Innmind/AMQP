@@ -19,12 +19,6 @@ final class ToReject
     }
 
     #[\NoDiscard]
-    public function kind(): Kind
-    {
-        return Kind::toReject;
-    }
-
-    #[\NoDiscard]
     public function queue(): string
     {
         return $this->queue;

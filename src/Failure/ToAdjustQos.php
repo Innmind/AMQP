@@ -14,10 +14,4 @@ final class ToAdjustQos
     public function __construct()
     {
     }
-
-    #[\NoDiscard]
-    public function kind(): Kind
-    {
-        return Kind::toAdjustQos;
-    }
 }

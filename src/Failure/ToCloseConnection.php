@@ -14,10 +14,4 @@ final class ToCloseConnection
     public function __construct()
     {
     }
-
-    #[\NoDiscard]
-    public function kind(): Kind
-    {
-        return Kind::toCloseConnection;
-    }
 }

@@ -3,9 +3,7 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Failure;
 
-use Innmind\AMQP\{
-    Model\Queue\Purge as Command,
-};
+use Innmind\AMQP\Model\Queue\Purge as Command;
 
 /**
  * @psalm-immutable
@@ -26,11 +24,5 @@ final class ToPurge
     public function command(): Command
     {
         return $this->command;
-    }
-
-    #[\NoDiscard]
-    public function kind(): Kind
-    {
-        return Kind::toPurge;
     }
 }

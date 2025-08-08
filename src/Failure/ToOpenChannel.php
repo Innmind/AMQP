@@ -14,10 +14,4 @@ final class ToOpenChannel
     public function __construct()
     {
     }
-
-    #[\NoDiscard]
-    public function kind(): Kind
-    {
-        return Kind::toOpenChannel;
-    }
 }

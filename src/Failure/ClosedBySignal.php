@@ -21,12 +21,6 @@ final class ClosedBySignal
     }
 
     #[\NoDiscard]
-    public function kind(): Kind
-    {
-        return Kind::closedBySignal;
-    }
-
-    #[\NoDiscard]
     public function signal(): Signal
     {
         return $this->signal;

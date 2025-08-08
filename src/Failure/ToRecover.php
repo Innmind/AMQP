@@ -19,12 +19,6 @@ final class ToRecover
     }
 
     #[\NoDiscard]
-    public function kind(): Kind
-    {
-        return Kind::toRecover;
-    }
-
-    #[\NoDiscard]
     public function queue(): string
     {
         return $this->queue;

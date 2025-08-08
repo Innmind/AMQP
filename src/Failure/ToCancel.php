@@ -19,12 +19,6 @@ final class ToCancel
     }
 
     #[\NoDiscard]
-    public function kind(): Kind
-    {
-        return Kind::toCancel;
-    }
-
-    #[\NoDiscard]
     public function queue(): string
     {
         return $this->queue;

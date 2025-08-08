@@ -3,9 +3,7 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Failure;
 
-use Innmind\AMQP\{
-    Transport\Frame\Method,
-};
+use Innmind\AMQP\Transport\Frame\Method;
 use Innmind\Immutable\Maybe;
 
 /**
@@ -30,12 +28,6 @@ final class ClosedByServer
         $this->message = $message;
         $this->code = $code;
         $this->method = $method;
-    }
-
-    #[\NoDiscard]
-    public function kind(): Kind
-    {
-        return Kind::closedByServer;
     }
 
     #[\NoDiscard]

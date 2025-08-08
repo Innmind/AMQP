@@ -14,10 +14,4 @@ final class ToCommit
     public function __construct()
     {
     }
-
-    #[\NoDiscard]
-    public function kind(): Kind
-    {
-        return Kind::toCommit;
-    }
 }

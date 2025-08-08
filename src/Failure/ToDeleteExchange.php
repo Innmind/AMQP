@@ -3,9 +3,7 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Failure;
 
-use Innmind\AMQP\{
-    Model\Exchange\Deletion as Command,
-};
+use Innmind\AMQP\Model\Exchange\Deletion as Command;
 
 /**
  * @psalm-immutable
@@ -26,11 +24,5 @@ final class ToDeleteExchange
     public function command(): Command
     {
         return $this->command;
-    }
-
-    #[\NoDiscard]
-    public function kind(): Kind
-    {
-        return Kind::toDeleteExchange;
     }
 }

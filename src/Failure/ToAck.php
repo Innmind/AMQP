@@ -19,12 +19,6 @@ final class ToAck
     }
 
     #[\NoDiscard]
-    public function kind(): Kind
-    {
-        return Kind::toAck;
-    }
-
-    #[\NoDiscard]
     public function queue(): string
     {
         return $this->queue;

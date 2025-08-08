@@ -3,9 +3,7 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Failure;
 
-use Innmind\AMQP\{
-    Model\Exchange\Declaration as Command,
-};
+use Innmind\AMQP\Model\Exchange\Declaration as Command;
 
 /**
  * @psalm-immutable
@@ -26,11 +24,5 @@ final class ToDeclareExchange
     public function command(): Command
     {
         return $this->command;
-    }
-
-    #[\NoDiscard]
-    public function kind(): Kind
-    {
-        return Kind::toDeclareExchange;
     }
 }

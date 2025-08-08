@@ -14,10 +14,4 @@ final class ToReadMessage
     public function __construct()
     {
     }
-
-    #[\NoDiscard]
-    public function kind(): Kind
-    {
-        return Kind::toReadMessage;
-    }
 }
