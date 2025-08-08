@@ -8,10 +8,13 @@ use Innmind\Url\Authority\UserInformation\{
     User,
     Password,
 };
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 class SecureOkTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $command = SecureOk::of(

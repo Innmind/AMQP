@@ -7,10 +7,13 @@ use Innmind\AMQP\Model\{
     Queue\DeleteOk,
     Count,
 };
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 class DeleteOkTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $model = DeleteOk::of(

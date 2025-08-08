@@ -14,10 +14,16 @@ use Innmind\Stream\{
     Watch\Select,
 };
 use Innmind\Immutable\Str;
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\{
+    DataProvider,
+    Group,
+};
 
 class SignedLongIntegerTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $this->assertInstanceOf(
@@ -26,9 +32,9 @@ class SignedLongIntegerTest extends TestCase
         );
     }
 
-    /**
-     * @dataProvider cases
-     */
+    #[Group('ci')]
+    #[Group('local')]
+    #[DataProvider('cases')]
     public function testStringCast($int, $expected)
     {
         $value = SignedLongInteger::of($int);
@@ -36,9 +42,9 @@ class SignedLongIntegerTest extends TestCase
         $this->assertSame($int, $value->original());
     }
 
-    /**
-     * @dataProvider cases
-     */
+    #[Group('ci')]
+    #[Group('local')]
+    #[DataProvider('cases')]
     public function testFromStream($expected, $string)
     {
         $value = IO::of(Select::waitForever(...))
@@ -57,6 +63,8 @@ class SignedLongIntegerTest extends TestCase
         $this->assertSame($string, $value->pack()->toString());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testThrowWhenIntegerTooHigh()
     {
         $this->expectException(OutOfDefinitionSet::class);
@@ -65,6 +73,8 @@ class SignedLongIntegerTest extends TestCase
         SignedLongInteger::of(2147483648);
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testThrowWhenIntegerTooLow()
     {
         $this->expectException(OutOfDefinitionSet::class);

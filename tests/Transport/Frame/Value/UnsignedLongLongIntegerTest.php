@@ -14,10 +14,16 @@ use Innmind\Stream\{
     Watch\Select,
 };
 use Innmind\Immutable\Str;
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\{
+    DataProvider,
+    Group,
+};
 
 class UnsignedLongLongIntegerTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $this->assertInstanceOf(
@@ -26,6 +32,8 @@ class UnsignedLongLongIntegerTest extends TestCase
         );
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testThrowWhenIntegerTooLow()
     {
         $this->expectException(OutOfDefinitionSet::class);
@@ -34,9 +42,9 @@ class UnsignedLongLongIntegerTest extends TestCase
         UnsignedLongLongInteger::of(-1);
     }
 
-    /**
-     * @dataProvider cases
-     */
+    #[Group('ci')]
+    #[Group('local')]
+    #[DataProvider('cases')]
     public function testStringCast($int, $expected)
     {
         $value = UnsignedLongLongInteger::of($int);
@@ -44,9 +52,9 @@ class UnsignedLongLongIntegerTest extends TestCase
         $this->assertSame($int, $value->original());
     }
 
-    /**
-     * @dataProvider cases
-     */
+    #[Group('ci')]
+    #[Group('local')]
+    #[DataProvider('cases')]
     public function testFromStream($expected, $string)
     {
         $value = IO::of(Select::waitForever(...))

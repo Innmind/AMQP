@@ -14,18 +14,24 @@ use Innmind\Stream\{
     Watch\Select,
 };
 use Innmind\Immutable\Str;
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\{
+    DataProvider,
+    Group,
+};
 
 class SignedOctetTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $this->assertInstanceOf(Value::class, SignedOctet::of(0));
     }
 
-    /**
-     * @dataProvider cases
-     */
+    #[Group('ci')]
+    #[Group('local')]
+    #[DataProvider('cases')]
     public function testStringCast($expected, $octet)
     {
         $value = SignedOctet::of($octet);
@@ -33,9 +39,9 @@ class SignedOctetTest extends TestCase
         $this->assertSame($octet, $value->original());
     }
 
-    /**
-     * @dataProvider cases
-     */
+    #[Group('ci')]
+    #[Group('local')]
+    #[DataProvider('cases')]
     public function testFromStream($string, $expected)
     {
         $value = IO::of(Select::waitForever(...))
@@ -54,6 +60,8 @@ class SignedOctetTest extends TestCase
         $this->assertSame($string, $value->pack()->toString());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testThrowWhenStringTooHigh()
     {
         $this->expectException(OutOfDefinitionSet::class);
@@ -62,6 +70,8 @@ class SignedOctetTest extends TestCase
         SignedOctet::of(128);
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testThrowWhenStringTooLow()
     {
         $this->expectException(OutOfDefinitionSet::class);

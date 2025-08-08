@@ -7,10 +7,13 @@ use Innmind\AMQP\{
     Model\Basic\Message\ContentType,
     Exception\DomainException,
 };
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 class ContentTypeTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $this->assertSame(
@@ -19,6 +22,8 @@ class ContentTypeTest extends TestCase
         );
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testThrowWhenInvalidContentType()
     {
         $this->expectException(DomainException::class);

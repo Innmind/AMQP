@@ -16,18 +16,21 @@ use Innmind\AMQP\Model\Basic\{
     Message\Type,
     Message\UserId,
 };
-use Innmind\TimeContinuum\{
-    PointInTime,
-    Earth\ElapsedPeriod,
+use Innmind\TimeContinuum\Earth\{
+    PointInTime\Now,
+    ElapsedPeriod,
 };
 use Innmind\Immutable\{
     Map,
     Str,
 };
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 class MessageTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $message = Message::of(Str::of('foo'));
@@ -87,6 +90,8 @@ class MessageTest extends TestCase
         $this->assertSame('ASCII', $message->body()->encoding()->toString());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testContentType()
     {
         $message = Message::of(Str::of(''));
@@ -101,6 +106,8 @@ class MessageTest extends TestCase
         ));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testContentEncoding()
     {
         $message = Message::of(Str::of(''));
@@ -115,6 +122,8 @@ class MessageTest extends TestCase
         ));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testHeaders()
     {
         $message = Message::of(Str::of(''));
@@ -126,6 +135,8 @@ class MessageTest extends TestCase
         $this->assertSame($expected, $message2->headers());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testDeliveryMode()
     {
         $message = Message::of(Str::of(''));
@@ -140,6 +151,8 @@ class MessageTest extends TestCase
         ));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testPriority()
     {
         $message = Message::of(Str::of(''));
@@ -154,6 +167,8 @@ class MessageTest extends TestCase
         ));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testCorrelationId()
     {
         $message = Message::of(Str::of(''));
@@ -168,6 +183,8 @@ class MessageTest extends TestCase
         ));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testReplyTo()
     {
         $message = Message::of(Str::of(''));
@@ -182,6 +199,8 @@ class MessageTest extends TestCase
         ));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testExpiration()
     {
         $message = Message::of(Str::of(''));
@@ -196,6 +215,8 @@ class MessageTest extends TestCase
         ));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testId()
     {
         $message = Message::of(Str::of(''));
@@ -210,11 +231,13 @@ class MessageTest extends TestCase
         ));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testTimestamp()
     {
         $message = Message::of(Str::of(''));
         $message2 = $message->withTimestamp(
-            $expected = $this->createMock(PointInTime::class),
+            $expected = new Now,
         );
 
         $this->assertInstanceOf(Message::class, $message2);
@@ -224,6 +247,8 @@ class MessageTest extends TestCase
         ));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testType()
     {
         $message = Message::of(Str::of(''));
@@ -238,6 +263,8 @@ class MessageTest extends TestCase
         ));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testUserId()
     {
         $message = Message::of(Str::of(''));
@@ -252,6 +279,8 @@ class MessageTest extends TestCase
         ));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testAppId()
     {
         $message = Message::of(Str::of(''));

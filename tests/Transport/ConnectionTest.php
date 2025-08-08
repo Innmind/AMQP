@@ -20,10 +20,13 @@ use Innmind\Immutable\{
     Sequence,
     SideEffect,
 };
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 class ConnectionTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $os = Factory::build();
@@ -64,6 +67,8 @@ class ConnectionTest extends TestCase
         ); //test it closes without exception
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testClose()
     {
         $os = Factory::build();
@@ -86,6 +91,8 @@ class ConnectionTest extends TestCase
         ));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testReturnFailureWhenReceivedFrameIsNotTheExpectedOne()
     {
         $os = Factory::build();
@@ -116,6 +123,8 @@ class ConnectionTest extends TestCase
         );
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testReturnFailureWhenConnectionClosedByServer()
     {
         $os = Factory::build();

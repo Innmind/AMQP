@@ -7,10 +7,13 @@ use Innmind\AMQP\Model\{
     Queue\PurgeOk,
     Count,
 };
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 class PurgeOkTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $model = PurgeOk::of(

@@ -5,10 +5,13 @@ namespace Tests\Innmind\AMQP\Model\Queue;
 
 use Innmind\AMQP\Model\Queue\Unbinding;
 use Innmind\Immutable\Map;
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 class UnbindingTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $command = Unbinding::of('foo', 'bar', 'baz');
@@ -20,6 +23,8 @@ class UnbindingTest extends TestCase
         $this->assertCount(0, $command->arguments());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testWithArgument()
     {
         $command = Unbinding::of('foo', 'bar', 'baz');

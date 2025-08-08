@@ -19,10 +19,13 @@ use Innmind\Stream\{
     Watch\Select,
 };
 use Innmind\Immutable\Str;
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 class TimestampTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $this->assertInstanceOf(
@@ -31,6 +34,8 @@ class TimestampTest extends TestCase
         );
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testStringCast()
     {
         $value = Timestamp::of($now = new Now);
@@ -38,6 +43,8 @@ class TimestampTest extends TestCase
         $this->assertSame($now, $value->original());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testFromStream()
     {
         $value = IO::of(Select::waitForever(...))

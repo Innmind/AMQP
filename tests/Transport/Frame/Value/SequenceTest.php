@@ -18,18 +18,24 @@ use Innmind\Immutable\{
     Sequence as Seq,
     Str,
 };
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\{
+    DataProvider,
+    Group,
+};
 
 class SequenceTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $this->assertInstanceOf(Value::class, Sequence::of());
     }
 
-    /**
-     * @dataProvider cases
-     */
+    #[Group('ci')]
+    #[Group('local')]
+    #[DataProvider('cases')]
     public function testStringCast($expected, $values)
     {
         $value = Sequence::of(...$values);
@@ -38,9 +44,9 @@ class SequenceTest extends TestCase
         $this->assertSame($values, $value->original()->toList());
     }
 
-    /**
-     * @dataProvider cases
-     */
+    #[Group('ci')]
+    #[Group('local')]
+    #[DataProvider('cases')]
     public function testFromStream($string, $expected)
     {
         $value = IO::of(Select::waitForever(...))

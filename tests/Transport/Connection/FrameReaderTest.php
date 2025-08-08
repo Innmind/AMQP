@@ -47,7 +47,8 @@ use Innmind\Immutable\{
     Str,
     Map,
 };
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 class FrameReaderTest extends TestCase
 {
@@ -58,6 +59,8 @@ class FrameReaderTest extends TestCase
         $this->protocol = new Protocol(new Clock, new ArgumentTranslator);
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testReadCommand()
     {
         $file = \tmpfile();
@@ -89,6 +92,8 @@ class FrameReaderTest extends TestCase
         $this->assertInstanceOf(Frame::class, $frame);
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testReturnNothingWhenFrameEndMarkerInvalid()
     {
         $file = \tmpfile();
@@ -120,6 +125,8 @@ class FrameReaderTest extends TestCase
         $this->assertNull($frame);
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testReturnNothingWhenPayloadTooShort()
     {
         $file = \tmpfile();
@@ -145,6 +152,8 @@ class FrameReaderTest extends TestCase
         $this->assertNull($frame);
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testReturnNothingWhenNoFrameDeteted()
     {
         $file = \tmpfile();
@@ -165,6 +174,8 @@ class FrameReaderTest extends TestCase
         $this->assertNull($frame);
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testReadHeader()
     {
         $header = $this
@@ -451,6 +462,8 @@ class FrameReaderTest extends TestCase
         );
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testReadBody()
     {
         $file = \tmpfile();
@@ -481,6 +494,8 @@ class FrameReaderTest extends TestCase
         ));
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testReadHeartbeat()
     {
         $file = \tmpfile();

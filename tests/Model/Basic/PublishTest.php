@@ -8,10 +8,13 @@ use Innmind\AMQP\Model\Basic\{
     Message,
 };
 use Innmind\Immutable\Str;
-use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 class PublishTest extends TestCase
 {
+    #[Group('ci')]
+    #[Group('local')]
     public function testInterface()
     {
         $command = Publish::a(
@@ -25,6 +28,8 @@ class PublishTest extends TestCase
         $this->assertFalse($command->immediate());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testA()
     {
         $command = Publish::a($message = Message::of(Str::of('')));
@@ -33,6 +38,8 @@ class PublishTest extends TestCase
         $this->assertSame($message, $command->message());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testTo()
     {
         $command = Publish::a(Message::of(Str::of('')));
@@ -51,6 +58,8 @@ class PublishTest extends TestCase
         $this->assertSame('', $command3->exchange());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testWithRoutingKey()
     {
         $command = Publish::a(Message::of(Str::of('')));
@@ -62,6 +71,8 @@ class PublishTest extends TestCase
         $this->assertSame('bar', $command2->routingKey());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testFlagAsMandatory()
     {
         $command = Publish::a(Message::of(Str::of('')));
@@ -80,6 +91,8 @@ class PublishTest extends TestCase
         $this->assertFalse($command3->mandatory());
     }
 
+    #[Group('ci')]
+    #[Group('local')]
     public function testFlagAsImmediate()
     {
         $command = Publish::a(Message::of(Str::of('')));
