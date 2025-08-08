@@ -255,12 +255,8 @@ final class Basic
             static fn($expiration) => [
                 $flagBits | (1 << 8),
                 ($properties)(ShortString::of(Str::of((string) (
-                    $expiration
-                        ->asPeriod()
-                        ->milliseconds() +
-                    $expiration
-                        ->asPeriod()
-                        ->seconds() * 1000
+                    $expiration->milliseconds() +
+                    $expiration->seconds() * 1000
                 )))),
             ],
             static fn() => [$flagBits, $properties],

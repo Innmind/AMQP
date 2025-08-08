@@ -17,7 +17,7 @@ use Innmind\AMQP\Model\Basic\Message\{
 };
 use Innmind\TimeContinuum\{
     PointInTime,
-    ElapsedPeriod,
+    Period,
 };
 use Innmind\Filesystem\File\Content;
 use Innmind\Immutable\{
@@ -47,7 +47,7 @@ final class Message
     private Maybe $correlationId;
     /** @var Maybe<ReplyTo> */
     private Maybe $replyTo;
-    /** @var Maybe<ElapsedPeriod> */
+    /** @var Maybe<Period> */
     private Maybe $expiration;
     /** @var Maybe<Id> */
     private Maybe $id;
@@ -88,7 +88,7 @@ final class Message
         $this->correlationId = Maybe::nothing();
         /** @var Maybe<ReplyTo> */
         $this->replyTo = Maybe::nothing();
-        /** @var Maybe<ElapsedPeriod> */
+        /** @var Maybe<Period> */
         $this->expiration = Maybe::nothing();
         /** @var Maybe<Id> */
         $this->id = Maybe::nothing();
@@ -268,7 +268,7 @@ final class Message
     }
 
     /**
-     * @return Maybe<ElapsedPeriod>
+     * @return Maybe<Period>
      */
     #[\NoDiscard]
     public function expiration(): Maybe
@@ -277,7 +277,7 @@ final class Message
     }
 
     #[\NoDiscard]
-    public function withExpiration(ElapsedPeriod $expiration): self
+    public function withExpiration(Period $expiration): self
     {
         $self = clone $this;
         $self->expiration = Maybe::just($expiration);

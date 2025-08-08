@@ -68,7 +68,7 @@ class ClientTest extends TestCase
         $this->client = Factory::of($this->os)->make(
             Transport::tcp(),
             Url::of('//guest:guest@localhost:5672/'),
-            Period::second(1)->asElapsedPeriod(),
+            Period::second(1),
         );
     }
 
@@ -284,7 +284,7 @@ class ClientTest extends TestCase
             ->withPriority(Message\Priority::five)
             ->withCorrelationId(Message\CorrelationId::of('correlation'))
             ->withReplyTo(Message\ReplyTo::of('reply'))
-            ->withExpiration(Period::second(10)->asElapsedPeriod())
+            ->withExpiration(Period::second(10))
             ->withId(Message\Id::of('id'))
             ->withTimestamp($now = $this->os->clock()->now())
             ->withType(Message\Type::of('type'))
@@ -416,7 +416,7 @@ class ClientTest extends TestCase
                         static fn() => null,
                     ));
                     $this->assertSame(10000, $message->expiration()->match(
-                        static fn($value) => $value->asPeriod()->seconds() * 1000,
+                        static fn($value) => $value->seconds() * 1000,
                         static fn() => null,
                     ));
                     $this->assertSame('id', $message->id()->match(

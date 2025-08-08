@@ -99,7 +99,6 @@ final class Connection
             UnsignedShortInteger::of(
                 $command
                     ->heartbeat()
-                    ->asPeriod()
                     ->seconds(),
             ),
         ));

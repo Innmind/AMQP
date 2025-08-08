@@ -205,7 +205,7 @@ class MessageTest extends TestCase
     {
         $message = Message::of(Str::of(''));
         $message2 = $message->withExpiration(
-            $expected = Period::second(1)->asElapsedPeriod(),
+            $expected = Period::second(1),
         );
 
         $this->assertInstanceOf(Message::class, $message2);

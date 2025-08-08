@@ -21,7 +21,7 @@ class TuneOkTest extends TestCase
         $command = TuneOk::of(
             MaxChannels::of(1),
             MaxFrameSize::of(10),
-            $heartbeat = Period::second(1)->asElapsedPeriod(),
+            $heartbeat = Period::second(1),
         );
 
         $this->assertSame(1, $command->maxChannels());

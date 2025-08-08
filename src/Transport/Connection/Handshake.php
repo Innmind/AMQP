@@ -87,8 +87,7 @@ final class Handshake
             ->get(2)
             ->keep(Instance::of(Value\UnsignedShortInteger::class))
             ->map(static fn($value) => $value->original())
-            ->map(Period::millisecond(...))
-            ->map(static fn($period) => $period->asElapsedPeriod());
+            ->map(Period::millisecond(...));
 
         return Maybe::all($maxChannels, $maxFrameSize, $heartbeat)
             ->flatMap($connection->tune(...))
