@@ -26,6 +26,7 @@ final class Pipe implements Command
         $this->second = $second;
     }
 
+    #[\Override]
     public function __invoke(
         Connection $connection,
         Channel $channel,

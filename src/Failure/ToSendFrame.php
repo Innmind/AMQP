@@ -17,6 +17,7 @@ final class ToSendFrame extends Failure
     {
     }
 
+    #[\Override]
     public function kind(): Kind
     {
         return Kind::toSendFrame;

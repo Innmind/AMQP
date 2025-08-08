@@ -56,6 +56,7 @@ final class SignedLongLongInteger implements Value
     {
         return Frame\Chunk::of(8)
             ->map(static function($chunk) {
+                /** @psalm-suppress PossiblyInvalidArrayAccess Todo apply a predicate */
                 /** @var int $value */
                 [, $value] = \unpack('q', $chunk->toString());
 
@@ -65,16 +66,19 @@ final class SignedLongLongInteger implements Value
             ->map(static fn($value) => Unpacked::of(8, $value));
     }
 
+    #[\Override]
     public function original(): int
     {
         return $this->original;
     }
 
+    #[\Override]
     public function symbol(): Symbol
     {
         return Symbol::signedLongLongInteger;
     }
 
+    #[\Override]
     public function pack(): Str
     {
         return Str::of(\pack('q', $this->original));

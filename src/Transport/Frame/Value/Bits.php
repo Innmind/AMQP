@@ -73,16 +73,19 @@ final class Bits implements Value
     /**
      * @return Sequence<bool>
      */
+    #[\Override]
     public function original(): Sequence
     {
         return $this->original;
     }
 
+    #[\Override]
     public function symbol(): Symbol
     {
         return Symbol::bits;
     }
 
+    #[\Override]
     public function pack(): Str
     {
         $value = $this

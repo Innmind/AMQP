@@ -29,6 +29,7 @@ final class Transaction implements Command
         $this->predicate = $predicate;
     }
 
+    #[\Override]
     public function __invoke(
         Connection $connection,
         Channel $channel,

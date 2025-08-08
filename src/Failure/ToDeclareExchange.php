@@ -29,6 +29,7 @@ final class ToDeclareExchange extends Failure
         return $this->command;
     }
 
+    #[\Override]
     public function kind(): Kind
     {
         return Kind::toDeclareExchange;

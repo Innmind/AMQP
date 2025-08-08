@@ -85,16 +85,19 @@ final class Sequence implements Value
     /**
      * @return Seq<Value>
      */
+    #[\Override]
     public function original(): Seq
     {
         return $this->original;
     }
 
+    #[\Override]
     public function symbol(): Symbol
     {
         return Symbol::sequence;
     }
 
+    #[\Override]
     public function pack(): Str
     {
         $data = $this

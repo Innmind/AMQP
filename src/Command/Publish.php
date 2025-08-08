@@ -32,6 +32,7 @@ final class Publish implements Command
         $this->commands = $commands;
     }
 
+    #[\Override]
     public function __invoke(
         Connection $connection,
         Channel $channel,

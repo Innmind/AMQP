@@ -23,15 +23,18 @@ final class VoidValue implements Value
         return Frame\NoOp::of(Unpacked::of(0, new self));
     }
 
+    #[\Override]
     public function original(): void
     {
     }
 
+    #[\Override]
     public function symbol(): Symbol
     {
         return Symbol::void;
     }
 
+    #[\Override]
     public function pack(): Str
     {
         return Str::of('');

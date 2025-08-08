@@ -84,6 +84,7 @@ final class UnsignedOctet implements Value
     {
         return Frame\Chunk::of(1)
             ->map(static function($chunk) {
+                /** @psalm-suppress PossiblyInvalidArrayAccess Todo apply a predicate */
                 /** @var int<0, 255> $octet */
                 [, $octet] = \unpack('C', $chunk->toString());
 
@@ -96,16 +97,19 @@ final class UnsignedOctet implements Value
     /**
      * @return int<0, 255>
      */
+    #[\Override]
     public function original(): int
     {
         return $this->original;
     }
 
+    #[\Override]
     public function symbol(): Symbol
     {
         return Symbol::unsignedOctet;
     }
 
+    #[\Override]
     public function pack(): Str
     {
         return Str::of(\chr($this->original));

@@ -17,6 +17,7 @@ final class UnexpectedFrame extends Failure
     {
     }
 
+    #[\Override]
     public function kind(): Kind
     {
         return Kind::unexpectedFrame;

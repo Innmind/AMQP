@@ -79,16 +79,19 @@ final class Timestamp implements Value
         );
     }
 
+    #[\Override]
     public function original(): PointInTime
     {
         return $this->original;
     }
 
+    #[\Override]
     public function symbol(): Symbol
     {
         return Symbol::timestamp;
     }
 
+    #[\Override]
     public function pack(): Str
     {
         /** @psalm-suppress ArgumentTypeCoercion */

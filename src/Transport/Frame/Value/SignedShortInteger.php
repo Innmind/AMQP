@@ -71,6 +71,7 @@ final class SignedShortInteger implements Value
     {
         return Frame\Chunk::of(2)
             ->map(static function($chunk) {
+                /** @psalm-suppress PossiblyInvalidArrayAccess Todo apply a predicate */
                 /** @var int<-32768, 32767> $value */
                 [, $value] = \unpack('s', $chunk->toString());
 
@@ -83,16 +84,19 @@ final class SignedShortInteger implements Value
     /**
      * @return int<-32768, 32767>
      */
+    #[\Override]
     public function original(): int
     {
         return $this->original;
     }
 
+    #[\Override]
     public function symbol(): Symbol
     {
         return Symbol::signedShortInteger;
     }
 
+    #[\Override]
     public function pack(): Str
     {
         return Str::of(\pack('s', $this->original));

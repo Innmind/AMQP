@@ -20,6 +20,7 @@ final class ToAck extends Failure
         $this->queue = $queue;
     }
 
+    #[\Override]
     public function kind(): Kind
     {
         return Kind::toAck;

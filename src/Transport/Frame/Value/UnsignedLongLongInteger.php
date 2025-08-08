@@ -83,6 +83,7 @@ final class UnsignedLongLongInteger implements Value
     {
         return Frame\Chunk::of(8)
             ->map(static function($chunk) {
+                /** @psalm-suppress PossiblyInvalidArrayAccess Todo apply a predicate */
                 /** @var int<0, max> $value */
                 [, $value] = \unpack('J', $chunk->toString());
 
@@ -95,16 +96,19 @@ final class UnsignedLongLongInteger implements Value
     /**
      * @return int<0, max>
      */
+    #[\Override]
     public function original(): int
     {
         return $this->original;
     }
 
+    #[\Override]
     public function symbol(): Symbol
     {
         return Symbol::unsignedLongLongInteger;
     }
 
+    #[\Override]
     public function pack(): Str
     {
         return Str::of(\pack('J', $this->original));
