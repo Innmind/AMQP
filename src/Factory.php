@@ -6,7 +6,7 @@ namespace Innmind\AMQP;
 use Innmind\OperatingSystem\OperatingSystem;
 use Innmind\IO\Sockets\Internet\Transport as Socket;
 use Innmind\Url\Url;
-use Innmind\TimeContinuum\ElapsedPeriod;
+use Innmind\TimeContinuum\Period;
 
 final class Factory
 {
@@ -27,7 +27,7 @@ final class Factory
     public function make(
         Socket $transport,
         Url $server,
-        ElapsedPeriod $timeout,
+        Period $timeout,
     ): Client {
         return Client::of(
             fn() => Transport\Connection::open(

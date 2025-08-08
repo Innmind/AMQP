@@ -18,6 +18,6 @@ return Factory::of($os)
     ->make(
         Transport::tcp(),
         Url::of('//guest:guest@localhost:5672/'),
-        Period::second(1)->asElapsedPeriod(),
+        Period::second(1),
     )
     ->listenSignals($os->process());

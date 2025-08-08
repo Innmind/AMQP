@@ -30,7 +30,7 @@ use Innmind\IO\{
 };
 use Innmind\Url\Url;
 use Innmind\TimeContinuum\{
-    ElapsedPeriod,
+    Period,
     Clock,
 };
 use Innmind\OperatingSystem\Remote;
@@ -86,7 +86,7 @@ final class Connection
         Transport $transport,
         Url $server,
         Protocol $protocol,
-        ElapsedPeriod $timeout,
+        Period $timeout,
         Clock $clock,
         Remote $remote,
     ): Maybe {
@@ -97,7 +97,7 @@ final class Connection
             )
             ->map(
                 static fn($socket) => $socket
-                    ->timeoutAfter($timeout->asPeriod())
+                    ->timeoutAfter($timeout)
                     ->toEncoding(Str\Encoding::ascii),
             )
             ->flatMap(
@@ -211,7 +211,7 @@ final class Connection
     public function tune(
         MaxChannels $maxChannels,
         MaxFrameSize $maxFrameSize,
-        ElapsedPeriod $heartbeat,
+        Period $heartbeat,
     ): Maybe {
         return $this
             ->send(static fn($protocol) => $protocol->connection()->tuneOk(
@@ -225,7 +225,7 @@ final class Connection
             ->map(fn() => new self(
                 $this->protocol,
                 $this->heartbeat->adjust($heartbeat),
-                $this->socket->timeoutAfter($heartbeat->asPeriod()),
+                $this->socket->timeoutAfter($heartbeat),
                 $maxChannels,
                 $maxFrameSize,
                 $this->frame,

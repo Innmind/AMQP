@@ -571,7 +571,7 @@ class BasicTest extends TestCase
                     ->withPriority(Priority::five)
                     ->withCorrelationId(CorrelationId::of('correlation'))
                     ->withReplyTo(ReplyTo::of('reply'))
-                    ->withExpiration(Period::second(1)->asElapsedPeriod())
+                    ->withExpiration(Period::second(1))
                     ->withId(Id::of('id'))
                     ->withTimestamp($now = PointInTime::now())
                     ->withType(MessageType::of('type'))

@@ -370,7 +370,7 @@ class ConnectionTest extends TestCase
             TuneOk::of(
                 MaxChannels::of(1),
                 MaxFrameSize::of(10),
-                Period::second(3)->asElapsedPeriod(),
+                Period::second(3),
             ),
         )->match(
             static fn($frame) => $frame,

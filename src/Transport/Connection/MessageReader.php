@@ -181,7 +181,7 @@ final class MessageReader
                             ->asPredicate(),
                     )
                     ->map(Period::millisecond(...))
-                    ->map(static fn($expiration) => $message->withExpiration($expiration->asElapsedPeriod())),
+                    ->map(static fn($expiration) => $message->withExpiration($expiration)),
             ],
             [
                 7,
