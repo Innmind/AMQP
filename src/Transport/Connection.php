@@ -197,7 +197,7 @@ final class Connection
                 Method::connectionCloseOk,
             )
             ->flatMap(fn() => $this->socket->close())
-            ->map(static fn() => new SideEffect);
+            ->map(SideEffect::identity(...));
     }
 
     /**
@@ -270,7 +270,7 @@ final class Connection
             ->abortWhen($this->signals->notified(...))
             ->sinkAttempts($data)
             ->eitherWay(
-                static fn() => Attempt::result(new SideEffect),
+                static fn() => Attempt::result(SideEffect::identity()),
                 fn() => $this->signals->close(
                     $this,
                     static fn() => Attempt::error(Failure::toSendFrame()),
