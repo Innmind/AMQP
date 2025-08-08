@@ -735,11 +735,11 @@ class ClientTest extends TestCase
         );
     }
 
-    public function testPublishRandomContent()
+    public function testPublishRandomContent(): BlackBox\Proof
     {
-        $this
+        return $this
             ->forAll(Set\Strings::madeOf(Set\Unicode::any())->between(0, 1_000))
-            ->then(function($message) {
+            ->prove(function($message) {
                 $result = $this
                     ->client
                     ->with(DeclareExchange::of('test-random', Type::direct))
