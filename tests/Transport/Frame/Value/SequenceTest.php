@@ -8,7 +8,7 @@ use Innmind\AMQP\{
     Transport\Frame\Value\LongString,
     Transport\Frame\Value,
 };
-use Innmind\TimeContinuum\Clock;
+use Innmind\Time\Clock;
 use Innmind\IO\IO;
 use Innmind\Immutable\{
     Sequence as Seq,
@@ -62,7 +62,7 @@ class SequenceTest extends TestCase
             );
 
         $this->assertInstanceOf(Sequence::class, $value);
-        $this->assertCount(\count($expected), $value->original());
+        $this->assertSame(\count($expected), $value->original()->size());
 
         foreach ($expected as $i => $v) {
             $this->assertInstanceOf(

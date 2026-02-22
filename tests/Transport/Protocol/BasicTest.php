@@ -39,8 +39,8 @@ use Innmind\AMQP\{
     Model\Basic\Message\UserId,
     Model\Connection\MaxFrameSize,
 };
-use Innmind\TimeContinuum\{
-    PointInTime,
+use Innmind\Time\{
+    Point,
     Period,
 };
 use Innmind\Immutable\{
@@ -76,7 +76,7 @@ class BasicTest extends TestCase
         $this->assertSame(Type::method, $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertTrue($frame->is(Method::of(60, 80)));
-        $this->assertCount(2, $frame->values());
+        $this->assertSame(2, $frame->values()->size());
         $this->assertInstanceOf(
             UnsignedLongLongInteger::class,
             $frame->values()->get(0)->match(
@@ -133,7 +133,7 @@ class BasicTest extends TestCase
         $this->assertSame(Type::method, $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertTrue($frame->is(Method::of(60, 30)));
-        $this->assertCount(2, $frame->values());
+        $this->assertSame(2, $frame->values()->size());
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(0)->match(
             static fn($value) => $value,
             static fn() => null,
@@ -189,7 +189,7 @@ class BasicTest extends TestCase
         $this->assertSame(Type::method, $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertTrue($frame->is(Method::of(60, 20)));
-        $this->assertCount(5, $frame->values());
+        $this->assertSame(5, $frame->values()->size());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
             $frame->values()->get(0)->match(
@@ -232,8 +232,8 @@ class BasicTest extends TestCase
             static fn($value) => $value,
             static fn() => null,
         ));
-        $this->assertCount(2, $frame->values()->get(4)->match(
-            static fn($value) => $value->original(),
+        $this->assertSame(2, $frame->values()->get(4)->match(
+            static fn($value) => $value->original()->size(),
             static fn() => null,
         ));
         $this->assertSame(24, $frame->values()->get(4)->match(
@@ -347,7 +347,7 @@ class BasicTest extends TestCase
         $this->assertSame(Type::method, $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertTrue($frame->is(Method::of(60, 70)));
-        $this->assertCount(3, $frame->values());
+        $this->assertSame(3, $frame->values()->size());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
             $frame->values()->get(0)->match(
@@ -407,7 +407,7 @@ class BasicTest extends TestCase
         );
 
         $this->assertInstanceOf(Sequence::class, $frames);
-        $this->assertCount(3, $frames);
+        $this->assertSame(3, $frames->size());
 
         $frame = $frames->first()->match(
             static fn($frame) => $frame,
@@ -416,7 +416,7 @@ class BasicTest extends TestCase
         $this->assertSame(Type::method, $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertTrue($frame->is(Method::of(60, 40)));
-        $this->assertCount(4, $frame->values());
+        $this->assertSame(4, $frame->values()->size());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
             $frame->values()->get(0)->match(
@@ -462,7 +462,7 @@ class BasicTest extends TestCase
         );
         $this->assertSame(Type::header, $frame->type());
         $this->assertSame($channel, $frame->channel());
-        $this->assertCount(2, $frame->values());
+        $this->assertSame(2, $frame->values()->size());
         $this->assertInstanceOf(
             UnsignedLongLongInteger::class,
             $frame->values()->get(0)->match(
@@ -512,7 +512,7 @@ class BasicTest extends TestCase
         );
 
         $this->assertInstanceOf(Sequence::class, $frames);
-        $this->assertCount(4, $frames);
+        $this->assertSame(4, $frames->size());
 
         $frame = $frames->get(1)->match(
             static fn($frame) => $frame,
@@ -573,7 +573,7 @@ class BasicTest extends TestCase
                     ->withReplyTo(ReplyTo::of('reply'))
                     ->withExpiration(Period::second(1))
                     ->withId(Id::of('id'))
-                    ->withTimestamp($now = PointInTime::now())
+                    ->withTimestamp($now = Point::now())
                     ->withType(MessageType::of('type'))
                     ->withUserId(UserId::of('guest'))
                     ->withAppId(AppId::of('webcrawler')),
@@ -582,7 +582,7 @@ class BasicTest extends TestCase
         );
 
         $this->assertInstanceOf(Sequence::class, $frames);
-        $this->assertCount(3, $frames);
+        $this->assertSame(3, $frames->size());
 
         $frame = $frames->get(1)->match(
             static fn($frame) => $frame,
@@ -590,7 +590,7 @@ class BasicTest extends TestCase
         );
         $this->assertSame(Type::header, $frame->type());
         $this->assertSame($channel, $frame->channel());
-        $this->assertCount(15, $frame->values());
+        $this->assertSame(15, $frame->values()->size());
         $this->assertInstanceOf(
             UnsignedLongLongInteger::class,
             $frame->values()->get(0)->match(
@@ -662,8 +662,8 @@ class BasicTest extends TestCase
                 static fn() => null,
             ),
         );
-        $this->assertCount(1, $frame->values()->get(4)->match(
-            static fn($value) => $value->original(),
+        $this->assertSame(1, $frame->values()->get(4)->match(
+            static fn($value) => $value->original()->size(),
             static fn() => null,
         ));
         $this->assertSame(
@@ -919,7 +919,7 @@ class BasicTest extends TestCase
         $this->assertSame(Type::method, $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertTrue($frame->is(Method::of(60, 10)));
-        $this->assertCount(3, $frame->values());
+        $this->assertSame(3, $frame->values()->size());
         $this->assertInstanceOf(
             UnsignedLongInteger::class,
             $frame->values()->get(0)->match(
@@ -987,7 +987,7 @@ class BasicTest extends TestCase
         $this->assertSame(Type::method, $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertTrue($frame->is(Method::of(60, 110)));
-        $this->assertCount(1, $frame->values());
+        $this->assertSame(1, $frame->values()->size());
         $this->assertInstanceOf(Bits::class, $frame->values()->get(0)->match(
             static fn($value) => $value,
             static fn() => null,
@@ -1033,7 +1033,7 @@ class BasicTest extends TestCase
         $this->assertSame(Type::method, $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertTrue($frame->is(Method::of(60, 90)));
-        $this->assertCount(2, $frame->values());
+        $this->assertSame(2, $frame->values()->size());
         $this->assertInstanceOf(
             UnsignedLongLongInteger::class,
             $frame->values()->get(0)->match(

@@ -172,7 +172,7 @@ final class Frame
         $payload = $this
             ->values
             ->map(static fn($value) => $value->pack())
-            ->fold(new Concat)
+            ->fold(Concat::monoid)
             ->toEncoding(Str\Encoding::ascii);
 
         return $this->doPack($payload);
@@ -183,7 +183,7 @@ final class Frame
         $payload = $this
             ->values
             ->map(static fn($value) => $value->pack())
-            ->fold(new Concat)
+            ->fold(Concat::monoid)
             ->toEncoding(Str\Encoding::ascii);
 
         return $this->doPack($payload);
@@ -216,7 +216,7 @@ final class Frame
             $payload,
             UnsignedOctet::internal(self::end())->pack(),
         )
-            ->fold(new Concat)
+            ->fold(Concat::monoid)
             ->toEncoding(Str\Encoding::ascii);
     }
 }

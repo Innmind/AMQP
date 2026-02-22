@@ -10,7 +10,7 @@ use Innmind\AMQP\{
 };
 use Innmind\OperatingSystem\Factory as OSFactory;
 use Innmind\IO\Sockets\Internet\Transport;
-use Innmind\TimeContinuum\Period;
+use Innmind\Time\Period;
 use Innmind\Url\Url;
 
 $os = OSFactory::build();

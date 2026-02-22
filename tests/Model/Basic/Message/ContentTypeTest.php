@@ -28,6 +28,6 @@ class ContentTypeTest extends TestCase
     {
         $this->expectException(DomainException::class);
 
-        ContentType::of('foo', 'json');
+        $_ = ContentType::of('foo', 'json');
     }
 }

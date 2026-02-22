@@ -17,7 +17,7 @@ use Innmind\BlackBox\{
     PHPUnit\Framework\TestCase,
     Set,
 };
-use Fixtures\Innmind\TimeContinuum\PointInTime;
+use Fixtures\Innmind\Time\Point;
 use PHPUnit\Framework\Attributes\Group;
 
 class ArgumentTranslatorTest extends TestCase
@@ -46,7 +46,7 @@ class ArgumentTranslatorTest extends TestCase
     {
         $primitive = Set::either(
             Set::integers(),
-            PointInTime::any(),
+            Point::any(),
         );
 
         $this

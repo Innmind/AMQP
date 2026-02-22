@@ -25,6 +25,6 @@ class ContentEncodingTest extends TestCase
     {
         $this->expectException(DomainException::class);
 
-        ContentEncoding::of('foo bar');
+        $_ = ContentEncoding::of('foo bar');
     }
 }

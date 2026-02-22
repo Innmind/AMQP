@@ -8,7 +8,7 @@ use Innmind\AMQP\Model\Connection\{
     MaxChannels,
     MaxFrameSize,
 };
-use Innmind\TimeContinuum\Period;
+use Innmind\Time\Period;
 use Innmind\BlackBox\PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Group;
 

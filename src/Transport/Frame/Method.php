@@ -14,7 +14,7 @@ use Innmind\AMQP\Transport\Frame\Value\{
     UnsignedShortInteger,
     Table,
 };
-use Innmind\TimeContinuum\Clock;
+use Innmind\Time\Clock;
 use Innmind\IO\Frame;
 use Innmind\Immutable\{
     Maybe,

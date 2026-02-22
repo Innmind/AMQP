@@ -22,7 +22,7 @@ use Innmind\AMQP\{
     Model\Connection\MaxChannels,
     Model\Connection\MaxFrameSize,
 };
-use Innmind\TimeContinuum\Period;
+use Innmind\Time\Period;
 use Innmind\Url\{
     Authority\UserInformation\User,
     Authority\UserInformation\Password,
@@ -51,13 +51,13 @@ class ConnectionTest extends TestCase
         $this->assertSame(Type::method, $frame->type());
         $this->assertSame(0, $frame->channel()->toInt());
         $this->assertTrue($frame->is(Method::of(10, 11)));
-        $this->assertCount(4, $frame->values());
+        $this->assertSame(4, $frame->values()->size());
         $this->assertInstanceOf(Table::class, $frame->values()->get(0)->match(
             static fn($value) => $value,
             static fn() => null,
         ));
-        $this->assertCount(6, $frame->values()->get(0)->match(
-            static fn($value) => $value->original(),
+        $this->assertSame(6, $frame->values()->get(0)->match(
+            static fn($value) => $value->original()->size(),
             static fn() => null,
         ));
         $this->assertSame(
@@ -150,7 +150,7 @@ class ConnectionTest extends TestCase
                 ->original()
                 ->toString(),
         );
-        $this->assertCount(
+        $this->assertSame(
             5,
             $frame
                 ->values()
@@ -165,7 +165,8 @@ class ConnectionTest extends TestCase
                     static fn($value) => $value,
                     static fn() => null,
                 )
-                ->original(),
+                ->original()
+                ->size(),
         );
         $this->assertTrue(
             $frame
@@ -348,7 +349,7 @@ class ConnectionTest extends TestCase
         $this->assertSame(Type::method, $frame->type());
         $this->assertSame(0, $frame->channel()->toInt());
         $this->assertTrue($frame->is(Method::of(10, 21)));
-        $this->assertCount(1, $frame->values());
+        $this->assertSame(1, $frame->values()->size());
         $this->assertInstanceOf(LongString::class, $frame->values()->get(0)->match(
             static fn($value) => $value,
             static fn() => null,
@@ -381,7 +382,7 @@ class ConnectionTest extends TestCase
         $this->assertSame(Type::method, $frame->type());
         $this->assertSame(0, $frame->channel()->toInt());
         $this->assertTrue($frame->is(Method::of(10, 31)));
-        $this->assertCount(3, $frame->values());
+        $this->assertSame(3, $frame->values()->size());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
             $frame->values()->get(0)->match(
@@ -432,7 +433,7 @@ class ConnectionTest extends TestCase
         $this->assertSame(Type::method, $frame->type());
         $this->assertSame(0, $frame->channel()->toInt());
         $this->assertTrue($frame->is(Method::of(10, 40)));
-        $this->assertCount(3, $frame->values());
+        $this->assertSame(3, $frame->values()->size());
         $this->assertInstanceOf(
             ShortString::class,
             $frame->values()->get(0)->match(
@@ -486,7 +487,7 @@ class ConnectionTest extends TestCase
         $this->assertSame(Type::method, $frame->type());
         $this->assertSame(0, $frame->channel()->toInt());
         $this->assertTrue($frame->is(Method::of(10, 50)));
-        $this->assertCount(4, $frame->values());
+        $this->assertSame(4, $frame->values()->size());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
             $frame->values()->get(0)->match(
@@ -570,6 +571,6 @@ class ConnectionTest extends TestCase
         $this->assertSame(Type::method, $frame->type());
         $this->assertSame(0, $frame->channel()->toInt());
         $this->assertTrue($frame->is(Method::of(10, 51)));
-        $this->assertCount(0, $frame->values());
+        $this->assertSame(0, $frame->values()->size());
     }
 }

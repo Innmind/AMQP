@@ -5,11 +5,11 @@ namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\{
     Transport\Frame\Value,
-    TimeContinuum\Format\Timestamp as TimestampFormat,
+    Time\Format\Timestamp as TimestampFormat,
 };
-use Innmind\TimeContinuum\{
+use Innmind\Time\{
     Clock,
-    PointInTime,
+    Point,
 };
 use Innmind\IO\Frame;
 use Innmind\Immutable\{
@@ -20,19 +20,19 @@ use Innmind\Immutable\{
 };
 
 /**
- * @implements Value<PointInTime>
+ * @implements Value<Point>
  * @psalm-immutable
  */
 final class Timestamp implements Value
 {
-    private function __construct(private PointInTime $original)
+    private function __construct(private Point $original)
     {
     }
 
     /**
      * @psalm-pure
      */
-    public static function of(PointInTime $point): self
+    public static function of(Point $point): self
     {
         return new self($point);
     }
@@ -45,7 +45,7 @@ final class Timestamp implements Value
     public static function wrap(mixed $value): Either
     {
         return Maybe::of($value)
-            ->keep(Instance::of(PointInTime::class))
+            ->keep(Instance::of(Point::class))
             ->either()
             ->map(static fn($point) => new self($point))
             ->leftMap(static fn(): mixed => $value);
@@ -77,7 +77,7 @@ final class Timestamp implements Value
     }
 
     #[\Override]
-    public function original(): PointInTime
+    public function original(): Point
     {
         return $this->original;
     }

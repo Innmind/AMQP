@@ -30,7 +30,7 @@ class TransactionTest extends TestCase
         $this->assertSame(Type::method, $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertTrue($frame->is(Method::of(90, 10)));
-        $this->assertCount(0, $frame->values());
+        $this->assertSame(0, $frame->values()->size());
     }
 
     #[Group('ci')]
@@ -48,7 +48,7 @@ class TransactionTest extends TestCase
         $this->assertSame(Type::method, $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertTrue($frame->is(Method::of(90, 20)));
-        $this->assertCount(0, $frame->values());
+        $this->assertSame(0, $frame->values()->size());
     }
 
     #[Group('ci')]
@@ -66,6 +66,6 @@ class TransactionTest extends TestCase
         $this->assertSame(Type::method, $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertTrue($frame->is(Method::of(90, 30)));
-        $this->assertCount(0, $frame->values());
+        $this->assertSame(0, $frame->values()->size());
     }
 }

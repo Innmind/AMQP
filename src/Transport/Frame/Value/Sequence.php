@@ -7,7 +7,7 @@ use Innmind\AMQP\Transport\{
     Frame\Value,
     Protocol\ArgumentTranslator,
 };
-use Innmind\TimeContinuum\Clock;
+use Innmind\Time\Clock;
 use Innmind\IO\Frame;
 use Innmind\Immutable\{
     Sequence as Seq,
@@ -102,7 +102,7 @@ final class Sequence implements Value
                 $value->symbol()->pack(),
                 $value->pack(),
             ))
-            ->fold(new Concat)
+            ->fold(Concat::monoid)
             ->toEncoding(Str\Encoding::ascii);
         /** @psalm-suppress InvalidArgument */
         $value = UnsignedLongInteger::of($data->length())->pack();

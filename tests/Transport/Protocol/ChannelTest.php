@@ -36,7 +36,7 @@ class ChannelTest extends TestCase
         $this->assertSame(Type::method, $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertTrue($frame->is(Method::of(20, 10)));
-        $this->assertCount(1, $frame->values());
+        $this->assertSame(1, $frame->values()->size());
         $this->assertInstanceOf(ShortString::class, $frame->values()->get(0)->match(
             static fn($value) => $value,
             static fn() => null,
@@ -63,7 +63,7 @@ class ChannelTest extends TestCase
         $this->assertSame(Type::method, $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertTrue($frame->is(Method::of(20, 20)));
-        $this->assertCount(1, $frame->values());
+        $this->assertSame(1, $frame->values()->size());
         $this->assertInstanceOf(Bits::class, $frame->values()->get(0)->match(
             static fn($value) => $value,
             static fn() => null,
@@ -109,7 +109,7 @@ class ChannelTest extends TestCase
         $this->assertSame(Type::method, $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertTrue($frame->is(Method::of(20, 21)));
-        $this->assertCount(1, $frame->values());
+        $this->assertSame(1, $frame->values()->size());
         $this->assertInstanceOf(Bits::class, $frame->values()->get(0)->match(
             static fn($value) => $value,
             static fn() => null,
@@ -155,7 +155,7 @@ class ChannelTest extends TestCase
         $this->assertSame(Type::method, $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertTrue($frame->is(Method::of(20, 40)));
-        $this->assertCount(4, $frame->values());
+        $this->assertSame(4, $frame->values()->size());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
             $frame->values()->get(0)->match(
@@ -239,6 +239,6 @@ class ChannelTest extends TestCase
         $this->assertSame(Type::method, $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertTrue($frame->is(Method::of(20, 41)));
-        $this->assertCount(0, $frame->values());
+        $this->assertSame(0, $frame->values()->size());
     }
 }

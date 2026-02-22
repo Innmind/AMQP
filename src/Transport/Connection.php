@@ -27,7 +27,7 @@ use Innmind\IO\{
     Frame as IOFrame,
 };
 use Innmind\Url\Url;
-use Innmind\TimeContinuum\{
+use Innmind\Time\{
     Period,
     Clock,
 };
