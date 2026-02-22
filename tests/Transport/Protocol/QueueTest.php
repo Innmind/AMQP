@@ -50,7 +50,7 @@ class QueueTest extends TestCase
         $this->assertSame(Type::method, $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertTrue($frame->is(Method::of(50, 10)));
-        $this->assertCount(4, $frame->values());
+        $this->assertSame(4, $frame->values()->size());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
             $frame->values()->get(0)->match(
@@ -85,8 +85,8 @@ class QueueTest extends TestCase
             static fn($value) => $value,
             static fn() => null,
         ));
-        $this->assertCount(2, $frame->values()->get(3)->match(
-            static fn($value) => $value->original(),
+        $this->assertSame(2, $frame->values()->get(3)->match(
+            static fn($value) => $value->original()->size(),
             static fn() => null,
         ));
         $this->assertSame(24, $frame->values()->get(3)->match(
@@ -234,7 +234,7 @@ class QueueTest extends TestCase
         $this->assertSame(Type::method, $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertTrue($frame->is(Method::of(50, 40)));
-        $this->assertCount(3, $frame->values());
+        $this->assertSame(3, $frame->values()->size());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
             $frame->values()->get(0)->match(
@@ -333,7 +333,7 @@ class QueueTest extends TestCase
         $this->assertSame(Type::method, $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertTrue($frame->is(Method::of(50, 20)));
-        $this->assertCount(6, $frame->values());
+        $this->assertSame(6, $frame->values()->size());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
             $frame->values()->get(0)->match(
@@ -384,8 +384,8 @@ class QueueTest extends TestCase
             static fn($value) => $value,
             static fn() => null,
         ));
-        $this->assertCount(2, $frame->values()->get(5)->match(
-            static fn($value) => $value->original(),
+        $this->assertSame(2, $frame->values()->get(5)->match(
+            static fn($value) => $value->original()->size(),
             static fn() => null,
         ));
         $this->assertSame(24, $frame->values()->get(5)->match(
@@ -438,7 +438,7 @@ class QueueTest extends TestCase
         $this->assertSame(Type::method, $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertTrue($frame->is(Method::of(50, 50)));
-        $this->assertCount(5, $frame->values());
+        $this->assertSame(5, $frame->values()->size());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
             $frame->values()->get(0)->match(
@@ -478,8 +478,8 @@ class QueueTest extends TestCase
             static fn($value) => $value,
             static fn() => null,
         ));
-        $this->assertCount(2, $frame->values()->get(4)->match(
-            static fn($value) => $value->original(),
+        $this->assertSame(2, $frame->values()->get(4)->match(
+            static fn($value) => $value->original()->size(),
             static fn() => null,
         ));
         $this->assertSame(24, $frame->values()->get(4)->match(
@@ -514,7 +514,7 @@ class QueueTest extends TestCase
         $this->assertSame(Type::method, $frame->type());
         $this->assertSame($channel, $frame->channel());
         $this->assertTrue($frame->is(Method::of(50, 30)));
-        $this->assertCount(3, $frame->values());
+        $this->assertSame(3, $frame->values()->size());
         $this->assertInstanceOf(
             UnsignedShortInteger::class,
             $frame->values()->get(0)->match(

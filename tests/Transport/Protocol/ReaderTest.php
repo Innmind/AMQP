@@ -14,7 +14,7 @@ use Innmind\AMQP\Transport\{
     Frame\Value\Table,
     Frame\Value\LongString
 };
-use Innmind\TimeContinuum\Clock;
+use Innmind\Time\Clock;
 use Innmind\IO\IO;
 use Innmind\Immutable\{
     Str,
@@ -56,7 +56,7 @@ class ReaderTest extends TestCase
             );
 
         $this->assertInstanceOf(Sequence::class, $stream);
-        $this->assertCount(\count($arguments), $stream);
+        $this->assertSame(\count($arguments), $stream->size());
 
         foreach ($arguments as $i => $argument) {
             $this->assertInstanceOf(\get_class($argument), $stream->get($i)->match(

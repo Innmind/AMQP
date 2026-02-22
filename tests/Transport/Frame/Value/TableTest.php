@@ -9,7 +9,7 @@ use Innmind\AMQP\{
     Transport\Frame\Value\LongString,
     Transport\Frame\Value,
 };
-use Innmind\TimeContinuum\Clock;
+use Innmind\Time\Clock;
 use Innmind\IO\IO;
 use Innmind\Immutable\{
     Map,
@@ -65,7 +65,7 @@ class TableTest extends TestCase
             );
 
         $this->assertInstanceOf(Table::class, $value);
-        $this->assertCount($expected->size(), $value->original());
+        $this->assertSame($expected->size(), $value->original()->size());
 
         foreach ($expected as $i => $v) {
             $this->assertInstanceOf(

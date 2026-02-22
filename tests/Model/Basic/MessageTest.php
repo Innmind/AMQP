@@ -16,8 +16,8 @@ use Innmind\AMQP\Model\Basic\{
     Message\Type,
     Message\UserId,
 };
-use Innmind\TimeContinuum\{
-    PointInTime,
+use Innmind\Time\{
+    Point,
     Period,
 };
 use Innmind\Immutable\{
@@ -237,7 +237,7 @@ class MessageTest extends TestCase
     {
         $message = Message::of(Str::of(''));
         $message2 = $message->withTimestamp(
-            $expected = PointInTime::now(),
+            $expected = Point::now(),
         );
 
         $this->assertInstanceOf(Message::class, $message2);

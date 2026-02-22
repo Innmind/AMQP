@@ -124,7 +124,7 @@ class MaxFrameSizeTest extends TestCase
                 $this->expectException(FrameExceedAllowedSize::class);
                 $this->expectExceptionMessage("Max frame size can be $allowed but got $above");
 
-                $max->verify($above)->unwrap();
+                $_ = $max->verify($above)->unwrap();
             });
     }
 

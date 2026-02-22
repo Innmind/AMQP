@@ -21,12 +21,12 @@ use Innmind\AMQP\{
     Command\Transaction,
     Model\Exchange\Type,
     Model\Basic\Message,
-    TimeContinuum\Format\Timestamp as TimestampFormat,
+    Time\Format\Timestamp as TimestampFormat,
     Exception\BasicGetNotCancellable,
 };
 use Innmind\IO\Sockets\Internet\Transport;
 use Innmind\OperatingSystem\Factory as OSFactory;
-use Innmind\TimeContinuum\{
+use Innmind\Time\{
     Period,
     Format,
 };
@@ -158,7 +158,7 @@ class ClientTest extends TestCase
     {
         $this->expectException(BasicGetNotCancellable::class);
 
-        $this
+        $_ = $this
             ->client
             ->with(DeclareExchange::of('foo', Type::direct))
             ->with(DeclareQueue::of('bar'))
@@ -738,8 +738,12 @@ class ClientTest extends TestCase
                     ->withWorkingDirectory(Path::of(\getcwd())),
             )
             ->unwrap();
-        $this->os->process()->halt(Period::millisecond(100));
-        $this
+        $_ = $this
+            ->os
+            ->process()
+            ->halt(Period::millisecond(100))
+            ->unwrap();
+        $_ = $this
             ->os
             ->control()
             ->processes()
@@ -749,7 +753,8 @@ class ClientTest extends TestCase
                     static fn() => null,
                 ),
                 $signal,
-            );
+            )
+            ->unwrap();
 
         $this->assertSame(
             1,

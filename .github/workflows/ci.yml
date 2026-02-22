@@ -8,7 +8,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        php-version: ['8.2', '8.3', '8.4']
+        php-version: ['8.4', '8.5']
         dependencies: ['lowest', 'highest']
     name: 'BlackBox (${{ matrix.os }}, ${{ matrix.php-version }}, ${{ matrix.dependencies }})'
     steps:
@@ -35,7 +35,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        php-version: ['8.2', '8.3', '8.4']
+        php-version: ['8.4', '8.5']
         dependencies: ['lowest', 'highest']
     name: 'Coverage (${{ matrix.os }}, ${{ matrix.php-version }}, ${{ matrix.dependencies }})'
     steps:
@@ -66,5 +66,3 @@ jobs:
     uses: innmind/github-workflows/.github/workflows/psalm-matrix.yml@main
   cs:
     uses: innmind/github-workflows/.github/workflows/cs.yml@main
-    with:
-      php-version: '8.2'

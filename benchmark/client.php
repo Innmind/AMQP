@@ -8,7 +8,7 @@ use Innmind\AMQP\{
     Transport\Connection,
 };
 use Innmind\IO\Sockets\Internet\Transport;
-use Innmind\TimeContinuum\Period;
+use Innmind\Time\Period;
 use Innmind\Url\Url;
 use Innmind\OperatingSystem\Factory as OSFactory;
 

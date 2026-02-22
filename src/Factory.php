@@ -6,7 +6,7 @@ namespace Innmind\AMQP;
 use Innmind\OperatingSystem\OperatingSystem;
 use Innmind\IO\Sockets\Internet\Transport as Socket;
 use Innmind\Url\Url;
-use Innmind\TimeContinuum\Period;
+use Innmind\Time\Period;
 
 final class Factory
 {

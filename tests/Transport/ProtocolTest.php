@@ -29,9 +29,9 @@ use Innmind\AMQP\{
     Model\Basic\Message\UserId,
     Model\Connection\MaxFrameSize,
 };
-use Innmind\TimeContinuum\{
+use Innmind\Time\{
     Period,
-    PointInTime,
+    Point,
     Clock,
 };
 use Innmind\IO\IO;
@@ -84,7 +84,7 @@ class ProtocolTest extends TestCase
                         ->withReplyTo(ReplyTo::of('reply'))
                         ->withExpiration(Period::second(1))
                         ->withId(Id::of('id'))
-                        ->withTimestamp($now = PointInTime::now())
+                        ->withTimestamp($now = Point::now())
                         ->withType(Type::of('type'))
                         ->withUserId(UserId::of('guest'))
                         ->withAppId(AppId::of('webcrawler')),
@@ -123,7 +123,7 @@ class ProtocolTest extends TestCase
             );
 
         $this->assertInstanceOf(Sequence::class, $values);
-        $this->assertCount(15, $values); // body size + flag bits + 13 properties
+        $this->assertSame(15, $values->size()); // body size + flag bits + 13 properties
         $this->assertSame(
             Str::of('')
                 ->join(

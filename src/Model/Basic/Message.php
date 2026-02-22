@@ -15,8 +15,8 @@ use Innmind\AMQP\Model\Basic\Message\{
     UserId,
     AppId,
 };
-use Innmind\TimeContinuum\{
-    PointInTime,
+use Innmind\Time\{
+    Point,
     Period,
 };
 use Innmind\Filesystem\File\Content;
@@ -51,7 +51,7 @@ final class Message
     private Maybe $expiration;
     /** @var Maybe<Id> */
     private Maybe $id;
-    /** @var Maybe<PointInTime> */
+    /** @var Maybe<Point> */
     private Maybe $timestamp;
     /** @var Maybe<Type> */
     private Maybe $type;
@@ -92,7 +92,7 @@ final class Message
         $this->expiration = Maybe::nothing();
         /** @var Maybe<Id> */
         $this->id = Maybe::nothing();
-        /** @var Maybe<PointInTime> */
+        /** @var Maybe<Point> */
         $this->timestamp = Maybe::nothing();
         /** @var Maybe<Type> */
         $this->type = Maybe::nothing();
@@ -304,7 +304,7 @@ final class Message
     }
 
     /**
-     * @return Maybe<PointInTime>
+     * @return Maybe<Point>
      */
     #[\NoDiscard]
     public function timestamp(): Maybe
@@ -313,7 +313,7 @@ final class Message
     }
 
     #[\NoDiscard]
-    public function withTimestamp(PointInTime $timestamp): self
+    public function withTimestamp(Point $timestamp): self
     {
         $self = clone $this;
         $self->timestamp = Maybe::just($timestamp);
@@ -380,7 +380,7 @@ final class Message
     {
         return $this
             ->chunks
-            ->fold(new Concat)
+            ->fold(Concat::monoid)
             ->toEncoding(Str\Encoding::ascii);
     }
 

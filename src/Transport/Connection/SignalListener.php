@@ -15,6 +15,7 @@ use Innmind\Signals\Signal;
 use Innmind\Immutable\{
     Attempt,
     Maybe,
+    SideEffect,
 };
 
 /**
@@ -60,22 +61,51 @@ final class SignalListener
         return new self;
     }
 
-    public function install(Signals $signals, Channel $channel): void
+    /**
+     * @return Attempt<SideEffect>
+     */
+    public function install(Signals $signals, Channel $channel): Attempt
     {
+        $installed = Attempt::result(SideEffect::identity);
+
         if (!$this->installed) {
-            $signals->listen(Signal::hangup, static function() {
-                // do nothing so it can run in background
-            });
-            $signals->listen(Signal::interrupt, $this->softClose);
-            $signals->listen(Signal::abort, $this->softClose);
-            $signals->listen(Signal::terminate, $this->softClose);
-            $signals->listen(Signal::terminalStop, $this->softClose);
-            $signals->listen(Signal::alarm, $this->softClose);
-            $this->signals = Maybe::just($signals);
-            $this->installed = true;
+            $installed = $signals
+                ->listen(Signal::hangup, static function() {
+                    // do nothing so it can run in background
+                })
+                ->flatMap(fn() => $signals->listen(
+                    Signal::interrupt,
+                    $this->softClose,
+                ))
+                ->flatMap(fn() => $signals->listen(
+                    Signal::abort,
+                    $this->softClose,
+                ))
+                ->flatMap(fn() => $signals->listen(
+                    Signal::terminate,
+                    $this->softClose,
+                ))
+                ->flatMap(fn() => $signals->listen(
+                    Signal::terminalStop,
+                    $this->softClose,
+                ))
+                ->flatMap(fn() => $signals->listen(
+                    Signal::alarm,
+                    $this->softClose,
+                ))
+                ->map(function($_) use ($signals) {
+                    $this->signals = Maybe::just($signals);
+                    $this->installed = true;
+
+                    return $_;
+                });
         }
 
-        $this->channel = Maybe::just($channel);
+        return $installed->map(function($_) use ($channel) {
+            $this->channel = Maybe::just($channel);
+
+            return $_;
+        });
     }
 
     public function uninstall(): void

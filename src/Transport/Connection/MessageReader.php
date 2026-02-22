@@ -21,7 +21,7 @@ use Innmind\AMQP\{
     Failure,
 };
 use Innmind\OperatingSystem\Filesystem;
-use Innmind\TimeContinuum\Period;
+use Innmind\Time\Period;
 use Innmind\Filesystem\File\Content;
 use Innmind\IO\Stream\Size\Unit;
 use Innmind\Validation\Is;

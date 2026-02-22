@@ -1,6 +1,6 @@
 # AMQP
 
-[![Build Status](https://github.com/Innmind/AMQP/workflows/CI/badge.svg?branch=master)](https://github.com/Innmind/AMQP/actions?query=workflow%3ACI)
+[![CI](https://github.com/Innmind/AMQP/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/Innmind/AMQP/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/Innmind/AMQP/branch/develop/graph/badge.svg)](https://codecov.io/gh/Innmind/AMQP)
 [![Type Coverage](https://shepherd.dev/github/Innmind/AMQP/coverage.svg)](https://shepherd.dev/github/Innmind/AMQP)
 
@@ -38,7 +38,7 @@ use Innmind\AMQP\{
     Model\Exchange\Type,
 };
 use Innmind\IO\Sockets\Internet\Transport;
-use Innmind\TimeContinuum\Period;
+use Innmind\Time\Period;
 use Innmind\OperatingSystem\Factory as OSFactory;
 use Innmind\Url\Url;
 use Innmind\Immutable\Str;
