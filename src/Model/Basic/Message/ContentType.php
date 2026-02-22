@@ -4,10 +4,7 @@ declare(strict_types = 1);
 namespace Innmind\AMQP\Model\Basic\Message;
 
 use Innmind\AMQP\Exception\DomainException;
-use Innmind\MediaType\{
-    MediaType,
-    Exception\Exception,
-};
+use Innmind\MediaType\MediaType;
 use Innmind\Immutable\Maybe;
 
 /**
@@ -21,7 +18,7 @@ final class ContentType
 
     private function __construct(MediaType $type)
     {
-        $this->value = $type->topLevel().'/'.$type->subType();
+        $this->value = $type->topLevel()->name.'/'.$type->subType();
     }
 
     /**
@@ -35,11 +32,11 @@ final class ContentType
     #[\NoDiscard]
     public static function of(string $topLevel, string $subType): self
     {
-        try {
-            return new self(new MediaType($topLevel, $subType));
-        } catch (Exception $e) {
-            throw new DomainException("$topLevel/$subType");
-        }
+        $string = "$topLevel/$subType";
+
+        return self::maybe($string)
+            ->attempt(static fn() => new DomainException($string))
+            ->unwrap();
     }
 
     /**

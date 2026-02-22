@@ -7,8 +7,8 @@ use Innmind\AMQP\Transport\Frame\{
     Value\Timestamp,
     Value,
 };
-use Innmind\TimeContinuum\{
-    PointInTime,
+use Innmind\Time\{
+    Point,
     Clock,
 };
 use Innmind\IO\IO;
@@ -24,7 +24,7 @@ class TimestampTest extends TestCase
     {
         $this->assertInstanceOf(
             Value::class,
-            Timestamp::of(PointInTime::now()),
+            Timestamp::of(Point::now()),
         );
     }
 
@@ -32,7 +32,7 @@ class TimestampTest extends TestCase
     #[Group('local')]
     public function testStringCast()
     {
-        $value = Timestamp::of($now = PointInTime::now());
+        $value = Timestamp::of($now = Point::now());
         $this->assertSame(\pack('J', \time()), $value->pack()->toString());
         $this->assertSame($now, $value->original());
     }
@@ -58,10 +58,10 @@ class TimestampTest extends TestCase
             );
 
         $this->assertInstanceOf(Timestamp::class, $value);
-        $this->assertInstanceOf(PointInTime::class, $value->original());
+        $this->assertInstanceOf(Point::class, $value->original());
         $this->assertTrue(
             $value->original()->equals(
-                PointInTime::at(new \DateTimeImmutable(
+                Point::at(new \DateTimeImmutable(
                     \date(\DateTime::ATOM, $time),
                 )),
             ),

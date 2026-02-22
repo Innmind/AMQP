@@ -1,9 +1,9 @@
 <?php
 declare(strict_types = 1);
 
-namespace Innmind\AMQP\TimeContinuum\Format;
+namespace Innmind\AMQP\Time\Format;
 
-use Innmind\TimeContinuum\Format;
+use Innmind\Time\Format;
 
 /**
  * @internal

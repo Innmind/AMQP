@@ -122,7 +122,7 @@ class MaxChannelsTest extends TestCase
                 $above = $allowed + $extraNumber;
 
                 try {
-                    $max->verify($above)->unwrap();
+                    $_ = $max->verify($above)->unwrap();
                     $this->fail('it should throw');
                 } catch (FrameChannelExceedAllowedChannelNumber $e) {
                     $this->assertSame(

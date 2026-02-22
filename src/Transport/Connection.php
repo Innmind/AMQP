@@ -27,7 +27,7 @@ use Innmind\IO\{
     Frame as IOFrame,
 };
 use Innmind\Url\Url;
-use Innmind\TimeContinuum\{
+use Innmind\Time\{
     Period,
     Clock,
 };
@@ -211,9 +211,12 @@ final class Connection
             ));
     }
 
-    public function listenSignals(Signals $signals, Channel $channel): void
+    /**
+     * @return Attempt<SideEffect>
+     */
+    public function listenSignals(Signals $signals, Channel $channel): Attempt
     {
-        $this->signals->install($signals, $channel);
+        return $this->signals->install($signals, $channel);
     }
 
     private function flagActive(ReceivedFrame $received): ReceivedFrame

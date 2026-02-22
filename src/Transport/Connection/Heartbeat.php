@@ -6,9 +6,9 @@ namespace Innmind\AMQP\Transport\Connection;
 use Innmind\AMQP\{
     Transport\Frame,
 };
-use Innmind\TimeContinuum\{
+use Innmind\Time\{
     Clock,
-    PointInTime,
+    Point,
     Period,
 };
 use Innmind\Immutable\Sequence;
@@ -21,7 +21,7 @@ final class Heartbeat
     private function __construct(
         private Clock $clock,
         private Period $threshold,
-        private PointInTime $lastReceivedData,
+        private Point $lastReceivedData,
     ) {
     }
 

@@ -3,7 +3,7 @@ declare(strict_types = 1);
 
 namespace Innmind\AMQP\Transport\Frame\Value;
 
-use Innmind\TimeContinuum\Clock;
+use Innmind\Time\Clock;
 use Innmind\IO\Frame;
 use Innmind\Immutable\Str;
 

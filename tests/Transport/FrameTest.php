@@ -77,7 +77,7 @@ class FrameTest extends TestCase
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame($channel, $frame->channel());
         $this->assertInstanceOf(Sequence::class, $frame->values());
-        $this->assertCount(0, $frame->values());
+        $this->assertSame(0, $frame->values()->size());
         $this->assertSame($text, $frame->content()->match(
             static fn($value) => $value,
             static fn() => null,
@@ -98,7 +98,7 @@ class FrameTest extends TestCase
         $this->assertInstanceOf(Channel::class, $frame->channel());
         $this->assertSame(0, $frame->channel()->toInt());
         $this->assertInstanceOf(Sequence::class, $frame->values());
-        $this->assertCount(0, $frame->values());
+        $this->assertSame(0, $frame->values()->size());
         $this->assertSame(
             \chr(8).\pack('n', 0).\pack('N', 0).\chr(0xCE),
             $frame->pack()->toString(),

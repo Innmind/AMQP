@@ -31,12 +31,12 @@ use Innmind\AMQP\{
     Model\Basic\Message\Type as MessageType,
     Model\Basic\Message\UserId,
     Model\Connection\MaxFrameSize,
-    TimeContinuum\Format\Timestamp as TimestampFormat,
+    Time\Format\Timestamp as TimestampFormat,
 };
 use Innmind\IO\IO;
-use Innmind\TimeContinuum\{
+use Innmind\Time\{
     Period,
-    PointInTime,
+    Point,
     Clock,
 };
 use Innmind\Immutable\{
@@ -196,7 +196,7 @@ class FrameReaderTest extends TestCase
                         ->withReplyTo(ReplyTo::of('reply'))
                         ->withExpiration(Period::second(1))
                         ->withId(Id::of('id'))
-                        ->withTimestamp($now = PointInTime::now())
+                        ->withTimestamp($now = Point::now())
                         ->withType(MessageType::of('type'))
                         ->withUserId(UserId::of('guest'))
                         ->withAppId(AppId::of('webcrawler')),
@@ -227,7 +227,7 @@ class FrameReaderTest extends TestCase
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame(Type::header, $frame->type());
         $this->assertSame(1, $frame->channel()->toInt());
-        $this->assertCount(15, $frame->values());
+        $this->assertSame(15, $frame->values()->size());
         $this->assertInstanceOf(
             UnsignedLongLongInteger::class,
             $frame->values()->first()->match(
@@ -299,8 +299,8 @@ class FrameReaderTest extends TestCase
                 static fn() => null,
             ),
         );
-        $this->assertCount(1, $frame->values()->get(4)->match(
-            static fn($value) => $value->original(),
+        $this->assertSame(1, $frame->values()->get(4)->match(
+            static fn($value) => $value->original()->size(),
             static fn() => null,
         ));
         $this->assertSame(
@@ -489,7 +489,7 @@ class FrameReaderTest extends TestCase
         $this->assertInstanceOf(Frame::class, $frame);
         $this->assertSame(Type::body, $frame->type());
         $this->assertSame(1, $frame->channel()->toInt());
-        $this->assertCount(0, $frame->values());
+        $this->assertSame(0, $frame->values()->size());
         $this->assertSame('foobar', $frame->content()->match(
             static fn($value) => $value->toString(),
             static fn() => null,

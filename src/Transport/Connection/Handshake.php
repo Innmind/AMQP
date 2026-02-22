@@ -13,7 +13,7 @@ use Innmind\AMQP\{
     Model\Connection\MaxFrameSize,
     Failure,
 };
-use Innmind\TimeContinuum\Period;
+use Innmind\Time\Period;
 use Innmind\Url\Authority;
 use Innmind\Immutable\{
     Attempt,

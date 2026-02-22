@@ -28,7 +28,7 @@ class DeclarationTest extends TestCase
         $this->assertFalse($command->isAutoDeleted());
         $this->assertTrue($command->shouldWait());
         $this->assertInstanceOf(Map::class, $command->arguments());
-        $this->assertCount(0, $command->arguments());
+        $this->assertSame(0, $command->arguments()->size());
     }
 
     #[Group('ci')]
@@ -45,7 +45,7 @@ class DeclarationTest extends TestCase
         $this->assertFalse($command->isAutoDeleted());
         $this->assertTrue($command->shouldWait());
         $this->assertInstanceOf(Map::class, $command->arguments());
-        $this->assertCount(0, $command->arguments());
+        $this->assertSame(0, $command->arguments()->size());
     }
 
     #[Group('ci')]
@@ -62,7 +62,7 @@ class DeclarationTest extends TestCase
         $this->assertFalse($command->isAutoDeleted());
         $this->assertTrue($command->shouldWait());
         $this->assertInstanceOf(Map::class, $command->arguments());
-        $this->assertCount(0, $command->arguments());
+        $this->assertSame(0, $command->arguments()->size());
     }
 
     #[Group('ci')]
@@ -79,7 +79,7 @@ class DeclarationTest extends TestCase
         $this->assertTrue($command->isAutoDeleted());
         $this->assertTrue($command->shouldWait());
         $this->assertInstanceOf(Map::class, $command->arguments());
-        $this->assertCount(0, $command->arguments());
+        $this->assertSame(0, $command->arguments()->size());
     }
 
     #[Group('ci')]
@@ -101,7 +101,7 @@ class DeclarationTest extends TestCase
     {
         $this->expectException(NotWaitingPassiveDeclarationDoesNothing::class);
 
-        Declaration::passive('foo', Type::direct)->dontWait();
+        $_ = Declaration::passive('foo', Type::direct)->dontWait();
     }
 
     #[Group('ci')]
@@ -126,8 +126,8 @@ class DeclarationTest extends TestCase
 
         $this->assertInstanceOf(Declaration::class, $command2);
         $this->assertNotSame($command2, $command);
-        $this->assertCount(0, $command->arguments());
-        $this->assertCount(1, $command2->arguments());
+        $this->assertSame(0, $command->arguments()->size());
+        $this->assertSame(1, $command2->arguments()->size());
         $this->assertSame([42], $command2->arguments()->get('bar')->match(
             static fn($argument) => $argument,
             static fn() => null,

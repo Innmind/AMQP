@@ -5,9 +5,8 @@ namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\Math\{
-    Algebra\Integer,
+    Algebra\Number,
     DefinitionSet\Set,
-    DefinitionSet\Range,
 };
 use Innmind\IO\Frame;
 use Innmind\Immutable\{
@@ -49,7 +48,9 @@ final class UnsignedOctet implements Value
      */
     public static function of(int $octet): self
     {
-        self::definitionSet()->accept(Integer::of($octet));
+        $_ = self::definitionSet()
+            ->accept(Number::of($octet))
+            ->unwrap();
 
         return new self($octet);
     }
@@ -61,10 +62,10 @@ final class UnsignedOctet implements Value
      */
     public static function wrap(mixed $value): Either
     {
-        /** @psalm-suppress ArgumentTypeCoercion */
+        /** @psalm-suppress InvalidArgument */
         return Maybe::of($value)
             ->filter(\is_int(...))
-            ->map(Integer::of(...))
+            ->map(Number::of(...))
             ->filter(self::definitionSet()->contains(...))
             ->either()
             ->map(static fn($int) => new self($int->value()))
@@ -119,9 +120,9 @@ final class UnsignedOctet implements Value
      */
     public static function definitionSet(): Set
     {
-        return Range::inclusive(
-            Integer::of(0),
-            Integer::of(255),
+        return Set::inclusiveRange(
+            Number::of(0),
+            Number::of(255),
         );
     }
 }

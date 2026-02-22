@@ -14,7 +14,7 @@ use Innmind\AMQP\{
 };
 use Innmind\IO\Sockets\Internet\Transport;
 use Innmind\Url\Url;
-use Innmind\TimeContinuum\Period;
+use Innmind\Time\Period;
 use Innmind\OperatingSystem\Factory;
 use Innmind\Immutable\{
     Sequence,

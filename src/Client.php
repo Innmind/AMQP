@@ -124,12 +124,12 @@ final class Client
                         static fn($protocol) => $protocol->channel()->open($channel),
                         Method::channelOpenOk,
                     )
-                    ->map(fn() => $this->signals->match(
+                    ->flatMap(fn() => $this->signals->match(
                         static fn($process) => $connection->listenSignals(
                             $process->signals(),
                             $channel,
                         ),
-                        static fn() => null,
+                        static fn() => Attempt::result(SideEffect::identity),
                     ))
                     ->map(static fn() => [$connection, $channel])
                     ->mapError(Failure::as(Failure::toOpenChannel())),

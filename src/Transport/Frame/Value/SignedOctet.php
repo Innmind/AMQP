@@ -5,9 +5,8 @@ namespace Innmind\AMQP\Transport\Frame\Value;
 
 use Innmind\AMQP\Transport\Frame\Value;
 use Innmind\Math\{
-    Algebra\Integer,
+    Algebra\Number,
     DefinitionSet\Set,
-    DefinitionSet\Range,
 };
 use Innmind\IO\Frame;
 use Innmind\Immutable\{
@@ -38,7 +37,9 @@ final class SignedOctet implements Value
      */
     public static function of(int $value): self
     {
-        self::definitionSet()->accept(Integer::of($value));
+        $_ = self::definitionSet()
+            ->accept(Number::of($value))
+            ->unwrap();
 
         return new self($value);
     }
@@ -50,10 +51,10 @@ final class SignedOctet implements Value
      */
     public static function wrap(mixed $value): Either
     {
-        /** @psalm-suppress ArgumentTypeCoercion */
+        /** @psalm-suppress InvalidArgument */
         return Maybe::of($value)
             ->filter(\is_int(...))
-            ->map(Integer::of(...))
+            ->map(Number::of(...))
             ->filter(self::definitionSet()->contains(...))
             ->either()
             ->map(static fn($int) => new self($int->value()))
@@ -108,9 +109,9 @@ final class SignedOctet implements Value
      */
     public static function definitionSet(): Set
     {
-        return Range::inclusive(
-            Integer::of(-128),
-            Integer::of(127),
+        return Set::inclusiveRange(
+            Number::of(-128),
+            Number::of(127),
         );
     }
 }

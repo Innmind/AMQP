@@ -14,7 +14,7 @@ $client
     ->run(null)
     ->match(
         static fn() => null, // not reachable in this case
-        static fn($failure) => throw new \RuntimeException($failure::class),
+        static fn($failure) => $failure,
     );
 ```
 
