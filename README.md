@@ -38,7 +38,7 @@ use Innmind\AMQP\{
     Model\Exchange\Type,
 };
 use Innmind\IO\Sockets\Internet\Transport;
-use Innmind\TimeContinuum\Period;
+use Innmind\Time\Period;
 use Innmind\OperatingSystem\Factory as OSFactory;
 use Innmind\Url\Url;
 use Innmind\Immutable\Str;
